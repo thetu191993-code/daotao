@@ -3,131 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Portfolio | GitHub Pages</title>
-    <!-- Tailwind CSS for styling -->
+    <title>EHS Data Dashboard & Training</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        /* Smooth scrolling */
-        html { scroll-behavior: smooth; }
-        /* Custom animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-200">
+<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
 
-    <!-- Navigation -->
-    <nav class="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-slate-200">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0 flex items-center gap-2">
-                    <i class="ph-fill ph-code text-blue-600 text-3xl"></i>
-                    <span class="font-bold text-xl tracking-tight">Portfolio.</span>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#about" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">Giới thiệu</a>
-                    <a href="#projects" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">Dự án</a>
-                    <a href="#contact" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">Liên hệ</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="pt-32 pb-20 px-4">
-        <div class="max-w-3xl mx-auto text-center animate-fade-in">
-            <div class="inline-block p-2 bg-blue-100 rounded-2xl text-blue-700 font-semibold text-sm mb-6">
-                🚀 Chào mừng đến với không gian của tôi
-            </div>
-            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6">
-                Xin chào, tôi là <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Chuyên gia EHS & Data</span>
-            </h1>
-            <p class="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed">
-                Tôi ứng dụng Trí tuệ Nhân tạo (Machine Learning, K-Means, XGBoost) vào việc quản lý rủi ro môi trường, tối ưu hóa tài nguyên và xây dựng hệ thống cảnh báo sớm.
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="#projects" class="px-8 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/30">
-                    Xem Dự án
-                </a>
-                <a href="#contact" class="px-8 py-3 bg-white text-slate-700 border border-slate-200 rounded-full font-semibold hover:bg-slate-50 hover:border-slate-300 transition">
-                    Liên hệ ngay
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section id="projects" class="py-20 bg-white px-4 border-t border-slate-100">
-        <div class="max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-center mb-12">Dự án Tiêu biểu</h2>
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-2xl font-bold text-blue-700 mb-2 flex items-center">
+                <i class="ph-fill ph-database text-3xl mr-2"></i>
+                Hệ thống Dự toán Hóa chất EHS
+            </h2>
+            <p class="text-slate-500 mb-8">Nền tảng quản lý rủi ro môi trường và tối ưu hóa tài nguyên nước.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Project 1 -->
-                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition duration-300 group">
-                    <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                        <i class="ph-fill ph-waves text-blue-600 text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Phân loại Mùa Thủy văn (K-Means)</h3>
-                    <p class="text-slate-600 mb-6 line-clamp-3">
-                        Ứng dụng thuật toán K-Means Clustering trên chuỗi dữ liệu 12 năm của trạm Kratie để tự động xác định các ngưỡng mực nước an toàn và nguy hiểm.
-                    </p>
-                    <div class="flex gap-2 flex-wrap">
-                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">Python</span>
-                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">Scikit-Learn</span>
-                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">Data Analysis</span>
-                    </div>
-                </div>
+            <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                <!-- Nút gọi dữ liệu JSON -->
+                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Đồng bộ Dữ liệu Mới nhất
+                </button>
 
-                <!-- Project 2 -->
-                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition duration-300 group">
-                    <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
-                        <i class="ph-fill ph-mountains text-emerald-600 text-3xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Dự báo Sạt lở đất (XGBoost & SHAP)</h3>
-                    <p class="text-slate-600 mb-6 line-clamp-3">
-                        Sử dụng Machine Learning giải thích được (XAI) để nhận diện vùng nguy cơ sạt lở cao, kết hợp xử lý mất cân bằng dữ liệu tự động.
-                    </p>
-                    <div class="flex gap-2 flex-wrap">
-                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">XGBoost</span>
-                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">SHAP</span>
-                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">EHS Risk</span>
-                    </div>
+                <!-- Nút Tải Tài liệu PDF -->
+                <a href="https://thetu191993-code.github.io/daotao/Tai_lieu_daotao_EHS.pdf" target="_blank" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-file-pdf"></i> Tải Tài liệu Đào tạo EHS
+                </a>
+            </div>
+
+            <!-- Khu vực lỗi (nếu có) -->
+            <div id="errorMessage" class="hidden bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100 flex items-start gap-2">
+                <i class="ph-fill ph-warning-circle text-xl"></i>
+                <div>
+                    <p class="font-semibold">Không thể tải dữ liệu!</p>
+                    <p class="text-sm mt-1">Vui lòng kiểm tra lại file data_ehs.json trên GitHub đã đúng định dạng chưa.</p>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 bg-slate-900 text-white px-4">
-        <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-3xl font-bold mb-6">Bạn muốn trao đổi thêm?</h2>
-            <p class="text-slate-400 mb-10">Tôi luôn sẵn sàng cho những dự án mới về tối ưu hóa quy trình, xử lý nước thải và ứng dụng AI vào môi trường.</p>
+            <!-- Bảng hiển thị dữ liệu -->
+            <div class="overflow-x-auto rounded-lg border border-slate-200 hidden" id="dataTableContainer">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 text-sm uppercase">
+                            <th class="p-4 border-b font-semibold">Ngày</th>
+                            <th class="p-4 border-b font-semibold">Lưu lượng (m3)</th>
+                            <th class="p-4 border-b font-semibold">COD Đầu ra (mg/L)</th>
+                            <th class="p-4 border-b font-semibold">Fluoride Đầu ra (mg/L)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataBody" class="text-sm">
+                        <!-- Dữ liệu sẽ được JS chèn vào đây -->
+                    </tbody>
+                </table>
+            </div>
             
-            <div class="flex justify-center gap-6">
-                <a href="#" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition duration-300">
-                    <i class="ph-fill ph-envelope-simple text-2xl"></i>
-                </a>
-                <a href="#" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition duration-300">
-                    <i class="ph-fill ph-github-logo text-2xl"></i>
-                </a>
-                <a href="#" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition duration-300">
-                    <i class="ph-fill ph-linkedin-logo text-2xl"></i>
-                </a>
+            <div id="loadingStatus" class="text-blue-600 font-medium flex items-center gap-2 hidden">
+                <i class="ph-bold ph-spinner animate-spin"></i> Đang tải dữ liệu từ GitHub...
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- Footer -->
-    <footer class="bg-slate-950 py-8 text-center border-t border-slate-800 text-slate-500 text-sm">
-        <p>© 2026 EHS & Data Portfolio. Hosted on GitHub Pages.</p>
-    </footer>
+    <script>
+        // Đường link API tĩnh trỏ trực tiếp đến file JSON trên repo của bạn
+        const GITHUB_DATA_URL = 'https://thetu191993-code.github.io/daotao/data_ehs.json';
 
+        function loadDataFromGitHub() {
+            const tableContainer = document.getElementById('dataTableContainer');
+            const tbody = document.getElementById('dataBody');
+            const status = document.getElementById('loadingStatus');
+            const errorBox = document.getElementById('errorMessage');
+            
+            // Hiển thị trạng thái đang tải, ẩn lỗi và bảng cũ
+            status.classList.remove('hidden');
+            errorBox.classList.add('hidden');
+            tableContainer.classList.add('hidden');
+            tbody.innerHTML = ''; 
+
+            // Gọi dữ liệu thực tế từ GitHub
+            fetch(GITHUB_DATA_URL, { cache: "no-store" }) // cache: "no-store" giúp lấy dữ liệu mới nhất, bỏ qua cache trình duyệt
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Render dữ liệu ra bảng
+                    data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b hover:bg-slate-50 transition-colors";
+                        
+                        // Kiểm tra nếu dữ liệu bị thiếu thì để trống
+                        const date = row.date || 'N/A';
+                        const flow = row.flow || '0';
+                        const cod = row.cod || '0';
+                        const fluoride = row.fluoride || '0';
+
+                        tr.innerHTML = `
+                            <td class="p-4 font-medium text-slate-700">${date}</td>
+                            <td class="p-4 text-blue-600 font-semibold">${flow}</td>
+                            <td class="p-4">${cod}</td>
+                            <td class="p-4">${fluoride}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Ẩn thông báo tải, hiện bảng
+                    status.classList.add('hidden');
+                    tableContainer.classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    status.classList.add('hidden');
+                    errorBox.classList.remove('hidden');
+                });
+        }
+    </script>
 </body>
-</html>
