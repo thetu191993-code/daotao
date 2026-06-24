@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio | GitHub Pages</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Smooth scrolling */
+        html { scroll-behavior: smooth; }
+        /* Custom animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-200">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full bg-white/80 backdrop-blur-md z-50 border-b border-slate-200">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <i class="ph-fill ph-code text-blue-600 text-3xl"></i>
+                    <span class="font-bold text-xl tracking-tight">Portfolio.</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#about" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">Giới thiệu</a>
+                    <a href="#projects" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">Dự án</a>
+                    <a href="#contact" class="text-slate-600 hover:text-blue-600 transition-colors font-medium">Liên hệ</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-4">
+        <div class="max-w-3xl mx-auto text-center animate-fade-in">
+            <div class="inline-block p-2 bg-blue-100 rounded-2xl text-blue-700 font-semibold text-sm mb-6">
+                🚀 Chào mừng đến với không gian của tôi
+            </div>
+            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6">
+                Xin chào, tôi là <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Chuyên gia EHS & Data</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed">
+                Tôi ứng dụng Trí tuệ Nhân tạo (Machine Learning, K-Means, XGBoost) vào việc quản lý rủi ro môi trường, tối ưu hóa tài nguyên và xây dựng hệ thống cảnh báo sớm.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#projects" class="px-8 py-3 bg-blue-600 text-white rounded-full font-semibold hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/30">
+                    Xem Dự án
+                </a>
+                <a href="#contact" class="px-8 py-3 bg-white text-slate-700 border border-slate-200 rounded-full font-semibold hover:bg-slate-50 hover:border-slate-300 transition">
+                    Liên hệ ngay
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="py-20 bg-white px-4 border-t border-slate-100">
+        <div class="max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-12">Dự án Tiêu biểu</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Project 1 -->
+                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition duration-300 group">
+                    <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                        <i class="ph-fill ph-waves text-blue-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Phân loại Mùa Thủy văn (K-Means)</h3>
+                    <p class="text-slate-600 mb-6 line-clamp-3">
+                        Ứng dụng thuật toán K-Means Clustering trên chuỗi dữ liệu 12 năm của trạm Kratie để tự động xác định các ngưỡng mực nước an toàn và nguy hiểm.
+                    </p>
+                    <div class="flex gap-2 flex-wrap">
+                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">Python</span>
+                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">Scikit-Learn</span>
+                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">Data Analysis</span>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition duration-300 group">
+                    <div class="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition">
+                        <i class="ph-fill ph-mountains text-emerald-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Dự báo Sạt lở đất (XGBoost & SHAP)</h3>
+                    <p class="text-slate-600 mb-6 line-clamp-3">
+                        Sử dụng Machine Learning giải thích được (XAI) để nhận diện vùng nguy cơ sạt lở cao, kết hợp xử lý mất cân bằng dữ liệu tự động.
+                    </p>
+                    <div class="flex gap-2 flex-wrap">
+                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">XGBoost</span>
+                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">SHAP</span>
+                        <span class="px-3 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded-full">EHS Risk</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-slate-900 text-white px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-6">Bạn muốn trao đổi thêm?</h2>
+            <p class="text-slate-400 mb-10">Tôi luôn sẵn sàng cho những dự án mới về tối ưu hóa quy trình, xử lý nước thải và ứng dụng AI vào môi trường.</p>
+            
+            <div class="flex justify-center gap-6">
+                <a href="#" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition duration-300">
+                    <i class="ph-fill ph-envelope-simple text-2xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition duration-300">
+                    <i class="ph-fill ph-github-logo text-2xl"></i>
+                </a>
+                <a href="#" class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center hover:bg-blue-600 hover:-translate-y-1 transition duration-300">
+                    <i class="ph-fill ph-linkedin-logo text-2xl"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 py-8 text-center border-t border-slate-800 text-slate-500 text-sm">
+        <p>© 2026 EHS & Data Portfolio. Hosted on GitHub Pages.</p>
+    </footer>
+
+</body>
+</html>
