@@ -7,38 +7,37 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <!-- 1. Tích hợp Firebase SDK -->
+    <!-- Tích hợp Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        /* ========================================================
-           BƯỚC QUAN TRỌNG NHẤT: BẠN PHẢI THAY THẾ CONFIG NÀY BẰNG CONFIG CỦA BẠN (LẤY TỪ FIREBASE CONSOLE)
-        ======================================================== */
+        // CONFIG CỦA ANH ĐÃ ĐƯỢC GẮN SẴN VÀO ĐÂY, ANH KHÔNG CẦN SỬA GÌ NỮA!
         const firebaseConfig = {
-        apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
-        authDomain: "ehs-training-app.firebaseapp.com",
-        projectId: "ehs-training-app",
-        storageBucket: "ehs-training-app.firebasestorage.app",
-        messagingSenderId: "354083430003",
-        appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-        measurementId: "G-74ETHWTJCW",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
         };
 
         // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Đưa biến db ra ngoài toàn cục để các hàm JS bên dưới có thể gọi được
+        // Đưa biến db ra ngoài toàn cục
         window.db = db;
         window.collection = collection;
         window.addDoc = addDoc;
         window.serverTimestamp = serverTimestamp;
     </script>
 </head>
+
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
 
-    <div class="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden" id="quiz-container">
+    <div class="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden min-h-[400px]" id="quiz-container">
         
         <!-- MÀN HÌNH ĐĂNG NHẬP / KHAI BÁO NHÂN SỰ -->
         <div id="login-screen" class="absolute inset-0 bg-white z-20 flex flex-col justify-center p-8">
@@ -98,22 +97,22 @@
     </div>
 
     <script>
-        // --- Dữ liệu câu hỏi ---
+        // Dữ liệu câu hỏi
         const quizData = [
             {
                 question: "Theo quy trình EHS, khi phát hiện hóa chất rò rỉ, bước đầu tiên cần làm là gì?",
                 options: ["A. Lấy chổi quét dọn ngay lập tức", "B. Báo cáo ngay cho người phụ trách và cách ly khu vực", "C. Bỏ đi coi như không thấy", "D. Đổ nước vào để pha loãng"],
-                correctAnswer: 1 // Đáp án đúng là B (chỉ số 1 vì mảng bắt đầu từ 0)
+                correctAnswer: 1
             },
             {
                 question: "Chỉ số COD trong nước thải đầu ra được hiểu là gì?",
                 options: ["A. Nhu cầu oxy hóa học", "B. Nhu cầu oxy sinh học", "C. Tổng chất rắn lơ lửng", "D. Độ ph"],
-                correctAnswer: 0 // Đáp án đúng là A
+                correctAnswer: 0
             },
             {
                 question: "Nút bấm nào trên Dashboard dùng để cập nhật dữ liệu mới nhất?",
                 options: ["A. Tải Tài liệu", "B. Quy trình sự cố", "C. Đồng bộ Dữ liệu", "D. Sổ tay vận hành"],
-                correctAnswer: 2 // Đáp án đúng là C
+                correctAnswer: 2
             }
         ];
 
@@ -129,7 +128,6 @@
         const scoreDisplay = document.getElementById('score');
         const loginScreen = document.getElementById('login-screen');
 
-        // Hàm bắt đầu khi người dùng nhập thông tin
         function startQuizWithUser() {
             const idInput = document.getElementById('emp-id').value.trim();
             const nameInput = document.getElementById('emp-name').value.trim();
@@ -139,24 +137,20 @@
                 return;
             }
 
-            // Lưu thông tin người dùng
             currentUser.id = idInput;
             currentUser.name = nameInput;
             
-            // Cập nhật giao diện
             document.getElementById('user-display').innerText = `Nhân sự: ${currentUser.name} (${currentUser.id})`;
-            loginScreen.style.display = 'none'; // Ẩn màn hình đăng nhập
-            loadQuestion(); // Bắt đầu load câu hỏi
+            loginScreen.style.display = 'none';
+            loadQuestion();
         }
 
-        // Hàm hiển thị câu hỏi
         function loadQuestion() {
             const currentData = quizData[currentQuestionIndex];
             questionText.innerText = currentData.question;
             progressText.innerText = `Câu ${currentQuestionIndex + 1} / ${quizData.length}`;
             optionsContainer.innerHTML = '';
 
-            // Tạo các nút đáp án
             currentData.options.forEach((option, index) => {
                 const button = document.createElement('button');
                 button.innerText = option;
@@ -166,25 +160,18 @@
             });
         }
 
-        // Hàm xử lý khi chọn đáp án
         function selectAnswer(selectedIndex) {
-            // Kiểm tra đúng sai
-            if (selectedIndex === quizData[currentQuestionIndex].correctAnswer) {
-                score++;
-            }
-            
-            currentQuestionIndex++; // Chuyển câu tiếp theo
-            
+            if (selectedIndex === quizData[currentQuestionIndex].correctAnswer) score++;
+            currentQuestionIndex++;
             if (currentQuestionIndex < quizData.length) {
                 loadQuestion();
             } else {
-                showResults(); // Hết câu hỏi thì hiển thị kết quả
+                showResults();
             }
         }
 
-        // --- HÀM GHI DỮ LIỆU LÊN FIREBASE KHI KẾT THÚC ---
+        // Ghi dữ liệu lên Firebase
         async function showResults() {
-            // Chuyển đổi màn hình
             questionScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
             progressText.classList.add('hidden');
@@ -193,22 +180,22 @@
             const statusText = document.getElementById('save-status');
 
             try {
-                // Gọi hàm lưu dữ liệu lên Firestore (vào bảng tên là 'ket_qua_kiem_tra')
+                // Kiểm tra xem Firebase đã kết nối chưa
+                if (!window.db) throw new Error("Chưa kết nối Firebase");
+
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
                     nhan_vien_id: currentUser.id,
                     ho_ten: currentUser.name,
                     diem_so: score,
                     tong_cau: quizData.length,
-                    thoi_gian_nop: window.serverTimestamp() // Firebase tự động lấy giờ hệ thống chính xác
+                    thoi_gian_nop: window.serverTimestamp()
                 });
                 
-                // Nếu lưu thành công
                 statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600"></i> Kết quả đã được lưu trữ thành công!';
                 statusText.classList.replace('text-amber-600', 'text-emerald-600');
             } catch (error) {
-                // Nếu có lỗi (ví dụ chưa điền config Firebase)
                 console.error("Lỗi khi lưu kết quả: ", error);
-                statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600"></i> Có lỗi xảy ra khi lưu kết quả (Lưu ý: Bạn cần cấu hình Firebase Config).';
+                statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600"></i> Có lỗi xảy ra khi lưu kết quả (Lưu ý: Cần dán mã Config Firebase).';
                 statusText.classList.replace('text-amber-600', 'text-red-600');
             }
         }
