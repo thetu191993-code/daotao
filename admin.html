@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Kết Quả Đào Tạo EHS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Tích hợp Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // CONFIG Firebase của dự án EHS
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.query = query;
+        window.orderBy = orderBy;
+        
+        // Tự động tải dữ liệu khi mở trang
+        window.onload = loadData;
+    </script>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800">
+
+    <div class="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-shield-check text-blue-600 text-3xl mr-3"></i>
+                    Quản lý Kết quả Đào tạo EHS
+                </h2>
+                <p class="text-slate-500 mt-1">Hệ thống theo dõi điểm số tự động từ Firebase.</p>
+            </div>
+            
+            <div class="mt-4 md:mt-0 flex gap-3">
+                <button onclick="loadData()" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300 transition flex items-center gap-2">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
+                </button>
+                <button onclick="exportTableToCSV('Ket_Qua_EHS.csv')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-download-simple"></i> Xuất Excel (CSV)
+                </button>
+            </div>
+        </div>
+
+        <!-- Trạng thái Loading -->
+        <div id="loading-msg" class="text-center py-10 text-blue-600 font-medium hidden">
+            <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
+            <p>Đang tải dữ liệu từ máy chủ...</p>
+        </div>
+
+        <!-- Bảng Dữ Liệu -->
+        <div class="overflow-x-auto rounded-lg border border-slate-200">
+            <table class="w-full text-left border-collapse min-w-[700px]">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-sm uppercase">
+                        <th class="p-4 font-semibold w-16 text-center">STT</th>
+                        <th class="p-4 font-semibold">Thời gian nộp</th>
+                        <th class="p-4 font-semibold">Mã NV</th>
+                        <th class="p-4 font-semibold">Họ và Tên</th>
+                        <th class="p-4 font-semibold text-center">Điểm số</th>
+                        <th class="p-4 font-semibold text-center">Xếp loại</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body" class="text-sm divide-y divide-slate-100">
+                    <!-- Dữ liệu sẽ đổ vào đây -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        // Hàm tải dữ liệu từ Firebase
+        async function loadData() {
+            const tbody = document.getElementById('results-body');
+            const loading = document.getElementById('loading-msg');
+            
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+
+            try {
+                // Lấy dữ liệu từ collection 'ket_qua_kiem_tra', sắp xếp theo thời gian mới nhất
+                const q = window.query(window.collection(window.db, "ket_qua_kiem_tra"), window.orderBy("thoi_gian_nop", "desc"));
+                const querySnapshot = await window.getDocs(q);
+                
+                let stt = 1;
+                
+                if(querySnapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Chưa có ai làm bài kiểm tra.</td></tr>`;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    
+                    // Xử lý thời gian
+                    let timeString = "N/A";
+                    if (data.thoi_gian_nop) {
+                        const date = data.thoi_gian_nop.toDate();
+                        timeString = date.toLocaleString('vi-VN');
+                    }
+
+                    // Đánh giá Pass/Fail (Ví dụ: 3/3 là Đạt)
+                    const isPass = data.diem_so >= data.tong_cau;
+                    const badgeClass = isPass ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700";
+                    const badgeText = isPass ? "Đạt" : "Không đạt";
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="p-4 text-slate-600">${timeString}</td>
+                        <td class="p-4 font-semibold text-slate-700">${data.nhan_vien_id || ''}</td>
+                        <td class="p-4 font-bold text-blue-700">${data.ho_ten || ''}</td>
+                        <td class="p-4 text-center font-bold text-lg">${data.diem_so} / ${data.tong_cau}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">${badgeText}</span>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu: ", error);
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 font-medium">Có lỗi xảy ra khi tải dữ liệu. Vui lòng kiểm tra Console.</td></tr>`;
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // Hàm xuất file CSV (Excel)
+        function exportTableToCSV(filename) {
+            const rows = document.querySelectorAll("table tr");
+            let csv = [];
+            
+            // Fix lỗi font tiếng Việt khi mở bằng Excel
+            let bom = "\uFEFF"; 
+
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                
+                for (let j = 0; j < cols.length; j++) {
+                    // Loại bỏ chữ dư thừa trong nút badge
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+
+            downloadCSV(bom + csv.join("\n"), filename);
+        }
+
+        function downloadCSV(csv, filename) {
+            let csvFile;
+            let downloadLink;
+
+            csvFile = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            downloadLink = document.createElement("a");
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+    </script>
+</body>
+</html>
