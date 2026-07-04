@@ -9,33 +9,34 @@
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
 
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
             <h2 class="text-2xl font-bold text-blue-700 mb-2 flex items-center">
                 <i class="ph-fill ph-database text-3xl mr-2"></i>
-                Hệ thống Dự toán Hóa chất EHS
+                Hệ thống Quản lý & Đào tạo EHS
             </h2>
-            <p class="text-slate-500 mb-8">Nền tảng quản lý rủi ro môi trường và tối ưu hóa tài nguyên nước.</p>
+            <p class="text-slate-500 mb-8">Nền tảng quản lý rủi ro môi trường, tối ưu hóa tài nguyên và đào tạo nhân sự.</p>
             
-            <div class="flex flex-col sm:flex-row gap-4 mb-8">
+            <!-- Khu vực các nút công cụ -->
+            <div class="flex flex-col sm:flex-row flex-wrap gap-4 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                
                 <!-- Nút gọi dữ liệu JSON -->
-                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-arrows-clockwise"></i> Đồng bộ Dữ liệu Mới nhất
+                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Đồng bộ Dữ liệu
                 </button>
 
-                <!-- Nút Tải Tài liệu PDF -->
-                <a href="https://thetu191993-code.github.io/daotao/EHS-2022.04 GENERAL REGULATION.pdf" target="_blank" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-file-pdf"></i> Tải Tài liệu Đào tạo EHS
-                </a>
-            </div>
+                <div class="hidden sm:block w-px bg-slate-300 mx-2"></div> <!-- Đường kẻ chia -->
 
-            <!-- Khu vực lỗi (nếu có) -->
-            <div id="errorMessage" class="hidden bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100 flex items-start gap-2">
-                <i class="ph-fill ph-warning-circle text-xl"></i>
-                <div>
-                    <p class="font-semibold">Không thể tải dữ liệu!</p>
-                    <p class="text-sm mt-1">Vui lòng kiểm tra lại file data_ehs.json trên GitHub đã đúng định dạng chưa.</p>
-                </div>
+                <!-- Nút Tải Tài liệu -->
+                <a href="https://thetu191993-code.github.io/daotao/EHS-2022.04 GENERAL REGULATION.pdf" target="_blank" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
+                    <i class="ph-bold ph-file-pdf"></i> Tài liệu Quy định chung EHS
+                </a>
+
+                <!-- Nút Làm Bài Kiểm Tra MỚI THÊM -->
+                <a href="https://thetu191993-code.github.io/daotao/quiz.html" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
+                    <i class="ph-bold ph-pencil-simple"></i> Làm Bài Kiểm Tra
+                </a>
+
             </div>
 
             <!-- Bảng hiển thị dữ liệu -->
@@ -50,71 +51,51 @@
                         </tr>
                     </thead>
                     <tbody id="dataBody" class="text-sm">
-                        <!-- Dữ liệu sẽ được JS chèn vào đây -->
                     </tbody>
                 </table>
             </div>
             
             <div id="loadingStatus" class="text-blue-600 font-medium flex items-center gap-2 hidden">
-                <i class="ph-bold ph-spinner animate-spin"></i> Đang tải dữ liệu từ GitHub...
+                <i class="ph-bold ph-spinner animate-spin"></i> Đang tải dữ liệu...
             </div>
         </div>
     </div>
 
     <script>
-        // Đường link API tĩnh trỏ trực tiếp đến file JSON trên repo của bạn
         const GITHUB_DATA_URL = 'https://thetu191993-code.github.io/daotao/data_ehs.json';
 
         function loadDataFromGitHub() {
             const tableContainer = document.getElementById('dataTableContainer');
             const tbody = document.getElementById('dataBody');
             const status = document.getElementById('loadingStatus');
-            const errorBox = document.getElementById('errorMessage');
             
-            // Hiển thị trạng thái đang tải, ẩn lỗi và bảng cũ
             status.classList.remove('hidden');
-            errorBox.classList.add('hidden');
             tableContainer.classList.add('hidden');
             tbody.innerHTML = ''; 
 
-            // Gọi dữ liệu thực tế từ GitHub
-            fetch(GITHUB_DATA_URL, { cache: "no-store" }) // cache: "no-store" giúp lấy dữ liệu mới nhất, bỏ qua cache trình duyệt
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
+            fetch(GITHUB_DATA_URL, { cache: "no-store" })
+                .then(response => response.json())
                 .then(data => {
-                    // Render dữ liệu ra bảng
                     data.forEach(row => {
                         const tr = document.createElement('tr');
                         tr.className = "border-b hover:bg-slate-50 transition-colors";
-                        
-                        // Kiểm tra nếu dữ liệu bị thiếu thì để trống
-                        const date = row.date || 'N/A';
-                        const flow = row.flow || '0';
-                        const cod = row.cod || '0';
-                        const fluoride = row.fluoride || '0';
-
                         tr.innerHTML = `
-                            <td class="p-4 font-medium text-slate-700">${date}</td>
-                            <td class="p-4 text-blue-600 font-semibold">${flow}</td>
-                            <td class="p-4">${cod}</td>
-                            <td class="p-4">${fluoride}</td>
+                            <td class="p-4 font-medium text-slate-700">${row.date || 'N/A'}</td>
+                            <td class="p-4 text-blue-600 font-semibold">${row.flow || '0'}</td>
+                            <td class="p-4">${row.cod || '0'}</td>
+                            <td class="p-4">${row.fluoride || '0'}</td>
                         `;
                         tbody.appendChild(tr);
                     });
-
-                    // Ẩn thông báo tải, hiện bảng
                     status.classList.add('hidden');
                     tableContainer.classList.remove('hidden');
                 })
                 .catch(error => {
-                    console.error('Error fetching data:', error);
+                    console.error('Lỗi tải dữ liệu:', error);
                     status.classList.add('hidden');
-                    errorBox.classList.remove('hidden');
+                    alert("Chưa tìm thấy file data_ehs.json hoặc dữ liệu bị lỗi!");
                 });
         }
     </script>
 </body>
+</html>
