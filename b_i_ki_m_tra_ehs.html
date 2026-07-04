@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài Kiểm Tra Đào Tạo EHS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
+
+    <div class="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200" id="quiz-container">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8 border-b pb-4">
+            <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                <i class="ph-fill ph-clipboard-text text-3xl mr-2"></i>
+                Kiểm tra kiến thức EHS
+            </h2>
+            <div class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-semibold text-sm" id="progress">
+                Câu 1 / 3
+            </div>
+        </div>
+
+        <!-- Question Section -->
+        <div id="question-screen">
+            <h3 class="text-xl font-medium mb-6 text-slate-700" id="question-text">Đang tải câu hỏi...</h3>
+            
+            <div class="flex flex-col gap-3" id="options-container">
+                <!-- Các nút đáp án sẽ được tạo tự động bằng JavaScript -->
+            </div>
+        </div>
+
+        <!-- Result Section (Ẩn ban đầu) -->
+        <div id="result-screen" class="hidden text-center py-8">
+            <i class="ph-fill ph-check-circle text-6xl text-emerald-500 mb-4"></i>
+            <h3 class="text-2xl font-bold mb-2">Hoàn thành bài kiểm tra!</h3>
+            <p class="text-lg text-slate-600 mb-6">Điểm của bạn: <span id="score" class="font-bold text-blue-600 text-2xl">0</span> / 3</p>
+            
+            <button onclick="restartQuiz()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                Làm lại bài kiểm tra
+            </button>
+            <a href="index.html" class="ml-4 text-blue-600 font-semibold hover:underline">Quay về trang chủ</a>
+        </div>
+
+    </div>
+
+    <script>
+        // 1. DỮ LIỆU CÂU HỎI (Bạn có thể tự thêm/sửa câu hỏi ở đây)
+        const quizData = [
+            {
+                question: "Theo quy trình EHS, khi phát hiện hóa chất rò rỉ, bước đầu tiên cần làm là gì?",
+                options: [
+                    "A. Lấy chổi quét dọn ngay lập tức",
+                    "B. Báo cáo ngay cho người phụ trách và cách ly khu vực",
+                    "C. Bỏ đi coi như không thấy",
+                    "D. Đổ nước vào để pha loãng"
+                ],
+                correctAnswer: 1 // Đáp án B (vị trí số 1 trong mảng, bắt đầu từ 0)
+            },
+            {
+                question: "Chỉ số COD trong nước thải đầu ra được hiểu là gì?",
+                options: [
+                    "A. Nhu cầu oxy hóa học",
+                    "B. Nhu cầu oxy sinh học",
+                    "C. Tổng chất rắn lơ lửng",
+                    "D. Độ ph"
+                ],
+                correctAnswer: 0 // Đáp án A
+            },
+            {
+                question: "Nút bấm nào trên Dashboard dùng để cập nhật dữ liệu mới nhất?",
+                options: [
+                    "A. Tải Tài liệu",
+                    "B. Quy trình sự cố",
+                    "C. Đồng bộ Dữ liệu",
+                    "D. Sổ tay vận hành"
+                ],
+                correctAnswer: 2 // Đáp án C
+            }
+        ];
+
+        // Các biến trạng thái
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // Các phần tử DOM
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressText = document.getElementById('progress');
+        const questionScreen = document.getElementById('question-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const scoreDisplay = document.getElementById('score');
+
+        // Khởi tạo bài kiểm tra
+        function loadQuestion() {
+            const currentData = quizData[currentQuestionIndex];
+            questionText.innerText = currentData.question;
+            progressText.innerText = `Câu ${currentQuestionIndex + 1} / ${quizData.length}`;
+            
+            // Xóa các đáp án cũ
+            optionsContainer.innerHTML = '';
+
+            // Tạo các nút đáp án mới
+            currentData.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.className = "w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 transition font-medium text-slate-700 bg-white";
+                button.onclick = () => selectAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Xử lý khi chọn đáp án
+        function selectAnswer(selectedIndex) {
+            const currentData = quizData[currentQuestionIndex];
+            
+            // Kiểm tra đúng sai
+            if (selectedIndex === currentData.correctAnswer) {
+                score++;
+            }
+
+            // Chuyển câu tiếp theo hoặc kết thúc
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // Hiển thị kết quả
+        function showResults() {
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            progressText.classList.add('hidden');
+            scoreDisplay.innerText = score;
+        }
+
+        // Làm lại bài
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            questionScreen.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
+            progressText.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        // Bắt đầu ngay khi tải trang
+        loadQuestion();
+    </script>
+</body>
+</html>
