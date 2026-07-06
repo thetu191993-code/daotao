@@ -12,7 +12,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // CONFIG CỦA ANH ĐÃ ĐƯỢC GẮN SẴN VÀO ĐÂY
+        // CONFIG CỦA ANH ĐÃ ĐƯỢC GẮN SẴN VÀO ĐÂY, CHUẨN XÁC 100%
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -35,12 +35,15 @@
     </script>
 </head>
 
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 md:p-8 font-sans text-slate-800">
 
-    <div class="max-w-2xl w-full bg-white p-8 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden" id="quiz-container">
+    <!-- KHUNG CHÍNH (Đã bỏ overflow-hidden và absolute để không bao giờ bị cắt chữ) -->
+    <div class="max-w-2xl w-full bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200" id="main-container">
         
+        <!-- ========================================== -->
         <!-- MÀN HÌNH ĐĂNG NHẬP / KHAI BÁO NHÂN SỰ -->
-        <div id="login-screen" class="absolute inset-0 bg-white z-30 flex flex-col justify-center p-8">
+        <!-- ========================================== -->
+        <div id="login-screen">
             <div class="text-center mb-8">
                 <i class="ph-fill ph-identification-card text-5xl text-blue-600 mb-4"></i>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Khai báo Thông tin</h2>
@@ -50,54 +53,67 @@
             <div class="space-y-4 max-w-sm mx-auto w-full">
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-1">Mã số Nhân viên (ID)</label>
-                    <input type="text" id="emp-id" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="VD: NV001">
+                    <input type="text" id="emp-id" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="VD: NV001">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-1">Họ và Tên</label>
-                    <input type="text" id="emp-name" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="VD: Nguyễn Văn A">
+                    <input type="text" id="emp-name" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="VD: Nguyễn Văn A">
                 </div>
-                <button onclick="startQuizWithUser()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 hover:bg-blue-700 transition">
+                <button onclick="startQuizWithUser()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg mt-6 hover:bg-blue-700 transition shadow-md hover:shadow-lg">
                     Vào Thi
                 </button>
-                <p id="login-error" class="text-red-500 text-sm mt-2 hidden text-center">Vui lòng điền đầy đủ thông tin!</p>
+                <p id="login-error" class="text-red-500 text-sm mt-2 hidden text-center bg-red-50 py-2 rounded-lg border border-red-100">Vui lòng điền đầy đủ Mã NV và Họ Tên!</p>
             </div>
         </div>
 
-        <!-- Header (Chỉ hiện khi đang thi) -->
-        <div class="flex justify-between items-center mb-8 border-b pb-4 pt-4">
+        <!-- ========================================== -->
+        <!-- MÀN HÌNH LÀM BÀI THI (Ẩn lúc đầu) -->
+        <!-- ========================================== -->
+        <div id="quiz-screen" class="hidden">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b pb-4 gap-4">
+                <div>
+                    <h2 class="text-xl md:text-2xl font-bold text-blue-700 flex items-center">
+                        <i class="ph-fill ph-clipboard-text text-3xl mr-2"></i>
+                        Kiểm tra EHS
+                    </h2>
+                    <p id="user-display" class="text-sm font-medium text-slate-500 mt-1"></p>
+                </div>
+                <div class="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full font-bold text-sm" id="progress">
+                    <!-- Javascript sẽ điền số câu vào đây -->
+                </div>
+            </div>
+
+            <!-- Câu hỏi & Đáp án -->
             <div>
-                <h2 class="text-xl md:text-2xl font-bold text-blue-700 flex items-center">
-                    <i class="ph-fill ph-clipboard-text text-3xl mr-2"></i>
-                    Kiểm tra EHS
-                </h2>
-                <p id="user-display" class="text-sm font-medium text-slate-500 mt-1"></p>
-            </div>
-            <div class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full font-semibold text-sm" id="progress">
-                <!-- Sẽ được JS điền vào -->
+                <h3 class="text-xl font-medium mb-6 text-slate-700 leading-relaxed" id="question-text">Đang tải câu hỏi...</h3>
+                <div class="flex flex-col gap-3" id="options-container"></div>
             </div>
         </div>
 
-        <!-- Question Section -->
-        <div id="question-screen">
-            <h3 class="text-xl font-medium mb-6 text-slate-700" id="question-text">Đang tải câu hỏi...</h3>
-            <div class="flex flex-col gap-3" id="options-container"></div>
-        </div>
-
-        <!-- Result Section -->
+        <!-- ========================================== -->
+        <!-- MÀN HÌNH KẾT QUẢ (Ẩn lúc đầu) -->
+        <!-- ========================================== -->
         <div id="result-screen" class="hidden text-center py-8">
             <i class="ph-fill ph-check-circle text-6xl text-emerald-500 mb-4"></i>
-            <h3 class="text-2xl font-bold mb-2">Hoàn thành bài kiểm tra!</h3>
-            <p class="text-lg text-slate-600 mb-6">Điểm của bạn: <span id="score" class="font-bold text-blue-600 text-2xl">0</span> / <span id="total-score" class="font-bold text-xl">10</span></p>
+            <h3 class="text-2xl font-bold mb-2 text-slate-800">Hoàn thành bài kiểm tra!</h3>
+            <p class="text-lg text-slate-600 mb-8 bg-slate-50 py-3 rounded-lg border border-slate-100 inline-block px-8">
+                Điểm của bạn: <span id="score" class="font-bold text-blue-600 text-3xl mx-2">0</span> / <span id="total-score" class="font-bold text-xl text-slate-400">10</span>
+            </p>
             
-            <p id="save-status" class="text-amber-600 font-medium mb-6 text-sm"><i class="ph-bold ph-spinner animate-spin"></i> Đang lưu kết quả lên hệ thống...</p>
+            <p id="save-status" class="text-amber-600 font-medium mb-8 text-sm flex items-center justify-center gap-2">
+                <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu kết quả lên hệ thống...
+            </p>
 
-            <a href="index.html" class="bg-slate-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-slate-900 transition">Về Trang chủ</a>
+            <a href="index.html" class="bg-slate-800 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-slate-900 transition shadow-md">
+                <i class="ph-bold ph-house mr-1"></i> Về Trang chủ
+            </a>
         </div>
 
     </div>
 
     <script>
-        // TRẢ LẠI 10 CÂU HỎI CỦA ANH TƯ
+        // Dữ liệu 10 câu hỏi
         const quizData = [
             {
                 question: "Hai nguyên nhân chính gây tai nạn lao động, bệnh nghề nghiệp là gì?",
@@ -115,7 +131,7 @@
                 correctAnswer: 3
             },
             {
-                question: "Theo bài học thì có bao nhiêu yếu tố nghuy hiểm và bao nhiêu yếu tố có hại?",
+                question: "Theo bài học thì có bao nhiêu yếu tố nguy hiểm và bao nhiêu yếu tố có hại?",
                 options: ["A. 6 yếu tố nguy hiểm và 10 yếu tố có hại", "B. 6 yếu tố nguy hiểm và 5 yêu tố có hại", "C. 6 yếu tố nguy hiểm và 8 yếu tố có hại", "D. 6 yếu tố nguy hiểm và 7 yếu tố có hại"],
                 correctAnswer: 2
             },
@@ -125,7 +141,7 @@
                 correctAnswer: 2
             },
             {
-                question: "Bạn sẽ thực hiện vực khạc nhổ, vệ sinh và hút thuốc ở đâu",
+                question: "Bạn sẽ thực hiện việc khạc nhổ, vệ sinh và hút thuốc ở đâu?",
                 options: ["A. Bất cứ khu vực nào trong nhà xưởng", "B. Chỉ thực hiện việc vệ sinh khạc nhổ trong khu vực toilet, hút thuốc tại nhà hút thuốc"],
                 correctAnswer: 1
             },
@@ -135,8 +151,8 @@
                 correctAnswer: 3
             },
             {
-                question: "Khi gặp các vấn đề mất an toàn khu vực làm việc của bạn, bạn sẽ làm gì",
-                options: ["A. Báo cho trưởng ca/trưởng nhóm/phòng EHS", "B. Bỏ quay vì không ảnh hướng đến mình"],
+                question: "Khi gặp các vấn đề mất an toàn khu vực làm việc của bạn, bạn sẽ làm gì?",
+                options: ["A. Báo cho trưởng ca/trưởng nhóm/phòng EHS", "B. Bỏ qua vì không ảnh hướng đến mình"],
                 correctAnswer: 0
             },
             {
@@ -155,15 +171,17 @@
         let score = 0;
         let currentUser = { id: "", name: "" };
 
+        // Các thành phần HTML
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const progressText = document.getElementById('progress');
-        const questionScreen = document.getElementById('question-screen');
+        const loginScreen = document.getElementById('login-screen');
+        const quizScreen = document.getElementById('quiz-screen');
         const resultScreen = document.getElementById('result-screen');
         const scoreDisplay = document.getElementById('score');
         const totalScoreDisplay = document.getElementById('total-score');
-        const loginScreen = document.getElementById('login-screen');
 
+        // Hàm bắt đầu bài thi
         function startQuizWithUser() {
             const idInput = document.getElementById('emp-id').value.trim();
             const nameInput = document.getElementById('emp-name').value.trim();
@@ -177,14 +195,18 @@
             currentUser.name = nameInput;
             
             document.getElementById('user-display').innerText = `Nhân sự: ${currentUser.name} (${currentUser.id})`;
-            loginScreen.style.display = 'none'; // Ẩn màn hình đăng nhập đi
             
-            // Cập nhật tổng số điểm dựa trên số lượng câu hỏi
+            // Xử lý chuyển đổi màn hình (Giấu Đăng nhập, Hiện Bài thi)
+            loginScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            // Đặt tổng điểm
             totalScoreDisplay.innerText = quizData.length;
             
             loadQuestion();
         }
 
+        // Tải câu hỏi
         function loadQuestion() {
             const currentData = quizData[currentQuestionIndex];
             questionText.innerText = currentData.question;
@@ -200,8 +222,10 @@
             });
         }
 
+        // Chọn đáp án
         function selectAnswer(selectedIndex) {
             if (selectedIndex === quizData[currentQuestionIndex].correctAnswer) score++;
+            
             currentQuestionIndex++;
             if (currentQuestionIndex < quizData.length) {
                 loadQuestion();
@@ -210,17 +234,15 @@
             }
         }
 
-        // Ghi dữ liệu lên Firebase
+        // Hiện kết quả và Ghi lên Firebase
         async function showResults() {
-            questionScreen.classList.add('hidden');
+            quizScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            progressText.classList.add('hidden');
             scoreDisplay.innerText = score;
 
             const statusText = document.getElementById('save-status');
 
             try {
-                // Kiểm tra xem Firebase đã kết nối chưa
                 if (!window.db) throw new Error("Chưa kết nối Firebase");
 
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
@@ -231,12 +253,10 @@
                     thoi_gian_nop: window.serverTimestamp()
                 });
                 
-                statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600"></i> Kết quả đã được lưu trữ thành công!';
-                statusText.classList.replace('text-amber-600', 'text-emerald-600');
+                statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600 text-xl"></i> <span class="text-emerald-700">Lưu kết quả thành công!</span>';
             } catch (error) {
-                console.error("Lỗi khi lưu kết quả: ", error);
-                statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600"></i> Có lỗi xảy ra khi lưu kết quả.';
-                statusText.classList.replace('text-amber-600', 'text-red-600');
+                console.error("Lỗi khi lưu: ", error);
+                statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600 text-xl"></i> <span class="text-red-700">Lỗi lưu kết quả. Vui lòng thử lại.</span>';
             }
         }
     </script>
