@@ -12,7 +12,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // CONFIG CỦA ANH ĐÃ ĐƯỢC GẮN SẴN VÀO ĐÂY, ANH KHÔNG CẦN SỬA GÌ NỮA!
+        // CONFIG CỦA ANH ĐÃ ĐƯỢC GẮN SẴN VÀO ĐÂY
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -97,22 +97,57 @@
     </div>
 
     <script>
-        // Dữ liệu câu hỏi của anh Tư
+        // TRẢ LẠI 10 CÂU HỎI CỦA ANH TƯ
         const quizData = [
             {
-                question: "Theo quy trình EHS, khi phát hiện hóa chất rò rỉ, bước đầu tiên cần làm là gì?",
-                options: ["A. Lấy chổi quét dọn ngay lập tức", "B. Báo cáo ngay cho người phụ trách và cách ly khu vực", "C. Bỏ đi coi như không thấy", "D. Đổ nước vào để pha loãng"],
+                question: "Hai nguyên nhân chính gây tai nạn lao động, bệnh nghề nghiệp là gì?",
+                options: ["A. Hành vi không an toàn và Con người làm việc không an toàn", "B. Hành vi không an toàn và Môi trường làm việc không an toàn", "C. Hành vi không an toàn và thời tiết không an toàn", "D. Môi trường không an toàn và Máy móc không an toàn"],
                 correctAnswer: 1
             },
             {
-                question: "Chỉ số COD trong nước thải đầu ra được hiểu là gì?",
-                options: ["A. Nhu cầu oxy hóa học", "B. Nhu cầu oxy sinh học", "C. Tổng chất rắn lơ lửng", "D. Độ ph"],
+                question: "Theo quy định pháp luật người sử dụng lao động có bao nhiêu Quyền và Nghĩa vụ?",
+                options: ["A. 5 quyền và 4 nghĩa vụ", "B. 3 quyền và 4 nghĩa vụ", "C. 4 quyền và 7 nghĩa vụ", "D. 3 quyền và 6 nghĩa vụ"],
+                correctAnswer: 2
+            },
+            {
+                question: "Theo quy định pháp luật người lao động có bao nhiêu quyền và nghĩa vụ?",
+                options: ["A. 3 quyền và 6 nghĩa vụ", "B. 4 quyền và 3 nghĩa vụ", "C. 4 quyền và 3 nghĩa vụ", "D. 6 quyền và 3 nghĩa vụ"],
+                correctAnswer: 3
+            },
+            {
+                question: "Theo bài học thì có bao nhiêu yếu tố nghuy hiểm và bao nhiêu yếu tố có hại?",
+                options: ["A. 6 yếu tố nguy hiểm và 10 yếu tố có hại", "B. 6 yếu tố nguy hiểm và 5 yêu tố có hại", "C. 6 yếu tố nguy hiểm và 8 yếu tố có hại", "D. 6 yếu tố nguy hiểm và 7 yếu tố có hại"],
+                correctAnswer: 2
+            },
+             {
+                question: "Hành vi nào sao đây bị cấm khi vào trong khu vực sản xuất",
+                options: ["A. Mang đầy đủ bảo hộ lao động theo quy định", "B. Đi đúng phần đường người đi bộ", "C. Đeo nữ trang, để móng tay dài, sử dụng điện thoại và mang nước ngọt, thức ăn vào nhà xưởng", "D. Tuân thủ quy định về an toàn nơi làm việc"],
+                correctAnswer: 2
+            },
+            {
+                question: "Bạn sẽ thực hiện vực khạc nhổ, vệ sinh và hút thuốc ở đâu",
+                options: ["A. Bất cứ khu vực nào trong nhà xưởng", "B. Chỉ thực hiện việc vệ sinh khạc nhổ trong khu vực toilet, hút thuốc tại nhà hút thuốc"],
+                correctAnswer: 1
+            },
+             {
+                question: "Trang phục bảo hộ lao động cơ bản công ty đang áp dụng",
+                options: ["A. Chỉ có áo/quần đồng phục và nút tai", "B. Chỉ thực hiện mang áo quần đồng phục và giày bảo hộ", "C. Mang găng tay, nút tai và áo/quần đồng phục", "D. Mang đầy đủ trang phục bảo hộ như đồng phục, giày bảo hộ, nón trum tóc, nút tai chống ồn và các trang phục yêu cầu khác được quy định"],
+                correctAnswer: 3
+            },
+            {
+                question: "Khi gặp các vấn đề mất an toàn khu vực làm việc của bạn, bạn sẽ làm gì",
+                options: ["A. Báo cho trưởng ca/trưởng nhóm/phòng EHS", "B. Bỏ quay vì không ảnh hướng đến mình"],
                 correctAnswer: 0
             },
             {
-                question: "Nút bấm nào trên Dashboard dùng để cập nhật dữ liệu mới nhất?",
-                options: ["A. Tải Tài liệu", "B. Quy trình sự cố", "C. Đồng bộ Dữ liệu", "D. Sổ tay vận hành"],
+                question: "Công ty quy định mấy bước thực hiện khi có cháy và các bước như thế nào?",
+                options: ["A. 3 Bước, Báo cháy - Thoát nạn - Tập kết", "B. 4 Bước, Báo cháy - Cúp điện - Thoát nạn - Tập kết", "C. 5 Bước, Báo cháy - Cúp điện - Chữa cháy - Thoát nạn - Tập kết", "D. 4 Bước, Báo cháy - Cúp điện - Chữa cháy - Thoát nạn"],
                 correctAnswer: 2
+            },
+            {
+                question: "Kỹ năng nào là BẮT BUỘC khi di chuyển trong khu vực xưởng có nhiều khói độc?",
+                options: ["A. Đứng thẳng người để dễ quan sát biển báo trên cao", "B. Dùng cả hai tay che mắt để không bị cay", "C. Nhắm mắt và chạy theo trí nhớ", "D. Cúi khom hoặc bò thấp, một tay bám men theo tường/kệ cố định, một tay che kín mũi miệng"],
+                correctAnswer: 3
             }
         ];
 
@@ -200,7 +235,7 @@
                 statusText.classList.replace('text-amber-600', 'text-emerald-600');
             } catch (error) {
                 console.error("Lỗi khi lưu kết quả: ", error);
-                statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600"></i> Có lỗi xảy ra khi lưu kết quả (Lưu ý: Cần dán mã Config Firebase).';
+                statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600"></i> Có lỗi xảy ra khi lưu kết quả.';
                 statusText.classList.replace('text-amber-600', 'text-red-600');
             }
         }
