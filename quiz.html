@@ -43,29 +43,21 @@
         <!-- ========================================== -->
         <!-- MÀN HÌNH ĐĂNG NHẬP / KHAI BÁO NHÂN SỰ -->
         <!-- ========================================== -->
-        <div id="login-screen">
-            <div class="text-center mb-8">
+        <div id="login-screen" class="bg-white z-20 flex flex-col justify-center py-4">
+            <div class="text-center mb-6">
                 <i class="ph-fill ph-identification-card text-5xl text-blue-600 mb-4"></i>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Khai báo Thông tin</h2>
                 <p class="text-slate-500">Vui lòng nhập thông tin để hệ thống ghi nhận kết quả đào tạo.</p>
             </div>
             
-            <div class="space-y-4 max-w-sm mx-auto w-full">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Mã số Nhân viên (ID)</label>
-                    <input type="text" id="emp-id" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="VD: NV001">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Họ và Tên</label>
-                    <input type="text" id="emp-name" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="VD: Nguyễn Văn A">
-                </div>
-                <button onclick="startQuizWithUser()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg mt-6 hover:bg-blue-700 transition shadow-md hover:shadow-lg">
-                    Vào Thi
-                </button>
-                <p id="login-error" class="text-red-500 text-sm mt-2 hidden text-center bg-red-50 py-2 rounded-lg border border-red-100">Vui lòng điền đầy đủ Mã NV và Họ Tên!</p>
-            </div>
-        </div>
+            <!-- THÔNG BÁO THỜI HẠN -->
+          let score = 0;
+        let currentUser = { id: "", name: "" };
 
+        // CÀI ĐẶT THỜI HẠN (Năm - Tháng - Ngày)
+        const DEADLINE_DATE = new Date("2026-07-31T23:59:59"); 
+
+        const questionText = document.getElementById('question-text');
         <!-- ========================================== -->
         <!-- MÀN HÌNH LÀM BÀI THI (Ẩn lúc đầu) -->
         <!-- ========================================== -->
@@ -235,12 +227,34 @@
         }
 
         // Hiện kết quả và Ghi lên Firebase
+       // Ghi dữ liệu lên Firebase
         async function showResults() {
-            quizScreen.classList.add('hidden');
+            questionScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
+            progressText.classList.add('hidden');
             scoreDisplay.innerText = score;
 
             const statusText = document.getElementById('save-status');
+
+            // ĐÁNH GIÁ TRẠNG THÁI NỘP BÀI
+            const now = new Date();
+            const submitStatus = now <= DEADLINE_DATE ? "Đúng hạn" : "Trễ hạn";
+
+            try {
+                // Kiểm tra xem Firebase đã kết nối chưa
+                if (!window.db) throw new Error("Chưa kết nối Firebase");
+
+                await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
+                    nhan_vien_id: currentUser.id,
+                    ho_ten: currentUser.name,
+                    diem_so: score,
+                    tong_cau: quizData.length,
+                    thoi_gian_nop: window.serverTimestamp(),
+                    han_chot: "31/07/2026",
+                    trang_thai_nop: submitStatus
+                });
+                
+                statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600"></i> Kết quả đã được lưu trữ thành công!';
 
             try {
                 if (!window.db) throw new Error("Chưa kết nối Firebase");
