@@ -35,8 +35,10 @@
     <i class="ph-bold ph-pencil-simple"></i> Làm Bài Kiểm Tra
                 </a>
         </div>
-    </div>
-
+                <!-- Nút Mở Kho Báo Cáo -->
+    <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
+                <i class="ph-bold ph-folder-open"></i> Kho Báo Cáo EHS
+        </button>
     <!-- Modal Danh sách Báo cáo (Bảng hiện ra khi bấm nút) -->
     <div id="report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
