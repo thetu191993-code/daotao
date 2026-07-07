@@ -12,7 +12,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // CONFIG CỦA ANH ĐÃ ĐƯỢC GẮN SẴN VÀO ĐÂY, CHUẨN XÁC 100%
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -23,11 +22,9 @@
             measurementId: "G-74ETHWTJCW"
         };
 
-        // Khởi tạo Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Đưa biến db ra ngoài toàn cục
         window.db = db;
         window.collection = collection;
         window.addDoc = addDoc;
@@ -37,12 +34,9 @@
 
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 md:p-8 font-sans text-slate-800">
 
-    <!-- KHUNG CHÍNH -->
     <div class="max-w-2xl w-full bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200" id="main-container">
         
-        <!-- ========================================== -->
-        <!-- MÀN HÌNH ĐĂNG NHẬP / KHAI BÁO NHÂN SỰ -->
-        <!-- ========================================== -->
+        <!-- MÀN HÌNH ĐĂNG NHẬP -->
         <div id="login-screen" class="bg-white flex flex-col justify-center py-4">
             <div class="text-center mb-6">
                 <i class="ph-fill ph-identification-card text-5xl text-blue-600 mb-4"></i>
@@ -50,7 +44,6 @@
                 <p class="text-slate-500">Vui lòng nhập thông tin để hệ thống ghi nhận kết quả đào tạo.</p>
             </div>
             
-            <!-- THÔNG BÁO THỜI HẠN -->
             <div class="max-w-sm mx-auto w-full bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg text-center font-bold text-sm mb-6 flex items-center justify-center gap-2">
                 <i class="ph-fill ph-warning-circle text-lg"></i> Hạn chót hoàn thành: <span id="deadline-text">31/07/2026</span>
             </div>
@@ -71,11 +64,8 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- MÀN HÌNH LÀM BÀI THI (Ẩn lúc đầu) -->
-        <!-- ========================================== -->
+        <!-- MÀN HÌNH LÀM BÀI THI -->
         <div id="quiz-screen" class="hidden">
-            <!-- Header -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b pb-4 gap-4">
                 <div>
                     <h2 class="text-xl md:text-2xl font-bold text-blue-700 flex items-center">
@@ -84,32 +74,24 @@
                     </h2>
                     <p id="user-display" class="text-sm font-medium text-slate-500 mt-1"></p>
                 </div>
-                <div class="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full font-bold text-sm" id="progress">
-                    <!-- Javascript sẽ điền số câu vào đây -->
-                </div>
+                <div class="bg-blue-100 text-blue-800 px-4 py-1.5 rounded-full font-bold text-sm" id="progress"></div>
             </div>
-
-            <!-- Câu hỏi & Đáp án -->
             <div>
                 <h3 class="text-xl font-medium mb-6 text-slate-700 leading-relaxed" id="question-text">Đang tải câu hỏi...</h3>
                 <div class="flex flex-col gap-3" id="options-container"></div>
             </div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- MÀN HÌNH KẾT QUẢ (Ẩn lúc đầu) -->
-        <!-- ========================================== -->
+        <!-- MÀN HÌNH KẾT QUẢ -->
         <div id="result-screen" class="hidden text-center py-8">
             <i class="ph-fill ph-check-circle text-6xl text-emerald-500 mb-4"></i>
             <h3 class="text-2xl font-bold mb-2 text-slate-800">Hoàn thành bài kiểm tra!</h3>
             <p class="text-lg text-slate-600 mb-8 bg-slate-50 py-3 rounded-lg border border-slate-100 inline-block px-8">
                 Điểm của bạn: <span id="score" class="font-bold text-blue-600 text-3xl mx-2">0</span> / <span id="total-score" class="font-bold text-xl text-slate-400">10</span>
             </p>
-            
             <p id="save-status" class="text-amber-600 font-medium mb-8 text-sm flex items-center justify-center gap-2">
                 <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu kết quả lên hệ thống...
             </p>
-
             <a href="index.html" class="bg-slate-800 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-slate-900 transition shadow-md">
                 <i class="ph-bold ph-house mr-1"></i> Về Trang chủ
             </a>
@@ -117,11 +99,7 @@
 
     </div>
 
-    <!-- ========================================== -->
-    <!-- PHẦN XỬ LÝ LOGIC JAVASCRIPT -->
-    <!-- ========================================== -->
     <script>
-        // Dữ liệu 10 câu hỏi
         const quizData = [
             {
                 question: "Hai nguyên nhân chính gây tai nạn lao động, bệnh nghề nghiệp là gì?",
@@ -178,11 +156,10 @@
         let currentQuestionIndex = 0;
         let score = 0;
         let currentUser = { id: "", name: "" };
+        let userAnswers = []; // <-- Mảng MỚI: Lưu lịch sử làm bài
 
-        // CÀI ĐẶT THỜI HẠN (Năm - Tháng - Ngày)
         const DEADLINE_DATE = new Date("2026-07-31T23:59:59"); 
 
-        // Các thành phần HTML
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
         const progressText = document.getElementById('progress');
@@ -192,7 +169,6 @@
         const scoreDisplay = document.getElementById('score');
         const totalScoreDisplay = document.getElementById('total-score');
 
-        // Hàm bắt đầu bài thi
         function startQuizWithUser() {
             const idInput = document.getElementById('emp-id').value.trim();
             const nameInput = document.getElementById('emp-name').value.trim();
@@ -201,23 +177,17 @@
                 document.getElementById('login-error').classList.remove('hidden');
                 return;
             }
-
             currentUser.id = idInput;
             currentUser.name = nameInput;
-            
             document.getElementById('user-display').innerText = `Nhân sự: ${currentUser.name} (${currentUser.id})`;
             
-            // Xử lý chuyển đổi màn hình (Giấu Đăng nhập, Hiện Bài thi)
             loginScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
-            
-            // Đặt tổng điểm tự động đếm theo số lượng câu hỏi
             totalScoreDisplay.innerText = quizData.length;
             
             loadQuestion();
         }
 
-        // Tải câu hỏi
         function loadQuestion() {
             const currentData = quizData[currentQuestionIndex];
             questionText.innerText = currentData.question;
@@ -228,16 +198,26 @@
                 const button = document.createElement('button');
                 button.innerText = option;
                 button.className = "w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-blue-500 hover:bg-blue-50 transition font-medium text-slate-700 bg-white";
-                button.onclick = () => selectAnswer(index);
+                button.onclick = () => selectAnswer(index, option); // Gửi thêm nội dung đáp án đã chọn
                 optionsContainer.appendChild(button);
             });
         }
 
-        // Chọn đáp án
-        function selectAnswer(selectedIndex) {
-            if (selectedIndex === quizData[currentQuestionIndex].correctAnswer) {
+        // --- CẬP NHẬT LOGIC CHỌN ĐÁP ÁN ---
+        function selectAnswer(selectedIndex, selectedText) {
+            const currentData = quizData[currentQuestionIndex];
+            const isCorrect = (selectedIndex === currentData.correctAnswer);
+            
+            if (isCorrect) {
                 score++;
             }
+            
+            // Ghi nhận chi tiết vào mảng
+            userAnswers.push({
+                cau_hoi: currentData.question,
+                dap_an_da_chon: selectedText,
+                ket_qua: isCorrect ? "Đúng" : "Sai"
+            });
             
             currentQuestionIndex++;
             if (currentQuestionIndex < quizData.length) {
@@ -247,26 +227,20 @@
             }
         }
 
-        // Hiện kết quả và Ghi lên Firebase
+        // --- CẬP NHẬT GỬI LÊN FIREBASE ---
         async function showResults() {
-            // Chuyển màn hình
             quizScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            
-            // Hiện điểm số
             scoreDisplay.innerText = score;
-
             const statusText = document.getElementById('save-status');
 
-            // ĐÁNH GIÁ TRẠNG THÁI NỘP BÀI (Đúng hạn / Trễ hạn)
             const now = new Date();
             const submitStatus = now <= DEADLINE_DATE ? "Đúng hạn" : "Trễ hạn";
 
             try {
-                // Kiểm tra xem Firebase đã kết nối chưa
                 if (!window.db) throw new Error("Chưa kết nối Firebase");
 
-                // Lưu dữ liệu lên Firestore
+                // Đẩy thông tin tổng hợp + Chi tiết các câu lên Firestore
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
                     nhan_vien_id: currentUser.id,
                     ho_ten: currentUser.name,
@@ -274,14 +248,13 @@
                     tong_cau: quizData.length,
                     thoi_gian_nop: window.serverTimestamp(),
                     han_chot: "31/07/2026",
-                    trang_thai_nop: submitStatus
+                    trang_thai_nop: submitStatus,
+                    chi_tiet_bai_lam: userAnswers // <-- Đẩy danh sách chi tiết lên đây
                 });
                 
-                // Báo lưu thành công
                 statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600 text-xl"></i> <span class="text-emerald-700">Lưu kết quả thành công!</span>';
             } catch (error) {
                 console.error("Lỗi khi lưu kết quả: ", error);
-                // Báo lỗi nếu không lưu được
                 statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600 text-xl"></i> <span class="text-red-700">Lỗi lưu kết quả. Vui lòng thử lại.</span>';
             }
         }
