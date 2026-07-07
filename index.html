@@ -11,35 +11,74 @@
 
     <div class="max-w-5xl mx-auto">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+            
             <h2 class="text-2xl font-bold text-blue-700 mb-2 flex items-center">
                 <i class="ph-fill ph-database text-3xl mr-2"></i>
                Đào tạo An toàn - Sức khỏe nghề nghiệp - Môi trường
             </h2>
             <p class="text-slate-500 mb-8">Nền tảng quản lý rủi ro môi trường, tối ưu hóa tài nguyên và đào tạo nhân sự.</p>
             
-            <!-- Khu vực các nút công cụ -->
+            <!-- KHU VỰC CÁC NÚT CÔNG CỤ -->
             <div class="flex flex-col sm:flex-row flex-wrap gap-4 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
                 
-               <!-- ... existing code ... -->
-                <!-- Nút Tải Tài liệu Quy định -->
+                <!-- Nút Đồng bộ dữ liệu -->
+                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Đồng bộ Dữ liệu
+                </button>
+
+                <div class="hidden sm:block w-px bg-slate-300 mx-2"></div> <!-- Đường kẻ chia -->
+
+                <!-- Nút Nội Quy An Toàn Chung -->
                 <a href="EHS-2022.04 GENERAL REGULATION.pdf" target="_blank" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
                     <i class="ph-bold ph-file-pdf"></i> Nội Quy An Toàn Chung
                 </a>
 
-                <!-- Nút Link tới Google Drive/OneDrive -->
+                <!-- Nút Bài giảng Đào tạo -->
                 <a href="https://apicomvnasia.sharepoint.com/:f:/s/APISouth/IgBIcFVEspB6R7u_ma9-2DhiAU4rUKW8OZkbKHIWukCn-gk?e=wJiXbG" target="_blank" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
                     <i class="ph-bold ph-cloud-arrow-down"></i> Bài giảng Đào tạo
                 </a>
-               <!-- Nút Làm Bài Kiểm Tra MỚI THÊM -->
-               <a href="https://thetu191993-code.github.io/daotao/quiz.html" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
+               
+               <!-- Nút Làm Bài Kiểm Tra -->
+               <a href="quiz.html" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
                     <i class="ph-bold ph-pencil-simple"></i> Làm Bài Kiểm Tra
                 </a>
-        </div>
-                <!-- Nút Mở Kho Báo Cáo -->
+
+                <!-- Nút Mở Kho Báo Cáo EHS -->
                 <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                <i class="ph-bold ph-folder-open"></i> Kho Báo Cáo EHS
-        </button>
-    <!-- Modal Danh sách Báo cáo (Bảng hiện ra khi bấm nút) -->
+                    <i class="ph-bold ph-folder-open"></i> Kho Báo Cáo EHS
+                </button>
+
+            </div>
+            <!-- KẾT THÚC KHU VỰC NÚT CÔNG CỤ -->
+
+            <!-- Bảng hiển thị dữ liệu -->
+            <div class="overflow-x-auto rounded-lg border border-slate-200 hidden" id="dataTableContainer">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 text-sm uppercase">
+                            <th class="p-4 border-b font-semibold">Ngày</th>
+                            <th class="p-4 border-b font-semibold">Lưu lượng (m3)</th>
+                            <th class="p-4 border-b font-semibold">COD Đầu ra (mg/L)</th>
+                            <th class="p-4 border-b font-semibold">Fluoride Đầu ra (mg/L)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataBody" class="text-sm">
+                        <!-- Dữ liệu sẽ được JS chèn vào đây -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Trạng thái tải dữ liệu -->
+            <div id="loadingStatus" class="text-blue-600 font-medium flex items-center gap-2 hidden">
+                <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang tải dữ liệu...
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: DANH SÁCH BÁO CÁO EHS (Ẩn lúc đầu) -->
+    <!-- ========================================== -->
     <div id="report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
             <div class="flex justify-between items-center p-5 border-b border-slate-100">
@@ -51,7 +90,6 @@
                 </button>
             </div>
             <div class="p-5 flex flex-col gap-3">
-                <!-- Chú ý: Đã bỏ chữ bao_cao/ vì file tải thẳng lên thư mục gốc -->
                 <a href="Thang_01.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group">
                     <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 1</span>
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
@@ -80,15 +118,7 @@
         </div>
     </div>
 
-    <script>
-<!-- ... existing code ... -->
-```
-        <div id="loadingStatus" class="text-blue-600 font-medium flex items-center gap-2 hidden">
-                <i class="ph-bold ph-spinner animate-spin"></i> Đang tải dữ liệu...
-            </div>
-        </div>
-    </div>
-
+    <!-- SCRIPT CHỨC NĂNG CỦA TRANG -->
     <script>
         const GITHUB_DATA_URL = 'https://thetu191993-code.github.io/daotao/data_ehs.json';
 
@@ -102,7 +132,10 @@
             tbody.innerHTML = ''; 
 
             fetch(GITHUB_DATA_URL, { cache: "no-store" })
-                .then(response => response.json())
+                .then(response => {
+                    if(!response.ok) throw new Error("Network error");
+                    return response.json();
+                })
                 .then(data => {
                     data.forEach(row => {
                         const tr = document.createElement('tr');
