@@ -37,13 +37,13 @@
 
 <body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 md:p-8 font-sans text-slate-800">
 
-    <!-- KHUNG CHÍNH (Đã bỏ overflow-hidden và absolute để không bao giờ bị cắt chữ) -->
+    <!-- KHUNG CHÍNH -->
     <div class="max-w-2xl w-full bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200" id="main-container">
         
         <!-- ========================================== -->
         <!-- MÀN HÌNH ĐĂNG NHẬP / KHAI BÁO NHÂN SỰ -->
         <!-- ========================================== -->
-        <div id="login-screen" class="bg-white z-20 flex flex-col justify-center py-4">
+        <div id="login-screen" class="bg-white flex flex-col justify-center py-4">
             <div class="text-center mb-6">
                 <i class="ph-fill ph-identification-card text-5xl text-blue-600 mb-4"></i>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Khai báo Thông tin</h2>
@@ -51,13 +51,26 @@
             </div>
             
             <!-- THÔNG BÁO THỜI HẠN -->
-          let score = 0;
-        let currentUser = { id: "", name: "" };
+            <div class="max-w-sm mx-auto w-full bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg text-center font-bold text-sm mb-6 flex items-center justify-center gap-2">
+                <i class="ph-fill ph-warning-circle text-lg"></i> Hạn chót hoàn thành: <span id="deadline-text">31/07/2026</span>
+            </div>
 
-        // CÀI ĐẶT THỜI HẠN (Năm - Tháng - Ngày)
-        const DEADLINE_DATE = new Date("2026-07-31T23:59:59"); 
+            <div class="space-y-4 max-w-sm mx-auto w-full">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Mã số Nhân viên (ID)</label>
+                    <input type="text" id="emp-id" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="VD: NV001">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Họ và Tên</label>
+                    <input type="text" id="emp-name" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="VD: Nguyễn Văn A">
+                </div>
+                <button onclick="startQuizWithUser()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 hover:bg-blue-700 transition">
+                    Vào Thi
+                </button>
+                <p id="login-error" class="text-red-500 text-sm mt-2 hidden text-center">Vui lòng điền đầy đủ thông tin!</p>
+            </div>
+        </div>
 
-        const questionText = document.getElementById('question-text');
         <!-- ========================================== -->
         <!-- MÀN HÌNH LÀM BÀI THI (Ẩn lúc đầu) -->
         <!-- ========================================== -->
@@ -104,6 +117,9 @@
 
     </div>
 
+    <!-- ========================================== -->
+    <!-- PHẦN XỬ LÝ LOGIC JAVASCRIPT -->
+    <!-- ========================================== -->
     <script>
         // Dữ liệu 10 câu hỏi
         const quizData = [
@@ -163,6 +179,9 @@
         let score = 0;
         let currentUser = { id: "", name: "" };
 
+        // CÀI ĐẶT THỜI HẠN (Năm - Tháng - Ngày)
+        const DEADLINE_DATE = new Date("2026-07-31T23:59:59"); 
+
         // Các thành phần HTML
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
@@ -192,7 +211,7 @@
             loginScreen.classList.add('hidden');
             quizScreen.classList.remove('hidden');
             
-            // Đặt tổng điểm
+            // Đặt tổng điểm tự động đếm theo số lượng câu hỏi
             totalScoreDisplay.innerText = quizData.length;
             
             loadQuestion();
@@ -216,7 +235,9 @@
 
         // Chọn đáp án
         function selectAnswer(selectedIndex) {
-            if (selectedIndex === quizData[currentQuestionIndex].correctAnswer) score++;
+            if (selectedIndex === quizData[currentQuestionIndex].correctAnswer) {
+                score++;
+            }
             
             currentQuestionIndex++;
             if (currentQuestionIndex < quizData.length) {
@@ -227,16 +248,17 @@
         }
 
         // Hiện kết quả và Ghi lên Firebase
-       // Ghi dữ liệu lên Firebase
         async function showResults() {
-            questionScreen.classList.add('hidden');
+            // Chuyển màn hình
+            quizScreen.classList.add('hidden');
             resultScreen.classList.remove('hidden');
-            progressText.classList.add('hidden');
+            
+            // Hiện điểm số
             scoreDisplay.innerText = score;
 
             const statusText = document.getElementById('save-status');
 
-            // ĐÁNH GIÁ TRẠNG THÁI NỘP BÀI
+            // ĐÁNH GIÁ TRẠNG THÁI NỘP BÀI (Đúng hạn / Trễ hạn)
             const now = new Date();
             const submitStatus = now <= DEADLINE_DATE ? "Đúng hạn" : "Trễ hạn";
 
@@ -244,6 +266,7 @@
                 // Kiểm tra xem Firebase đã kết nối chưa
                 if (!window.db) throw new Error("Chưa kết nối Firebase");
 
+                // Lưu dữ liệu lên Firestore
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
                     nhan_vien_id: currentUser.id,
                     ho_ten: currentUser.name,
@@ -254,22 +277,11 @@
                     trang_thai_nop: submitStatus
                 });
                 
-                statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600"></i> Kết quả đã được lưu trữ thành công!';
-
-            try {
-                if (!window.db) throw new Error("Chưa kết nối Firebase");
-
-                await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
-                    nhan_vien_id: currentUser.id,
-                    ho_ten: currentUser.name,
-                    diem_so: score,
-                    tong_cau: quizData.length,
-                    thoi_gian_nop: window.serverTimestamp()
-                });
-                
+                // Báo lưu thành công
                 statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600 text-xl"></i> <span class="text-emerald-700">Lưu kết quả thành công!</span>';
             } catch (error) {
-                console.error("Lỗi khi lưu: ", error);
+                console.error("Lỗi khi lưu kết quả: ", error);
+                // Báo lỗi nếu không lưu được
                 statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600 text-xl"></i> <span class="text-red-700">Lỗi lưu kết quả. Vui lòng thử lại.</span>';
             }
         }
