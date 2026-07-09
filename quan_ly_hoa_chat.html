@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHS - Quản Lý Hóa Chất</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans text-slate-800">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Nút Quay lại -->
+        <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium mb-4 transition">
+            <i class="ph-bold ph-arrow-left"></i> Quay lại Trang chủ
+        </a>
+
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b pb-4 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-violet-700 flex items-center">
+                        <i class="ph-fill ph-flask text-3xl mr-3"></i>
+                        Danh Mục Quản Lý Hóa Chất 2026
+                    </h2>
+                    <p class="text-slate-500 mt-1">Tra cứu nhanh thông tin an toàn, mã CAS và khu vực lưu trữ.</p>
+                </div>
+                
+                <!-- Thanh tìm kiếm -->
+                <div class="relative w-full md:w-72">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <i class="ph-bold ph-magnifying-glass text-slate-400"></i>
+                    </div>
+                    <input type="text" id="searchInput" onkeyup="searchTable()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block w-full pl-10 p-2.5 outline-none transition" placeholder="Tìm tên, mã CAS, khu vực...">
+                </div>
+            </div>
+
+            <!-- Trạng thái Loading -->
+            <div id="loadingStatus" class="text-violet-600 font-medium flex items-center justify-center py-10 gap-2">
+                <i class="ph-bold ph-spinner animate-spin text-2xl"></i> Đang tải dữ liệu hóa chất...
+            </div>
+
+            <!-- Bảng hiển thị dữ liệu -->
+            <div class="overflow-x-auto rounded-lg border border-slate-200 hidden" id="dataTableContainer">
+                <table class="w-full text-left border-collapse min-w-[900px]" id="chemicalTable">
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-sm uppercase">
+                            <th class="p-4 font-semibold w-16 text-center">STT</th>
+                            <th class="p-4 font-semibold">Tên Hóa Chất</th>
+                            <th class="p-4 font-semibold">Mã CAS</th>
+                            <th class="p-4 font-semibold">Mục đích sử dụng</th>
+                            <th class="p-4 font-semibold">Khu vực lưu trữ</th>
+                            <th class="p-4 font-semibold text-center">SDS</th>
+                            <th class="p-4 font-semibold">Cảnh báo An toàn</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataBody" class="text-sm divide-y divide-slate-100">
+                        <!-- Dữ liệu sẽ được JS chèn vào đây -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tải dữ liệu từ file JSON
+        window.onload = function() {
+            const tableContainer = document.getElementById('dataTableContainer');
+            const tbody = document.getElementById('dataBody');
+            const status = document.getElementById('loadingStatus');
+            
+            fetch('data_hoa_chat.json', { cache: "no-store" })
+                .then(response => {
+                    if (!response.ok) throw new Error('Không tìm thấy file data_hoa_chat.json');
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50 transition-colors";
+                        
+                        // Badge cho trạng thái SDS
+                        const sdsBadge = row.sds === 'Đã có' 
+                            ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold text-xs">Đã có</span>` 
+                            : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded font-bold text-xs">Chưa có</span>`;
+
+                        tr.innerHTML = `
+                            <td class="p-4 text-center font-medium text-slate-500">${row.stt || '-'}</td>
+                            <td class="p-4 font-bold text-violet-700">${row.ten_hoa_chat || '-'}</td>
+                            <td class="p-4 font-mono text-slate-600">${row.ma_cas || '-'}</td>
+                            <td class="p-4 text-slate-700">${row.muc_dich_su_dung || '-'}</td>
+                            <td class="p-4 font-semibold text-blue-700">${row.khu_vuc || '-'}</td>
+                            <td class="p-4 text-center">${sdsBadge}</td>
+                            <td class="p-4 text-amber-600 font-medium">${row.canh_bao || '-'}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    status.classList.add('hidden');
+                    tableContainer.classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                    status.innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i> <span class="text-red-600">Lỗi: Không tìm thấy file dữ liệu data_hoa_chat.json</span>`;
+                });
+        };
+
+        // Tính năng Tìm kiếm (Filter)
+        function searchTable() {
+            const input = document.getElementById("searchInput");
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById("chemicalTable");
+            const tr = table.getElementsByTagName("tr");
+
+            // Bắt đầu từ 1 để bỏ qua hàng tiêu đề (thead)
+            for (let i = 1; i < tr.length; i++) {
+                // Lấy toàn bộ nội dung text của hàng đó
+                let rowText = tr[i].textContent || tr[i].innerText;
+                
+                if (rowText.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = ""; // Hiện nếu khớp
+                } else {
+                    tr[i].style.display = "none"; // Ẩn nếu không khớp
+                }
+            }
+        }
+    </script>
+</body>
+</html>
