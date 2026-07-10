@@ -9,7 +9,7 @@
 </head>
 <body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans text-slate-800">
 
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         <!-- Nút Quay lại -->
         <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium mb-4 transition">
             <i class="ph-bold ph-arrow-left"></i> Quay lại Trang chủ
@@ -22,15 +22,15 @@
                         <i class="ph-fill ph-flask text-3xl mr-3"></i>
                         Danh Mục Quản Lý Hóa Chất 2026
                     </h2>
-                    <p class="text-slate-500 mt-1">Tra cứu nhanh thông tin an toàn, mã CAS và khu vực lưu trữ.</p>
+                    <p class="text-slate-500 mt-1">Tra cứu nhanh thông tin thành phần, mã CAS và khu vực sử dụng (WWTP, MST...).</p>
                 </div>
                 
                 <!-- Thanh tìm kiếm -->
-                <div class="relative w-full md:w-72">
+                <div class="relative w-full md:w-80">
                     <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                         <i class="ph-bold ph-magnifying-glass text-slate-400"></i>
                     </div>
-                    <input type="text" id="searchInput" onkeyup="searchTable()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block w-full pl-10 p-2.5 outline-none transition" placeholder="Tìm tên, mã CAS, khu vực...">
+                    <input type="text" id="searchInput" onkeyup="searchTable()" class="bg-slate-50 border border-slate-300 text-slate-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block w-full pl-10 p-2.5 outline-none transition" placeholder="Tìm tên hóa chất, CAS, khu vực...">
                 </div>
             </div>
 
@@ -39,18 +39,18 @@
                 <i class="ph-bold ph-spinner animate-spin text-2xl"></i> Đang tải dữ liệu hóa chất...
             </div>
 
-            <!-- Bảng hiển thị dữ liệu -->
-            <div class="overflow-x-auto rounded-lg border border-slate-200 hidden" id="dataTableContainer">
-                <table class="w-full text-left border-collapse min-w-[900px]" id="chemicalTable">
+            <!-- Bảng hiển thị dữ liệu (Cập nhật cột theo JSON mới) -->
+            <div class="overflow-x-auto rounded-lg border border-slate-200 hidden shadow-sm" id="dataTableContainer">
+                <table class="w-full text-left border-collapse min-w-[1000px]" id="chemicalTable">
                     <thead>
                         <tr class="bg-slate-800 text-white text-sm uppercase">
-                            <th class="p-4 font-semibold w-16 text-center">STT</th>
-                            <th class="p-4 font-semibold">Tên Hóa Chất</th>
+                            <th class="p-4 font-semibold w-12 text-center">STT</th>
+                            <th class="p-4 font-semibold w-64">Tên Thương Mại / Tên Thường</th>
+                            <th class="p-4 font-semibold">Thành phần Hóa học</th>
                             <th class="p-4 font-semibold">Mã CAS</th>
-                            <th class="p-4 font-semibold">Mục đích sử dụng</th>
-                            <th class="p-4 font-semibold">Khu vực lưu trữ</th>
-                            <th class="p-4 font-semibold text-center">SDS</th>
-                            <th class="p-4 font-semibold">Cảnh báo An toàn</th>
+                            <th class="p-4 font-semibold">Phân loại</th>
+                            <th class="p-4 font-semibold">Khu vực SD</th>
+                            <th class="p-4 font-semibold text-center">Phụ lục</th>
                         </tr>
                     </thead>
                     <tbody id="dataBody" class="text-sm divide-y divide-slate-100">
@@ -74,51 +74,63 @@
                     return response.json();
                 })
                 .then(data => {
+                    let stt = 1; // Tự động tạo Số Thứ Tự
+                    
                     data.forEach(row => {
                         const tr = document.createElement('tr');
-                        tr.className = "hover:bg-slate-50 transition-colors";
+                        tr.className = "hover:bg-violet-50 transition-colors";
                         
-                        // Badge cho trạng thái SDS
-                        const sdsBadge = row.sds === 'Đã có' 
-                            ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-bold text-xs">Đã có</span>` 
-                            : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded font-bold text-xs">Chưa có</span>`;
+                        // Ghép hàm lượng % vào thành phần hóa học nếu có
+                        let composition = row['Chemical composition'] || '-';
+                        if (row['from %'] || row['to %']) {
+                            composition += ` <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1 rounded">(${row['from %'] || 0}% - ${row['to %'] || 0}%)</span>`;
+                        }
 
+                        // Map chính xác các Key tiếng Anh từ JSON của anh
                         tr.innerHTML = `
-                            <td class="p-4 text-center font-medium text-slate-500">${row.stt || '-'}</td>
-                            <td class="p-4 font-bold text-violet-700">${row.ten_hoa_chat || '-'}</td>
-                            <td class="p-4 font-mono text-slate-600">${row.ma_cas || '-'}</td>
-                            <td class="p-4 text-slate-700">${row.muc_dich_su_dung || '-'}</td>
-                            <td class="p-4 font-semibold text-blue-700">${row.khu_vuc || '-'}</td>
-                            <td class="p-4 text-center">${sdsBadge}</td>
-                            <td class="p-4 text-amber-600 font-medium">${row.canh_bao || '-'}</td>
+                            <td class="p-4 text-center font-medium text-slate-500 border-r border-slate-50">${stt++}</td>
+                            <td class="p-4 border-r border-slate-50">
+                                <div class="font-bold text-violet-700 text-base mb-1">${row['Production name'] || '-'}</div>
+                                <div class="text-xs text-slate-500 flex items-center gap-1"><i class="ph-fill ph-tag"></i> ${row['Normal name'] || '-'}</div>
+                            </td>
+                            <td class="p-4 text-slate-700 border-r border-slate-50 leading-relaxed">${composition}</td>
+                            <td class="p-4 font-mono text-blue-600 font-semibold border-r border-slate-50">${row['CAS #'] || '-'}</td>
+                            <td class="p-4 text-slate-600 border-r border-slate-50">
+                                <span class="bg-slate-100 px-2 py-1 rounded text-xs font-semibold border border-slate-200">${row['Classify'] || '-'}</span>
+                            </td>
+                            <td class="p-4 font-bold text-emerald-600 border-r border-slate-50">
+                                <div class="flex items-center gap-1"><i class="ph-fill ph-map-pin"></i> ${row['Using position'] || '-'}</div>
+                            </td>
+                            <td class="p-4 text-center text-amber-600 font-bold">${row['Appendix'] || '-'}</td>
                         `;
                         tbody.appendChild(tr);
                     });
+                    
+                    // Ẩn loading, hiện bảng
                     status.classList.add('hidden');
                     tableContainer.classList.remove('hidden');
                 })
                 .catch(error => {
                     console.error('Lỗi:', error);
-                    status.innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i> <span class="text-red-600">Lỗi: Không tìm thấy file dữ liệu data_hoa_chat.json</span>`;
+                    status.innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-xl"></i> <span class="text-red-600">Lỗi: Không tìm thấy hoặc sai định dạng file data_hoa_chat.json</span>`;
                 });
         };
 
-        // Tính năng Tìm kiếm (Filter)
+        // Tính năng Tìm kiếm (Filter) giữ nguyên
         function searchTable() {
             const input = document.getElementById("searchInput");
             const filter = input.value.toUpperCase();
             const table = document.getElementById("chemicalTable");
             const tr = table.getElementsByTagName("tr");
 
-            // Bắt đầu từ 1 để bỏ qua hàng tiêu đề (thead)
+            // Bắt đầu từ 1 để bỏ qua hàng tiêu đề
             for (let i = 1; i < tr.length; i++) {
-                // Lấy toàn bộ nội dung text của hàng đó
                 let rowText = tr[i].textContent || tr[i].innerText;
                 
                 if (rowText.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = ""; // Hiện nếu khớp
+                    tr[i].style.display = ""; 
                 } else {
-                    tr[i].style.display = "none"; // Ẩn nếu không khớp
+                    tr[i].style.display = "none"; 
                 }
             }
         }
