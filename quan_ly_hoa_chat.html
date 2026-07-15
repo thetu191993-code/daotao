@@ -3,203 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EHS - Quản Lý Hóa Chất</title>
+    <title>Danh Mục Quản Lý Hóa Chất EHS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        /* Tùy chỉnh thanh cuộn cho bảng đẹp hơn */
-        ::-webkit-scrollbar { height: 8px; width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* CSS ẩn cột trên thiết bị di động để không bị tràn màn hình */
+        @media (max-width: 768px) {
+            .hide-on-mobile { display: none; }
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8 font-sans text-slate-800">
+<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
 
-    <div class="max-w-[1500px] mx-auto">
-        <!-- Nút Quay lại -->
-        <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium mb-4 transition">
-            <i class="ph-bold ph-arrow-left"></i> Quay lại Trang chủ
-        </a>
-
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 border-b border-slate-100 pb-6 gap-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-violet-700 flex items-center">
-                        <i class="ph-fill ph-flask text-3xl mr-3"></i>
-                        Danh Mục Quản Lý Hóa Chất 2026
-                    </h2>
-                    <p class="text-slate-500 mt-2 text-sm leading-relaxed">
-                        Hệ thống tra cứu tự động đồng bộ từ file dữ liệu gốc. Hỗ trợ hiển thị thành phần hỗn hợp và nồng độ hóa chất tại các khu vực (WWTP, MST...).
-                    </p>
-                </div>
-                
-                <!-- Thanh tìm kiếm -->
-                <div class="relative w-full lg:w-96 flex-shrink-0">
-                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                        <i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i>
-                    </div>
-                    <input type="text" id="searchInput" onkeyup="searchTable()" class="bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 block w-full pl-10 p-3 outline-none transition shadow-sm" placeholder="Tìm tên hóa chất, CAS, nhà sản xuất, khu vực...">
-                </div>
-            </div>
-
-            <div id="loadingStatus" class="text-violet-600 font-medium flex flex-col items-center justify-center py-16 gap-3">
-                <i class="ph-bold ph-spinner animate-spin text-4xl"></i> 
-                <span>Đang đồng bộ dữ liệu hóa chất từ hệ thống...</span>
-            </div>
-
-            <div class="overflow-x-auto rounded-xl border border-slate-200 hidden shadow-sm" id="dataTableContainer">
-                <table class="w-full text-left border-collapse min-w-[1200px]" id="chemicalTable">
-                    <thead>
-                        <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                            <th class="p-4 font-semibold w-16 text-center border-b-2 border-slate-900">No.</th>
-                            <th class="p-4 font-semibold w-72 border-b-2 border-slate-900">Thông tin Hóa chất</th>
-                            <th class="p-4 font-semibold w-80 border-b-2 border-slate-900">Thành phần & Hàm lượng</th>
-                            <th class="p-4 font-semibold w-32 border-b-2 border-slate-900">Mã CAS</th>
-                            <th class="p-4 font-semibold w-40 border-b-2 border-slate-900">Khu vực Sử dụng</th>
-                            <th class="p-4 font-semibold w-32 text-center border-b-2 border-slate-900">Phân loại EHS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataBody" class="text-sm divide-y divide-slate-100">
-                        <!-- Dữ liệu sẽ được JS chèn vào đây -->
-                    </tbody>
-                </table>
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-purple-700 mb-2 flex items-center">
+                    <i class="ph-fill ph-flask text-3xl mr-2"></i>
+                    Danh Mục Quản Lý Hóa Chất 2026
+                </h2>
+                <p class="text-slate-500">Tra cứu nhanh thông tin an toàn, mã CAS, khu vực lưu trữ và tải MSDS.</p>
             </div>
             
-            <!-- Hiển thị đếm số lượng -->
-            <div id="countDisplay" class="mt-4 text-right text-sm font-medium text-slate-500 hidden">
-                Tổng cộng: <span id="totalItems" class="text-violet-700 font-bold">0</span> mục
+            <!-- Nút Quay lại Trang chủ -->
+            <a href="index.html" class="bg-white text-slate-700 px-5 py-2.5 rounded-lg font-medium hover:bg-slate-100 transition border border-slate-200 flex items-center gap-2 shadow-sm">
+                <i class="ph-bold ph-arrow-left"></i> Về Trang chủ
+            </a>
+        </div>
+
+        <!-- Thanh Tìm Kiếm -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex items-center">
+            <i class="ph-bold ph-magnifying-glass text-slate-400 text-xl mr-3"></i>
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Tìm kiếm tên hóa chất, mã CAS, hoặc khu vực..." class="w-full outline-none text-slate-700 font-medium">
+        </div>
+
+        <!-- Bảng Dữ Liệu -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" id="chemicalTable">
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                            <th class="p-4 font-semibold whitespace-nowrap">STT (No.)</th>
+                            <th class="p-4 font-semibold min-w-[250px]">Tên Hóa Chất / Nhà SX</th>
+                            <th class="p-4 font-semibold hide-on-mobile">Thành phần chính</th>
+                            <th class="p-4 font-semibold whitespace-nowrap">Mã CAS</th>
+                            <th class="p-4 font-semibold">Khu vực sử dụng</th>
+                            <th class="p-4 font-semibold text-center whitespace-nowrap">Thẻ SDS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataBody" class="text-sm">
+                        <tr>
+                            <td colspan="6" class="p-8 text-center text-slate-500">
+                                <i class="ph-bold ph-spinner animate-spin text-2xl mb-2 text-purple-600"></i><br>
+                                Đang tải dữ liệu hóa chất...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
-        // Hàm làm sạch dữ liệu (ẩn số 0 vô nghĩa)
-        function cleanData(value) {
-            if (value === undefined || value === null || value === "" || value === "0" || value === 0) {
-                return false;
-            }
-            return value;
-        }
+        const JSON_URL = 'data_hoa_chat.json'; // Tải từ file json trên github
+        let chemicalData = [];
 
+        // Chạy khi trang vừa tải xong
         window.onload = function() {
-            const tableContainer = document.getElementById('dataTableContainer');
-            const tbody = document.getElementById('dataBody');
-            const status = document.getElementById('loadingStatus');
-            const countDisplay = document.getElementById('countDisplay');
-            const totalItems = document.getElementById('totalItems');
-            
-            // Gọi file JSON của anh
-            fetch('data_hoa_chat.json', { cache: "no-store" })
-                .then(response => {
-                    if (!response.ok) throw new Error('Không tìm thấy file');
-                    return response.json();
-                })
+            fetch(JSON_URL, { cache: "no-store" })
+                .then(response => response.json())
                 .then(data => {
-                    totalItems.innerText = data.length;
-
-                    data.forEach(row => {
-                        const tr = document.createElement('tr');
-                        
-                        // Lấy Số thứ tự (No.)
-                        const itemNo = row['No.'] || '-';
-                        
-                        // LOGIC UI: Đổi màu nền nhẹ nếu là thành phần phụ (có chứa dấu chấm như 1.1, 1.2)
-                        const isSubItem = String(itemNo).includes('.');
-                        tr.className = isSubItem ? "bg-slate-50/50 hover:bg-violet-50/50 transition-colors" : "hover:bg-violet-50 transition-colors";
-                        
-                        // 1. Khối Thông tin Tên & Nhà sản xuất
-                        const prodName = cleanData(row['Production name']) || '-';
-                        const normalName = cleanData(row['Normal name']);
-                        const mfg = cleanData(row['Manufacturing']);
-                        const prodCode = cleanData(row['Production code']);
-                        
-                        let nameBlock = `<div class="font-bold text-violet-700 text-[15px] mb-1 leading-snug">${prodName}</div>`;
-                        if(normalName) nameBlock += `<div class="text-xs text-slate-500 mb-1 flex items-center gap-1"><i class="ph-fill ph-tag text-slate-400"></i> ${normalName}</div>`;
-                        if(mfg || prodCode) {
-                            nameBlock += `<div class="flex flex-wrap gap-1 mt-1.5">`;
-                            if(mfg) nameBlock += `<span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[11px] font-semibold border border-blue-100">NSX: ${mfg}</span>`;
-                            if(prodCode) nameBlock += `<span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded text-[11px] font-mono border border-slate-200">Mã: ${prodCode}</span>`;
-                            nameBlock += `</div>`;
-                        }
-
-                        // 2. Khối Thành phần Hóa học & Công thức
-                        const comp = cleanData(row['Chemical composition']) || '-';
-                        const fromPct = cleanData(row['from %']);
-                        const toPct = cleanData(row['to %']);
-                        const formula = cleanData(row['Chemical formula']);
-                        
-                        let compBlock = `<div class="text-slate-700 leading-relaxed">${comp}</div>`;
-                        let extraCompInfo = [];
-                        if (fromPct !== false || toPct !== false) {
-                            extraCompInfo.push(`<span class="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded font-mono border border-amber-100">${fromPct||0}% - ${toPct||0}%</span>`);
-                        }
-                        if (formula) {
-                            extraCompInfo.push(`<span class="text-blue-600 font-bold ml-1">(${formula})</span>`);
-                        }
-                        if (extraCompInfo.length > 0) {
-                            compBlock += `<div class="text-xs mt-1.5 flex items-center gap-1.5">${extraCompInfo.join('')}</div>`;
-                        }
-
-                        // 3. Khối Phân loại & Phụ lục
-                        const classify = cleanData(row['Classify']) || '-';
-                        const appendix = cleanData(row['Appendix']);
-                        
-                        let classBlock = `<div class="font-medium text-slate-700">${classify}</div>`;
-                        if(appendix) classBlock += `<div class="text-[11px] font-bold text-rose-600 mt-1 uppercase"><i class="ph-bold ph-warning-circle"></i> Phụ lục: ${appendix}</div>`;
-
-
-                        // Lắp ráp toàn bộ hàng
-                        tr.innerHTML = `
-                            <td class="p-4 text-center font-bold text-slate-500 border-r border-slate-100 ${isSubItem ? 'text-xs' : 'text-sm'}">${itemNo}</td>
-                            <td class="p-4 border-r border-slate-100 align-top">${nameBlock}</td>
-                            <td class="p-4 border-r border-slate-100 align-top">${compBlock}</td>
-                            <td class="p-4 font-mono text-blue-700 font-semibold border-r border-slate-100 align-top">${cleanData(row['CAS #']) || '-'}</td>
-                            <td class="p-4 font-bold text-emerald-700 border-r border-slate-100 align-top">
-                                <div class="flex items-start gap-1.5"><i class="ph-fill ph-map-pin mt-0.5 text-emerald-500"></i> <span class="leading-snug">${cleanData(row['Using position']) || '-'}</span></div>
-                            </td>
-                            <td class="p-4 text-center border-r border-slate-100 align-top bg-slate-50/30">
-                                ${classBlock}
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
-                    });
-                    
-                    // Ẩn loading, hiện bảng
-                    status.classList.add('hidden');
-                    tableContainer.classList.remove('hidden');
-                    countDisplay.classList.remove('hidden');
+                    chemicalData = data;
+                    renderTable(chemicalData);
                 })
                 .catch(error => {
-                    console.error('Lỗi:', error);
-                    status.innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-5xl mb-2"></i> 
-                                        <span class="text-red-600 font-bold text-lg">Lỗi tải dữ liệu!</span>
-                                        <span class="text-slate-500 text-sm mt-1">Vui lòng kiểm tra lại file data_hoa_chat.json trên GitHub.</span>`;
+                    console.error('Lỗi tải dữ liệu:', error);
+                    document.getElementById('dataBody').innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 font-bold">Lỗi: Không thể tải file data_hoa_chat.json. Vui lòng kiểm tra lại.</td></tr>`;
                 });
         };
 
-        function searchTable() {
-            const input = document.getElementById("searchInput");
-            const filter = input.value.toUpperCase();
-            const table = document.getElementById("chemicalTable");
-            const tr = table.getElementsByTagName("tr");
-            
-            let visibleCount = 0;
+        // Hàm vẽ bảng dữ liệu
+        function renderTable(dataToRender) {
+            const tbody = document.getElementById('dataBody');
+            tbody.innerHTML = ''; 
 
-            // Bắt đầu từ 1 để bỏ qua hàng tiêu đề
-            for (let i = 1; i < tr.length; i++) {
-                let rowText = tr[i].textContent || tr[i].innerText;
-                
-                if (rowText.toUpperCase().indexOf(filter) > -1) {
-                    tr[i].style.display = ""; 
-                    visibleCount++;
-                } else {
-                    tr[i].style.display = "none"; 
-                }
+            if (dataToRender.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Không tìm thấy hóa chất phù hợp.</td></tr>`;
+                return;
             }
+
+            dataToRender.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                // Lấy số No. thực tế từ file JSON của bạn
+                const noVal = row["No."] || "-";
+                
+                // Xử lý giao diện cho chất phụ (No có dấu chấm thập phân như 1.1, 1.2)
+                const isSubItem = String(noVal).includes(".");
+                if(isSubItem) {
+                    tr.className = "border-b border-slate-100 bg-slate-50 hover:bg-purple-50 transition-colors";
+                } else {
+                    tr.className = "border-b border-slate-200 hover:bg-purple-50 transition-colors";
+                }
+
+                // Gộp Tên
+                const prodName = row["Production name"] && row["Production name"] !== "0" ? row["Production name"] : "";
+                const normName = row["Normal name"] && row["Normal name"] !== "0" ? row["Normal name"] : "";
+                const mfg = row["Manufacturing"] && row["Manufacturing"] !== "0" ? row["Manufacturing"] : "";
+                let fullNameHTML = `<div class="font-bold text-slate-800 text-base">${prodName || normName || "Chưa cập nhật"}</div>`;
+                if(mfg) fullNameHTML += `<div class="text-xs text-slate-500 mt-1"><i class="ph-fill ph-factory"></i> ${mfg}</div>`;
+
+                const comp = row["Chemical composition"] && String(row["Chemical composition"]) !== "0" ? row["Chemical composition"] : "-";
+                const cas = row["CAS #"] && String(row["CAS #"]) !== "0" ? row["CAS #"] : "-";
+                const position = row["Using position"] && String(row["Using position"]) !== "0" ? row["Using position"] : "-";
+                
+                // === XỬ LÝ NÚT SDS/MSDS ===
+                const sdsLink = row["Link SDS"];
+                let sdsHtml = '';
+                if (sdsLink && sdsLink.trim() !== "" && sdsLink !== "0") {
+                    // Nếu có link, tạo nút Bấm tải PDF màu xanh
+                    sdsHtml = `
+                        <a href="${sdsLink}" target="_blank" class="inline-flex items-center justify-center gap-1 bg-teal-100 text-teal-700 border border-teal-200 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-teal-600 hover:text-white transition cursor-pointer shadow-sm">
+                            <i class="ph-bold ph-file-pdf text-sm"></i> Xem SDS
+                        </a>`;
+                } else {
+                    // Nếu không có, giữ nguyên nhãn Chưa có màu đỏ
+                    sdsHtml = `<span class="inline-block bg-red-50 text-red-500 border border-red-100 px-2 py-1 rounded text-xs font-bold">Chưa có</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-4 font-bold ${isSubItem ? 'text-slate-400 text-right' : 'text-slate-700'}">${noVal}</td>
+                    <td class="p-4">${fullNameHTML}</td>
+                    <td class="p-4 text-slate-600 hide-on-mobile">${comp}</td>
+                    <td class="p-4 text-blue-600 font-mono text-sm">${cas}</td>
+                    <td class="p-4 font-medium text-slate-700">${position}</td>
+                    <td class="p-4 text-center">${sdsHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Hàm Lọc dữ liệu khi gõ vào thanh tìm kiếm
+        function filterTable() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
             
-            // Cập nhật số đếm
-            document.getElementById('totalItems').innerText = visibleCount;
+            const filteredData = chemicalData.filter(row => {
+                const prod = String(row["Production name"] || "").toLowerCase();
+                const norm = String(row["Normal name"] || "").toLowerCase();
+                const cas = String(row["CAS #"] || "").toLowerCase();
+                const pos = String(row["Using position"] || "").toLowerCase();
+                
+                return prod.includes(input) || norm.includes(input) || cas.includes(input) || pos.includes(input);
+            });
+
+            renderTable(filteredData);
         }
     </script>
 </body>
