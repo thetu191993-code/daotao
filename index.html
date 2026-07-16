@@ -9,49 +9,117 @@
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
 
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
             
-            <h2 class="text-2xl font-bold text-blue-700 mb-2 flex items-center">
-                <i class="ph-fill ph-database text-3xl mr-2"></i>
-               Đào tạo An toàn - Sức khỏe nghề nghiệp - Môi trường
-            </h2>
-            <p class="text-slate-500 mb-8">Nền tảng quản lý rủi ro môi trường, tối ưu hóa tài nguyên và đào tạo nhân sự.</p>
-            
-            <!-- KHU VỰC CÁC NÚT CÔNG CỤ -->
-            <div class="flex flex-col sm:flex-row flex-wrap gap-4 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+            <!-- 1. TIÊU ĐỀ VÀ KHU VỰC ĐĂNG NHẬP -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
+                        <i class="ph-fill ph-database text-3xl mr-2"></i>
+                        Hệ thống Quản lý EHS
+                    </h2>
+                    <p class="text-slate-500 mt-1">Nền tảng đào tạo, quản lý hóa chất & rủi ro môi trường.</p>
+                </div>
                 
-                <!-- Nút Đồng bộ dữ liệu -->
-                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                    <i class="ph-bold ph-arrows-clockwise"></i> Đồng bộ Dữ liệu
-                </button>
-
-                <div class="hidden sm:block w-px bg-slate-300 mx-2"></div> <!-- Đường kẻ chia -->
-
-                <!-- Nút Nội Quy An Toàn Chung -->
-                <a href="EHS-2022.04 GENERAL REGULATION.pdf" target="_blank" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                    <i class="ph-bold ph-file-pdf"></i> Nội Quy An Toàn Chung
-                </a>
-
-                <!-- Nút VÀO PHÒNG HỌC (Đã sửa link) -->
-                <a href="bai_giang.html" class="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-md w-full sm:w-auto ring-2 ring-indigo-300 ring-offset-1">
-                    <i class="ph-bold ph-presentation-chart"></i> Vào Học Bài Giảng
-                </a>
-
-                <!-- Nút Mở Kho Báo Cáo EHS -->
-                <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                    <i class="ph-bold ph-folder-open"></i> Kho Báo Cáo EHS
-                </button>
-                
-                <!-- NÚT MỚI: DANH MỤC HÓA CHẤT -->
-                <a href="quan_ly_hoa_chat.html" class="bg-violet-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-violet-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                    <i class="ph-bold ph-flask"></i> Tra cứu Hóa chất
-                </a>
-                
+                <!-- Khu vực hiển thị Đăng nhập / Thông tin User -->
+                <div id="user-profile-section">
+                    <!-- Mặc định khi chưa đăng nhập -->
+                    <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
+                        <i class="ph-bold ph-sign-in text-xl"></i> Đăng nhập hệ thống
+                    </a>
+                </div>
             </div>
-            <!-- KẾT THÚC KHU VỰC NÚT CÔNG CỤ -->
 
-            <!-- Bảng hiển thị dữ liệu -->
+            <!-- 2. KHU VỰC MENU ĐIỀU HƯỚNG CÁC CHỨC NĂNG -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-5 bg-slate-50 rounded-xl border border-slate-100">
+                
+                <!-- Liên kết sang Bài giảng -->
+                <a href="bai_giang.html?id=data_ehs_chung" class="bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-chalkboard-teacher text-xl"></i> Phòng Học EHS
+                </a>
+                
+                <!-- Liên kết sang Quản lý hóa chất -->
+                <a href="quan_ly_hoa_chat.html" class="bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-flask text-xl"></i> Quản lý Hóa Chất
+                </a>
+
+                <!-- Mở Modal Kho Báo Cáo -->
+                <button onclick="openReportModal()" class="bg-teal-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-folder-open text-xl"></i> Kho Báo Cáo EHS
+                </button>
+
+                <!-- Gọi dữ liệu JSON -->
+                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-arrows-clockwise text-xl"></i> Đồng bộ Dữ liệu
+                </button>
+
+                <!-- Các file tài liệu tĩnh -->
+                <a href="https://thetu191993-code.github.io/daotao/Tai_lieu_daotao_EHS.pdf" target="_blank" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-file-pdf text-xl"></i> Tài liệu Đào tạo
+                </a>
+
+                <a href="https://thetu191993-code.github.io/daotao/So_tay_van_hanh.pdf" target="_blank" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-book-open text-xl"></i> Sổ tay Vận hành
+                </a>
+
+                <a href="https://thetu191993-code.github.io/daotao/Quy_trinh_su_co.pdf" target="_blank" class="bg-rose-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-rose-600 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-warning-circle text-xl"></i> Quy trình Sự cố
+                </a>
+                
+                <!-- Xem kết quả (dành cho Admin) -->
+                <a href="admin.html" class="bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-shield-check text-xl"></i> Quản trị Điểm thi
+                </a>
+            </div>
+
+            <!-- 3. MODAL KHO BÁO CÁO (YÊU CẦU MẬT KHẨU) -->
+            <div id="report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                    <div class="flex justify-between items-center p-5 border-b border-slate-100">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="ph-fill ph-lock-key text-teal-600 text-2xl" id="modal-icon"></i> Kho Báo Cáo EHS
+                        </h3>
+                        <button onclick="closeReportModal()" class="text-slate-400 hover:text-red-500 transition">
+                            <i class="ph-bold ph-x text-2xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- MÀN HÌNH 1: NHẬP MẬT KHẨU -->
+                    <div id="password-view" class="p-6 flex flex-col items-center gap-4">
+                        <p class="text-sm text-slate-600 text-center">Tài liệu nội bộ. Vui lòng nhập mật khẩu cấp quản lý để truy cập.</p>
+                        <input type="password" id="report-password" onkeypress="handleEnter(event)" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-center tracking-[0.3em] font-mono text-lg" placeholder="•••••••">
+                        <p id="password-error" class="text-red-500 text-sm hidden font-medium">Sai mật khẩu! Vui lòng thử lại.</p>
+                        <button onclick="checkPassword()" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition shadow-sm">Xác nhận</button>
+                    </div>
+
+                    <!-- MÀN HÌNH 2: DANH SÁCH BÁO CÁO (Ẩn lúc đầu) -->
+                    <div id="report-list-view" class="p-5 flex-col gap-3 hidden h-80 overflow-y-auto">
+                        <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
+                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 1</span>
+                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
+                        </a>
+                        <a href="bao_cao/Thang_02.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
+                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 2</span>
+                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
+                        </a>
+                        <a href="bao_cao/Thang_03.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
+                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 3</span>
+                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. KHU VỰC BẢNG DỮ LIỆU ĐỒNG BỘ JSON -->
+            <div id="errorMessage" class="hidden bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100 flex items-start gap-2">
+                <i class="ph-fill ph-warning-circle text-xl"></i>
+                <div>
+                    <p class="font-semibold">Không thể tải dữ liệu!</p>
+                    <p class="text-sm mt-1">Vui lòng kiểm tra lại file data_ehs.json trên GitHub.</p>
+                </div>
+            </div>
+
             <div class="overflow-x-auto rounded-lg border border-slate-200 hidden" id="dataTableContainer">
                 <table class="w-full text-left border-collapse min-w-[600px]">
                     <thead>
@@ -68,71 +136,109 @@
                 </table>
             </div>
             
-            <!-- Trạng thái tải dữ liệu -->
-            <div id="loadingStatus" class="text-blue-600 font-medium flex items-center gap-2 hidden">
-                <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang tải dữ liệu...
-            </div>
-
-        </div>
-    </div>
-
-    <!-- ========================================== -->
-    <!-- MODAL: DANH SÁCH BÁO CÁO EHS (Ẩn lúc đầu) -->
-    <!-- ========================================== -->
-    <div id="report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100">
-                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="ph-fill ph-folder-open text-teal-600 text-2xl"></i> Kho Báo Cáo EHS
-                </h3>
-                <button onclick="document.getElementById('report-modal').classList.add('hidden')" class="text-slate-400 hover:text-red-500 transition">
-                    <i class="ph-bold ph-x text-2xl"></i>
-                </button>
-            </div>
-            <div class="p-5 flex flex-col gap-3">
-                <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group">
-                    <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 1</span>
-                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <a href="bao_cao/Thang_02.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group">
-                    <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 2</span>
-                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <a href="bao_cao/Thang_03.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group">
-                    <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 3</span>
-                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <a href="bao_cao/Thang_04.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group">
-                    <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 4</span>
-                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <a href="bao_cao/Thang_05.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group">
-                    <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 5</span>
-                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                </a>
-                <a href="bao_cao/Thang_06.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group">
-                    <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 6</span>
-                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                </a>
+            <div id="loadingStatus" class="text-blue-600 font-medium items-center gap-2 hidden">
+                <i class="ph-bold ph-spinner animate-spin"></i> Đang tải dữ liệu...
             </div>
         </div>
     </div>
 
+    <!-- TẤT CẢ JAVASCRIPT GỘP CHUNG TẠI ĐÂY -->
     <script>
+        // ==========================================
+        // LOGIC 1: ĐĂNG NHẬP / ĐĂNG XUẤT
+        // ==========================================
+        function checkLoginStatus() {
+            const userId = localStorage.getItem("ehs_user_id");
+            const userName = localStorage.getItem("ehs_user_name");
+            const profileSection = document.getElementById("user-profile-section");
+
+            if (userId) {
+                // Nếu đã đăng nhập thành công
+                const displayName = userName ? userName : userId;
+                profileSection.innerHTML = `
+                    <div class="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-full border border-blue-200 shadow-sm">
+                        <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-inner">
+                            <i class="ph-fill ph-user"></i>
+                        </div>
+                        <div class="mr-2">
+                            <p class="text-sm font-bold text-blue-800">${displayName}</p>
+                            <p class="text-[11px] text-blue-600 font-medium uppercase tracking-wider">Nhân sự EHS</p>
+                        </div>
+                        <button onclick="handleLogout()" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition duration-200" title="Đăng xuất">
+                            <i class="ph-bold ph-sign-out text-xl"></i>
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem("ehs_user_id");
+            localStorage.removeItem("ehs_user_name");
+            window.location.reload(); // Tải lại trang web
+        }
+
+        // Chạy kiểm tra đăng nhập ngay khi trang tải xong
+        checkLoginStatus();
+
+        // ==========================================
+        // LOGIC 2: MẬT KHẨU KHO BÁO CÁO
+        // ==========================================
+        const MAT_KHAU_BAO_CAO = "EHS2026"; // <-- Đổi mật khẩu ở đây
+
+        function openReportModal() {
+            document.getElementById('report-modal').classList.remove('hidden');
+            document.getElementById('report-password').value = '';
+            document.getElementById('password-error').classList.add('hidden');
+            document.getElementById('password-view').classList.remove('hidden');
+            document.getElementById('report-list-view').classList.add('hidden');
+            document.getElementById('modal-icon').className = "ph-fill ph-lock-key text-teal-600 text-2xl";
+            
+            // Tự động nháy trỏ chuột vào ô nhập pass
+            setTimeout(() => document.getElementById('report-password').focus(), 100);
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+        }
+
+        function checkPassword() {
+            const inputPass = document.getElementById('report-password').value;
+            
+            if (inputPass === MAT_KHAU_BAO_CAO) {
+                document.getElementById('password-view').classList.add('hidden');
+                document.getElementById('report-list-view').classList.remove('hidden');
+                document.getElementById('report-list-view').classList.add('flex');
+                document.getElementById('modal-icon').className = "ph-fill ph-folder-open text-teal-600 text-2xl";
+            } else {
+                document.getElementById('password-error').classList.remove('hidden');
+            }
+        }
+
+        function handleEnter(event) {
+            if (event.key === "Enter") checkPassword();
+        }
+
+        // ==========================================
+        // LOGIC 3: TẢI BẢNG DỮ LIỆU JSON
+        // ==========================================
         const GITHUB_DATA_URL = 'https://thetu191993-code.github.io/daotao/data_ehs.json';
 
         function loadDataFromGitHub() {
             const tableContainer = document.getElementById('dataTableContainer');
             const tbody = document.getElementById('dataBody');
             const status = document.getElementById('loadingStatus');
+            const errorBox = document.getElementById('errorMessage');
             
             status.classList.remove('hidden');
+            status.classList.add('flex');
+            errorBox.classList.add('hidden');
             tableContainer.classList.add('hidden');
             tbody.innerHTML = ''; 
 
             fetch(GITHUB_DATA_URL, { cache: "no-store" })
                 .then(response => {
-                    if(!response.ok) throw new Error("Network error");
+                    if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
                 })
                 .then(data => {
@@ -148,12 +254,14 @@
                         tbody.appendChild(tr);
                     });
                     status.classList.add('hidden');
+                    status.classList.remove('flex');
                     tableContainer.classList.remove('hidden');
                 })
                 .catch(error => {
-                    console.error('Lỗi tải dữ liệu:', error);
+                    console.error('Error fetching data:', error);
                     status.classList.add('hidden');
-                    alert("Chưa tìm thấy file data_ehs.json hoặc dữ liệu bị lỗi!");
+                    status.classList.remove('flex');
+                    errorBox.classList.remove('hidden');
                 });
         }
     </script>
