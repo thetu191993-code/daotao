@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         /* CSS ẩn cột trên thiết bị di động để không bị tràn màn hình */
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
             .hide-on-mobile { display: none; }
         }
     </style>
@@ -23,7 +23,7 @@
                     <i class="ph-fill ph-flask text-3xl mr-2"></i>
                     Danh Mục Quản Lý Hóa Chất 2026
                 </h2>
-                <p class="text-slate-500">Tra cứu nhanh thông tin an toàn, mã CAS, khu vực lưu trữ và tải MSDS.</p>
+                <p class="text-slate-500">Tra cứu nhanh thông tin an toàn, phụ lục, mã CAS và tải thẻ SDS.</p>
             </div>
             
             <!-- Nút Quay lại Trang chủ -->
@@ -35,7 +35,7 @@
         <!-- Thanh Tìm Kiếm -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex items-center">
             <i class="ph-bold ph-magnifying-glass text-slate-400 text-xl mr-3"></i>
-            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Tìm kiếm tên hóa chất, mã CAS, hoặc khu vực..." class="w-full outline-none text-slate-700 font-medium">
+            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Tìm kiếm tên hóa chất, mã CAS, phụ lục, khu vực..." class="w-full outline-none text-slate-700 font-medium">
         </div>
 
         <!-- Bảng Dữ Liệu -->
@@ -44,9 +44,10 @@
                 <table class="w-full text-left border-collapse" id="chemicalTable">
                     <thead>
                         <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                            <th class="p-4 font-semibold whitespace-nowrap">STT (No.)</th>
+                            <th class="p-4 font-semibold whitespace-nowrap text-center">STT (No.)</th>
                             <th class="p-4 font-semibold min-w-[250px]">Tên Hóa Chất / Nhà SX</th>
                             <th class="p-4 font-semibold hide-on-mobile">Thành phần chính</th>
+                            <th class="p-4 font-semibold whitespace-nowrap text-center">Phụ lục</th>
                             <th class="p-4 font-semibold whitespace-nowrap">Mã CAS</th>
                             <th class="p-4 font-semibold">Khu vực sử dụng</th>
                             <th class="p-4 font-semibold text-center whitespace-nowrap">Thẻ SDS</th>
@@ -54,7 +55,7 @@
                     </thead>
                     <tbody id="dataBody" class="text-sm">
                         <tr>
-                            <td colspan="6" class="p-8 text-center text-slate-500">
+                            <td colspan="7" class="p-8 text-center text-slate-500">
                                 <i class="ph-bold ph-spinner animate-spin text-2xl mb-2 text-purple-600"></i><br>
                                 Đang tải dữ liệu hóa chất...
                             </td>
@@ -79,7 +80,7 @@
                 })
                 .catch(error => {
                     console.error('Lỗi tải dữ liệu:', error);
-                    document.getElementById('dataBody').innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 font-bold">Lỗi: Không thể tải file data_hoa_chat.json. Vui lòng kiểm tra lại.</td></tr>`;
+                    document.getElementById('dataBody').innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi: Không thể tải file data_hoa_chat.json. Vui lòng kiểm tra lại.</td></tr>`;
                 });
         };
 
@@ -89,14 +90,14 @@
             tbody.innerHTML = ''; 
 
             if (dataToRender.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Không tìm thấy hóa chất phù hợp.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Không tìm thấy hóa chất phù hợp.</td></tr>`;
                 return;
             }
 
             dataToRender.forEach(row => {
                 const tr = document.createElement('tr');
                 
-                // Lấy số No. thực tế từ file JSON của bạn
+                // Lấy số No. thực tế
                 const noVal = row["No."] || "-";
                 
                 // Xử lý giao diện cho chất phụ (No có dấu chấm thập phân như 1.1, 1.2)
@@ -118,24 +119,35 @@
                 const cas = row["CAS #"] && String(row["CAS #"]) !== "0" ? row["CAS #"] : "-";
                 const position = row["Using position"] && String(row["Using position"]) !== "0" ? row["Using position"] : "-";
                 
+                // === XỬ LÝ CỘT PHỤ LỤC ===
+                const appendixVal = row["Appendix"] && String(row["Appendix"]) !== "0" ? String(row["Appendix"]).trim() : "-";
+                let appendixHtml = appendixVal;
+                if (appendixVal !== "-") {
+                    // Tạo nhãn màu vàng nổi bật cho các PL
+                    appendixHtml = `<span class="inline-block bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded text-xs font-bold whitespace-nowrap">${appendixVal}</span>`;
+                } else {
+                    appendixHtml = `<span class="text-slate-400 font-medium">-</span>`;
+                }
+
                 // === XỬ LÝ NÚT SDS/MSDS ===
                 const sdsLink = row["Link SDS"];
                 let sdsHtml = '';
                 if (sdsLink && sdsLink.trim() !== "" && sdsLink !== "0") {
-                    // Nếu có link, tạo nút Bấm tải PDF màu xanh
+                    // Nếu có link
                     sdsHtml = `
                         <a href="${sdsLink}" target="_blank" class="inline-flex items-center justify-center gap-1 bg-teal-100 text-teal-700 border border-teal-200 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-teal-600 hover:text-white transition cursor-pointer shadow-sm">
                             <i class="ph-bold ph-file-pdf text-sm"></i> Xem SDS
                         </a>`;
                 } else {
-                    // Nếu không có, giữ nguyên nhãn Chưa có màu đỏ
+                    // Nếu không có
                     sdsHtml = `<span class="inline-block bg-red-50 text-red-500 border border-red-100 px-2 py-1 rounded text-xs font-bold">Chưa có</span>`;
                 }
 
                 tr.innerHTML = `
-                    <td class="p-4 font-bold ${isSubItem ? 'text-slate-400 text-right' : 'text-slate-700'}">${noVal}</td>
+                    <td class="p-4 font-bold text-center ${isSubItem ? 'text-slate-400' : 'text-slate-700'}">${noVal}</td>
                     <td class="p-4">${fullNameHTML}</td>
                     <td class="p-4 text-slate-600 hide-on-mobile">${comp}</td>
+                    <td class="p-4 text-center">${appendixHtml}</td>
                     <td class="p-4 text-blue-600 font-mono text-sm">${cas}</td>
                     <td class="p-4 font-medium text-slate-700">${position}</td>
                     <td class="p-4 text-center">${sdsHtml}</td>
@@ -144,7 +156,7 @@
             });
         }
 
-        // Hàm Lọc dữ liệu khi gõ vào thanh tìm kiếm
+        // Hàm Lọc dữ liệu
         function filterTable() {
             const input = document.getElementById("searchInput").value.toLowerCase();
             
@@ -153,8 +165,9 @@
                 const norm = String(row["Normal name"] || "").toLowerCase();
                 const cas = String(row["CAS #"] || "").toLowerCase();
                 const pos = String(row["Using position"] || "").toLowerCase();
+                const appx = String(row["Appendix"] || "").toLowerCase(); // Cho phép tìm kiếm cả bằng phụ lục
                 
-                return prod.includes(input) || norm.includes(input) || cas.includes(input) || pos.includes(input);
+                return prod.includes(input) || norm.includes(input) || cas.includes(input) || pos.includes(input) || appx.includes(input);
             });
 
             renderTable(filteredData);
