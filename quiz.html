@@ -12,7 +12,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // LƯU Ý: Nếu trước đó anh có đổi apiKey mới, hãy dán apiKey mới đó vào đây nhé!
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", 
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -43,14 +42,10 @@
                 <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-100 text-indigo-600 mb-4">
                     <i class="ph-fill ph-student text-5xl"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2" id="welcome-text">Đang kiểm tra thông tin...</h2>
-                <p class="text-slate-500">Hệ thống sẽ ghi nhận điểm số bài thi cho tài khoản này.</p>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2" id="welcome-text">Đang tải bài thi...</h2>
+                <p class="text-slate-500">Hệ thống đang chuẩn bị dữ liệu...</p>
             </div>
             
-            <div class="max-w-sm mx-auto w-full bg-amber-50 border border-amber-200 text-amber-800 p-3 rounded-lg text-center font-bold text-sm mb-6 flex items-center justify-center gap-2">
-                <i class="ph-fill ph-warning-circle text-lg"></i> Hạn chót hoàn thành: <span id="deadline-text">31/07/2026</span>
-            </div>
-
             <button id="btn-start" onclick="startQuiz()" class="w-full max-w-sm bg-indigo-600 text-white font-bold py-3.5 rounded-lg mt-4 hover:bg-indigo-700 transition flex justify-center items-center gap-2 shadow-md hidden">
                 <i class="ph-bold ph-play text-xl"></i> Bắt đầu làm bài
             </button>
@@ -82,13 +77,12 @@
                 Điểm của bạn: <span id="score" class="font-bold text-indigo-600 text-3xl mx-2">0</span> / <span id="total-score" class="font-bold text-xl text-slate-400">10</span>
             </p>
             <p id="save-status" class="text-amber-600 font-medium mb-8 text-sm flex items-center justify-center gap-2">
-                <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu kết quả lên hệ thống...
+                <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu kết quả...
             </p>
             <a href="index.html" class="bg-slate-800 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-slate-900 transition shadow-md inline-flex items-center gap-2">
                 <i class="ph-bold ph-house"></i> Về Trang chủ
             </a>
         </div>
-
     </div>
 
     <script>
@@ -98,10 +92,8 @@
         let userAnswers = []; 
         let courseName = "Bài Kiểm Tra EHS";
         
-        // Lấy thông tin User từ trình duyệt (đã lưu lúc đăng nhập)
         const userId = localStorage.getItem("ehs_user_id");
-        const userName = localStorage.getItem("ehs_user_name") || userId; // Nếu không có tên thì lấy ID
-        const DEADLINE_DATE = new Date("2026-07-31T23:59:59"); 
+        const userName = localStorage.getItem("ehs_user_name") || userId;
 
         const questionText = document.getElementById('question-text');
         const optionsContainer = document.getElementById('options-container');
@@ -115,41 +107,31 @@
         const btnStart = document.getElementById('btn-start');
 
         window.onload = function() {
-            // KIỂM TRA ĐĂNG NHẬP
             if (!userId) {
-                alert("Bạn chưa đăng nhập! Vui lòng đăng nhập để làm bài thi.");
+                alert("Bạn chưa đăng nhập! Vui lòng đăng nhập.");
                 window.location.href = "login.html";
                 return;
             }
 
-            // Hiển thị lời chào
             welcomeText.innerHTML = `Xin chào, <span class="text-indigo-600">${userName}</span>`;
             document.getElementById('user-display').innerText = `Nhân sự: ${userName} (${userId})`;
 
-            // TẢI CÂU HỎI
+            // TỰ ĐỘNG TẢI DỮ LIỆU (Nếu không có ID thì lấy khóa chung)
             const urlParams = new URLSearchParams(window.location.search);
-            const courseId = urlParams.get('id');
+            const courseId = urlParams.get('id') || 'data_ehs_chung'; 
 
-            if (courseId) {
-                fetch(courseId + '.json', { cache: "no-store" })
-                    .then(response => {
-                        if (!response.ok) throw new Error("File JSON không tồn tại");
-                        return response.json();
-                    })
-                    .then(data => {
-                        quizData = data.cau_hoi;
-                        courseName = data.ten_khoa_hoc;
-                        document.title = "Bài thi: " + courseName;
-                        btnStart.classList.remove('hidden'); // Hiện nút bắt đầu khi tải xong
-                    })
-                    .catch(error => {
-                        welcomeText.innerHTML = `<span class="text-red-600">Lỗi tải dữ liệu bài thi!</span>`;
-                        welcomeText.classList.add('text-lg');
-                        console.error(error);
-                    });
-            } else {
-                welcomeText.innerHTML = `<span class="text-amber-600">Không tìm thấy mã khóa học!</span>`;
-            }
+            fetch(courseId + '.json', { cache: "no-store" })
+                .then(response => response.json())
+                .then(data => {
+                    quizData = data.cau_hoi;
+                    courseName = data.ten_khoa_hoc;
+                    document.title = "Bài thi: " + courseName;
+                    btnStart.classList.remove('hidden');
+                })
+                .catch(error => {
+                    welcomeText.innerHTML = `<span class="text-red-600">Lỗi: Không tìm thấy bài thi!</span>`;
+                    console.error(error);
+                });
         };
 
         function startQuiz() {
@@ -176,22 +158,11 @@
 
         function selectAnswer(selectedIndex, selectedText) {
             const currentData = quizData[currentQuestionIndex];
-            const isCorrect = (selectedIndex === currentData.correctAnswer);
+            if (selectedIndex === currentData.correctAnswer) { score++; }
             
-            if (isCorrect) { score++; }
-            
-            userAnswers.push({
-                cau_hoi: currentData.question,
-                dap_an_da_chon: selectedText,
-                ket_qua: isCorrect ? "Đúng" : "Sai"
-            });
-            
+            userAnswers.push({ cau_hoi: currentData.question, dap_an_da_chon: selectedText });
             currentQuestionIndex++;
-            if (currentQuestionIndex < quizData.length) {
-                loadQuestion();
-            } else {
-                showResults();
-            }
+            currentQuestionIndex < quizData.length ? loadQuestion() : showResults();
         }
 
         async function showResults() {
@@ -200,28 +171,18 @@
             scoreDisplay.innerText = score;
             const statusText = document.getElementById('save-status');
 
-            const now = new Date();
-            const submitStatus = now <= DEADLINE_DATE ? "Đúng hạn" : "Trễ hạn";
-
             try {
-                if (!window.db) throw new Error("Chưa kết nối Firebase");
-
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
                     nhan_vien_id: userId.toUpperCase(),
                     ho_ten: userName,
                     diem_so: score,
                     tong_cau: quizData.length,
                     thoi_gian_nop: window.serverTimestamp(),
-                    han_chot: "31/07/2026",
-                    trang_thai_nop: submitStatus,
-                    ten_khoa_hoc: courseName,
-                    chi_tiet_bai_lam: userAnswers 
+                    ten_khoa_hoc: courseName
                 });
-                
-                statusText.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-600 text-xl"></i> <span class="text-emerald-700 font-bold">Đã lưu điểm số của bạn lên hệ thống!</span>';
-            } catch (error) {
-                console.error("Lỗi khi lưu kết quả: ", error);
-                statusText.innerHTML = '<i class="ph-fill ph-warning-circle text-red-600 text-xl"></i> <span class="text-red-700">Lỗi lưu kết quả. Vui lòng thử lại.</span>';
+                statusText.innerHTML = '<span class="text-emerald-700 font-bold">Đã lưu điểm!</span>';
+            } catch (e) {
+                statusText.innerHTML = '<span class="text-red-600">Lỗi lưu kết quả.</span>';
             }
         }
     </script>
