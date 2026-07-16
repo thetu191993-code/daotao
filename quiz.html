@@ -20,61 +20,96 @@
             measurementId: "G-74ETHWTJCW"
         };
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db;
+        window.db = getFirestore(app);
         window.collection = collection;
         window.addDoc = addDoc;
     </script>
 </head>
 <body class="bg-slate-50 p-4 md:p-8">
     <div id="quiz-app" class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+        <!-- Khu vực hiển thị thông báo lỗi -->
+        <div id="error-log" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
+        
         <div id="loader" class="text-center">
             <i class="ph-bold ph-spinner animate-spin text-4xl text-indigo-600"></i>
             <p class="mt-4 font-bold">Đang tải nội dung bài thi...</p>
         </div>
+
+        <div id="quiz-header" class="hidden text-center text-emerald-700 font-bold text-xl mb-6"></div>
         <div id="quiz-content" class="hidden"></div>
         <button id="btn-submit" class="hidden w-full bg-emerald-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-emerald-700 transition">Nộp bài</button>
     </div>
 
     <script>
+        const errorLog = document.getElementById('error-log');
+        const showLog = (msg) => {
+            errorLog.textContent = msg;
+            errorLog.classList.remove('hidden');
+        };
+
         const urlParams = new URLSearchParams(window.location.search);
         const courseId = urlParams.get('id') || 'data_ehs_chung';
         const jsonPath = `https://thetu191993-code.github.io/daotao/${courseId}.json`;
-        let quizData = null;
 
-        fetch(jsonPath).then(res => res.json()).then(data => {
-            quizData = data;
-            document.getElementById('loader').classList.add('hidden');
-            document.getElementById('quiz-content').classList.remove('hidden');
-            document.getElementById('btn-submit').classList.remove('hidden');
-            renderQuiz();
-        });
+        fetch(jsonPath)
+            .then(res => {
+                if (!res.ok) throw new Error("Không thể tải file JSON: " + jsonPath);
+                return res.json();
+            })
+            .then(data => {
+                window.quizData = data;
+                document.getElementById('loader').classList.add('hidden');
+                
+                // Hiển thị tiêu đề
+                const header = document.getElementById('quiz-header');
+                header.textContent = `Đã tải bài thi: ${data.ten_khoa_hoc}`;
+                header.classList.remove('hidden');
 
-        function renderQuiz() {
-            const container = document.getElementById('quiz-content');
-            container.innerHTML = `<h2 class="text-2xl font-bold mb-6 text-indigo-700">${quizData.ten_khoa_hoc}</h2>`;
-            quizData.cau_hoi.forEach((q, index) => {
-                const div = document.createElement('div');
-                div.className = "mb-8 p-4 bg-slate-50 rounded-lg";
-                div.innerHTML = `<p class="font-bold mb-3">${index + 1}. ${q.question}</p>`;
-                q.options.forEach((opt, optIndex) => {
-                    div.innerHTML += `
-                        <label class="block mb-2 cursor-pointer hover:text-indigo-600">
-                            <input type="radio" name="q${index}" value="${optIndex}" class="mr-2"> ${opt}
-                        </label>`;
+                // Render câu hỏi
+                const container = document.getElementById('quiz-content');
+                if (!data.cau_hoi || data.cau_hoi.length === 0) {
+                    throw new Error("Dữ liệu JSON không chứa câu hỏi nào!");
+                }
+
+                data.cau_hoi.forEach((q, index) => {
+                    const div = document.createElement('div');
+                    div.className = "mb-8 p-4 bg-slate-50 rounded-lg border border-slate-200";
+                    div.innerHTML = `<p class="font-bold text-slate-800 mb-3">${index + 1}. ${q.question}</p>`;
+                    q.options.forEach((opt, optIndex) => {
+                        div.innerHTML += `
+                            <label class="block mb-2 cursor-pointer hover:text-indigo-600 transition">
+                                <input type="radio" name="q${index}" value="${optIndex}" class="mr-2"> ${opt}
+                            </label>`;
+                    });
+                    container.appendChild(div);
                 });
-                container.appendChild(div);
+                
+                container.classList.remove('hidden');
+                document.getElementById('btn-submit').classList.remove('hidden');
+            })
+            .catch(err => {
+                showLog("LỖI: " + err.message);
+                document.getElementById('loader').classList.add('hidden');
             });
-        }
 
         document.getElementById('btn-submit').onclick = async () => {
+            const quizData = window.quizData;
             let score = 0;
+            let answered = 0;
+
             quizData.cau_hoi.forEach((q, index) => {
                 const selected = document.querySelector(`input[name="q${index}"]:checked`);
-                if (selected && parseInt(selected.value) === q.correctAnswer) score++;
+                if (selected) {
+                    answered++;
+                    if (parseInt(selected.value) === q.correctAnswer) score++;
+                }
             });
 
-            // Lưu điểm lên Firebase
+            if (answered < quizData.cau_hoi.length) {
+                alert("Vui lòng trả lời đầy đủ các câu hỏi!");
+                return;
+            }
+
             try {
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
                     ho_ten: localStorage.getItem("ehs_user_name") || "Khách",
@@ -87,7 +122,7 @@
                 alert(`Chúc mừng! Bạn đạt ${score}/${quizData.cau_hoi.length} điểm.`);
                 window.location.href = "index.html";
             } catch (e) {
-                alert("Lỗi lưu điểm: " + e.message);
+                showLog("Lỗi lưu điểm lên Firebase: " + e.message);
             }
         };
     </script>
