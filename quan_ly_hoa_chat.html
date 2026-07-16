@@ -46,7 +46,7 @@
                         <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                             <th class="p-4 font-semibold whitespace-nowrap text-center">STT (No.)</th>
                             <th class="p-4 font-semibold min-w-[250px]">Tên Hóa Chất / Nhà SX</th>
-                            <th class="p-4 font-semibold hide-on-mobile">Thành phần chính</th>
+                            <th class="p-4 font-semibold hide-on-mobile">Thành phần & Hàm lượng</th>
                             <th class="p-4 font-semibold whitespace-nowrap text-center">Phụ lục</th>
                             <th class="p-4 font-semibold whitespace-nowrap">Mã CAS</th>
                             <th class="p-4 font-semibold">Khu vực sử dụng</th>
@@ -116,6 +116,32 @@
                 if(mfg) fullNameHTML += `<div class="text-xs text-slate-500 mt-1"><i class="ph-fill ph-factory"></i> ${mfg}</div>`;
 
                 const comp = row["Chemical composition"] && String(row["Chemical composition"]) !== "0" ? row["Chemical composition"] : "-";
+                
+                // === XỬ LÝ HÀM LƯỢNG (%) ===
+                let percentHtml = "";
+                const fromPct = row["from %"];
+                const toPct = row["to %"];
+                
+                if ((fromPct !== undefined && fromPct !== "") || (toPct !== undefined && toPct !== "")) {
+                    let pctText = "";
+                    if (fromPct === toPct) {
+                        pctText = `${fromPct}%`;
+                    } else if (fromPct && toPct) {
+                        pctText = `${fromPct} - ${toPct}%`;
+                    } else {
+                        pctText = `${fromPct || toPct}%`;
+                    }
+                    
+                    // Xử lý chữ "rest" (phần còn lại)
+                    if (String(fromPct).toLowerCase() === "rest" || String(toPct).toLowerCase() === "rest") {
+                        pctText = "Phần còn lại";
+                    }
+                    
+                    percentHtml = `<div class="mt-1.5"><span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded text-[11px] font-bold"><i class="ph-bold ph-drop-half text-[12px]"></i> ${pctText}</span></div>`;
+                }
+                
+                let compHtml = `<div class="font-medium text-slate-700">${comp}</div>${percentHtml}`;
+
                 const cas = row["CAS #"] && String(row["CAS #"]) !== "0" ? row["CAS #"] : "-";
                 const position = row["Using position"] && String(row["Using position"]) !== "0" ? row["Using position"] : "-";
                 
@@ -146,7 +172,7 @@
                 tr.innerHTML = `
                     <td class="p-4 font-bold text-center ${isSubItem ? 'text-slate-400' : 'text-slate-700'}">${noVal}</td>
                     <td class="p-4">${fullNameHTML}</td>
-                    <td class="p-4 text-slate-600 hide-on-mobile">${comp}</td>
+                    <td class="p-4 hide-on-mobile">${compHtml}</td>
                     <td class="p-4 text-center">${appendixHtml}</td>
                     <td class="p-4 text-blue-600 font-mono text-sm">${cas}</td>
                     <td class="p-4 font-medium text-slate-700">${position}</td>
