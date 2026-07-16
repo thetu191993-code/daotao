@@ -192,14 +192,20 @@
                 }
             } catch (error) {
                 console.error("Lỗi:", error);
-                let errorText = "Có lỗi xảy ra. Vui lòng thử lại.";
+                let errorText = "Có lỗi xảy ra: " + error.message; // Mặc định sẽ in thẳng mã lỗi của Google ra màn hình
+                
                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                     errorText = "Sai Mã NV hoặc Mật khẩu!";
                 } else if (error.code === 'auth/email-already-in-use') {
-                    errorText = "Mã NV này đã được đăng ký! Vui lòng chọn Đăng nhập.";
+                    errorText = "Mã NV này đã được đăng ký! Vui lòng bấm sang phần Đăng nhập.";
                 } else if (error.code === 'auth/network-request-failed') {
                     errorText = "Lỗi mạng. Vui lòng kiểm tra kết nối internet.";
+                } else if (error.code === 'auth/weak-password') {
+                    errorText = "Mật khẩu quá yếu! Vui lòng nhập từ 6 ký tự trở lên.";
+                } else if (error.code === 'permission-denied') {
+                    errorText = "Hệ thống bảo mật đang khóa. Vui lòng kiểm tra Rules của Firestore Database.";
                 }
+                
                 showError(errorText);
             } finally {
                 btnSubmit.innerHTML = originalBtnText;
