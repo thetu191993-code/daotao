@@ -6,185 +6,48 @@
     <title>Bài Kiểm Tra Đào Tạo EHS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <!-- Tích hợp Firebase SDK -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", 
-            authDomain: "ehs-training-app.firebaseapp.com",
-            projectId: "ehs-training-app",
-            storageBucket: "ehs-training-app.firebasestorage.app",
-            messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-            measurementId: "G-74ETHWTJCW"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.db = db;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.serverTimestamp = serverTimestamp;
-    </script>
 </head>
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
 
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 md:p-8 font-sans text-slate-800">
-
-    <div class="max-w-2xl w-full bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200" id="main-container">
+    <div class="max-w-2xl w-full bg-white p-10 rounded-2xl shadow-sm border border-slate-200 text-center" id="main-container">
+        <!-- Thông báo lỗi chi tiết -->
+        <div id="error-box" class="hidden">
+            <i class="ph-fill ph-warning-circle text-6xl text-amber-500 mb-4"></i>
+            <h3 class="text-2xl font-bold mb-2 text-slate-800">Lỗi: Không tìm thấy bài thi!</h3>
+            <p id="error-detail" class="text-slate-600 mb-6 font-mono bg-slate-100 p-4 rounded"></p>
+            <a href="index.html" class="bg-slate-800 text-white px-8 py-3 rounded-lg font-bold hover:bg-slate-900 transition">Về Trang chủ</a>
+        </div>
         
-        <!-- MÀN HÌNH CHỜ BẮT ĐẦU -->
-        <div id="start-screen" class="bg-white flex flex-col items-center justify-center py-4">
-            <div class="text-center mb-6">
-                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-indigo-100 text-indigo-600 mb-4">
-                    <i class="ph-fill ph-student text-5xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2" id="welcome-text">Đang tải bài thi...</h2>
-                <p class="text-slate-500">Hệ thống đang chuẩn bị dữ liệu...</p>
-            </div>
-            
-            <button id="btn-start" onclick="startQuiz()" class="w-full max-w-sm bg-indigo-600 text-white font-bold py-3.5 rounded-lg mt-4 hover:bg-indigo-700 transition flex justify-center items-center gap-2 shadow-md hidden">
-                <i class="ph-bold ph-play text-xl"></i> Bắt đầu làm bài
-            </button>
-        </div>
-
-        <!-- MÀN HÌNH LÀM BÀI THI -->
-        <div id="quiz-screen" class="hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b pb-4 gap-4">
-                <div>
-                    <h2 class="text-xl md:text-2xl font-bold text-indigo-700 flex items-center">
-                        <i class="ph-fill ph-clipboard-text text-3xl mr-2"></i>
-                        Kiểm tra EHS
-                    </h2>
-                    <p id="user-display" class="text-sm font-medium text-slate-500 mt-1"></p>
-                </div>
-                <div class="bg-indigo-100 text-indigo-800 px-4 py-1.5 rounded-full font-bold text-sm" id="progress"></div>
-            </div>
-            <div>
-                <h3 class="text-xl font-medium mb-6 text-slate-700 leading-relaxed" id="question-text">Đang tải câu hỏi...</h3>
-                <div class="flex flex-col gap-3" id="options-container"></div>
-            </div>
-        </div>
-
-        <!-- MÀN HÌNH KẾT QUẢ -->
-        <div id="result-screen" class="hidden text-center py-8">
-            <i class="ph-fill ph-check-circle text-6xl text-emerald-500 mb-4"></i>
-            <h3 class="text-2xl font-bold mb-2 text-slate-800">Hoàn thành bài kiểm tra!</h3>
-            <p class="text-lg text-slate-600 mb-8 bg-slate-50 py-3 rounded-lg border border-slate-100 inline-block px-8">
-                Điểm của bạn: <span id="score" class="font-bold text-indigo-600 text-3xl mx-2">0</span> / <span id="total-score" class="font-bold text-xl text-slate-400">10</span>
-            </p>
-            <p id="save-status" class="text-amber-600 font-medium mb-8 text-sm flex items-center justify-center gap-2">
-                <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu kết quả...
-            </p>
-            <a href="index.html" class="bg-slate-800 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-slate-900 transition shadow-md inline-flex items-center gap-2">
-                <i class="ph-bold ph-house"></i> Về Trang chủ
-            </a>
+        <!-- Loading -->
+        <div id="loading-box">
+            <i class="ph-bold ph-spinner animate-spin text-5xl text-indigo-600 mb-4"></i>
+            <h3 class="text-xl font-bold">Đang tải bài thi...</h3>
         </div>
     </div>
 
     <script>
-        let quizData = [];
-        let currentQuestionIndex = 0;
-        let score = 0;
-        let userAnswers = []; 
-        let courseName = "Bài Kiểm Tra EHS";
-        
-        const userId = localStorage.getItem("ehs_user_id");
-        const userName = localStorage.getItem("ehs_user_name") || userId;
-
-        const questionText = document.getElementById('question-text');
-        const optionsContainer = document.getElementById('options-container');
-        const progressText = document.getElementById('progress');
-        const startScreen = document.getElementById('start-screen');
-        const quizScreen = document.getElementById('quiz-screen');
-        const resultScreen = document.getElementById('result-screen');
-        const scoreDisplay = document.getElementById('score');
-        const totalScoreDisplay = document.getElementById('total-score');
-        const welcomeText = document.getElementById('welcome-text');
-        const btnStart = document.getElementById('btn-start');
-
         window.onload = function() {
-            if (!userId) {
-                alert("Bạn chưa đăng nhập! Vui lòng đăng nhập.");
-                window.location.href = "login.html";
-                return;
-            }
-
-            welcomeText.innerHTML = `Xin chào, <span class="text-indigo-600">${userName}</span>`;
-            document.getElementById('user-display').innerText = `Nhân sự: ${userName} (${userId})`;
-
-            // TỰ ĐỘNG TẢI DỮ LIỆU (Nếu không có ID thì lấy khóa chung)
             const urlParams = new URLSearchParams(window.location.search);
             const courseId = urlParams.get('id') || 'data_ehs_chung'; 
+            const fileUrl = courseId + '.json';
 
-            fetch(courseId + '.json', { cache: "no-store" })
-                .then(response => response.json())
+            fetch(fileUrl, { cache: "no-store" })
+                .then(response => {
+                    if (!response.ok) throw new Error("Không thể tải file: " + fileUrl + " (Lỗi: " + response.status + ")");
+                    return response.json();
+                })
                 .then(data => {
-                    quizData = data.cau_hoi;
-                    courseName = data.ten_khoa_hoc;
-                    document.title = "Bài thi: " + courseName;
-                    btnStart.classList.remove('hidden');
+                    // Nếu tải thành công, tự động chuyển hướng hoặc hiển thị nội dung
+                    // Ở đây tôi chỉ in ra console để test, anh có thể thay bằng code hiển thị bài thi
+                    document.getElementById('loading-box').innerHTML = `<h3 class="text-2xl font-bold text-emerald-600">Đã tìm thấy bài thi: ${data.ten_khoa_hoc}</h3>`;
+                    console.log("Dữ liệu đã tải:", data);
                 })
                 .catch(error => {
-                    welcomeText.innerHTML = `<span class="text-red-600">Lỗi: Không tìm thấy bài thi!</span>`;
-                    console.error(error);
+                    document.getElementById('loading-box').classList.add('hidden');
+                    document.getElementById('error-box').classList.remove('hidden');
+                    document.getElementById('error-detail').innerText = error.message;
                 });
         };
-
-        function startQuiz() {
-            startScreen.classList.add('hidden');
-            quizScreen.classList.remove('hidden');
-            totalScoreDisplay.innerText = quizData.length;
-            loadQuestion();
-        }
-
-        function loadQuestion() {
-            const currentData = quizData[currentQuestionIndex];
-            questionText.innerText = currentData.question;
-            progressText.innerText = `Câu ${currentQuestionIndex + 1} / ${quizData.length}`;
-            optionsContainer.innerHTML = '';
-
-            currentData.options.forEach((option, index) => {
-                const button = document.createElement('button');
-                button.innerText = option;
-                button.className = "w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-indigo-500 hover:bg-indigo-50 transition font-medium text-slate-700 bg-white";
-                button.onclick = () => selectAnswer(index, option);
-                optionsContainer.appendChild(button);
-            });
-        }
-
-        function selectAnswer(selectedIndex, selectedText) {
-            const currentData = quizData[currentQuestionIndex];
-            if (selectedIndex === currentData.correctAnswer) { score++; }
-            
-            userAnswers.push({ cau_hoi: currentData.question, dap_an_da_chon: selectedText });
-            currentQuestionIndex++;
-            currentQuestionIndex < quizData.length ? loadQuestion() : showResults();
-        }
-
-        async function showResults() {
-            quizScreen.classList.add('hidden');
-            resultScreen.classList.remove('hidden');
-            scoreDisplay.innerText = score;
-            const statusText = document.getElementById('save-status');
-
-            try {
-                await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
-                    nhan_vien_id: userId.toUpperCase(),
-                    ho_ten: userName,
-                    diem_so: score,
-                    tong_cau: quizData.length,
-                    thoi_gian_nop: window.serverTimestamp(),
-                    ten_khoa_hoc: courseName
-                });
-                statusText.innerHTML = '<span class="text-emerald-700 font-bold">Đã lưu điểm!</span>';
-            } catch (e) {
-                statusText.innerHTML = '<span class="text-red-600">Lỗi lưu kết quả.</span>';
-            }
-        }
     </script>
 </body>
 </html>
