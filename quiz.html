@@ -3,51 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bài Kiểm Tra Đào Tạo EHS</title>
+    <title>Bài Kiểm Tra</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800">
+<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
 
-    <div class="max-w-2xl w-full bg-white p-10 rounded-2xl shadow-sm border border-slate-200 text-center" id="main-container">
-        <!-- Thông báo lỗi chi tiết -->
-        <div id="error-box" class="hidden">
-            <i class="ph-fill ph-warning-circle text-6xl text-amber-500 mb-4"></i>
-            <h3 class="text-2xl font-bold mb-2 text-slate-800">Lỗi: Không tìm thấy bài thi!</h3>
-            <p id="error-detail" class="text-slate-600 mb-6 font-mono bg-slate-100 p-4 rounded"></p>
-            <a href="index.html" class="bg-slate-800 text-white px-8 py-3 rounded-lg font-bold hover:bg-slate-900 transition">Về Trang chủ</a>
-        </div>
-        
-        <!-- Loading -->
-        <div id="loading-box">
+    <div class="max-w-2xl w-full bg-white p-10 rounded-2xl shadow-sm border text-center">
+        <div id="loading">
             <i class="ph-bold ph-spinner animate-spin text-5xl text-indigo-600 mb-4"></i>
             <h3 class="text-xl font-bold">Đang tải bài thi...</h3>
+        </div>
+        <div id="error-box" class="hidden text-red-600">
+            <i class="ph-fill ph-warning-circle text-6xl mb-4"></i>
+            <h3 class="text-2xl font-bold mb-2">Lỗi tải bài thi!</h3>
+            <p id="error-detail" class="font-mono bg-slate-100 p-4 rounded"></p>
         </div>
     </div>
 
     <script>
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const courseId = urlParams.get('id') || 'data_ehs_chung'; 
-            const fileUrl = courseId + '.json';
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id') || 'data_ehs_chung';
+        const jsonPath = `./${courseId}.json`;
 
-            fetch(fileUrl, { cache: "no-store" })
-                .then(response => {
-                    if (!response.ok) throw new Error("Không thể tải file: " + fileUrl + " (Lỗi: " + response.status + ")");
-                    return response.json();
-                })
-                .then(data => {
-                    // Nếu tải thành công, tự động chuyển hướng hoặc hiển thị nội dung
-                    // Ở đây tôi chỉ in ra console để test, anh có thể thay bằng code hiển thị bài thi
-                    document.getElementById('loading-box').innerHTML = `<h3 class="text-2xl font-bold text-emerald-600">Đã tìm thấy bài thi: ${data.ten_khoa_hoc}</h3>`;
-                    console.log("Dữ liệu đã tải:", data);
-                })
-                .catch(error => {
-                    document.getElementById('loading-box').classList.add('hidden');
-                    document.getElementById('error-box').classList.remove('hidden');
-                    document.getElementById('error-detail').innerText = error.message;
-                });
-        };
+        fetch(jsonPath)
+            .then(res => {
+                if (!res.ok) throw new Error("Không tìm thấy file: " + jsonPath);
+                return res.json();
+            })
+            .then(data => {
+                document.getElementById('loading').innerHTML = `<h3 class="text-2xl font-bold text-emerald-600">Đã tải bài thi: ${data.ten_khoa_hoc}</h3>`;
+                // Xử lý bài thi tại đây...
+            })
+            .catch(err => {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('error-box').classList.remove('hidden');
+                document.getElementById('error-detail').innerText = err.message;
+            });
     </script>
 </body>
 </html>
