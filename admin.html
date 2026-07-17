@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <!-- Tích hợp Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -31,25 +30,41 @@
         window.getDocs = getDocs;
         window.query = query;
         window.orderBy = orderBy;
-        
-        // Tự động tải dữ liệu khi mở trang
-        window.onload = loadData;
     </script>
 </head>
-<body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800">
+<body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center">
 
-    <div class="max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+    <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+            <i class="ph-fill ph-lock-key text-4xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Khu Vực Quản Trị EHS</h2>
+        <p class="text-slate-500 text-sm mb-6">Vui lòng nhập mật khẩu quản lý để xem điểm thi.</p>
         
-        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4">
+        <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-center tracking-[0.3em] font-mono text-xl focus:ring-2 focus:ring-blue-500 outline-none mb-2" placeholder="••••••••">
+        <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4">Sai mật khẩu! Vui lòng thử lại.</p>
+        
+        <button onclick="checkAdminPassword()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-md">
+            Mở Khóa Hệ Thống
+        </button>
+        <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-blue-600 hover:underline">Quay lại Trang chủ</a>
+    </div>
+
+    <div id="main-content" class="w-full max-w-6xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4 gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-slate-800 flex items-center">
                     <i class="ph-fill ph-shield-check text-blue-600 text-3xl mr-3"></i>
                     Quản lý Kết quả Đào tạo EHS
                 </h2>
-                <p class="text-slate-500 mt-1">Hệ thống theo dõi điểm số tự động từ Firebase.</p>
+                <p class="text-slate-500 mt-1">Điều kiện đạt: <span class="font-bold text-emerald-600">Từ 80% trở lên (8/10)</span></p>
             </div>
             
-            <div class="mt-4 md:mt-0 flex gap-3">
+            <div class="flex flex-wrap gap-3">
+                <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2">
+                    <i class="ph-bold ph-house"></i> Trang chủ
+                </a>
                 <button onclick="loadData()" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300 transition flex items-center gap-2">
                     <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
                 </button>
@@ -59,23 +74,23 @@
             </div>
         </div>
 
-        <!-- Trạng thái Loading -->
         <div id="loading-msg" class="text-center py-10 text-blue-600 font-medium hidden">
             <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
             <p>Đang tải dữ liệu từ máy chủ...</p>
         </div>
 
-        <!-- Bảng Dữ Liệu -->
         <div class="overflow-x-auto rounded-lg border border-slate-200">
-            <table class="w-full text-left border-collapse min-w-[700px]">
+            <table class="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-sm uppercase">
                         <th class="p-4 font-semibold w-16 text-center">STT</th>
                         <th class="p-4 font-semibold">Thời gian nộp</th>
+                        <th class="p-4 font-semibold">Khóa học</th>
                         <th class="p-4 font-semibold">Mã NV</th>
                         <th class="p-4 font-semibold">Họ và Tên</th>
                         <th class="p-4 font-semibold text-center">Điểm số</th>
                         <th class="p-4 font-semibold text-center">Xếp loại</th>
+                        <th class="p-4 font-semibold text-center">Hành động</th>
                     </tr>
                 </thead>
                 <tbody id="results-body" class="text-sm divide-y divide-slate-100">
@@ -83,11 +98,28 @@
                 </tbody>
             </table>
         </div>
-
     </div>
 
     <script>
-        // Hàm tải dữ liệu từ Firebase
+        // MẬT KHẨU QUẢN TRỊ (Anh có thể đổi chữ ADMIN2026 thành chữ khác)
+        const ADMIN_PASS = "ADMIN2026";
+
+        function checkAdminPassword() {
+            const inputPass = document.getElementById('admin-pass').value;
+            if (inputPass === ADMIN_PASS) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                loadData(); // Mở khóa xong thì tải dữ liệu
+            } else {
+                document.getElementById('pass-error').classList.remove('hidden');
+            }
+        }
+
+        // Bắt sự kiện nhấn phím Enter để đăng nhập
+        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkAdminPassword();
+        });
+
         async function loadData() {
             const tbody = document.getElementById('results-body');
             const loading = document.getElementById('loading-msg');
@@ -96,67 +128,146 @@
             loading.classList.remove('hidden');
 
             try {
-                // Lấy dữ liệu từ collection 'ket_qua_kiem_tra', sắp xếp theo thời gian mới nhất
                 const q = window.query(window.collection(window.db, "ket_qua_kiem_tra"), window.orderBy("thoi_gian_nop", "desc"));
                 const querySnapshot = await window.getDocs(q);
                 
                 let stt = 1;
                 
                 if(querySnapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Chưa có ai làm bài kiểm tra.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500">Chưa có ai làm bài kiểm tra.</td></tr>`;
                 }
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     
-                    // Xử lý thời gian
                     let timeString = "N/A";
+                    let shortDate = "N/A";
                     if (data.thoi_gian_nop) {
                         const date = data.thoi_gian_nop.toDate();
                         timeString = date.toLocaleString('vi-VN');
+                        shortDate = date.toLocaleDateString('vi-VN'); // Dùng để in chứng nhận
                     }
 
-                    // Đánh giá Pass/Fail (Ví dụ: 3/3 là Đạt)
-                    const isPass = data.diem_so >= data.tong_cau;
+                    // ĐIỀU KIỆN ĐẠT: Điểm số phải >= 80% tổng số câu (tương đương 8/10)
+                    const tiLePass = 0.8; 
+                    const isPass = data.diem_so >= (data.tong_cau * tiLePass);
+                    
                     const badgeClass = isPass ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700";
                     const badgeText = isPass ? "Đạt" : "Không đạt";
+                    
+                    // Nút cấp chứng nhận (chỉ hiện nếu thi Đạt)
+                    let actionHtml = '-';
+                    if(isPass) {
+                        actionHtml = `<button onclick="printCert('${data.ho_ten}', '${data.ten_khoa_hoc}', '${shortDate}', '${data.diem_so}/${data.tong_cau}')" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-600 hover:text-white transition flex items-center gap-1 mx-auto"><i class="ph-bold ph-printer"></i> Chứng nhận</button>`;
+                    }
 
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-slate-50 transition-colors";
                     tr.innerHTML = `
                         <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
                         <td class="p-4 text-slate-600">${timeString}</td>
-                        <td class="p-4 font-semibold text-slate-700">${data.nhan_vien_id || ''}</td>
+                        <td class="p-4 text-emerald-700 font-semibold">${data.ten_khoa_hoc || 'EHS Chung'}</td>
+                        <td class="p-4 font-semibold text-slate-700 uppercase">${data.nhan_vien_id || ''}</td>
                         <td class="p-4 font-bold text-blue-700">${data.ho_ten || ''}</td>
                         <td class="p-4 text-center font-bold text-lg">${data.diem_so} / ${data.tong_cau}</td>
                         <td class="p-4 text-center">
                             <span class="px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">${badgeText}</span>
                         </td>
+                        <td class="p-4 text-center">${actionHtml}</td>
                     `;
                     tbody.appendChild(tr);
                 });
 
             } catch (error) {
                 console.error("Lỗi khi tải dữ liệu: ", error);
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 font-medium">Có lỗi xảy ra khi tải dữ liệu. Vui lòng kiểm tra Console.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-red-500 font-medium">Có lỗi xảy ra khi tải dữ liệu. Hãy chắc chắn bạn đã cấu hình đúng API Key.</td></tr>`;
             } finally {
                 loading.classList.add('hidden');
             }
         }
 
-        // Hàm xuất file CSV (Excel)
+        window.printCert = function(name, course, dateStr, score) {
+            // Mở một cửa sổ mới để in
+            const printWindow = window.open('', '', 'width=900,height=700');
+            
+            const htmlContent = `
+                <html>
+                <head>
+                    <title>Chứng Nhận Đào Tạo - ${name}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; background: #f0f4f8; }
+                        .cert-container { width: 800px; height: 560px; background: white; padding: 20px; position: relative; border: 2px solid #ccc; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+                        .cert-border { border: 10px solid #005088; width: 100%; height: 100%; box-sizing: border-box; padding: 40px; text-align: center; position: relative; }
+                        .logo { position: absolute; top: 40px; left: 40px; font-size: 24px; font-weight: bold; color: #005088; }
+                        h1 { color: #005088; font-size: 42px; margin-top: 20px; text-transform: uppercase; letter-spacing: 2px; }
+                        h3 { color: #555; font-size: 20px; font-weight: normal; margin-bottom: 30px; }
+                        h2 { font-size: 46px; color: #b32d00; margin: 10px 0; font-family: 'Georgia', serif; font-style: italic; }
+                        .content { font-size: 22px; color: #333; line-height: 1.6; margin-top: 30px; }
+                        .course-name { font-size: 28px; font-weight: bold; color: #005088; display: block; margin: 15px 0; }
+                        .footer { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 40px; }
+                        .signature { text-align: center; }
+                        .signature p { margin: 5px 0; font-size: 18px; }
+                        .line { border-top: 1px solid #000; width: 200px; margin: 10px auto; margin-top: 40px;}
+                        .seal { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 100px; height: 100px; border: 4px solid #b32d00; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #b32d00; font-weight: bold; font-size: 14px; text-align: center; text-transform: uppercase;}
+                        @media print {
+                            body { background: white; padding: 0; }
+                            .cert-container { box-shadow: none; border: none; width: 100%; height: 100%; page-break-after: avoid; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="cert-container">
+                        <div class="cert-border">
+                            <div class="logo">EHS DEPT</div>
+                            <h1>GIẤY CHỨNG NHẬN</h1>
+                            <h3>Chứng nhận sự hoàn thành xuất sắc</h3>
+                            
+                            <h2>${name}</h2>
+                            
+                            <div class="content">
+                                Đã tham gia và vượt qua kỳ kiểm tra đánh giá năng lực<br>
+                                <span class="course-name">"${course}"</span>
+                                Đạt số điểm: <strong>${score}</strong>
+                            </div>
+
+                            <div class="seal">
+                                ĐẠT<br>TIÊU CHUẨN
+                            </div>
+
+                            <div class="footer">
+                                <div class="signature">
+                                    <p>Ngày chứng nhận</p>
+                                    <p><strong>${dateStr}</strong></p>
+                                </div>
+                                <div class="signature">
+                                    <div class="line"></div>
+                                    <p><strong>Trưởng phòng EHS</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        // Đợi HTML load xong thì tự động gọi lệnh In
+                        window.onload = function() { setTimeout(window.print, 500); }
+                    <\/script>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+        }
+
         function exportTableToCSV(filename) {
             const rows = document.querySelectorAll("table tr");
             let csv = [];
-            
-            // Fix lỗi font tiếng Việt khi mở bằng Excel
             let bom = "\uFEFF"; 
 
             for (let i = 0; i < rows.length; i++) {
                 let row = [], cols = rows[i].querySelectorAll("td, th");
-                
-                for (let j = 0; j < cols.length; j++) {
-                    // Loại bỏ chữ dư thừa trong nút badge
+                // Bỏ qua cột "Hành động" (cột cuối cùng) khi xuất Excel
+                let length = i === 0 ? cols.length - 1 : cols.length - 1;
+                for (let j = 0; j < length; j++) {
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""');
                     row.push('"' + data + '"');
                 }
@@ -167,11 +278,8 @@
         }
 
         function downloadCSV(csv, filename) {
-            let csvFile;
-            let downloadLink;
-
-            csvFile = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-            downloadLink = document.createElement("a");
+            let csvFile = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            let downloadLink = document.createElement("a");
             downloadLink.download = filename;
             downloadLink.href = window.URL.createObjectURL(csvFile);
             downloadLink.style.display = "none";
