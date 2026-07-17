@@ -13,7 +13,7 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // ANH KIỂM TRA KỸ ĐOẠN NÀY: Phải đảm bảo apiKey nằm trong ngoặc kép ""
+        // ANH DÁN API KEY MỚI VÀO ĐÂY NHÉ
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -39,7 +39,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
 
-    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-200 relative">
         
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
@@ -100,7 +100,6 @@
                         <option value="Nhân sự">Nhân sự</option>
                         <option value="Nhà thầu">Nhà thầu</option>
                     </select>
-                    <!-- Mũi tên chỏ xuống của ô chọn -->
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <i class="ph-bold ph-caret-down text-slate-400"></i>
                     </div>
@@ -108,7 +107,13 @@
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu</label>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-sm font-semibold text-slate-700">Mật khẩu</label>
+                    <!-- NÚT QUÊN MẬT KHẨU -->
+                    <button id="btn-forgot-pass" type="button" onclick="showForgotPassModal()" class="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline focus:outline-none">
+                        Quên mật khẩu?
+                    </button>
+                </div>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="ph-bold ph-lock-key text-slate-400 text-lg"></i>
@@ -127,10 +132,43 @@
             <span id="toggle-text">Nhân sự mới?</span> 
             <button onclick="toggleMode()" id="btn-toggle" class="text-blue-600 font-bold hover:underline ml-1">Đăng ký tài khoản</button>
         </div>
+        
+        <!-- Nút Trở về trang chủ -->
+        <div class="mt-4 text-center">
+            <a href="index.html" class="inline-flex items-center justify-center text-sm font-medium text-slate-500 hover:text-slate-800 transition">
+                <i class="ph-bold ph-arrow-left mr-1"></i> Quay về Trang chủ
+            </a>
+        </div>
+    </div>
+
+    <!-- MODAL QUÊN MẬT KHẨU -->
+    <div id="forgot-pass-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 text-center border-t-4 border-amber-500">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 text-amber-500 mb-4">
+                <i class="ph-fill ph-warning-circle text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Quên Mật Khẩu?</h3>
+            <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+                Vì hệ thống sử dụng <strong>Mã Nhân Viên</strong> nội bộ (không dùng email cá nhân) nên tính năng tự động cấp lại mật khẩu bị vô hiệu hóa để đảm bảo bảo mật.<br><br>
+                Vui lòng liên hệ <strong>Phòng EHS (Admin)</strong> cung cấp Mã NV để được cấp lại mật khẩu mới.
+            </p>
+            <button onclick="closeForgotPassModal()" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-lg hover:bg-slate-700 transition shadow-sm">
+                Đã hiểu & Đóng
+            </button>
+        </div>
     </div>
 
     <script>
-        let isLoginMode = true; // Mặc định là chế độ Đăng nhập
+        let isLoginMode = true;
+
+        // Xử lý bật/tắt Modal Quên Mật Khẩu
+        function showForgotPassModal() {
+            document.getElementById('forgot-pass-modal').classList.remove('hidden');
+        }
+
+        function closeForgotPassModal() {
+            document.getElementById('forgot-pass-modal').classList.add('hidden');
+        }
 
         function toggleMode() {
             isLoginMode = !isLoginMode;
@@ -142,19 +180,20 @@
             const toggleText = document.getElementById('toggle-text');
             const btnToggle = document.getElementById('btn-toggle');
             const subtitle = document.getElementById('form-subtitle');
+            const btnForgotPass = document.getElementById('btn-forgot-pass');
 
             if (isLoginMode) {
-                // Chuyển về Đăng nhập
                 nameField.classList.add('hidden');
                 deptField.classList.add('hidden');
+                btnForgotPass.classList.remove('hidden'); // Hiện nút quên pass khi đăng nhập
                 btnSubmit.innerHTML = "Đăng nhập";
                 toggleText.innerText = "Nhân sự mới?";
                 btnToggle.innerText = "Đăng ký tài khoản";
                 subtitle.innerText = "Vui lòng đăng nhập để tiếp tục";
             } else {
-                // Chuyển sang Đăng ký
                 nameField.classList.remove('hidden');
                 deptField.classList.remove('hidden');
+                btnForgotPass.classList.add('hidden'); // Ẩn nút quên pass khi đăng ký
                 btnSubmit.innerHTML = "Tạo tài khoản & Đăng nhập";
                 toggleText.innerText = "Đã có tài khoản?";
                 btnToggle.innerText = "Đăng nhập ngay";
@@ -196,10 +235,7 @@
                 return;
             }
 
-            // Tạo email ảo từ Mã NV
             const fakeEmail = `${idInput}@ehs.com`;
-
-            // Vô hiệu hóa nút trong lúc chờ
             const originalBtnText = btnSubmit.innerHTML;
             btnSubmit.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang xử lý...';
             btnSubmit.disabled = true;
@@ -207,46 +243,45 @@
 
             try {
                 if (isLoginMode) {
-                    // XỬ LÝ ĐĂNG NHẬP
                     const userCredential = await window.signInWithEmailAndPassword(window.auth, fakeEmail, passInput);
                     const user = userCredential.user;
 
-                    // Tải thông tin Họ Tên và Bộ Phận từ Firebase về máy
-                    const userDoc = await window.getDoc(window.doc(window.db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        localStorage.setItem("ehs_user_name", userData.ho_ten || "");
-                        localStorage.setItem("ehs_user_dept", userData.bo_phan || "");
+                    // Tải thông tin từ Firebase về máy để không bị lỗi "trắng tên"
+                    try {
+                        const userDoc = await window.getDoc(window.doc(window.db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            localStorage.setItem("ehs_user_name", userData.ho_ten || "");
+                            localStorage.setItem("ehs_user_dept", userData.bo_phan || "");
+                        }
+                    } catch (e) {
+                        console.log("Lỗi tải thông tin user:", e);
                     }
 
-                    // Lưu thông tin phiên đăng nhập vào LocalStorage
                     localStorage.setItem("ehs_user_id", idInput.toUpperCase());
-                    window.location.href = "index.html"; // Chuyển về trang chủ
+                    window.location.href = "index.html"; 
                 } else {
-                    // XỬ LÝ ĐĂNG KÝ
                     const userCredential = await window.createUserWithEmailAndPassword(window.auth, fakeEmail, passInput);
                     const user = userCredential.user;
                     
-                    // Lưu Họ Tên và Bộ Phận vào cơ sở dữ liệu Firestore
                     await window.setDoc(window.doc(window.db, "users", user.uid), {
                         ma_nv: idInput.toUpperCase(),
                         ho_ten: nameInput,
                         bo_phan: deptInput,
-                        role: "user", // Mặc định là nhân viên bình thường
+                        role: "user",
                         ngay_tao: new Date().toISOString()
                     });
 
-                    // Lưu thông tin phiên
                     localStorage.setItem("ehs_user_id", idInput.toUpperCase());
                     localStorage.setItem("ehs_user_name", nameInput);
                     localStorage.setItem("ehs_user_dept", deptInput);
                     
-                    alert("Tạo tài khoản thành công! Bạn sẽ được chuyển về Trang chủ.");
+                    alert("Tạo tài khoản thành công! Bấm OK để về Trang chủ.");
                     window.location.href = "index.html";
                 }
             } catch (error) {
                 console.error("Lỗi:", error);
-                let errorText = "Có lỗi xảy ra: " + error.message; // Mặc định sẽ in thẳng mã lỗi của Google ra màn hình
+                let errorText = "Có lỗi xảy ra: " + error.message; 
                 
                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
                     errorText = "Sai Mã NV hoặc Mật khẩu!";
@@ -256,8 +291,6 @@
                     errorText = "Lỗi mạng. Vui lòng kiểm tra kết nối internet.";
                 } else if (error.code === 'auth/weak-password') {
                     errorText = "Mật khẩu quá yếu! Vui lòng nhập từ 6 ký tự trở lên.";
-                } else if (error.code === 'permission-denied') {
-                    errorText = "Hệ thống bảo mật đang khóa. Vui lòng kiểm tra Rules của Firestore Database.";
                 }
                 
                 showError(errorText);
