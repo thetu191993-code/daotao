@@ -54,22 +54,22 @@
         
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4 gap-4">
             <div>
-                <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                <h2 class="text-2xl font-bold text-blue-800 flex items-center">
                     <i class="ph-fill ph-shield-check text-blue-600 text-3xl mr-3"></i>
                     Quản lý Kết quả Đào tạo EHS
                 </h2>
-                <p class="text-slate-500 mt-1">Điều kiện đạt: <span class="font-bold text-emerald-600">Từ 80% trở lên (8/10)</span></p>
+                <p class="text-slate-500 mt-1">Hệ thống theo dõi điểm số tự động từ Firebase.</p>
             </div>
             
             <div class="flex flex-wrap gap-3">
-                <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2">
+                <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
                     <i class="ph-bold ph-house"></i> Trang chủ
                 </a>
-                <button onclick="loadData()" class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300 transition flex items-center gap-2">
+                <button onclick="loadData()" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
                     <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
                 </button>
-                <button onclick="exportTableToCSV('Ket_Qua_EHS.csv')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-download-simple"></i> Xuất Excel (CSV)
+                <button onclick="exportTableToCSV('Ket_Qua_EHS.csv')" class="bg-teal-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-download-simple text-lg"></i> Xuất Excel (CSV)
                 </button>
             </div>
         </div>
@@ -79,14 +79,13 @@
             <p>Đang tải dữ liệu từ máy chủ...</p>
         </div>
 
-        <div class="overflow-x-auto rounded-lg border border-slate-200">
+        <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
             <table class="w-full text-left border-collapse min-w-[800px]">
                 <thead>
-                    <tr class="bg-slate-800 text-white text-sm uppercase">
+                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-semibold w-16 text-center">STT</th>
                         <th class="p-4 font-semibold">Thời gian nộp</th>
-                        <th class="p-4 font-semibold">Khóa học</th>
-                        <th class="p-4 font-semibold">Mã NV</th>
+                        <th class="p-4 font-semibold text-center">Mã NV</th>
                         <th class="p-4 font-semibold">Họ và Tên</th>
                         <th class="p-4 font-semibold text-center">Điểm số</th>
                         <th class="p-4 font-semibold text-center">Xếp loại</th>
@@ -101,7 +100,6 @@
     </div>
 
     <script>
-        // MẬT KHẨU QUẢN TRỊ (Anh có thể đổi chữ ADMIN2026 thành chữ khác)
         const ADMIN_PASS = "ADMIN2026";
 
         function checkAdminPassword() {
@@ -109,13 +107,12 @@
             if (inputPass === ADMIN_PASS) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                loadData(); // Mở khóa xong thì tải dữ liệu
+                loadData(); 
             } else {
                 document.getElementById('pass-error').classList.remove('hidden');
             }
         }
 
-        // Bắt sự kiện nhấn phím Enter để đăng nhập
         document.getElementById('admin-pass').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') checkAdminPassword();
         });
@@ -134,7 +131,7 @@
                 let stt = 1;
                 
                 if(querySnapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500">Chưa có ai làm bài kiểm tra.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có ai làm bài kiểm tra.</td></tr>`;
                 }
 
                 querySnapshot.forEach((doc) => {
@@ -145,20 +142,23 @@
                     if (data.thoi_gian_nop) {
                         const date = data.thoi_gian_nop.toDate();
                         timeString = date.toLocaleString('vi-VN');
-                        shortDate = date.toLocaleDateString('vi-VN'); // Dùng để in chứng nhận
+                        shortDate = date.toLocaleDateString('vi-VN'); 
                     }
 
-                    // ĐIỀU KIỆN ĐẠT: Điểm số phải >= 80% tổng số câu (tương đương 8/10)
+                    // TÍNH ĐIỂM ĐẠT TỪ 8 TRỞ LÊN (80%)
                     const tiLePass = 0.8; 
                     const isPass = data.diem_so >= (data.tong_cau * tiLePass);
                     
-                    const badgeClass = isPass ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700";
+                    const badgeClass = isPass ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-600 border-red-100";
                     const badgeText = isPass ? "Đạt" : "Không đạt";
                     
-                    // Nút cấp chứng nhận (chỉ hiện nếu thi Đạt)
+                    // Sửa lỗi "undefined" nếu dữ liệu cũ không có tên khóa học
+                    const courseName = data.ten_khoa_hoc || "Đào tạo EHS Chung 2026";
+
                     let actionHtml = '-';
                     if(isPass) {
-                        actionHtml = `<button onclick="printCert('${data.ho_ten}', '${data.ten_khoa_hoc}', '${shortDate}', '${data.diem_so}/${data.tong_cau}')" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-600 hover:text-white transition flex items-center gap-1 mx-auto"><i class="ph-bold ph-printer"></i> Chứng nhận</button>`;
+                        // Nút in chứng nhận (Chỉ hiện khi Đạt)
+                        actionHtml = `<button onclick="printCert('${data.ho_ten}', '${courseName}', '${shortDate}', '${data.diem_so}/${data.tong_cau}')" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-indigo-600 hover:text-white transition flex items-center gap-1 mx-auto"><i class="ph-bold ph-printer"></i> Chứng nhận</button>`;
                     }
 
                     const tr = document.createElement('tr');
@@ -166,12 +166,11 @@
                     tr.innerHTML = `
                         <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
                         <td class="p-4 text-slate-600">${timeString}</td>
-                        <td class="p-4 text-emerald-700 font-semibold">${data.ten_khoa_hoc || 'EHS Chung'}</td>
-                        <td class="p-4 font-semibold text-slate-700 uppercase">${data.nhan_vien_id || ''}</td>
-                        <td class="p-4 font-bold text-blue-700">${data.ho_ten || ''}</td>
-                        <td class="p-4 text-center font-bold text-lg">${data.diem_so} / ${data.tong_cau}</td>
+                        <td class="p-4 text-center font-semibold text-slate-700 uppercase">${data.nhan_vien_id || 'N/A'}</td>
+                        <td class="p-4 font-bold text-blue-700">${data.ho_ten || 'Khách'}</td>
+                        <td class="p-4 text-center font-bold text-base text-slate-800">${data.diem_so} / ${data.tong_cau}</td>
                         <td class="p-4 text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">${badgeText}</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${badgeText}</span>
                         </td>
                         <td class="p-4 text-center">${actionHtml}</td>
                     `;
@@ -180,45 +179,69 @@
 
             } catch (error) {
                 console.error("Lỗi khi tải dữ liệu: ", error);
-                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-red-500 font-medium">Có lỗi xảy ra khi tải dữ liệu. Hãy chắc chắn bạn đã cấu hình đúng API Key.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
             } finally {
                 loading.classList.add('hidden');
             }
         }
 
         window.printCert = function(name, course, dateStr, score) {
-            // Mở một cửa sổ mới để in
-            const printWindow = window.open('', '', 'width=900,height=700');
+            const printWindow = window.open('', '', 'width=1000,height=700');
             
+            // ==========================================
+            // CHỖ CHÈN LINK LOGO CÔNG TY CỦA ANH
+            // Anh dán link ảnh logo vào giữa 2 dấu ngoặc kép ở biến dưới đây nhé:
+            // ==========================================
+            const LOGO_URL = "https://placehold.co/300x100/ffffff/005088?text=LOGO+CONG+TY"; 
+
             const htmlContent = `
+                <!DOCTYPE html>
                 <html>
                 <head>
+                    <meta charset="UTF-8"> <!-- Khắc phục lỗi Font chữ tiếng Việt -->
                     <title>Chứng Nhận Đào Tạo - ${name}</title>
                     <style>
-                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; background: #f0f4f8; }
-                        .cert-container { width: 800px; height: 560px; background: white; padding: 20px; position: relative; border: 2px solid #ccc; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-                        .cert-border { border: 10px solid #005088; width: 100%; height: 100%; box-sizing: border-box; padding: 40px; text-align: center; position: relative; }
-                        .logo { position: absolute; top: 40px; left: 40px; font-size: 24px; font-weight: bold; color: #005088; }
-                        h1 { color: #005088; font-size: 42px; margin-top: 20px; text-transform: uppercase; letter-spacing: 2px; }
-                        h3 { color: #555; font-size: 20px; font-weight: normal; margin-bottom: 30px; }
-                        h2 { font-size: 46px; color: #b32d00; margin: 10px 0; font-family: 'Georgia', serif; font-style: italic; }
-                        .content { font-size: 22px; color: #333; line-height: 1.6; margin-top: 30px; }
-                        .course-name { font-size: 28px; font-weight: bold; color: #005088; display: block; margin: 15px 0; }
-                        .footer { display: flex; justify-content: space-between; margin-top: 60px; padding: 0 40px; }
+                        body { font-family: 'Arial', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; background: #f0f4f8; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        .cert-container { width: 900px; height: 630px; background: white; padding: 20px; position: relative; border: 2px solid #ccc; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+                        .cert-border { border: 12px solid #005088; width: 100%; height: 100%; box-sizing: border-box; padding: 40px; text-align: center; position: relative; border-radius: 4px; }
+                        
+                        /* Căn chỉnh Logo */
+                        .logo { position: absolute; top: 30px; left: 40px; }
+                        .logo img { max-width: 180px; max-height: 70px; object-fit: contain; }
+                        
+                        h1 { color: #005088; font-size: 46px; margin-top: 30px; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
+                        h3 { color: #555; font-size: 22px; font-weight: normal; margin-bottom: 30px; }
+                        
+                        /* Font chữ tên nhân viên an toàn cho tiếng Việt */
+                        h2 { font-size: 52px; color: #b32d00; margin: 15px 0; font-family: 'Times New Roman', Times, serif; font-style: italic; font-weight: bold; }
+                        
+                        .content { font-size: 22px; color: #333; line-height: 1.6; margin-top: 40px; }
+                        .course-name { font-size: 28px; font-weight: bold; color: #005088; display: block; margin: 15px 0; text-transform: uppercase; }
+                        .footer { display: flex; justify-content: space-between; margin-top: 70px; padding: 0 60px; }
                         .signature { text-align: center; }
                         .signature p { margin: 5px 0; font-size: 18px; }
-                        .line { border-top: 1px solid #000; width: 200px; margin: 10px auto; margin-top: 40px;}
-                        .seal { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 100px; height: 100px; border: 4px solid #b32d00; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #b32d00; font-weight: bold; font-size: 14px; text-align: center; text-transform: uppercase;}
+                        .line { border-top: 1px solid #000; width: 220px; margin: 10px auto; margin-top: 50px;}
+                        
+                        .seal { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 110px; height: 110px; border: 4px solid #b32d00; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #b32d00; font-weight: bold; font-size: 15px; text-align: center; text-transform: uppercase; box-shadow: 0 0 0 2px white, 0 0 0 3px #b32d00; }
+                        
+                        /* Lệnh ép máy in in đúng 1 trang A4 nằm ngang */
                         @media print {
-                            body { background: white; padding: 0; }
-                            .cert-container { box-shadow: none; border: none; width: 100%; height: 100%; page-break-after: avoid; }
+                            @page { size: A4 landscape; margin: 0; }
+                            body { background: white; padding: 0; margin: 0; }
+                            .cert-container { box-shadow: none; border: none; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; padding: 0; }
+                            .cert-border { height: 95vh; width: 95vw; }
                         }
                     </style>
                 </head>
                 <body>
                     <div class="cert-container">
                         <div class="cert-border">
-                            <div class="logo">EHS DEPT</div>
+                            
+                            <!-- LOGO HIỂN THỊ TẠI ĐÂY -->
+                            <div class="logo">
+                                <img src="${LOGO_URL}" alt="Logo">
+                            </div>
+
                             <h1>GIẤY CHỨNG NHẬN</h1>
                             <h3>Chứng nhận sự hoàn thành xuất sắc</h3>
                             
@@ -247,8 +270,8 @@
                         </div>
                     </div>
                     <script>
-                        // Đợi HTML load xong thì tự động gọi lệnh In
-                        window.onload = function() { setTimeout(window.print, 500); }
+                        // Đợi HTML load hình ảnh xong thì mới gọi lệnh In (để tránh lỗi logo không hiện)
+                        setTimeout(window.print, 800);
                     <\/script>
                 </body>
                 </html>
@@ -265,7 +288,6 @@
 
             for (let i = 0; i < rows.length; i++) {
                 let row = [], cols = rows[i].querySelectorAll("td, th");
-                // Bỏ qua cột "Hành động" (cột cuối cùng) khi xuất Excel
                 let length = i === 0 ? cols.length - 1 : cols.length - 1;
                 for (let j = 0; j < length; j++) {
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""');
