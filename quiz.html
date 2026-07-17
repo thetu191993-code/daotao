@@ -6,10 +6,20 @@
     <title>Bài Kiểm Tra EHS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script>
+        // CHỐT CHẶN ĐĂNG NHẬP
+        if (!localStorage.getItem("ehs_user_id")) {
+            alert("Bạn chưa đăng nhập! Vui lòng đăng nhập hệ thống để làm bài thi.");
+            window.location.href = "login.html";
+        }
+    </script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+        // Cấu hình Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -27,24 +37,33 @@
 </head>
 <body class="bg-slate-50 p-4 md:p-8">
     <div id="quiz-app" class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-        <!-- Khu vực hiển thị thông báo lỗi -->
-        <div id="error-log" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"></div>
         
-        <div id="loader" class="text-center">
-            <i class="ph-bold ph-spinner animate-spin text-4xl text-indigo-600"></i>
-            <p class="mt-4 font-bold">Đang tải nội dung bài thi...</p>
+        <!-- Khung báo lỗi chẩn đoán -->
+        <div id="error-log" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <h4 class="font-bold">Lỗi tải bài thi!</h4>
+            <p id="error-text" class="text-sm mt-1"></p>
+            <a href="index.html" class="inline-block mt-2 text-red-800 underline font-medium">Quay lại trang chủ</a>
+        </div>
+        
+        <!-- Đang tải -->
+        <div id="loader" class="text-center py-10">
+            <i class="ph-bold ph-spinner animate-spin text-4xl text-indigo-600 mb-2"></i>
+            <p class="font-bold text-slate-600">Hệ thống đang chuẩn bị dữ liệu...</p>
         </div>
 
-        <div id="quiz-header" class="hidden text-center text-emerald-700 font-bold text-xl mb-6"></div>
+        <div id="quiz-header" class="hidden text-center text-emerald-700 font-bold text-xl mb-6 pb-4 border-b"></div>
         <div id="quiz-content" class="hidden"></div>
-        <button id="btn-submit" class="hidden w-full bg-emerald-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-emerald-700 transition">Nộp bài</button>
+        <button id="btn-submit" class="hidden w-full bg-emerald-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-emerald-700 transition shadow-md">Nộp bài</button>
     </div>
 
     <script>
         const errorLog = document.getElementById('error-log');
-        const showLog = (msg) => {
-            errorLog.textContent = msg;
+        const errorText = document.getElementById('error-text');
+        
+        const showError = (msg) => {
+            errorText.innerText = msg;
             errorLog.classList.remove('hidden');
+            document.getElementById('loader').classList.add('hidden');
         };
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -53,7 +72,7 @@
 
         fetch(jsonPath)
             .then(res => {
-                if (!res.ok) throw new Error("Không thể tải file JSON: " + jsonPath);
+                if (!res.ok) throw new Error("Không thể tải file: " + jsonPath);
                 return res.json();
             })
             .then(data => {
@@ -62,25 +81,32 @@
                 
                 // Hiển thị tiêu đề
                 const header = document.getElementById('quiz-header');
-                header.textContent = `Đã tải bài thi: ${data.ten_khoa_hoc}`;
+                header.innerHTML = `Đã tải bài thi: <span class="text-slate-800">${data.ten_khoa_hoc}</span>`;
                 header.classList.remove('hidden');
 
                 // Render câu hỏi
                 const container = document.getElementById('quiz-content');
-                if (!data.cau_hoi || data.cau_hoi.length === 0) {
-                    throw new Error("Dữ liệu JSON không chứa câu hỏi nào!");
+                if (!data.cau_hoi || !Array.isArray(data.cau_hoi)) {
+                    throw new Error("File JSON bị sai cấu trúc phần 'cau_hoi'.");
                 }
 
                 data.cau_hoi.forEach((q, index) => {
                     const div = document.createElement('div');
-                    div.className = "mb-8 p-4 bg-slate-50 rounded-lg border border-slate-200";
-                    div.innerHTML = `<p class="font-bold text-slate-800 mb-3">${index + 1}. ${q.question}</p>`;
+                    div.className = "mb-8 p-5 bg-slate-50 rounded-xl border border-slate-200";
+                    
+                    let htmlContent = `<p class="font-bold text-slate-800 mb-4 text-lg">Câu ${index + 1}: ${q.question}</p>`;
+                    htmlContent += `<div class="space-y-2">`;
+                    
                     q.options.forEach((opt, optIndex) => {
-                        div.innerHTML += `
-                            <label class="block mb-2 cursor-pointer hover:text-indigo-600 transition">
-                                <input type="radio" name="q${index}" value="${optIndex}" class="mr-2"> ${opt}
+                        htmlContent += `
+                            <label class="flex items-start p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition">
+                                <input type="radio" name="q${index}" value="${optIndex}" class="mt-1 mr-3 w-4 h-4 text-indigo-600 border-slate-300"> 
+                                <span class="text-slate-700 font-medium">${opt}</span>
                             </label>`;
                     });
+                    
+                    htmlContent += `</div>`;
+                    div.innerHTML = htmlContent;
                     container.appendChild(div);
                 });
                 
@@ -88,11 +114,12 @@
                 document.getElementById('btn-submit').classList.remove('hidden');
             })
             .catch(err => {
-                showLog("LỖI: " + err.message);
-                document.getElementById('loader').classList.add('hidden');
+                showError(err.message);
             });
 
+        // Xử lý nộp bài
         document.getElementById('btn-submit').onclick = async () => {
+            const btn = document.getElementById('btn-submit');
             const quizData = window.quizData;
             let score = 0;
             let answered = 0;
@@ -106,23 +133,33 @@
             });
 
             if (answered < quizData.cau_hoi.length) {
-                alert("Vui lòng trả lời đầy đủ các câu hỏi!");
+                alert(`Bạn mới làm ${answered}/${quizData.cau_hoi.length} câu. Vui lòng hoàn thành tất cả!`);
                 return;
             }
 
+            // Đổi text nút khi đang lưu
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang nộp bài...';
+            btn.disabled = true;
+
             try {
+                // Lấy thông tin người đăng nhập từ máy
+                const userName = localStorage.getItem("ehs_user_name") || localStorage.getItem("ehs_user_id") || "Khách";
+                const userId = localStorage.getItem("ehs_user_id") || "N/A";
+
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
-                    ho_ten: localStorage.getItem("ehs_user_name") || "Khách",
-                    nhan_vien_id: localStorage.getItem("ehs_user_id") || "N/A",
+                    ho_ten: userName,
+                    nhan_vien_id: userId,
                     diem_so: score,
                     tong_cau: quizData.cau_hoi.length,
                     ten_khoa_hoc: quizData.ten_khoa_hoc,
                     thoi_gian_nop: new Date()
                 });
-                alert(`Chúc mừng! Bạn đạt ${score}/${quizData.cau_hoi.length} điểm.`);
-                window.location.href = "index.html";
+                alert(`Nộp bài thành công!\nBạn đạt: ${score}/${quizData.cau_hoi.length} điểm.`);
+                window.location.href = "index.html"; // Đá về trang chủ
             } catch (e) {
-                showLog("Lỗi lưu điểm lên Firebase: " + e.message);
+                alert("Lỗi lưu điểm lên hệ thống: " + e.message);
+                btn.innerHTML = 'Thử nộp lại';
+                btn.disabled = false;
             }
         };
     </script>
