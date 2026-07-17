@@ -35,25 +35,43 @@
         window.addDoc = addDoc;
     </script>
 </head>
-<body class="bg-slate-50 p-4 md:p-8">
-    <div id="quiz-app" class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
+    <div id="quiz-app" class="max-w-3xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200">
         
+        <!-- Nút Quay lại -->
+        <div class="mb-6">
+            <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium transition">
+                <i class="ph-bold ph-arrow-left"></i> Về Trang chủ
+            </a>
+        </div>
+
         <!-- Khung báo lỗi chẩn đoán -->
-        <div id="error-log" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <h4 class="font-bold">Lỗi tải bài thi!</h4>
-            <p id="error-text" class="text-sm mt-1"></p>
-            <a href="index.html" class="inline-block mt-2 text-red-800 underline font-medium">Quay lại trang chủ</a>
+        <div id="error-log" class="hidden bg-red-50 border border-red-200 text-red-700 px-5 py-4 rounded-xl mb-6">
+            <h4 class="font-bold text-lg flex items-center gap-2 mb-1">
+                <i class="ph-fill ph-warning-circle text-xl"></i> Lỗi: Không tìm thấy bài thi!
+            </h4>
+            <p id="error-text" class="text-sm font-mono bg-white p-2 rounded border border-red-100 mt-2"></p>
+            <p class="text-sm mt-3">Vui lòng kiểm tra lại xem file JSON có nằm đúng thư mục trên GitHub chưa.</p>
         </div>
         
         <!-- Đang tải -->
-        <div id="loader" class="text-center py-10">
-            <i class="ph-bold ph-spinner animate-spin text-4xl text-indigo-600 mb-2"></i>
-            <p class="font-bold text-slate-600">Hệ thống đang chuẩn bị dữ liệu...</p>
+        <div id="loader" class="text-center py-12">
+            <i class="ph-bold ph-spinner animate-spin text-5xl text-blue-600 mb-4"></i>
+            <p class="font-bold text-slate-600 text-lg">Hệ thống đang chuẩn bị dữ liệu bài thi...</p>
         </div>
 
-        <div id="quiz-header" class="hidden text-center text-emerald-700 font-bold text-xl mb-6 pb-4 border-b"></div>
-        <div id="quiz-content" class="hidden"></div>
-        <button id="btn-submit" class="hidden w-full bg-emerald-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-emerald-700 transition shadow-md">Nộp bài</button>
+        <!-- Tiêu đề bài thi -->
+        <div id="quiz-header" class="hidden text-center text-blue-800 font-bold text-2xl mb-8 pb-6 border-b border-slate-100 flex-col items-center gap-2">
+            <!-- JS sẽ chèn tiêu đề vào đây -->
+        </div>
+
+        <!-- Nơi chứa câu hỏi -->
+        <div id="quiz-content" class="hidden space-y-6"></div>
+        
+        <!-- Nút nộp bài -->
+        <button id="btn-submit" class="hidden w-full bg-blue-600 text-white font-bold py-4 rounded-xl mt-8 hover:bg-blue-700 transition shadow-md text-lg flex justify-center items-center gap-2">
+            <i class="ph-bold ph-paper-plane-tilt text-2xl"></i> Nộp Bài Kiểm Tra
+        </button>
     </div>
 
     <script>
@@ -61,18 +79,20 @@
         const errorText = document.getElementById('error-text');
         
         const showError = (msg) => {
-            errorText.innerText = msg;
+            errorText.innerText = "Đường dẫn lỗi: " + msg;
             errorLog.classList.remove('hidden');
             document.getElementById('loader').classList.add('hidden');
         };
 
         const urlParams = new URLSearchParams(window.location.search);
         const courseId = urlParams.get('id') || 'data_ehs_chung';
+        
+        // ĐƯỜNG DẪN TUYỆT ĐỐI (Fix lỗi không tìm thấy file)
         const jsonPath = `https://thetu191993-code.github.io/daotao/${courseId}.json`;
 
-        fetch(jsonPath)
+        fetch(jsonPath, { cache: "no-store" })
             .then(res => {
-                if (!res.ok) throw new Error("Không thể tải file: " + jsonPath);
+                if (!res.ok) throw new Error(jsonPath);
                 return res.json();
             })
             .then(data => {
@@ -81,27 +101,31 @@
                 
                 // Hiển thị tiêu đề
                 const header = document.getElementById('quiz-header');
-                header.innerHTML = `Đã tải bài thi: <span class="text-slate-800">${data.ten_khoa_hoc}</span>`;
+                header.innerHTML = `
+                    <i class="ph-fill ph-graduation-cap text-4xl text-blue-600"></i>
+                    <span>${data.ten_khoa_hoc}</span>
+                `;
                 header.classList.remove('hidden');
+                header.classList.add('flex');
 
                 // Render câu hỏi
                 const container = document.getElementById('quiz-content');
                 if (!data.cau_hoi || !Array.isArray(data.cau_hoi)) {
-                    throw new Error("File JSON bị sai cấu trúc phần 'cau_hoi'.");
+                    throw new Error("Cấu trúc file JSON bị sai phần 'cau_hoi'. " + jsonPath);
                 }
 
                 data.cau_hoi.forEach((q, index) => {
                     const div = document.createElement('div');
-                    div.className = "mb-8 p-5 bg-slate-50 rounded-xl border border-slate-200";
+                    div.className = "p-6 bg-slate-50 rounded-2xl border border-slate-200 hover:border-blue-300 transition";
                     
                     let htmlContent = `<p class="font-bold text-slate-800 mb-4 text-lg">Câu ${index + 1}: ${q.question}</p>`;
-                    htmlContent += `<div class="space-y-2">`;
+                    htmlContent += `<div class="space-y-3">`;
                     
                     q.options.forEach((opt, optIndex) => {
                         htmlContent += `
-                            <label class="flex items-start p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition">
-                                <input type="radio" name="q${index}" value="${optIndex}" class="mt-1 mr-3 w-4 h-4 text-indigo-600 border-slate-300"> 
-                                <span class="text-slate-700 font-medium">${opt}</span>
+                            <label class="flex items-start p-4 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition group">
+                                <input type="radio" name="q${index}" value="${optIndex}" class="mt-1 mr-3 w-5 h-5 text-blue-600 border-slate-300 focus:ring-blue-500"> 
+                                <span class="text-slate-700 font-medium group-hover:text-blue-800">${opt}</span>
                             </label>`;
                     });
                     
@@ -123,12 +147,25 @@
             const quizData = window.quizData;
             let score = 0;
             let answered = 0;
+            let chiTietBaiLam = []; // <-- Mảng mới để lưu chi tiết bài làm
 
             quizData.cau_hoi.forEach((q, index) => {
                 const selected = document.querySelector(`input[name="q${index}"]:checked`);
                 if (selected) {
                     answered++;
-                    if (parseInt(selected.value) === q.correctAnswer) score++;
+                    const selectedValue = parseInt(selected.value);
+                    const isCorrect = (selectedValue === q.correctAnswer);
+                    
+                    if (isCorrect) score++;
+
+                    // Ghi nhận chi tiết từng câu
+                    chiTietBaiLam.push({
+                        cau_so: index + 1,
+                        cau_hoi: q.question,
+                        dap_an_da_chon: q.options[selectedValue],
+                        dap_an_dung: q.options[q.correctAnswer],
+                        ket_qua: isCorrect ? "Đúng" : "Sai"
+                    });
                 }
             });
 
@@ -138,7 +175,7 @@
             }
 
             // Đổi text nút khi đang lưu
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang nộp bài...';
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i> Đang nộp bài...';
             btn.disabled = true;
 
             try {
@@ -146,19 +183,22 @@
                 const userName = localStorage.getItem("ehs_user_name") || localStorage.getItem("ehs_user_id") || "Khách";
                 const userId = localStorage.getItem("ehs_user_id") || "N/A";
 
+                // Gửi dữ liệu lên Firebase
                 await window.addDoc(window.collection(window.db, "ket_qua_kiem_tra"), {
                     ho_ten: userName,
                     nhan_vien_id: userId,
                     diem_so: score,
                     tong_cau: quizData.cau_hoi.length,
                     ten_khoa_hoc: quizData.ten_khoa_hoc,
-                    thoi_gian_nop: new Date()
+                    thoi_gian_nop: new Date(),
+                    chi_tiet: chiTietBaiLam // <-- Đẩy thêm chi tiết lên Firebase
                 });
+                
                 alert(`Nộp bài thành công!\nBạn đạt: ${score}/${quizData.cau_hoi.length} điểm.`);
                 window.location.href = "index.html"; // Đá về trang chủ
             } catch (e) {
                 alert("Lỗi lưu điểm lên hệ thống: " + e.message);
-                btn.innerHTML = 'Thử nộp lại';
+                btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt text-2xl"></i> Thử nộp lại';
                 btn.disabled = false;
             }
         };
