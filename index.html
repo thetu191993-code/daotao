@@ -6,6 +6,29 @@
     <title>EHS Data Dashboard & Training</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- THÊM FIREBASE ĐỂ XỬ LÝ TÍNH NĂNG ĐỔI MẬT KHẨU -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // ANH DÁN API KEY MỚI VÀO ĐÂY NHÉ!
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.EmailAuthProvider = EmailAuthProvider;
+        window.reauthenticateWithCredential = reauthenticateWithCredential;
+        window.updatePassword = updatePassword;
+    </script>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
 
@@ -24,7 +47,6 @@
                 
                 <!-- Khu vực hiển thị Đăng nhập / Thông tin User -->
                 <div id="user-profile-section">
-                    <!-- Mặc định khi chưa đăng nhập -->
                     <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
                         <i class="ph-bold ph-sign-in text-xl"></i> Đăng nhập hệ thống
                     </a>
@@ -34,27 +56,23 @@
             <!-- 2. KHU VỰC MENU ĐIỀU HƯỚNG CÁC CHỨC NĂNG -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-5 bg-slate-50 rounded-xl border border-slate-100">
                 
-                <!-- Liên kết sang Bài giảng -->
-                <a href="bai_giang.html?id=data_ehs_chung" class="bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm">
+                <!-- Mở Modal Khóa học -->
+                <button onclick="openCourseModal()" class="bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="ph-bold ph-chalkboard-teacher text-xl"></i> Phòng Học EHS
-                </a>
+                </button>
                 
-                <!-- Liên kết sang Quản lý hóa chất -->
                 <a href="quan_ly_hoa_chat.html" class="bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="ph-bold ph-flask text-xl"></i> Quản lý Hóa Chất
                 </a>
 
-                <!-- Mở Modal Kho Báo Cáo -->
                 <button onclick="openReportModal()" class="bg-teal-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="ph-bold ph-folder-open text-xl"></i> Kho Báo Cáo EHS
                 </button>
 
-                <!-- Gọi dữ liệu JSON -->
                 <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="ph-bold ph-arrows-clockwise text-xl"></i> Đồng bộ Dữ liệu
                 </button>
 
-                <!-- Các file tài liệu tĩnh -->
                 <a href="https://thetu191993-code.github.io/daotao/Tai_lieu_daotao_EHS.pdf" target="_blank" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="ph-bold ph-file-pdf text-xl"></i> Tài liệu Đào tạo
                 </a>
@@ -67,13 +85,12 @@
                     <i class="ph-bold ph-warning-circle text-xl"></i> Quy trình Sự cố
                 </a>
                 
-                <!-- Xem kết quả (dành cho Admin) -->
                 <a href="admin.html" class="bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-sm">
                     <i class="ph-bold ph-shield-check text-xl"></i> Quản trị Điểm thi
                 </a>
             </div>
 
-            <!-- 3. MODAL KHO BÁO CÁO (YÊU CẦU MẬT KHẨU) -->
+            <!-- 3. MODAL KHO BÁO CÁO -->
             <div id="report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
                     <div class="flex justify-between items-center p-5 border-b border-slate-100">
@@ -85,7 +102,6 @@
                         </button>
                     </div>
 
-                    <!-- MÀN HÌNH 1: NHẬP MẬT KHẨU -->
                     <div id="password-view" class="p-6 flex flex-col items-center gap-4">
                         <p class="text-sm text-slate-600 text-center">Tài liệu nội bộ. Vui lòng nhập mật khẩu cấp quản lý để truy cập.</p>
                         <input type="password" id="report-password" onkeypress="handleEnter(event)" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-center tracking-[0.3em] font-mono text-lg" placeholder="•••••••">
@@ -93,32 +109,86 @@
                         <button onclick="checkPassword()" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition shadow-sm">Xác nhận</button>
                     </div>
 
-                    <!-- MÀN HÌNH 2: DANH SÁCH BÁO CÁO (Ẩn lúc đầu) -->
                     <div id="report-list-view" class="p-5 flex-col gap-3 hidden h-80 overflow-y-auto">
                         <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
                             <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 1</span>
                             <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
                         </a>
-                        <a href="bao_cao/Thang_02.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
-                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 2</span>
-                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL DANH SÁCH KHÓA HỌC -->
+            <div id="course-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+                    <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-indigo-50">
+                        <h3 class="text-xl font-bold text-indigo-800 flex items-center gap-2">
+                            <i class="ph-fill ph-books text-indigo-600 text-2xl"></i> Chọn Khóa Đào Tạo
+                        </h3>
+                        <button onclick="closeCourseModal()" class="text-slate-400 hover:text-red-500 transition">
+                            <i class="ph-bold ph-x text-2xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-5 flex-col gap-3 flex max-h-[60vh] overflow-y-auto">
+                        <a href="bai_giang.html?id=data_ehs_chung" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition group">
+                            <div>
+                                <h4 class="font-bold text-slate-800 group-hover:text-indigo-700">Đào tạo EHS Chung</h4>
+                                <p class="text-xs text-slate-500 mt-1">Dành cho toàn bộ nhân sự</p>
+                            </div>
+                            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-indigo-600"></i>
                         </a>
-                        <a href="bao_cao/Thang_03.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
-                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 3</span>
-                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
+
+                        <a href="bai_giang.html?id=data_an_toan_dien" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition group">
+                            <div>
+                                <h4 class="font-bold text-slate-800 group-hover:text-indigo-700">An Toàn Điện Cơ Bản</h4>
+                                <p class="text-xs text-slate-500 mt-1">Dành cho bộ phận Bảo trì</p>
+                            </div>
+                            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-indigo-600"></i>
                         </a>
-                        <a href="bao_cao/Thang_04.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
-                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 4</span>
-                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
+                        
+                        <a href="bai_giang.html?id=data_pccc" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-indigo-500 hover:bg-indigo-50 transition group">
+                            <div>
+                                <h4 class="font-bold text-slate-800 group-hover:text-indigo-700">An Toàn PCCC</h4>
+                                <p class="text-xs text-slate-500 mt-1">Dành cho Đội PCCC cơ sở</p>
+                            </div>
+                            <i class="ph-bold ph-caret-right text-slate-400 group-hover:text-indigo-600"></i>
                         </a>
-                        <a href="bao_cao/Thang_05.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
-                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 5</span>
-                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                        </a>
-                        <a href="bao_cao/Thang_06.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
-                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 6</span>
-                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL ĐỔI MẬT KHẨU (THÊM MỚI) -->
+            <div id="change-pass-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 border-t-4 border-blue-600">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="ph-fill ph-key text-blue-600 text-2xl"></i> Đổi Mật Khẩu
+                        </h3>
+                        <button onclick="closeChangePassModal()" class="text-slate-400 hover:text-red-500 transition">
+                            <i class="ph-bold ph-x text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="cp-error" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium mb-4 text-center border border-red-100"></div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu cũ</label>
+                            <input type="password" id="cp-old" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu mới</label>
+                            <input type="password" id="cp-new" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="•••••••• (Từ 6 ký tự)">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Xác nhận mật khẩu mới</label>
+                            <input type="password" id="cp-confirm" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••">
+                        </div>
+                        
+                        <button id="cp-btn" onclick="handleChangePassword()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-2 hover:bg-blue-700 transition shadow-md">
+                            Xác nhận đổi
+                        </button>
                     </div>
                 </div>
             </div>
@@ -143,7 +213,6 @@
                         </tr>
                     </thead>
                     <tbody id="dataBody" class="text-sm">
-                        <!-- Dữ liệu sẽ được JS chèn vào đây -->
                     </tbody>
                 </table>
             </div>
@@ -154,10 +223,10 @@
         </div>
     </div>
 
-    <!-- TẤT CẢ JAVASCRIPT GỘP CHUNG TẠI ĐÂY -->
+    <!-- TẤT CẢ JAVASCRIPT -->
     <script>
         // ==========================================
-        // LOGIC 1: ĐĂNG NHẬP / ĐĂNG XUẤT
+        // LOGIC 1: ĐĂNG NHẬP / ĐĂNG XUẤT VÀ ĐỔI PASS
         // ==========================================
         function checkLoginStatus() {
             const userId = localStorage.getItem("ehs_user_id");
@@ -165,20 +234,25 @@
             const profileSection = document.getElementById("user-profile-section");
 
             if (userId) {
-                // Nếu đã đăng nhập thành công
                 const displayName = userName ? userName : userId;
                 profileSection.innerHTML = `
-                    <div class="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-full border border-blue-200 shadow-sm">
-                        <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-inner">
+                    <div class="flex items-center bg-blue-50 px-4 py-2 rounded-full border border-blue-200 shadow-sm">
+                        <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-inner mr-3">
                             <i class="ph-fill ph-user"></i>
                         </div>
-                        <div class="mr-2">
+                        <div class="mr-3 pr-4 border-r border-blue-200">
                             <p class="text-sm font-bold text-blue-800">${displayName}</p>
                             <p class="text-[11px] text-blue-600 font-medium uppercase tracking-wider">Nhân sự EHS</p>
                         </div>
-                        <button onclick="handleLogout()" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition duration-200" title="Đăng xuất">
-                            <i class="ph-bold ph-sign-out text-xl"></i>
-                        </button>
+                        <div class="flex items-center gap-1">
+                            <!-- NÚT MỞ ĐỔI MẬT KHẨU -->
+                            <button onclick="openChangePassModal()" class="text-blue-600 hover:text-blue-800 hover:bg-blue-100 p-2 rounded-full transition duration-200" title="Đổi mật khẩu">
+                                <i class="ph-bold ph-key text-xl"></i>
+                            </button>
+                            <button onclick="handleLogout()" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition duration-200" title="Đăng xuất">
+                                <i class="ph-bold ph-sign-out text-xl"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
             }
@@ -187,16 +261,94 @@
         function handleLogout() {
             localStorage.removeItem("ehs_user_id");
             localStorage.removeItem("ehs_user_name");
-            window.location.reload(); // Tải lại trang web
+            localStorage.removeItem("ehs_user_dept");
+            window.location.reload(); 
         }
 
-        // Chạy kiểm tra đăng nhập ngay khi trang tải xong
         checkLoginStatus();
+
+        // LOGIC BẬT/TẮT VÀ XỬ LÝ ĐỔI MẬT KHẨU
+        function openChangePassModal() {
+            document.getElementById('change-pass-modal').classList.remove('hidden');
+            document.getElementById('cp-error').classList.add('hidden');
+            document.getElementById('cp-old').value = '';
+            document.getElementById('cp-new').value = '';
+            document.getElementById('cp-confirm').value = '';
+        }
+
+        function closeChangePassModal() {
+            document.getElementById('change-pass-modal').classList.add('hidden');
+        }
+
+        async function handleChangePassword() {
+            const oldPass = document.getElementById('cp-old').value;
+            const newPass = document.getElementById('cp-new').value;
+            const confirmPass = document.getElementById('cp-confirm').value;
+            const errorMsg = document.getElementById('cp-error');
+            const btn = document.getElementById('cp-btn');
+
+            errorMsg.classList.add('hidden');
+
+            if(!oldPass || !newPass || !confirmPass) {
+                errorMsg.innerText = "Vui lòng nhập đầy đủ thông tin!";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            if(newPass.length < 6) {
+                errorMsg.innerText = "Mật khẩu mới phải từ 6 ký tự trở lên!";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            if(newPass !== confirmPass) {
+                errorMsg.innerText = "Mật khẩu xác nhận không khớp!";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xử lý...';
+
+            try {
+                // Kiểm tra xem Firebase đã sẵn sàng và user có tồn tại chưa
+                const user = window.auth.currentUser;
+                if(!user) {
+                    throw new Error("Bạn chưa đăng nhập hoặc mạng đang lag. Vui lòng tải lại trang và thử lại!");
+                }
+
+                // Dựng lại Email giả từ Mã NV lưu trong máy
+                const userId = localStorage.getItem("ehs_user_id").toLowerCase();
+                const fakeEmail = `${userId}@ehs.com`;
+
+                // 1. Xác thực lại người dùng bằng mật khẩu cũ
+                const credential = window.EmailAuthProvider.credential(fakeEmail, oldPass);
+                await window.reauthenticateWithCredential(user, credential);
+
+                // 2. Tiến hành đổi sang mật khẩu mới
+                await window.updatePassword(user, newPass);
+
+                alert("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
+                handleLogout(); // Đổi pass xong thì cho văng ra ngoài bắt đăng nhập lại
+
+            } catch(error) {
+                console.error(error);
+                if(error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                    errorMsg.innerText = "Mật khẩu cũ không chính xác!";
+                } else if(error.code === 'auth/network-request-failed') {
+                    errorMsg.innerText = "Lỗi kết nối mạng!";
+                } else {
+                    errorMsg.innerText = "Lỗi: " + error.message;
+                }
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "Xác nhận đổi";
+            }
+        }
 
         // ==========================================
         // LOGIC 2: MẬT KHẨU KHO BÁO CÁO
         // ==========================================
-        const MAT_KHAU_BAO_CAO = "EHS@2026"; // <-- Đổi mật khẩu ở đây
+        const MAT_KHAU_BAO_CAO = "EHS2026";
 
         function openReportModal() {
             document.getElementById('report-modal').classList.remove('hidden');
@@ -205,8 +357,6 @@
             document.getElementById('password-view').classList.remove('hidden');
             document.getElementById('report-list-view').classList.add('hidden');
             document.getElementById('modal-icon').className = "ph-fill ph-lock-key text-teal-600 text-2xl";
-            
-            // Tự động nháy trỏ chuột vào ô nhập pass
             setTimeout(() => document.getElementById('report-password').focus(), 100);
         }
 
@@ -216,7 +366,6 @@
 
         function checkPassword() {
             const inputPass = document.getElementById('report-password').value;
-            
             if (inputPass === MAT_KHAU_BAO_CAO) {
                 document.getElementById('password-view').classList.add('hidden');
                 document.getElementById('report-list-view').classList.remove('hidden');
@@ -232,7 +381,18 @@
         }
 
         // ==========================================
-        // LOGIC 3: TẢI BẢNG DỮ LIỆU JSON
+        // LOGIC 3: MỞ MODAL KHÓA HỌC
+        // ==========================================
+        function openCourseModal() {
+            document.getElementById('course-modal').classList.remove('hidden');
+        }
+
+        function closeCourseModal() {
+            document.getElementById('course-modal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // LOGIC 4: TẢI BẢNG DỮ LIỆU JSON
         // ==========================================
         const GITHUB_DATA_URL = 'https://thetu191993-code.github.io/daotao/data_ehs.json';
 
