@@ -11,10 +11,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -33,6 +33,7 @@
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
         window.doc = doc;
         window.setDoc = setDoc;
+        window.getDoc = getDoc;
     </script>
 </head>
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
@@ -75,6 +76,36 @@
                 </div>
             </div>
 
+            <!-- Trường Bộ Phận (Chỉ hiện khi Đăng ký) -->
+            <div id="dept-field" class="hidden">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Phòng Ban / Bộ Phận</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="ph-bold ph-users-three text-slate-400 text-lg"></i>
+                    </div>
+                    <select id="emp-dept" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white cursor-pointer text-slate-700">
+                        <option value="">-- Chọn phòng ban/bộ phận --</option>
+                        <option value="Sản xuất - Can">Sản xuất - Can</option>
+                        <option value="Sản xuất - End">Sản xuất - End</option>
+                        <option value="QC - Can">QC - Can</option>
+                        <option value="QC - End">QC - End</option>
+                        <option value="Điện - Nhà xưởng - Vệ sinh - Can">Điện - Nhà xưởng - Vệ sinh - Can</option>
+                        <option value="Kỹ thuật - Can">Kỹ thuật - Can</option>
+                        <option value="Kỹ thuật - End">Kỹ thuật - End</option>
+                        <option value="EHS">EHS</option>
+                        <option value="Kho - Logistic - PPIC">Kho - Logistic - PPIC</option>
+                        <option value="Tài chính - Mua hàng">Tài chính - Mua hàng</option>
+                        <option value="Bán hàng">Bán hàng</option>
+                        <option value="Nhân sự">Nhân sự</option>
+                        <option value="Nhà thầu">Nhà thầu</option>
+                    </select>
+                    <!-- Mũi tên chỏ xuống của ô chọn -->
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="ph-bold ph-caret-down text-slate-400"></i>
+                    </div>
+                </div>
+            </div>
+
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu</label>
                 <div class="relative">
@@ -105,6 +136,7 @@
             document.getElementById('error-msg').classList.add('hidden');
             
             const nameField = document.getElementById('name-field');
+            const deptField = document.getElementById('dept-field');
             const btnSubmit = document.getElementById('btn-submit');
             const toggleText = document.getElementById('toggle-text');
             const btnToggle = document.getElementById('btn-toggle');
@@ -113,6 +145,7 @@
             if (isLoginMode) {
                 // Chuyển về Đăng nhập
                 nameField.classList.add('hidden');
+                deptField.classList.add('hidden');
                 btnSubmit.innerHTML = "Đăng nhập";
                 toggleText.innerText = "Nhân sự mới?";
                 btnToggle.innerText = "Đăng ký tài khoản";
@@ -120,6 +153,7 @@
             } else {
                 // Chuyển sang Đăng ký
                 nameField.classList.remove('hidden');
+                deptField.classList.remove('hidden');
                 btnSubmit.innerHTML = "Tạo tài khoản & Đăng nhập";
                 toggleText.innerText = "Đã có tài khoản?";
                 btnToggle.innerText = "Đăng nhập ngay";
@@ -137,6 +171,7 @@
             const idInput = document.getElementById('emp-id').value.trim().toLowerCase();
             const passInput = document.getElementById('emp-pass').value.trim();
             const nameInput = document.getElementById('emp-name').value.trim();
+            const deptInput = document.getElementById('emp-dept').value;
             const btnSubmit = document.getElementById('btn-submit');
 
             if (!idInput || !passInput) {
@@ -144,9 +179,15 @@
                 return;
             }
 
-            if (!isLoginMode && !nameInput) {
-                showError("Vui lòng nhập Họ và Tên!");
-                return;
+            if (!isLoginMode) {
+                if (!nameInput) {
+                    showError("Vui lòng nhập Họ và Tên!");
+                    return;
+                }
+                if (!deptInput) {
+                    showError("Vui lòng chọn Phòng Ban / Bộ Phận!");
+                    return;
+                }
             }
 
             if (passInput.length < 6) {
@@ -166,7 +207,17 @@
             try {
                 if (isLoginMode) {
                     // XỬ LÝ ĐĂNG NHẬP
-                    await window.signInWithEmailAndPassword(window.auth, fakeEmail, passInput);
+                    const userCredential = await window.signInWithEmailAndPassword(window.auth, fakeEmail, passInput);
+                    const user = userCredential.user;
+
+                    // Tải thông tin Họ Tên và Bộ Phận từ Firebase về máy
+                    const userDoc = await window.getDoc(window.doc(window.db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        localStorage.setItem("ehs_user_name", userData.ho_ten || "");
+                        localStorage.setItem("ehs_user_dept", userData.bo_phan || "");
+                    }
+
                     // Lưu thông tin phiên đăng nhập vào LocalStorage
                     localStorage.setItem("ehs_user_id", idInput.toUpperCase());
                     window.location.href = "index.html"; // Chuyển về trang chủ
@@ -175,10 +226,11 @@
                     const userCredential = await window.createUserWithEmailAndPassword(window.auth, fakeEmail, passInput);
                     const user = userCredential.user;
                     
-                    // Lưu Họ Tên vào cơ sở dữ liệu Firestore
+                    // Lưu Họ Tên và Bộ Phận vào cơ sở dữ liệu Firestore
                     await window.setDoc(window.doc(window.db, "users", user.uid), {
                         ma_nv: idInput.toUpperCase(),
                         ho_ten: nameInput,
+                        bo_phan: deptInput,
                         role: "user", // Mặc định là nhân viên bình thường
                         ngay_tao: new Date().toISOString()
                     });
@@ -186,6 +238,7 @@
                     // Lưu thông tin phiên
                     localStorage.setItem("ehs_user_id", idInput.toUpperCase());
                     localStorage.setItem("ehs_user_name", nameInput);
+                    localStorage.setItem("ehs_user_dept", deptInput);
                     
                     alert("Tạo tài khoản thành công! Bạn sẽ được chuyển về Trang chủ.");
                     window.location.href = "index.html";
