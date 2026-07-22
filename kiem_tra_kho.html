@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHS Checklist - Kho Hóa Chất</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script>
+        // CHỐT CHẶN: Phải đăng nhập mới được đi kiểm tra
+        if (!localStorage.getItem("ehs_user_id")) {
+            alert("Vui lòng đăng nhập để thực hiện biểu mẫu kiểm tra!");
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", // Đã dùng mã API mới nhất của anh
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.collection = collection;
+        window.addDoc = addDoc;
+    </script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 pb-24">
+
+    <!-- Header cố định -->
+    <div class="bg-purple-700 text-white p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-clipboard-text text-2xl"></i>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight" id="form-title">Đang tải biểu mẫu...</h1>
+                    <p class="text-xs text-purple-200" id="form-code">FRM...</p>
+                </div>
+            </div>
+            <a href="index.html" class="text-white hover:text-purple-200"><i class="ph-bold ph-x text-2xl"></i></a>
+        </div>
+    </div>
+
+    <!-- Thông tin người kiểm tra -->
+    <div class="max-w-3xl mx-auto p-4 mt-2">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+            <div>
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Người kiểm tra</p>
+                <p class="font-bold text-blue-700" id="inspector-name">Loading...</p>
+            </div>
+            <div class="w-full sm:w-1/2">
+                <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Khu vực kiểm tra cụ thể</p>
+                <input type="text" id="area-input" class="w-full border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 text-sm" placeholder="VD: Kho hóa chất số 1...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Nơi chứa các câu hỏi Checklist -->
+    <div id="checklist-container" class="max-w-3xl mx-auto p-4 space-y-6">
+        <div class="text-center py-10 text-purple-600">
+            <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
+            <p>Đang tải danh mục kiểm tra...</p>
+        </div>
+    </div>
+
+    <!-- Nút Nộp cố định ở dưới cùng màn hình -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+        <div class="max-w-3xl mx-auto">
+            <button id="btn-submit" onclick="submitChecklist()" class="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl text-lg hover:bg-purple-700 transition flex justify-center items-center gap-2 shadow-md">
+                <i class="ph-bold ph-paper-plane-tilt text-2xl"></i> KÝ & NỘP BIÊN BẢN
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Hiển thị tên người kiểm tra
+        document.getElementById('inspector-name').innerText = localStorage.getItem("ehs_user_name") || localStorage.getItem("ehs_user_id");
+
+        const JSON_URL = 'https://thetu191993-code.github.io/daotao/checklist_kho_hoa_chat.json';
+        let checklistData = [];
+
+        fetch(JSON_URL, { cache: "no-store" })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('form-title').innerText = data.ten_bien_ban;
+                document.getElementById('form-code').innerText = data.ma_form;
+                checklistData = data.danh_sach_kiem_tra;
+                
+                renderChecklist();
+            })
+            .catch(err => {
+                document.getElementById('checklist-container').innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200">Lỗi tải dữ liệu JSON: ${err.message}</div>`;
+            });
+
+        function renderChecklist() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = '';
+            
+            let currentGroup = "";
+
+            checklistData.forEach((item, index) => {
+                // In ra Tên Nhóm nếu nó khác với nhóm trước đó
+                if (item.nhom !== currentGroup) {
+                    currentGroup = item.nhom;
+                    const groupTitle = document.createElement('h2');
+                    groupTitle.className = "font-bold text-slate-800 text-lg border-b-2 border-purple-200 pb-1 mt-6 mb-4 text-purple-800";
+                    groupTitle.innerText = currentGroup;
+                    container.appendChild(groupTitle);
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-xl shadow-sm border border-slate-200";
+                
+                card.innerHTML = `
+                    <p class="font-medium text-slate-800 mb-4 text-base leading-relaxed"><span class="text-purple-600 font-bold mr-1">${index + 1}.</span> ${item.noi_dung}</p>
+                    
+                    <div class="grid grid-cols-3 gap-2 mb-4">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="check_${item.id}" value="Đạt" class="peer sr-only">
+                            <div class="text-center p-2 rounded-lg border-2 border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 text-slate-500 font-semibold text-sm transition">
+                                <i class="ph-bold ph-check-circle text-lg block mb-1"></i> ĐẠT
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="check_${item.id}" value="Không Đạt" class="peer sr-only">
+                            <div class="text-center p-2 rounded-lg border-2 border-slate-200 peer-checked:border-rose-500 peer-checked:bg-rose-50 peer-checked:text-rose-700 text-slate-500 font-semibold text-sm transition">
+                                <i class="ph-bold ph-warning-circle text-lg block mb-1"></i> LỖI
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="check_${item.id}" value="N/A" class="peer sr-only">
+                            <div class="text-center p-2 rounded-lg border-2 border-slate-200 peer-checked:border-slate-500 peer-checked:bg-slate-100 peer-checked:text-slate-800 text-slate-400 font-semibold text-sm transition">
+                                <i class="ph-bold ph-minus-circle text-lg block mb-1"></i> K/A
+                            </div>
+                        </label>
+                    </div>
+
+                    <div>
+                        <input type="text" id="note_${item.id}" class="w-full border-b border-slate-300 px-2 py-2 outline-none focus:border-purple-500 text-sm bg-slate-50 rounded-t-md" placeholder="Ghi chú / Hành động khắc phục (nếu có)...">
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function submitChecklist() {
+            const area = document.getElementById('area-input').value.trim();
+            if (!area) {
+                alert("Vui lòng nhập Khu vực kiểm tra cụ thể!");
+                document.getElementById('area-input').focus();
+                return;
+            }
+
+            let resultData = [];
+            let isComplete = true;
+
+            checklistData.forEach(item => {
+                const selected = document.querySelector(`input[name="check_${item.id}"]:checked`);
+                if (!selected) {
+                    isComplete = false;
+                } else {
+                    resultData.push({
+                        hang_muc: item.noi_dung,
+                        danh_gia: selected.value,
+                        ghi_chu: document.getElementById(`note_${item.id}`).value.trim()
+                    });
+                }
+            });
+
+            if (!isComplete) {
+                alert("Bạn chưa đánh giá hết các hạng mục. Vui lòng kiểm tra lại!");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i> Đang gửi báo cáo...';
+
+            try {
+                // Tạo một collection mới trên Firebase tên là "bien_ban_kiem_tra"
+                await window.addDoc(window.collection(window.db, "bien_ban_kiem_tra"), {
+                    ten_bien_ban: document.getElementById('form-title').innerText,
+                    ma_form: document.getElementById('form-code').innerText,
+                    nguoi_kiem_tra: localStorage.getItem("ehs_user_name"),
+                    ma_nv: localStorage.getItem("ehs_user_id"),
+                    khu_vuc: area,
+                    thoi_gian: new Date(),
+                    chi_tiet: resultData
+                });
+
+                alert("Nộp biên bản kiểm tra thành công!");
+                window.location.href = "index.html";
+
+            } catch (error) {
+                alert("Lỗi khi nộp biên bản: " + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt text-2xl"></i> KÝ & NỘP LẠI';
+            }
+        }
+    </script>
+</body>
+</html>
