@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cổng Khai Báo Dữ Liệu Nhà Thầu</title>
+    <title>Cổng Khai Báo Nhà Thầu EHS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, addDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA", 
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -23,130 +22,145 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app);
         window.db = getFirestore(app);
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-        window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc;
-        window.collection = collection; window.getDocs = getDocs; 
-        window.addDoc = addDoc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc;
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
+        window.updateDoc = updateDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
+        window.query = query;
+        window.where = where;
+        window.orderBy = orderBy;
     </script>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center">
 
-    <!-- KHU VỰC THÔNG BÁO TÙY CHỈNH (Thay thế Alert) -->
-    <div id="toast-msg" class="fixed top-5 right-5 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-xl z-[100] transform transition-transform duration-300 translate-x-full flex items-center gap-2">
-        <i id="toast-icon" class="ph-bold text-xl"></i>
-        <span id="toast-text" class="font-medium">Thông báo</span>
+    <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+        <i id="toast-icon" class="text-2xl"></i>
+        <span id="toast-message"></span>
     </div>
 
-    <!-- 1. MÀN HÌNH ĐĂNG NHẬP / ĐĂNG KÝ -->
-    <div id="login-screen" class="w-full max-w-md mt-10 bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
-        <div class="text-center mb-6">
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <i class="ph-fill ph-warning text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Xác nhận xóa</h3>
+            <p class="text-slate-500 text-sm mb-6" id="confirm-message">Bạn có chắc chắn muốn xóa?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeConfirmModal()" class="px-6 py-2.5 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2">Hủy</button>
+                <button id="btn-confirm-yes" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-red-700 shadow-md w-1/2">Xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-screen" class="w-full max-w-md mt-10 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 relative">
+        <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
                 <i class="ph-fill ph-hard-hat text-4xl"></i>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800" id="form-title">Đăng Nhập Cổng Khai Báo</h2>
-            <p class="text-slate-500 text-sm mt-1">Dành riêng cho Quản lý / Chỉ huy trưởng Nhà thầu</p>
+            <h2 class="text-2xl font-bold text-slate-800">Khai Báo Nhà Thầu</h2>
+            <p class="text-slate-500 text-sm mt-1" id="form-subtitle">Đăng nhập bằng Số điện thoại của bạn</p>
         </div>
 
         <div class="space-y-4">
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Số điện thoại <span class="text-red-500">*</span></label>
-                <input type="text" id="nt-phone" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: 0987654321">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Số điện thoại</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-phone text-slate-400 text-lg"></i></div>
+                    <input type="text" id="nt-phone" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="VD: 0909123456">
+                </div>
             </div>
 
-            <!-- CHỈ HIỆN KHI ĐĂNG KÝ -->
-            <div id="register-fields" class="hidden space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Họ và Tên Chỉ huy <span class="text-red-500">*</span></label>
-                    <input type="text" id="nt-name" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nguyễn Văn A">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Tên Công Ty Nhà Thầu <span class="text-red-500">*</span></label>
-                    <input type="text" id="nt-company" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: Công ty TNHH Xây Dựng ABC">
-                    <p class="text-xs text-rose-500 mt-1 italic">* Tên này sẽ được gắn cố định cho toàn bộ hồ sơ khai báo của bạn.</p>
+            <div id="company-field" class="hidden">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Tên Công Ty Nhà Thầu</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-buildings text-slate-400 text-lg"></i></div>
+                    <input type="text" id="nt-company" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-700" placeholder="VD: Công ty TNHH Xây Dựng ABC">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu <span class="text-red-500">*</span></label>
-                <input type="password" id="nt-pass" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="•••••••• (Từ 6 ký tự)">
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-lock-key text-slate-400 text-lg"></i></div>
+                    <input type="password" id="nt-pass" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••">
+                </div>
             </div>
 
-            <button id="btn-auth" onclick="handleAuth()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition mt-2 shadow-md">Đăng Nhập</button>
+            <button id="btn-login" onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-2 hover:bg-blue-700 transition shadow-md">Đăng nhập</button>
         </div>
 
-        <div class="mt-6 text-center text-sm">
-            <span id="toggle-text" class="text-slate-600">Nhà thầu mới tham gia?</span>
+        <div class="mt-6 text-center text-sm text-slate-600 border-t border-slate-100 pt-4">
+            <span id="toggle-text">Nhà thầu mới?</span> 
             <button onclick="toggleMode()" id="btn-toggle" class="text-blue-600 font-bold hover:underline ml-1">Đăng ký tài khoản</button>
         </div>
+        
+        <!-- KHÔNG CÓ NÚT QUAY VỀ TRANG CHỦ (Cách ly hệ thống) -->
     </div>
 
-    <!-- 2. MÀN HÌNH KHAI BÁO CHÍNH -->
     <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-slate-800 flex items-center">
                     <i class="ph-fill ph-folder-notch-plus text-blue-600 text-3xl mr-3"></i>
-                    Khai báo Hồ sơ Thi công
+                    Hồ Sơ Nhân Sự Nhà Thầu
                 </h2>
-                <p class="text-slate-500 mt-1 font-medium">Đơn vị: <span id="display-company" class="text-blue-700 font-bold uppercase">...</span> | Chỉ huy: <span id="display-name" class="text-slate-700">...</span></p>
+                <p class="text-slate-500 mt-1 font-medium">Đơn vị khai báo: <span id="display-company" class="font-bold text-blue-700"></span></p>
             </div>
             <div class="flex gap-3">
-                <button onclick="handleLogout()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition border border-slate-200">Đăng xuất</button>
-                <button id="main-add-btn" onclick="openModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-plus"></i> Thêm Nhân sự
+                <button onclick="handleLogout()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
+                    <i class="ph-bold ph-sign-out"></i> Đăng xuất
+                </button>
+                <button onclick="openModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-user-plus"></i> Khai báo nhân sự
                 </button>
             </div>
         </div>
 
-        <!-- BẢNG NHÂN SỰ -->
-        <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+        <div id="loading-msg" class="text-center py-10 text-blue-600 font-medium hidden">
+            <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
+            <p>Đang tải dữ liệu hồ sơ...</p>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm" id="table-container">
             <table class="w-full text-left border-collapse min-w-[1100px]">
                 <thead>
-                    <tr class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wider border-b border-slate-200">
+                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-bold w-12 text-center">STT</th>
                         <th class="p-4 font-bold">Họ và Tên</th>
                         <th class="p-4 font-bold">Ngày Sinh</th>
                         <th class="p-4 font-bold">Số CCCD</th>
-                        <th class="p-4 font-bold text-center">Nhóm ATLĐ</th>
+                        <th class="p-4 font-bold text-center">An Toàn LĐ</th>
                         <th class="p-4 font-bold text-center">Bảo hiểm TN</th>
                         <th class="p-4 font-bold text-center">Khám Sức Khỏe</th>
                         <th class="p-4 font-bold text-center">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="worker-results-body" class="text-sm divide-y divide-slate-100"></tbody>
+                <tbody id="worker-results" class="text-sm divide-y divide-slate-100"></tbody>
             </table>
         </div>
     </div>
 
-    <!-- 3. MODAL NHẬP LIỆU -->
     <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-blue-50">
-                <h3 class="text-lg font-bold text-blue-800 flex items-center gap-2" id="modal-title">
-                    <i class="ph-fill ph-user-plus text-blue-600 text-2xl"></i> Khai báo Nhân sự Mới
-                </h3>
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh]">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="modal-title">Khai báo Nhân sự</h3>
                 <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto space-y-4">
                 <input type="hidden" id="wk-doc-id">
                 
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 mb-4">
-                    <p class="text-xs text-slate-500 uppercase font-bold mb-1">Công ty Nhà thầu (Cố định)</p>
-                    <input type="text" id="wk-cong-ty" class="w-full font-bold text-slate-700 bg-transparent outline-none cursor-not-allowed uppercase" readonly>
-                </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ và Tên Công Nhân <span class="text-red-500">*</span></label>
-                        <input type="text" id="wk-ho-ten" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ và Tên <span class="text-red-500">*</span></label>
+                        <input type="text" id="wk-ho-ten" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: Nguyễn Văn A">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số CCCD <span class="text-red-500">*</span></label>
-                        <input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: 07909300xxxx">
                     </div>
                 </div>
 
@@ -169,217 +183,234 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Hết Hạn Bảo Hiểm TN</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Thẻ ATLĐ</label>
+                        <input type="date" id="wk-han-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Bảo Hiểm TN</label>
                         <input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Hết Hạn Khám Sức Khỏe</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Khám Sức Khỏe</label>
                         <input type="date" id="wk-han-suc-khoe" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                 </div>
             </div>
             
             <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                <button onclick="closeModal()" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
-                <button id="btn-save" onclick="saveWorker()" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">Lưu Khai Báo</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- CUSTOM CONFIRM MODAL ĐỂ XÓA DỮ LIỆU (Thay thế confirm gốc) -->
-    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-red-100 text-red-600 mb-4">
-                <i class="ph-fill ph-warning-circle text-3xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-2">Xác nhận xóa?</h3>
-            <p class="text-slate-500 text-sm mb-6">Bạn có chắc chắn muốn xóa vĩnh viễn nhân sự <strong id="del-name" class="text-red-600"></strong> không?</p>
-            <div class="flex gap-3 justify-center">
-                <button onclick="document.getElementById('confirm-modal').classList.add('hidden')" class="px-5 py-2 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Hủy bỏ</button>
-                <button id="btn-confirm-del" class="bg-red-600 text-white px-5 py-2 rounded-lg font-bold hover:bg-red-700 shadow-md">Xóa Vĩnh Viễn</button>
+                <button onclick="closeModal()" class="px-6 py-2.5 rounded-lg font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-save" onclick="saveWorker()" class="bg-blue-600 text-white px-8 py-2.5 rounded-lg font-bold hover:bg-blue-700 shadow-md flex items-center gap-2">Lưu Hồ Sơ</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- HÀM THÔNG BÁO TÙY CHỈNH ---
+        // HỆ THỐNG TOAST & CONFIRM MODAL (Tuyệt đối không dùng alert)
         function showToast(message, type = "success") {
-            const toast = document.getElementById('toast-msg');
+            const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
-            document.getElementById('toast-text').innerText = message;
+            toast.className = "fixed top-5 right-5 z-[100] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
             
-            toast.className = `fixed top-5 right-5 px-6 py-3 rounded-lg shadow-xl z-[100] transform transition-transform duration-300 translate-x-full flex items-center gap-2 text-white font-medium`;
-            
-            if(type === "success") {
-                toast.classList.add("bg-emerald-600");
-                icon.className = "ph-bold ph-check-circle text-xl";
-            } else if (type === "error") {
-                toast.classList.add("bg-red-600");
-                icon.className = "ph-bold ph-warning-circle text-xl";
+            if (type === "success") {
+                toast.classList.add('bg-emerald-600');
+                icon.className = "ph-fill ph-check-circle text-2xl";
             } else {
-                toast.classList.add("bg-blue-600");
-                icon.className = "ph-bold ph-info text-xl";
+                toast.classList.add('bg-red-600');
+                icon.className = "ph-fill ph-warning-circle text-2xl";
             }
-
-            // Hiện
-            toast.classList.remove("translate-x-full");
-            // Ẩn sau 3s
-            setTimeout(() => { toast.classList.add("translate-x-full"); }, 3000);
+            document.getElementById('toast-message').innerText = message;
+            
+            // Xóa class ẩn để trượt vào
+            toast.classList.remove('translate-x-[150%]');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-[150%]');
+            }, 3000);
         }
 
-        // --- KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP ---
-        let isRegisterMode = false;
-        let myCompany = "";
+        let deleteActionCallback = null;
+        window.confirmDelete = function(id, name) {
+            document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn xóa nhân sự <b>${name}</b> không? Dữ liệu không thể khôi phục.`;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            deleteActionCallback = async function() {
+                try {
+                    document.getElementById('btn-confirm-yes').innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+                    await window.deleteDoc(window.doc(window.db, "nha_thau_nhan_su", id));
+                    showToast("Đã xóa nhân sự thành công!");
+                    closeConfirmModal();
+                    loadData();
+                } catch (error) {
+                    showToast("Lỗi xóa dữ liệu: " + error.message, "error");
+                }
+            };
+            document.getElementById('btn-confirm-yes').onclick = deleteActionCallback;
+        }
 
-        function checkLogin() {
-            const uid = localStorage.getItem("nt_uid");
-            myCompany = localStorage.getItem("nt_company");
-            const myName = localStorage.getItem("nt_name");
+        window.closeConfirmModal = function() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('btn-confirm-yes').innerHTML = 'Xóa';
+        }
 
-            if (uid && myCompany) {
+        // BIẾN TOÀN CỤC
+        let isLoginMode = true;
+        let myCompany = localStorage.getItem("nt_company_name") || "";
+        let myPhone = localStorage.getItem("nt_phone") || "";
+
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                document.getElementById('company-field').classList.add('hidden');
+                document.getElementById('btn-login').innerText = "Đăng nhập";
+                document.getElementById('toggle-text').innerText = "Nhà thầu mới?";
+                document.getElementById('btn-toggle').innerText = "Đăng ký tài khoản";
+                document.getElementById('form-subtitle').innerText = "Đăng nhập bằng Số điện thoại của bạn";
+            } else {
+                document.getElementById('company-field').classList.remove('hidden');
+                document.getElementById('btn-login').innerText = "Đăng ký & Đăng nhập";
+                document.getElementById('toggle-text').innerText = "Đã có tài khoản?";
+                document.getElementById('btn-toggle').innerText = "Đăng nhập ngay";
+                document.getElementById('form-subtitle').innerText = "Tạo tài khoản dành riêng cho Công ty bạn";
+            }
+        }
+
+        function checkAuth() {
+            if (myCompany && myPhone) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 document.getElementById('display-company').innerText = myCompany;
-                document.getElementById('display-name').innerText = myName;
-                document.getElementById('wk-cong-ty').value = myCompany;
-                loadWorkerData();
+                loadData();
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
                 document.getElementById('main-content').classList.add('hidden');
             }
         }
-        checkLogin();
 
-        function handleLogout() {
-            localStorage.removeItem("nt_uid");
-            localStorage.removeItem("nt_company");
-            localStorage.removeItem("nt_name");
-            checkLogin();
-        }
-
-        function toggleMode() {
-            isRegisterMode = !isRegisterMode;
-            const regFields = document.getElementById('register-fields');
-            const btn = document.getElementById('btn-auth');
-            const toggleText = document.getElementById('toggle-text');
-            const btnToggle = document.getElementById('btn-toggle');
-            const title = document.getElementById('form-title');
-
-            if (isRegisterMode) {
-                regFields.classList.remove('hidden');
-                btn.innerText = "Tạo Tài Khoản & Đăng Nhập";
-                toggleText.innerText = "Đã có tài khoản?";
-                btnToggle.innerText = "Đăng nhập ngay";
-                title.innerText = "Đăng Ký Tài Khoản Mới";
-            } else {
-                regFields.classList.add('hidden');
-                btn.innerText = "Đăng Nhập";
-                toggleText.innerText = "Nhà thầu mới tham gia?";
-                btnToggle.innerText = "Đăng ký tài khoản";
-                title.innerText = "Đăng Nhập Cổng Khai Báo";
-            }
-        }
-
-        async function handleAuth() {
+        window.handleLogin = async function() {
             const phone = document.getElementById('nt-phone').value.trim();
             const pass = document.getElementById('nt-pass').value.trim();
-            const name = document.getElementById('nt-name').value.trim();
             const company = document.getElementById('nt-company').value.trim();
 
-            if (!phone || !pass) return showToast("Vui lòng nhập SDT và Mật khẩu!", "error");
-            if (isRegisterMode && (!name || !company)) return showToast("Vui lòng nhập Tên và Công ty!", "error");
+            if (!phone || !pass) return showToast("Vui lòng nhập Số điện thoại và Mật khẩu!", "error");
+            if (!isLoginMode && !company) return showToast("Vui lòng nhập Tên Công Ty nhà thầu!", "error");
 
-            const fakeEmail = `${phone}@nhathau.com`;
-            const btn = document.getElementById('btn-auth');
-            btn.innerHTML = "Đang xử lý..."; btn.disabled = true;
+            const btn = document.getElementById('btn-login');
+            const originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xử lý...';
 
             try {
-                if (isRegisterMode) {
-                    const userCred = await window.createUserWithEmailAndPassword(window.auth, fakeEmail, pass);
-                    const uid = userCred.user.uid;
-                    // Lưu thông tin công ty vào danh sách Users
-                    await window.setDoc(window.doc(window.db, "users", uid), {
-                        role: "contractor", phone: phone, ho_ten: name, cong_ty: company
-                    });
-                    localStorage.setItem("nt_uid", uid);
-                    localStorage.setItem("nt_company", company);
-                    localStorage.setItem("nt_name", name);
-                    showToast("Đăng ký thành công!", "success");
-                    checkLogin();
-                } else {
-                    const userCred = await window.signInWithEmailAndPassword(window.auth, fakeEmail, pass);
-                    const uid = userCred.user.uid;
-                    // Kéo thông tin công ty về
-                    const userDoc = await window.getDoc(window.doc(window.db, "users", uid));
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
-                        localStorage.setItem("nt_uid", uid);
-                        localStorage.setItem("nt_company", data.cong_ty);
-                        localStorage.setItem("nt_name", data.ho_ten);
-                        showToast("Đăng nhập thành công!", "success");
-                        checkLogin();
-                    } else {
-                        showToast("Tài khoản không tồn tại trong hệ thống!", "error");
+                if (!isLoginMode) {
+                    // Chế độ Đăng ký (Lưu account giả lập vào bảng nha_thau_account)
+                    const q = window.query(window.collection(window.db, "nha_thau_account"), window.where("phone", "==", phone));
+                    const snap = await window.getDocs(q);
+                    if (!snap.empty) {
+                        showToast("Số điện thoại này đã được đăng ký! Vui lòng chọn Đăng nhập.", "error");
+                        btn.disabled = false;
+                        btn.innerText = originalText;
+                        return;
                     }
+                    await window.addDoc(window.collection(window.db, "nha_thau_account"), {
+                        phone: phone,
+                        password: pass, // Pass cơ bản để xác thực nội bộ nhanh
+                        company: company,
+                        created_at: new Date()
+                    });
+                    localStorage.setItem("nt_phone", phone);
+                    localStorage.setItem("nt_company_name", company);
+                    showToast("Đăng ký thành công!");
+                } else {
+                    // Chế độ Đăng nhập
+                    const q = window.query(window.collection(window.db, "nha_thau_account"), window.where("phone", "==", phone), window.where("password", "==", pass));
+                    const snap = await window.getDocs(q);
+                    if (snap.empty) {
+                        showToast("Sai Số điện thoại hoặc Mật khẩu!", "error");
+                        btn.disabled = false;
+                        btn.innerText = originalText;
+                        return;
+                    }
+                    let compName = "";
+                    snap.forEach(doc => { compName = doc.data().company; });
+                    
+                    localStorage.setItem("nt_phone", phone);
+                    localStorage.setItem("nt_company_name", compName);
+                    showToast("Đăng nhập thành công!");
                 }
+                
+                myCompany = localStorage.getItem("nt_company_name");
+                myPhone = localStorage.getItem("nt_phone");
+                checkAuth();
+
             } catch (error) {
-                showToast("Lỗi: Kiểm tra lại SDT/Mật khẩu hoặc SDT đã được đăng ký.", "error");
+                showToast("Lỗi hệ thống: " + error.message, "error");
             } finally {
-                btn.innerHTML = isRegisterMode ? "Tạo Tài Khoản & Đăng Nhập" : "Đăng Nhập";
                 btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
 
-        // --- XỬ LÝ DỮ LIỆU ---
-        function formatSimpleDate(dateString) { return dateString ? new Date(dateString).toLocaleDateString('vi-VN') : "N/A"; }
-        
+        window.handleLogout = function() {
+            localStorage.removeItem("nt_phone");
+            localStorage.removeItem("nt_company_name");
+            myCompany = "";
+            myPhone = "";
+            document.getElementById('nt-pass').value = '';
+            checkAuth();
+            showToast("Đã đăng xuất an toàn!");
+        }
+
         function formatDateAndStatus(dateString) {
             if (!dateString) return { html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[11px] font-bold">Chưa có</span>` };
             const expDate = new Date(dateString);
-            const today = new Date(); today.setHours(0,0,0,0);
+            const today = new Date();
+            today.setHours(0,0,0,0);
             const formatted = expDate.toLocaleDateString('vi-VN');
-            if (expDate < today) return { html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold">Hết hạn (${formatted})</span>` };
-            return { html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold">Hợp lệ (${formatted})</span>` };
+            if (expDate < today) {
+                return { html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold">Hết hạn (${formatted})</span>` };
+            } else {
+                return { html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold">Hợp lệ (${formatted})</span>` };
+            }
         }
 
-        async function loadWorkerData() {
-            const tbody = document.getElementById('worker-results-body');
-            tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-blue-600"><i class="ph-bold ph-spinner animate-spin text-2xl"></i> Đang tải...</td></tr>`;
+        function formatSimpleDate(dateString) {
+            if (!dateString) return "N/A";
+            return new Date(dateString).toLocaleDateString('vi-VN');
+        }
+
+        async function loadData() {
+            const tbody = document.getElementById('worker-results');
+            const loading = document.getElementById('loading-msg');
+            const container = document.getElementById('table-container');
+            
+            tbody.innerHTML = '';
+            container.classList.add('hidden');
+            loading.classList.remove('hidden');
 
             try {
-                // Tải tất cả, sau đó LỌC BẰNG JAVASCRIPT ĐỂ TRÁNH LỖI INDEX CỦA FIREBASE
-                const querySnapshot = await window.getDocs(window.collection(window.db, "nha_thau_nhan_su"));
-                let allData = [];
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    // Lọc chỉ lấy đúng công ty của nhà thầu đang đăng nhập
-                    if(data.cong_ty && data.cong_ty.toUpperCase() === myCompany.toUpperCase()) {
-                        data.id = doc.id;
-                        allData.push(data);
-                    }
-                });
-
-                // Sắp xếp dữ liệu mới nhất lên đầu
-                allData.sort((a, b) => {
-                    const timeA = a.thoi_gian_tao ? a.thoi_gian_tao.toMillis() : 0;
-                    const timeB = b.thoi_gian_tao ? b.thoi_gian_tao.toMillis() : 0;
-                    return timeB - timeA;
-                });
-
-                tbody.innerHTML = '';
+                // CHỈ KÉO DỮ LIỆU CỦA ĐÚNG CÔNG TY ĐANG ĐĂNG NHẬP
+                const q = window.query(
+                    window.collection(window.db, "nha_thau_nhan_su"), 
+                    window.where("cong_ty", "==", myCompany)
+                );
+                const querySnapshot = await window.getDocs(q);
                 let stt = 1;
                 
+                // Thu thập và sắp xếp dữ liệu ở client (Do kết hợp where và orderby trên Firebase cần tạo index phức tạp)
+                let allData = [];
+                querySnapshot.forEach((doc) => {
+                    allData.push({ id: doc.id, ...doc.data() });
+                });
+                allData.sort((a, b) => b.thoi_gian_tao - a.thoi_gian_tao);
+
                 if(allData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500">Chưa có nhân sự nào được khai báo.</td></tr>`;
-                    return;
+                    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500 font-medium">Bạn chưa khai báo nhân sự nào. Bấm "Khai báo nhân sự" để bắt đầu.</td></tr>`;
                 }
 
                 allData.forEach((data) => {
                     const bhStatus = formatDateAndStatus(data.han_bao_hiem);
                     const skStatus = formatDateAndStatus(data.han_suc_khoe);
+                    const atldStatus = formatDateAndStatus(data.han_atld);
                     let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-700 border-blue-100";
 
                     const tr = document.createElement('tr');
@@ -389,11 +420,14 @@
                         <td class="p-4 font-bold text-slate-800">${data.ho_ten}</td>
                         <td class="p-4 text-slate-600">${formatSimpleDate(data.ngay_sinh)}</td>
                         <td class="p-4 text-slate-600 font-mono text-sm">${data.cccd}</td>
-                        <td class="p-4 text-center"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></td>
+                        <td class="p-4 text-center">
+                            <div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></div>
+                            ${atldStatus.html}
+                        </td>
                         <td class="p-4 text-center">${bhStatus.html}</td>
                         <td class="p-4 text-center">${skStatus.html}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="editWorker('${data.id}', '${data.ho_ten}', '${data.ngay_sinh || ''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_bao_hiem || ''}', '${data.han_suc_khoe || ''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="editWorker('${data.id}', '${data.ho_ten}', '${data.ngay_sinh || ''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld || ''}', '${data.han_bao_hiem || ''}', '${data.han_suc_khoe || ''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
                             <button onclick="confirmDelete('${data.id}', '${data.ho_ten}')" class="text-red-500 hover:text-red-700 p-1 mx-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     `;
@@ -401,7 +435,10 @@
                 });
             } catch (error) {
                 console.error(error);
-                showToast("Lỗi tải dữ liệu. Vui lòng thử lại.", "error");
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+            } finally {
+                loading.classList.add('hidden');
+                container.classList.remove('hidden');
             }
         }
 
@@ -412,18 +449,20 @@
             document.getElementById('wk-ngay-sinh').value = '';
             document.getElementById('wk-cccd').value = '';
             document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo';
+            document.getElementById('wk-han-atld').value = '';
             document.getElementById('wk-han-bao-hiem').value = '';
             document.getElementById('wk-han-suc-khoe').value = '';
             document.getElementById('worker-modal').classList.remove('hidden');
         }
 
-        window.editWorker = function(id, hoTen, ngaySinh, cccd, nhom, hanBH, hanSK) {
+        window.editWorker = function(id, hoTen, ngaySinh, cccd, nhom, hanATLD, hanBH, hanSK) {
             document.getElementById('modal-title').innerHTML = '<i class="ph-fill ph-pencil-simple text-amber-600 text-2xl"></i> Cập Nhật Thông Tin';
             document.getElementById('wk-doc-id').value = id;
             document.getElementById('wk-ho-ten').value = hoTen;
             document.getElementById('wk-ngay-sinh').value = ngaySinh;
             document.getElementById('wk-cccd').value = cccd;
             document.getElementById('wk-nhom-atld').value = nhom;
+            document.getElementById('wk-han-atld').value = hanATLD;
             document.getElementById('wk-han-bao-hiem').value = hanBH;
             document.getElementById('wk-han-suc-khoe').value = hanSK;
             document.getElementById('worker-modal').classList.remove('hidden');
@@ -436,11 +475,12 @@
         window.saveWorker = async function() {
             const id = document.getElementById('wk-doc-id').value;
             const data = {
-                cong_ty: myCompany, // Ép buộc nhận Tên công ty của tk đang đăng nhập
+                cong_ty: myCompany, // Ép buộc nhận Tên công ty của tài khoản đang đăng nhập
                 ho_ten: document.getElementById('wk-ho-ten').value.trim(),
                 ngay_sinh: document.getElementById('wk-ngay-sinh').value,
                 cccd: document.getElementById('wk-cccd').value.trim(),
                 nhom_atld: document.getElementById('wk-nhom-atld').value,
+                han_atld: document.getElementById('wk-han-atld').value,
                 han_bao_hiem: document.getElementById('wk-han-bao-hiem').value,
                 han_suc_khoe: document.getElementById('wk-han-suc-khoe').value,
                 thoi_gian_cap_nhat: new Date()
@@ -449,48 +489,31 @@
             if (!data.ho_ten || !data.cccd) return showToast("Vui lòng nhập Họ tên và CCCD!", "error");
 
             const btn = document.getElementById('btn-save');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu...';
 
             try {
                 if (id) {
                     await window.updateDoc(window.doc(window.db, "nha_thau_nhan_su", id), data);
-                    showToast("Cập nhật hồ sơ thành công!", "success");
+                    showToast("Cập nhật hồ sơ thành công!");
                 } else {
                     data.thoi_gian_tao = new Date();
                     await window.addDoc(window.collection(window.db, "nha_thau_nhan_su"), data);
-                    showToast("Khai báo nhân sự thành công!", "success");
+                    showToast("Khai báo nhân sự mới thành công!");
                 }
                 closeModal();
-                loadWorkerData();
+                loadData();
             } catch (error) {
-                showToast("Lỗi lưu dữ liệu: " + error.message, "error");
+                showToast("Lỗi khi lưu: " + error.message, "error");
             } finally {
-                btn.innerHTML = 'Lưu Khai Báo'; btn.disabled = false;
+                btn.disabled = false;
+                btn.innerHTML = originalText;
             }
         }
 
-        // --- XÓA DỮ LIỆU VỚI CUSTOM MODAL (Tránh dùng confirm gốc của trình duyệt) ---
-        let deleteIdTarget = "";
-        window.confirmDelete = function(id, name) {
-            deleteIdTarget = id;
-            document.getElementById('del-name').innerText = name;
-            document.getElementById('confirm-modal').classList.remove('hidden');
-        }
-
-        document.getElementById('btn-confirm-del').addEventListener('click', async function() {
-            const btn = this;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xóa...'; btn.disabled = true;
-            try {
-                await window.deleteDoc(window.doc(window.db, "nha_thau_nhan_su", deleteIdTarget));
-                showToast("Đã xóa nhân sự thành công!", "success");
-                document.getElementById('confirm-modal').classList.add('hidden');
-                loadWorkerData();
-            } catch (error) {
-                showToast("Lỗi khi xóa: " + error.message, "error");
-            } finally {
-                btn.innerHTML = 'Xóa Vĩnh Viễn'; btn.disabled = false;
-            }
-        });
+        // Bật ứng dụng
+        checkAuth();
     </script>
 </body>
 </html>
