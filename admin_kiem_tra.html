@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Báo Cáo Kiểm Tra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // ANH DÁN API KEY MỚI VÀO ĐÂY NHÉ
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", 
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.query = query;
+        window.orderBy = orderBy;
+    </script>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center">
+
+    <!-- BẢNG ĐĂNG NHẬP (Giống trang quản trị điểm thi) -->
+    <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-800 text-white mb-4">
+            <i class="ph-fill ph-files text-4xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Kho Lưu Trữ Biên Bản</h2>
+        <p class="text-slate-500 text-sm mb-6">Vui lòng nhập mật khẩu quản lý để xem báo cáo.</p>
+        
+        <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-center tracking-[0.3em] font-mono text-xl focus:ring-2 focus:ring-slate-800 outline-none mb-2" placeholder="••••••••">
+        <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4">Sai mật khẩu! Vui lòng thử lại.</p>
+        
+        <button onclick="checkAdminPassword()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-900 transition shadow-md">
+            Mở Khóa Hệ Thống
+        </button>
+        <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-slate-800 hover:underline">Quay lại Trang chủ</a>
+    </div>
+
+    <!-- NỘI DUNG CHÍNH (Ẩn khi chưa đăng nhập) -->
+    <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-folder-open text-slate-600 text-3xl mr-3"></i>
+                    Quản lý Biên bản Kiểm tra EHS
+                </h2>
+                <p class="text-slate-500 mt-1">Theo dõi, kiểm tra tình trạng vi phạm và các điểm không phù hợp (NC).</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
+                    <i class="ph-bold ph-house"></i> Trang chủ
+                </a>
+                <button onclick="loadData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
+                </button>
+            </div>
+        </div>
+
+        <div id="loading-msg" class="text-center py-10 text-slate-600 font-medium hidden">
+            <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
+            <p>Đang tải biên bản từ máy chủ...</p>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                        <th class="p-4 font-semibold w-12 text-center">STT</th>
+                        <th class="p-4 font-semibold">Thời gian kiểm tra</th>
+                        <th class="p-4 font-semibold">Loại biên bản</th>
+                        <th class="p-4 font-semibold">Khu vực cụ thể</th>
+                        <th class="p-4 font-semibold">Người kiểm tra</th>
+                        <th class="p-4 font-semibold text-center">Kết quả</th>
+                        <th class="p-4 font-semibold text-center">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body" class="text-sm divide-y divide-slate-100">
+                    <!-- Dữ liệu sẽ đổ vào đây -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL XEM CHI TIẾT LỖI -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-lg font-bold text-slate-800" id="modal-title">Chi tiết biên bản</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-red-500 transition">
+                    <i class="ph-bold ph-x text-2xl"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto" id="modal-content">
+                <!-- Nội dung chi tiết -->
+            </div>
+            <div class="p-4 border-t border-slate-100 bg-slate-50 text-right">
+                <button onclick="closeModal()" class="bg-slate-800 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASS = "ADMIN2026"; // Mật khẩu chung
+
+        function checkAdminPassword() {
+            const inputPass = document.getElementById('admin-pass').value;
+            if (inputPass === ADMIN_PASS) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                loadData(); 
+            } else {
+                document.getElementById('pass-error').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkAdminPassword();
+        });
+
+        // Biến toàn cục lưu chi tiết biên bản để hiển thị Modal
+        window.reportDetails = {};
+
+        async function loadData() {
+            const tbody = document.getElementById('results-body');
+            const loading = document.getElementById('loading-msg');
+            
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+            loading.classList.add('block');
+
+            try {
+                // Kéo dữ liệu từ bảng "bien_ban_kiem_tra"
+                const q = window.query(window.collection(window.db, "bien_ban_kiem_tra"), window.orderBy("thoi_gian", "desc"));
+                const querySnapshot = await window.getDocs(q);
+                
+                let stt = 1;
+                window.reportDetails = {}; // Xóa bộ nhớ đệm cũ
+                
+                if(querySnapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có biên bản nào được ghi nhận.</td></tr>`;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const docId = doc.id;
+                    
+                    let timeString = "N/A";
+                    if (data.thoi_gian) {
+                        const date = data.thoi_gian.toDate();
+                        timeString = date.toLocaleString('vi-VN');
+                    }
+
+                    // Tính toán số lỗi (Không Đạt)
+                    let errorCount = 0;
+                    if (data.chi_tiet && Array.isArray(data.chi_tiet)) {
+                        data.chi_tiet.forEach(item => {
+                            if (item.danh_gia === "Không Đạt") errorCount++;
+                        });
+                        // Lưu data vào bộ nhớ đệm
+                        window.reportDetails[docId] = data.chi_tiet;
+                    }
+
+                    // Huy hiệu
+                    let badgeClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
+                    let badgeText = "An Toàn";
+                    if (errorCount > 0) {
+                        badgeClass = "bg-red-50 text-red-600 border-red-100";
+                        badgeText = `Phát hiện ${errorCount} Lỗi`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="p-4 text-slate-700">${timeString}</td>
+                        <td class="p-4 text-slate-800 font-bold text-xs uppercase">${data.ten_bien_ban || 'Báo cáo'}</td>
+                        <td class="p-4 font-bold text-orange-600">${data.khu_vuc || 'N/A'}</td>
+                        <td class="p-4 text-slate-700 font-medium">${data.nguoi_kiem_tra || data.ma_nv || 'Khách'}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${badgeText}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="viewDetail('${docId}', '${data.khu_vuc}')" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold text-sm">
+                                Xem
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu: ", error);
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
+            } finally {
+                loading.classList.add('hidden');
+                loading.classList.remove('block');
+            }
+        }
+
+        // Logic Mở/Đóng Modal
+        window.viewDetail = function(docId, khuVuc) {
+            const details = window.reportDetails[docId];
+            const modalContent = document.getElementById('modal-content');
+            document.getElementById('modal-title').innerText = `Chi tiết kiểm tra: ${khuVuc}`;
+            
+            if (!details || details.length === 0) {
+                modalContent.innerHTML = "<p class='text-slate-500 text-center py-4'>Không có dữ liệu chi tiết.</p>";
+            } else {
+                let html = '<div class="space-y-4">';
+                details.forEach((item, index) => {
+                    let color = item.danh_gia === "Đạt" ? "text-emerald-600" : (item.danh_gia === "Không Đạt" ? "text-red-600 font-bold" : "text-slate-500");
+                    let noteHtml = item.ghi_chu ? `<p class="mt-2 text-sm text-amber-700 bg-amber-50 p-2 rounded border border-amber-100"><b>Ghi chú:</b> ${item.ghi_chu}</p>` : '';
+                    
+                    html += `
+                        <div class="p-4 border border-slate-200 rounded-lg bg-white shadow-sm">
+                            <p class="font-medium text-slate-800 mb-2">${index + 1}. ${item.hang_muc}</p>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm uppercase tracking-wider font-semibold ${color}">Đánh giá: ${item.danh_gia}</span>
+                            </div>
+                            ${noteHtml}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                modalContent.innerHTML = html;
+            }
+
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
