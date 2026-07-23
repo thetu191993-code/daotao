@@ -11,6 +11,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+        // API KEY ĐÃ ĐƯỢC CẬP NHẬT CHUẨN XÁC
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA", 
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -63,10 +64,16 @@
                 </h2>
                 <p class="text-slate-500 mt-1">Quản lý toàn diện nhân sự, thiết bị thi công và đào tạo.</p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
                 <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
                     <i class="ph-bold ph-house"></i> Trang chủ
                 </a>
+                
+                <!-- NÚT XUẤT EXCEL -->
+                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-download-simple text-lg"></i> Xuất Excel
+                </button>
+
                 <!-- Nút này sẽ thay đổi nội dung tùy theo Tab đang mở -->
                 <button id="main-add-btn" onclick="openCurrentModal()" class="bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-user-plus"></i> Thêm Nhân sự
@@ -87,13 +94,15 @@
             <p>Đang tải dữ liệu từ máy chủ...</p>
         </div>
 
+        <!-- TAB NHÂN SỰ -->
         <div id="tab-nhan-su" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
-            <table class="w-full text-left border-collapse min-w-[1000px]">
+            <table class="w-full text-left border-collapse min-w-[1100px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-semibold w-12 text-center">STT</th>
                         <th class="p-4 font-semibold">Tên Nhà Thầu</th>
                         <th class="p-4 font-semibold">Họ và Tên</th>
+                        <th class="p-4 font-semibold">Ngày Sinh</th>
                         <th class="p-4 font-semibold">Số CCCD</th>
                         <th class="p-4 font-semibold text-center">Nhóm ATLĐ</th>
                         <th class="p-4 font-semibold text-center">Bảo hiểm TN</th>
@@ -105,6 +114,7 @@
             </table>
         </div>
 
+        <!-- TAB MÁY MÓC -->
         <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead>
@@ -122,6 +132,7 @@
             </table>
         </div>
 
+        <!-- TAB ĐÀO TẠO -->
         <div id="tab-dao-tao" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead>
@@ -144,8 +155,9 @@
     <!-- CÁC MODALS DÙNG ĐỂ THÊM / SỬA DỮ LIỆU -->
     <!-- ============================================== -->
 
+    <!-- Modal Nhân Sự -->
     <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden max-h-[95vh] flex flex-col">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="worker-modal-title">
                     <i class="ph-fill ph-user-plus text-amber-600 text-2xl"></i> Thêm Nhân Sự Mới
@@ -168,13 +180,17 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Sinh</label>
+                        <input type="date" id="wk-ngay-sinh" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số CCCD <span class="text-red-500">*</span></label>
                         <input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none" placeholder="VD: 07909300xxxx">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Xác nhận Đào tạo ATLĐ</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Đào tạo ATLĐ</label>
                         <select id="wk-nhom-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none bg-white">
                             <option value="Chưa đào tạo">-- Chưa đào tạo --</option>
                             <option value="Nhóm 1">Nhóm 1 (Người quản lý)</option>
@@ -206,6 +222,7 @@
         </div>
     </div>
 
+    <!-- Modal Máy móc -->
     <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -253,6 +270,7 @@
         </div>
     </div>
 
+    <!-- Modal Đào tạo -->
     <div id="training-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -324,7 +342,6 @@
             currentTab = tabId;
             const tabs = ['nhan-su', 'may-moc', 'dao-tao'];
             
-            // Xử lý nút bấm Tab
             tabs.forEach(t => {
                 const btn = document.getElementById('btn-tab-' + t);
                 const content = document.getElementById('tab-' + t);
@@ -333,11 +350,10 @@
                     btn.className = "px-6 py-2.5 font-bold border-b-2 rounded-t-lg transition bg-amber-50 text-amber-700 border-amber-500";
                 } else {
                     btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition";
-                    content.classList.add('hidden'); // Ẩn ngay lập tức các tab không chọn
+                    content.classList.add('hidden'); 
                 }
             });
 
-            // Tùy chỉnh Nút Thêm Mới Góc phải
             const addBtn = document.getElementById('main-add-btn');
             if (tabId === 'nhan-su') {
                 addBtn.innerHTML = '<i class="ph-bold ph-user-plus"></i> Thêm Nhân sự';
@@ -357,6 +373,7 @@
                 document.getElementById('wk-doc-id').value = '';
                 document.getElementById('wk-cong-ty').value = '';
                 document.getElementById('wk-ho-ten').value = '';
+                document.getElementById('wk-ngay-sinh').value = ''; // Cập nhật ngày sinh
                 document.getElementById('wk-cccd').value = '';
                 document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo';
                 document.getElementById('wk-han-bao-hiem').value = '';
@@ -377,7 +394,6 @@
                 document.getElementById('tr-chu-de').value = '';
                 document.getElementById('tr-cong-ty').value = '';
                 
-                // Set default ngày hôm nay
                 const today = new Date();
                 const dd = String(today.getDate()).padStart(2, '0');
                 const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -394,7 +410,6 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
-        // Helper Xử lý ngày tháng & cảnh báo đỏ
         function formatDateAndStatus(dateString) {
             if (!dateString) return { text: "N/A", html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-xs font-bold">Chưa có</span>`, isExpired: true };
             const expDate = new Date(dateString);
@@ -431,13 +446,14 @@
                 let stt = 1;
                 
                 if(querySnapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500">Chưa có dữ liệu nhân sự.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-500">Chưa có dữ liệu nhân sự.</td></tr>`;
                 }
 
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     const bhStatus = formatDateAndStatus(data.han_bao_hiem);
                     const skStatus = formatDateAndStatus(data.han_suc_khoe);
+                    const ngaySinhHtml = data.ngay_sinh ? formatSimpleDate(data.ngay_sinh) : "N/A";
                     let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-700 border-blue-100";
 
                     const tr = document.createElement('tr');
@@ -446,12 +462,13 @@
                         <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
                         <td class="p-4 font-bold text-slate-700">${data.cong_ty}</td>
                         <td class="p-4 font-bold text-amber-700">${data.ho_ten}</td>
+                        <td class="p-4 text-slate-600">${ngaySinhHtml}</td>
                         <td class="p-4 text-slate-600 font-mono text-sm">${data.cccd}</td>
                         <td class="p-4 text-center"><span class="px-2 py-1 border rounded text-xs font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></td>
                         <td class="p-4 text-center">${bhStatus.html}</td>
                         <td class="p-4 text-center">${skStatus.html}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="editWorker('${doc.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.cccd}', '${data.nhom_atld}', '${data.han_bao_hiem || ''}', '${data.han_suc_khoe || ''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="editWorker('${doc.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh || ''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_bao_hiem || ''}', '${data.han_suc_khoe || ''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
                             <button onclick="deleteDocItem('nha_thau_nhan_su', '${doc.id}', '${data.ho_ten}', loadWorkerData)" class="text-red-500 hover:text-red-700 p-1 mx-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     `;
@@ -459,18 +476,19 @@
                 });
             } catch (error) {
                 console.error(error);
-                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
             } finally {
                 loading.classList.add('hidden');
                 tableContainer.classList.remove('hidden');
             }
         }
 
-        window.editWorker = function(id, congTy, hoTen, cccd, nhom, hanBH, hanSK) {
+        window.editWorker = function(id, congTy, hoTen, ngaySinh, cccd, nhom, hanBH, hanSK) {
             document.getElementById('worker-modal-title').innerHTML = '<i class="ph-fill ph-pencil-simple text-blue-600 text-2xl"></i> Cập Nhật Hồ Sơ';
             document.getElementById('wk-doc-id').value = id;
             document.getElementById('wk-cong-ty').value = congTy;
             document.getElementById('wk-ho-ten').value = hoTen;
+            document.getElementById('wk-ngay-sinh').value = ngaySinh;
             document.getElementById('wk-cccd').value = cccd;
             document.getElementById('wk-nhom-atld').value = nhom;
             document.getElementById('wk-han-bao-hiem').value = hanBH;
@@ -483,6 +501,7 @@
             const data = {
                 cong_ty: document.getElementById('wk-cong-ty').value.trim(),
                 ho_ten: document.getElementById('wk-ho-ten').value.trim(),
+                ngay_sinh: document.getElementById('wk-ngay-sinh').value,
                 cccd: document.getElementById('wk-cccd').value.trim(),
                 nhom_atld: document.getElementById('wk-nhom-atld').value,
                 han_bao_hiem: document.getElementById('wk-han-bao-hiem').value,
@@ -665,6 +684,56 @@
                     alert("Lỗi khi xóa: " + error.message);
                 }
             }
+        }
+
+        // ==========================================
+        // TÍNH NĂNG XUẤT FILE EXCEL (CSV)
+        // ==========================================
+        window.exportToExcel = function() {
+            let activeTableBodyId = '';
+            let fileName = '';
+            
+            // Tự động nhận diện đang mở Tab nào để xuất đúng bảng đó
+            if (currentTab === 'nhan-su') { activeTableBodyId = 'tab-nhan-su'; fileName = 'DS_NhanSu_NhaThau.csv'; }
+            else if (currentTab === 'may-moc') { activeTableBodyId = 'tab-may-moc'; fileName = 'DS_MayMoc_NhaThau.csv'; }
+            else if (currentTab === 'dao-tao') { activeTableBodyId = 'tab-dao-tao'; fileName = 'DS_DaoTao_NhaThau.csv'; }
+
+            const table = document.querySelector(`#${activeTableBodyId} table`);
+            if(!table) return;
+
+            let csv = [];
+            let rows = table.querySelectorAll("tr");
+            let bom = "\uFEFF"; // Hỗ trợ hiển thị tiếng Việt có dấu chuẩn xác trong Excel
+
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                // Bỏ qua cột cuối cùng ("Thao tác")
+                let colCount = i === 0 ? cols.length - 1 : cols.length - 1; 
+                
+                for (let j = 0; j < colCount; j++) {
+                    // Lọc bỏ các thẻ HTML để lấy chữ thuần túy
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""').trim();
+                    
+                    // Làm sạch dữ liệu chữ thừa của nhãn trạng thái
+                    if(data.includes("Hợp lệ (")) data = data.replace("Hợp lệ (", "").replace(")", "");
+                    if(data.includes("Hết hạn (")) data = data.replace("Hết hạn (", "").replace(")", "");
+
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+            downloadCSV(bom + csv.join("\n"), fileName);
+        }
+
+        function downloadCSV(csv, filename) {
+            let csvFile = new Blob([csv], {type: "text/csv;charset=utf-8;"});
+            let downloadLink = document.createElement("a");
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
     </script>
 </body>
