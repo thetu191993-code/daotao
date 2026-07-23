@@ -4,38 +4,83 @@
 "danh_sach_kiem_tra": [
 {
 "id": "c1",
-"nhom": "1. SẮP XẾP & LƯU TRỮ",
-"noi_dung": "Hóa chất được sắp xếp gọn gàng, đúng khu vực quy định. Không để chung các loại hóa chất kỵ nhau."
+"nhom": "1. CƠ SỞ HẠ TẦNG & ĐIỀU KIỆN CHUNG",
+"noi_dung": "Kho chứa hóa chất có hệ thống thông gió (tự nhiên hoặc cưỡng bức) hoạt động tốt và đảm bảo đủ ánh sáng."
 },
 {
 "id": "c2",
-"nhom": "1. SẮP XẾP & LƯU TRỮ",
-"noi_dung": "Có gờ bao tràn đổ, khay chống tràn hoặc rãnh thu gom hóa chất rò rỉ dưới các phuy/can."
+"nhom": "1. CƠ SỞ HẠ TẦNG & ĐIỀU KIỆN CHUNG",
+"noi_dung": "Khu vực nền kho bằng phẳng, chống thấm, không rạn nứt và có gờ bao hoặc rãnh thu gom bao quanh chống tràn đổ."
 },
 {
 "id": "c3",
-"nhom": "2. TEM NHÃN & BIỂN BÁO",
-"noi_dung": "100% phuy/can/thùng chứa đều có tem nhãn phụ tiếng Việt và biểu tượng cảnh báo nguy hiểm rõ ràng."
+"nhom": "1. CƠ SỞ HẠ TẦNG & ĐIỀU KIỆN CHUNG",
+"noi_dung": "Các biển báo an toàn, biển cảnh báo nguy hiểm, cấm lửa, cấm hút thuốc được treo tại vị trí dễ quan sát."
 },
 {
 "id": "c4",
-"nhom": "2. TEM NHÃN & BIỂN BÁO",
-"noi_dung": "Có treo đầy đủ thẻ an toàn hóa chất (SDS/MSDS) tại khu vực lưu trữ tương ứng."
+"nhom": "1. CƠ SỞ HẠ TẦNG & ĐIỀU KIỆN CHUNG",
+"noi_dung": "Có hệ thống điện phòng nổ đối với kho chứa hóa chất dễ cháy, nổ."
 },
 {
 "id": "c5",
-"nhom": "3. PCCC & ỨNG PHÓ SỰ CỐ",
-"noi_dung": "Bình chữa cháy đúng loại, còn hạn sử dụng, đặt đúng vị trí và không bị che khuất."
+"nhom": "2. LƯU TRỮ & DÁN NHÃN HÓA CHẤT",
+"noi_dung": "Hóa chất được phân khu lưu trữ rõ ràng, các hóa chất kỵ nhau (không tương thích) được để tách biệt an toàn."
 },
 {
 "id": "c6",
-"nhom": "3. PCCC & ỨNG PHÓ SỰ CỐ",
-"noi_dung": "Bộ ứng phó sự cố tràn đổ (cát, phao thấm, xẻng...) đầy đủ và ở tình trạng sẵn sàng."
+"nhom": "2. LƯU TRỮ & DÁN NHÃN HÓA CHẤT",
+"noi_dung": "Tất cả các bao bì, thùng, chai chứa hóa chất đều được dán nhãn (theo chuẩn GHS) đầy đủ, rõ ràng và nguyên vẹn."
 },
 {
 "id": "c7",
-"nhom": "4. TRANG BỊ BẢO HỘ (PPE)",
-"noi_dung": "Trang bị bảo hộ cá nhân (Găng tay chống hóa chất, mặt nạ phòng độc, kính, tạp dề) được vệ sinh và cất giữ đúng nơi."
+"nhom": "2. LƯU TRỮ & DÁN NHÃN HÓA CHẤT",
+"noi_dung": "Bao bì chứa hóa chất được xếp đặt ngay ngắn, chắc chắn, không xếp chồng quá cao, có biện pháp chèn lật."
+}
+{
+"id": "c8",
+"nhom": "2. LƯU TRỮ & DÁN NHÃN HÓA CHẤT",
+"noi_dung": "Tuyệt đối không xếp chung hóa chất nguy hiểm cùng khu vực với người làm việc, xe nâng hoặc các nguồn nhiệt."
+}
+{
+"id": "c9",
+"nhom": "3. ỨNG PHÓ SỰ CỐ VÀ PHÒNG CHÁY CHỮA CHÁY",
+"noi_dung": "Trang bị đầy đủ bộ dụng cụ ứng phó sự cố tràn đổ hóa chất (Spill kit) tại kho, vật tư còn đủ và hạn sử dụng hợp lệ."
+}
+{
+"id": "c10",
+"nhom": "3. ỨNG PHÓ SỰ CỐ VÀ PHÒNG CHÁY CHỮA CHÁY",
+"noi_dung": "Hệ thống vòi tắm khẩn cấp và bồn rửa mắt (Emergency shower & eyewash) hoạt động bình thường, nước sạch."
+}
+{
+"id": "c11",
+"nhom": "3. ỨNG PHÓ SỰ CỐ VÀ PHÒNG CHÁY CHỮA CHÁY",
+"noi_dung": "Bình chữa cháy và phương tiện PCCC đúng chủng loại được bố trí đầy đủ, dễ tiếp cận và có tem kiểm tra định kỳ."
+}
+{
+"id": "c12",
+"nhom": "3. ỨNG PHÓ SỰ CỐ VÀ PHÒNG CHÁY CHỮA CHÁY",
+"noi_dung": "Có lối thoát hiểm thông thoáng, không bị cản trở bởi hàng hóa hay vật dụng khác."
+}
+{
+"id": "c13",
+"nhom": "4. TRANG BỊ BẢO HỘ CÁ NHÂN",
+"noi_dung": "Có sẵn đầy đủ đồ bảo hộ cá nhân phù hợp (kính an toàn, găng tay chống hóa chất, mặt nạ phòng độc, v.v.)."
+}
+{
+"id": "c14",
+"nhom": "4. TRANG BỊ BẢO HỘ CÁ NHÂN",
+"noi_dung": "Người lao động tuân thủ nghiêm ngặt việc mang mặc đúng và đủ PPE khi bốc dỡ, di chuyển hoặc thao tác với hóa chất."
+}
+{
+"id": "c15",
+"nhom": "5. ĐÀO TẠO & TÀI LIỆU",
+"noi_dung": "Phiếu an toàn hóa chất (MSDS/SDS) của tất cả hóa chất có trong kho được lưu trữ, cập nhật và đặt tại nơi dễ tiếp cận."
+}
+{
+"id": "c16",
+"nhom": "5. ĐÀO TẠO & TÀI LIỆU",
+"noi_dung": "Có Sổ theo dõi hoạt động xuất/nhập/tồn hóa chất, cập nhật đầy đủ, chính xác thông tin hoặc có phần mềm truy xuất."
 }
 ]
 }
