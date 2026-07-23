@@ -53,56 +53,78 @@
                 </div>
             </div>
 
-            <!-- 2. KHU VỰC MENU ĐIỀU HƯỚNG CÁC CHỨC NĂNG -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-5 bg-slate-50 rounded-xl border border-slate-100">
+            <!-- 2. KHU VỰC MENU ĐIỀU HƯỚNG CÁC CHỨC NĂNG (ĐÃ QUY HOẠCH LẠI) -->
+            <div class="space-y-6 mb-8">
                 
-                <!-- Mở Modal Khóa học -->
-                <button onclick="openCourseModal()" class="bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-chalkboard-teacher text-xl"></i> Phòng Học EHS
-                </button>
-                
-                <a href="quan_ly_hoa_chat.html" class="bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-flask text-xl"></i> Quản lý Hóa Chất
-                </a>
+                <!-- NHÓM 1: ĐÀO TẠO EHS -->
+                <div class="bg-indigo-50/50 p-5 rounded-xl border border-indigo-100">
+                    <h3 class="text-lg font-bold text-indigo-800 mb-4 flex items-center border-b border-indigo-200 pb-2">
+                        <i class="ph-fill ph-graduation-cap mr-2 text-2xl"></i> Nhóm 1: Đào tạo EHS
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <button onclick="openCourseModal()" class="bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-chalkboard-teacher text-xl"></i> Phòng Học EHS
+                        </button>
+                        <a href="https://thetu191993-code.github.io/daotao/Tai_lieu_daotao_EHS.pdf" target="_blank" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-file-pdf text-xl"></i> Tài liệu Đào tạo
+                        </a>
+                    </div>
+                </div>
 
-                <!-- NÚT TRUNG TÂM KIỂM TRA (Đã sửa) -->
-                <a href="trung_tam_kiem_tra.html" class="bg-orange-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2 shadow-sm border border-orange-600">
-                    <i class="ph-bold ph-clipboard-text text-xl"></i> Trung tâm Kiểm tra
-                </a>
+                <!-- NHÓM 2: BÁO CÁO & QUẢN TRỊ -->
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center border-b border-slate-200 pb-2">
+                        <i class="ph-fill ph-chart-bar mr-2 text-2xl text-blue-600"></i> Nhóm 2: Báo cáo & Quản trị
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <a href="trung_tam_kiem_tra.html" class="bg-orange-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2 shadow-sm border border-orange-600">
+                            <i class="ph-bold ph-clipboard-text text-xl"></i> Trung tâm Kiểm tra
+                        </a>
+                        <button onclick="openReportModal()" class="bg-teal-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-folder-open text-xl"></i> Kho Báo Cáo EHS
+                        </button>
+                        <a href="admin_kiem_tra.html" class="bg-slate-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-900 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-files text-xl"></i> Quản trị Báo cáo
+                        </a>
+                        <a href="admin.html" class="bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-shield-check text-xl"></i> Quản trị Điểm thi
+                        </a>
+                        <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-arrows-clockwise text-xl"></i> Đồng bộ Dữ liệu
+                        </button>
+                    </div>
+                </div>
 
-                <button onclick="openReportModal()" class="bg-teal-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-folder-open text-xl"></i> Kho Báo Cáo EHS
-                </button>
+                <!-- NHÓM 3: QUY TRÌNH & HƯỚNG DẪN -->
+                <div class="bg-teal-50/50 p-5 rounded-xl border border-teal-100">
+                    <h3 class="text-lg font-bold text-teal-800 mb-4 flex items-center border-b border-teal-200 pb-2">
+                        <i class="ph-fill ph-book-bookmark mr-2 text-2xl"></i> Nhóm 3: Quy trình & Hướng dẫn
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <a href="https://thetu191993-code.github.io/daotao/So_tay_van_hanh.pdf" target="_blank" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-book-open text-xl"></i> Sổ tay Vận hành
+                        </a>
+                        <a href="https://thetu191993-code.github.io/daotao/Quy_trinh_su_co.pdf" target="_blank" class="bg-rose-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-rose-600 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-warning-circle text-xl"></i> Quy trình Sự cố
+                        </a>
+                        <a href="quan_ly_hoa_chat.html" class="bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-flask text-xl"></i> Quản lý Hóa Chất
+                        </a>
+                    </div>
+                </div>
 
-                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-arrows-clockwise text-xl"></i> Đồng bộ Dữ liệu
-                </button>
+                <!-- NHÓM 4: QUẢN LÝ NHÀ THẦU -->
+                <div class="bg-amber-50/50 p-5 rounded-xl border border-amber-100">
+                    <h3 class="text-lg font-bold text-amber-800 mb-4 flex items-center border-b border-amber-200 pb-2">
+                        <i class="ph-fill ph-hard-hat mr-2 text-2xl"></i> Nhóm 4: Quản lý Nhà thầu
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <a href="quan_ly_nha_thau.html" class="bg-amber-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center justify-center gap-2 shadow-sm border border-amber-600">
+                            <i class="ph-bold ph-hard-hat text-xl"></i> Cổng Nhà thầu
+                        </a>
+                    </div>
+                </div>
 
-                <a href="https://thetu191993-code.github.io/daotao/Tai_lieu_daotao_EHS.pdf" target="_blank" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-file-pdf text-xl"></i> Tài liệu Đào tạo
-                </a>
-
-                <a href="https://thetu191993-code.github.io/daotao/So_tay_van_hanh.pdf" target="_blank" class="bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-book-open text-xl"></i> Sổ tay Vận hành
-                </a>
-
-                <a href="https://thetu191993-code.github.io/daotao/Quy_trinh_su_co.pdf" target="_blank" class="bg-rose-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-rose-600 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-warning-circle text-xl"></i> Quy trình Sự cố
-                </a>
-                
-                <!-- NÚT QUẢN TRỊ BÁO CÁO KIỂM TRA MỚI THÊM -->
-                <a href="admin_kiem_tra.html" class="bg-slate-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-900 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-files text-xl"></i> Quản trị Báo cáo
-                </a>
-
-                <!-- NÚT CỔNG QUẢN LÝ NHÀ THẦU MỚI THÊM -->
-                <a href="quan_ly_nha_thau.html" class="bg-amber-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center justify-center gap-2 shadow-sm border border-amber-600">
-                    <i class="ph-bold ph-hard-hat text-xl"></i> Cổng Nhà thầu
-                </a>
-
-                <a href="admin.html" class="bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-shield-check text-xl"></i> Quản trị Điểm thi
-                </a>
             </div>
 
             <!-- 3. MODAL KHO BÁO CÁO -->
