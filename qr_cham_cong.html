@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chấm Công Nhà Thầu EHS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Sử dụng API Key của hệ thống
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.collection = collection;
+        window.getDocs = getDocs;
+        window.addDoc = addDoc;
+    </script>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans text-slate-800 flex items-center justify-center p-4">
+
+    <!-- Bảng thông báo thành công (Toast) -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] transition-all duration-300 -translate-y-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white w-[90%] max-w-sm">
+        <i id="toast-icon" class="text-3xl"></i>
+        <div>
+            <p id="toast-title" class="text-lg"></p>
+            <p id="toast-time" class="text-sm font-medium opacity-90"></p>
+        </div>
+    </div>
+
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+        <!-- Header -->
+        <div class="bg-blue-700 p-6 text-center text-white">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-3 backdrop-blur-sm">
+                <i class="ph-bold ph-fingerprint text-4xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold uppercase tracking-wider">CỔNG KIỂM SOÁT</h1>
+            <p class="text-blue-200 text-sm mt-1">Dành cho nhân sự nhà thầu</p>
+        </div>
+
+        <div class="p-6 space-y-5">
+            <!-- Đồng hồ thời gian thực -->
+            <div class="text-center bg-slate-50 py-3 rounded-xl border border-slate-200">
+                <p class="text-slate-500 text-xs font-bold uppercase mb-1">Thời gian hiện tại</p>
+                <p id="realtime-clock" class="text-3xl font-mono font-bold text-blue-700 tracking-widest">--:--:--</p>
+                <p id="realtime-date" class="text-sm text-slate-600 font-medium"></p>
+            </div>
+
+            <div id="loading-msg" class="text-center text-blue-600 py-4">
+                <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
+                <p class="text-sm font-bold">Đang tải danh sách đăng ký...</p>
+            </div>
+
+            <!-- Form Chọn Tên -->
+            <div id="form-content" class="hidden space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">1. Chọn Tên Công Ty</label>
+                    <select id="sel-company" onchange="filterWorkers()" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-semibold text-slate-800 appearance-none text-base">
+                        <option value="">-- Bấm để chọn Công ty --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">2. Chọn Họ và Tên của bạn</label>
+                    <select id="sel-worker" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-semibold text-slate-800 appearance-none text-base disabled:opacity-50">
+                        <option value="">-- Vui lòng chọn Công ty trước --</option>
+                    </select>
+                    <p class="text-xs text-red-500 font-medium mt-1.5"><i class="ph-fill ph-warning-circle"></i> Chỉ những nhân sự đã đăng ký hồ sơ mới có tên trong danh sách này.</p>
+                </div>
+
+                <div class="pt-4 grid grid-cols-2 gap-3">
+                    <button onclick="submitCheckInOut('VÀO')" id="btn-in" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_4px_0_0_#059669] hover:shadow-[0_2px_0_0_#059669] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] flex flex-col items-center justify-center gap-1">
+                        <i class="ph-bold ph-sign-in text-2xl"></i> VÀO CỔNG
+                    </button>
+                    <button onclick="submitCheckInOut('RA')" id="btn-out" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_4px_0_0_#ea580c] hover:shadow-[0_2px_0_0_#ea580c] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] flex flex-col items-center justify-center gap-1">
+                        <i class="ph-bold ph-sign-out text-2xl"></i> RA CỔNG
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cập nhật đồng hồ
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('realtime-clock').innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
+            document.getElementById('realtime-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let allWorkersData = [];
+
+        // Kéo dữ liệu từ Firebase
+        window.onload = async function() {
+            try {
+                const querySnapshot = await window.getDocs(window.collection(window.db, "nha_thau_nhan_su"));
+                let companies = new Set();
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allWorkersData.push(data);
+                    companies.add(data.cong_ty);
+                });
+
+                // Đổ dữ liệu vào Select Công ty
+                const selCompany = document.getElementById('sel-company');
+                companies.forEach(company => {
+                    selCompany.innerHTML += `<option value="${company}">${company}</option>`;
+                });
+
+                document.getElementById('loading-msg').classList.add('hidden');
+                document.getElementById('form-content').classList.remove('hidden');
+
+            } catch (error) {
+                document.getElementById('loading-msg').innerHTML = `<p class="text-red-500 font-bold">Lỗi tải dữ liệu. Vui lòng thử lại.</p>`;
+            }
+        };
+
+        // Lọc nhân viên khi chọn Công ty
+        window.filterWorkers = function() {
+            const selectedCompany = document.getElementById('sel-company').value;
+            const selWorker = document.getElementById('sel-worker');
+            
+            selWorker.innerHTML = `<option value="">-- Chọn Tên của bạn --</option>`;
+            
+            if (!selectedCompany) {
+                selWorker.disabled = true;
+                return;
+            }
+
+            selWorker.disabled = false;
+            
+            // Lọc và sắp xếp tên theo ABC
+            const filteredWorkers = allWorkersData.filter(w => w.cong_ty === selectedCompany).sort((a,b) => a.ho_ten.localeCompare(b.ho_ten));
+            
+            filteredWorkers.forEach(worker => {
+                selWorker.innerHTML += `<option value="${worker.ho_ten}">${worker.ho_ten} (CCCD: ${worker.cccd.slice(-4)})</option>`;
+            });
+        }
+
+        // Xử lý nút bấm VÀO / RA
+        window.submitCheckInOut = async function(action) {
+            const company = document.getElementById('sel-company').value;
+            const worker = document.getElementById('sel-worker').value;
+
+            if (!company || !worker) {
+                alert("⚠️ Vui lòng chọn Công ty và Tên của bạn trước khi bấm nút!");
+                return;
+            }
+
+            const btnIn = document.getElementById('btn-in');
+            const btnOut = document.getElementById('btn-out');
+            btnIn.disabled = true; btnOut.disabled = true;
+
+            try {
+                // Đẩy dữ liệu lên Firebase bảng nha_thau_cham_cong
+                await window.addDoc(window.collection(window.db, "nha_thau_cham_cong"), {
+                    cong_ty: company,
+                    ho_ten: worker,
+                    trang_thai: action, // "VÀO" hoặc "RA"
+                    thoi_gian: new Date()
+                });
+
+                showToast(action, worker);
+                
+                // Reset form sau 2 giây
+                setTimeout(() => {
+                    document.getElementById('sel-company').value = "";
+                    document.getElementById('sel-worker').innerHTML = `<option value="">-- Vui lòng chọn Công ty trước --</option>`;
+                    document.getElementById('sel-worker').disabled = true;
+                    btnIn.disabled = false; btnOut.disabled = false;
+                }, 2000);
+
+            } catch (error) {
+                alert("Lỗi kết nối! Vui lòng thử lại.");
+                btnIn.disabled = false; btnOut.disabled = false;
+            }
+        }
+
+        // Hiển thị thông báo trượt từ trên xuống
+        function showToast(action, name) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            
+            toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl font-bold text-white w-[90%] max-w-sm";
+            
+            if (action === "VÀO") {
+                toast.classList.add('bg-emerald-600');
+                icon.className = "ph-fill ph-check-circle";
+                title.innerText = `Xác nhận VÀO CỔNG`;
+            } else {
+                toast.classList.add('bg-orange-500');
+                icon.className = "ph-fill ph-check-circle";
+                title.innerText = `Xác nhận RA CỔNG`;
+            }
+
+            document.getElementById('toast-time').innerText = `${name} - ${new Date().toLocaleTimeString('vi-VN')}`;
+            
+            setTimeout(() => {
+                toast.classList.add('-translate-y-[150%]');
+                setTimeout(() => {
+                    toast.classList.remove('bg-emerald-600', 'bg-orange-500');
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
