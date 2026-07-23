@@ -11,7 +11,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // API KEY ĐÃ ĐƯỢC CẬP NHẬT CHUẨN XÁC
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA", 
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -36,7 +35,25 @@
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center">
 
-    <!-- BẢNG ĐĂNG NHẬP ADMIN -->
+    <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+        <i id="toast-icon" class="text-2xl"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <i class="ph-fill ph-warning text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Xác nhận xóa</h3>
+            <p class="text-slate-500 text-sm mb-6" id="confirm-message">Bạn có chắc chắn muốn xóa?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeConfirmModal()" class="px-6 py-2.5 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2">Hủy</button>
+                <button id="btn-confirm-yes" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-red-700 shadow-md w-1/2">Xóa</button>
+            </div>
+        </div>
+    </div>
+
     <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-4">
             <i class="ph-fill ph-hard-hat text-4xl"></i>
@@ -53,7 +70,6 @@
         <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-amber-600 hover:underline">Quay lại Trang chủ</a>
     </div>
 
-    <!-- NỘI DUNG CHÍNH -->
     <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
         
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4">
@@ -69,26 +85,22 @@
                     <i class="ph-bold ph-house"></i> Trang chủ
                 </a>
                 
-                <!-- NÚT XUẤT EXCEL -->
                 <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-download-simple text-lg"></i> Xuất Excel
                 </button>
 
-                <!-- Nút này sẽ thay đổi nội dung tùy theo Tab đang mở -->
                 <button id="main-add-btn" onclick="openCurrentModal()" class="bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-user-plus"></i> Thêm Nhân sự
                 </button>
             </div>
         </div>
 
-        <!-- Các Tabs điều hướng -->
         <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-px">
             <button id="btn-tab-nhan-su" onclick="switchTab('nhan-su')" class="px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition">Quản lý Nhân sự</button>
             <button id="btn-tab-may-moc" onclick="switchTab('may-moc')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition">Máy móc - Thiết bị</button>
             <button id="btn-tab-dao-tao" onclick="switchTab('dao-tao')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition">Hồ sơ Đào tạo</button>
         </div>
 
-        <!-- Loading dùng chung -->
         <div id="loading-msg" class="text-center py-10 text-amber-600 font-medium hidden">
             <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
             <p>Đang tải dữ liệu từ máy chủ...</p>
@@ -104,7 +116,7 @@
                         <th class="p-4 font-semibold">Họ và Tên</th>
                         <th class="p-4 font-semibold">Ngày Sinh</th>
                         <th class="p-4 font-semibold">Số CCCD</th>
-                        <th class="p-4 font-semibold text-center">Nhóm ATLĐ</th>
+                        <th class="p-4 font-semibold text-center">An Toàn LĐ</th>
                         <th class="p-4 font-semibold text-center">Bảo hiểm TN</th>
                         <th class="p-4 font-semibold text-center">Khám Sức Khỏe</th>
                         <th class="p-4 font-semibold text-center">Thao tác</th>
@@ -151,10 +163,6 @@
         </div>
     </div>
 
-    <!-- ============================================== -->
-    <!-- CÁC MODALS DÙNG ĐỂ THÊM / SỬA DỮ LIỆU -->
-    <!-- ============================================== -->
-
     <!-- Modal Nhân Sự -->
     <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
@@ -162,9 +170,7 @@
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="worker-modal-title">
                     <i class="ph-fill ph-user-plus text-amber-600 text-2xl"></i> Thêm Nhân Sự Mới
                 </h3>
-                <button onclick="closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition">
-                    <i class="ph-bold ph-x text-2xl"></i>
-                </button>
+                <button onclick="closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto space-y-4">
@@ -203,7 +209,11 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Hết Hạn Thẻ ATLĐ</label>
+                        <input type="date" id="wk-han-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
+                    </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Hết Hạn Bảo Hiểm TN</label>
                         <input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none">
@@ -229,9 +239,7 @@
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="machine-modal-title">
                     <i class="ph-fill ph-truck text-amber-600 text-2xl"></i> Thêm Thiết Bị Mới
                 </h3>
-                <button onclick="closeModal('machine-modal')" class="text-slate-400 hover:text-red-500 transition">
-                    <i class="ph-bold ph-x text-2xl"></i>
-                </button>
+                <button onclick="closeModal('machine-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             
             <div class="p-6 space-y-4">
@@ -277,9 +285,7 @@
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="training-modal-title">
                     <i class="ph-fill ph-chalkboard-teacher text-amber-600 text-2xl"></i> Lưu Hồ Sơ Đào Tạo
                 </h3>
-                <button onclick="closeModal('training-modal')" class="text-slate-400 hover:text-red-500 transition">
-                    <i class="ph-bold ph-x text-2xl"></i>
-                </button>
+                <button onclick="closeModal('training-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             
             <div class="p-6 space-y-4">
@@ -317,6 +323,49 @@
     </div>
 
     <script>
+        // HỆ THỐNG TOAST & CONFIRM MODAL
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            toast.className = "fixed top-5 right-5 z-[100] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            
+            if (type === "success") {
+                toast.classList.add('bg-emerald-600');
+                icon.className = "ph-fill ph-check-circle text-2xl";
+            } else {
+                toast.classList.add('bg-red-600');
+                icon.className = "ph-fill ph-warning-circle text-2xl";
+            }
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-x-[150%]');
+            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
+        }
+
+        let deleteActionParams = null;
+        window.deleteDocItem = function(collectionName, id, itemName, reloadFunc) {
+            document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn XÓA vĩnh viễn dữ liệu của <b>${itemName}</b>?`;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+            deleteActionParams = { collectionName, id, reloadFunc };
+            
+            document.getElementById('btn-confirm-yes').onclick = async function() {
+                try {
+                    document.getElementById('btn-confirm-yes').innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+                    await window.deleteDoc(window.doc(window.db, deleteActionParams.collectionName, deleteActionParams.id));
+                    showToast("Đã xóa dữ liệu thành công!");
+                    closeConfirmModal();
+                    deleteActionParams.reloadFunc();
+                } catch (error) {
+                    showToast("Lỗi khi xóa: " + error.message, "error");
+                }
+            };
+        }
+
+        window.closeConfirmModal = function() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('btn-confirm-yes').innerHTML = 'Xóa';
+        }
+
+        // ĐĂNG NHẬP ADMIN
         const ADMIN_PASS = "ADMIN2026";
         let currentTab = 'nhan-su';
 
@@ -325,19 +374,14 @@
             if (inputPass === ADMIN_PASS) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                switchTab('nhan-su'); // Mở Tab nhân sự mặc định
+                switchTab('nhan-su');
             } else {
                 document.getElementById('pass-error').classList.remove('hidden');
             }
         }
+        document.getElementById('admin-pass').addEventListener('keypress', function (e) { if (e.key === 'Enter') checkAdminPassword(); });
 
-        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkAdminPassword();
-        });
-
-        // ----------------------------------------------------
-        // LOGIC 1: CHUYỂN ĐỔI TAB VÀ ĐỔI GIAO DIỆN
-        // ----------------------------------------------------
+        // CHUYỂN TAB VÀ MODAL
         window.switchTab = function(tabId) {
             currentTab = tabId;
             const tabs = ['nhan-su', 'may-moc', 'dao-tao'];
@@ -347,7 +391,8 @@
                 const content = document.getElementById('tab-' + t);
                 
                 if (t === tabId) {
-                    btn.className = "px-6 py-2.5 font-bold border-b-2 rounded-t-lg transition bg-amber-50 text-amber-700 border-amber-500";
+                    btn.className = "px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition";
+                    content.classList.remove('hidden');
                 } else {
                     btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition";
                     content.classList.add('hidden'); 
@@ -373,9 +418,10 @@
                 document.getElementById('wk-doc-id').value = '';
                 document.getElementById('wk-cong-ty').value = '';
                 document.getElementById('wk-ho-ten').value = '';
-                document.getElementById('wk-ngay-sinh').value = ''; // Cập nhật ngày sinh
+                document.getElementById('wk-ngay-sinh').value = '';
                 document.getElementById('wk-cccd').value = '';
                 document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo';
+                document.getElementById('wk-han-atld').value = '';
                 document.getElementById('wk-han-bao-hiem').value = '';
                 document.getElementById('wk-han-suc-khoe').value = '';
                 document.getElementById('worker-modal').classList.remove('hidden');
@@ -393,13 +439,11 @@
                 document.getElementById('tr-doc-id').value = '';
                 document.getElementById('tr-chu-de').value = '';
                 document.getElementById('tr-cong-ty').value = '';
-                
                 const today = new Date();
                 const dd = String(today.getDate()).padStart(2, '0');
                 const mm = String(today.getMonth() + 1).padStart(2, '0');
                 const yyyy = today.getFullYear();
                 document.getElementById('tr-ngay').value = yyyy + '-' + mm + '-' + dd;
-                
                 document.getElementById('tr-so-luong').value = '';
                 document.getElementById('tr-nguoi-day').value = localStorage.getItem("ehs_user_name") || 'Admin EHS';
                 document.getElementById('training-modal').classList.remove('hidden');
@@ -410,16 +454,17 @@
             document.getElementById(modalId).classList.add('hidden');
         }
 
+        // HÀM FORMAT CHUNG
         function formatDateAndStatus(dateString) {
-            if (!dateString) return { text: "N/A", html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-xs font-bold">Chưa có</span>`, isExpired: true };
+            if (!dateString) return { html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[11px] font-bold">Chưa có</span>` };
             const expDate = new Date(dateString);
             const today = new Date();
             today.setHours(0,0,0,0);
             const formatted = expDate.toLocaleDateString('vi-VN');
             if (expDate < today) {
-                return { text: formatted, html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-xs font-bold">Hết hạn (${formatted})</span>`, isExpired: true };
+                return { html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold">Hết hạn (${formatted})</span>` };
             } else {
-                return { text: formatted, html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-xs font-bold">Hợp lệ (${formatted})</span>`, isExpired: false };
+                return { html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold">Hợp lệ (${formatted})</span>` };
             }
         }
 
@@ -428,14 +473,36 @@
             return new Date(dateString).toLocaleDateString('vi-VN');
         }
 
-        // ----------------------------------------------------
-        // LOGIC 2: XỬ LÝ DỮ LIỆU NHÂN SỰ
-        // ----------------------------------------------------
+        async function saveDataToFirebase(collectionName, id, data, btnId, modalId, reloadFunc) {
+            const btn = document.getElementById(btnId);
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu...';
+
+            try {
+                if (id) {
+                    await window.updateDoc(window.doc(window.db, collectionName, id), data);
+                    showToast("Cập nhật dữ liệu thành công!");
+                } else {
+                    data.thoi_gian_tao = new Date();
+                    await window.addDoc(window.collection(window.db, collectionName), data);
+                    showToast("Thêm dữ liệu mới thành công!");
+                }
+                closeModal(modalId);
+                reloadFunc();
+            } catch (error) {
+                showToast("Lỗi lưu dữ liệu: " + error.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // TAB NHÂN SỰ
         async function loadWorkerData() {
             const tbody = document.getElementById('worker-results-body');
             const loading = document.getElementById('loading-msg');
             const tableContainer = document.getElementById('tab-nhan-su');
-            
             tbody.innerHTML = '';
             tableContainer.classList.add('hidden');
             loading.classList.remove('hidden');
@@ -453,6 +520,7 @@
                     const data = doc.data();
                     const bhStatus = formatDateAndStatus(data.han_bao_hiem);
                     const skStatus = formatDateAndStatus(data.han_suc_khoe);
+                    const atldStatus = formatDateAndStatus(data.han_atld);
                     const ngaySinhHtml = data.ngay_sinh ? formatSimpleDate(data.ngay_sinh) : "N/A";
                     let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-700 border-blue-100";
 
@@ -464,18 +532,20 @@
                         <td class="p-4 font-bold text-amber-700">${data.ho_ten}</td>
                         <td class="p-4 text-slate-600">${ngaySinhHtml}</td>
                         <td class="p-4 text-slate-600 font-mono text-sm">${data.cccd}</td>
-                        <td class="p-4 text-center"><span class="px-2 py-1 border rounded text-xs font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></td>
+                        <td class="p-4 text-center">
+                            <div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></div>
+                            ${atldStatus.html}
+                        </td>
                         <td class="p-4 text-center">${bhStatus.html}</td>
                         <td class="p-4 text-center">${skStatus.html}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="editWorker('${doc.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh || ''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_bao_hiem || ''}', '${data.han_suc_khoe || ''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="editWorker('${doc.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh || ''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld || ''}', '${data.han_bao_hiem || ''}', '${data.han_suc_khoe || ''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
                             <button onclick="deleteDocItem('nha_thau_nhan_su', '${doc.id}', '${data.ho_ten}', loadWorkerData)" class="text-red-500 hover:text-red-700 p-1 mx-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             } catch (error) {
-                console.error(error);
                 tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
             } finally {
                 loading.classList.add('hidden');
@@ -483,7 +553,7 @@
             }
         }
 
-        window.editWorker = function(id, congTy, hoTen, ngaySinh, cccd, nhom, hanBH, hanSK) {
+        window.editWorker = function(id, congTy, hoTen, ngaySinh, cccd, nhom, hanATLD, hanBH, hanSK) {
             document.getElementById('worker-modal-title').innerHTML = '<i class="ph-fill ph-pencil-simple text-blue-600 text-2xl"></i> Cập Nhật Hồ Sơ';
             document.getElementById('wk-doc-id').value = id;
             document.getElementById('wk-cong-ty').value = congTy;
@@ -491,6 +561,7 @@
             document.getElementById('wk-ngay-sinh').value = ngaySinh;
             document.getElementById('wk-cccd').value = cccd;
             document.getElementById('wk-nhom-atld').value = nhom;
+            document.getElementById('wk-han-atld').value = hanATLD;
             document.getElementById('wk-han-bao-hiem').value = hanBH;
             document.getElementById('wk-han-suc-khoe').value = hanSK;
             document.getElementById('worker-modal').classList.remove('hidden');
@@ -504,22 +575,20 @@
                 ngay_sinh: document.getElementById('wk-ngay-sinh').value,
                 cccd: document.getElementById('wk-cccd').value.trim(),
                 nhom_atld: document.getElementById('wk-nhom-atld').value,
+                han_atld: document.getElementById('wk-han-atld').value,
                 han_bao_hiem: document.getElementById('wk-han-bao-hiem').value,
                 han_suc_khoe: document.getElementById('wk-han-suc-khoe').value,
                 thoi_gian_cap_nhat: new Date()
             };
-            if (!data.cong_ty || !data.ho_ten || !data.cccd) return alert("Vui lòng nhập Công ty, Họ tên và CCCD!");
+            if (!data.cong_ty || !data.ho_ten || !data.cccd) return showToast("Vui lòng nhập Công ty, Họ tên và CCCD!", "error");
             await saveDataToFirebase("nha_thau_nhan_su", id, data, "btn-save-worker", "worker-modal", loadWorkerData);
         }
 
-        // ----------------------------------------------------
-        // LOGIC 3: XỬ LÝ DỮ LIỆU MÁY MÓC
-        // ----------------------------------------------------
+        // TAB MÁY MÓC
         async function loadMachineData() {
             const tbody = document.getElementById('machine-results-body');
             const loading = document.getElementById('loading-msg');
             const tableContainer = document.getElementById('tab-may-moc');
-            
             tbody.innerHTML = '';
             tableContainer.classList.add('hidden');
             loading.classList.remove('hidden');
@@ -555,7 +624,6 @@
                     tbody.appendChild(tr);
                 });
             } catch (error) {
-                console.error(error);
                 tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu máy móc.</td></tr>`;
             } finally {
                 loading.classList.add('hidden');
@@ -584,18 +652,15 @@
                 han_kiem_dinh: document.getElementById('mac-han-kd').value,
                 thoi_gian_cap_nhat: new Date()
             };
-            if (!data.cong_ty || !data.ten_may || !data.han_kiem_dinh) return alert("Vui lòng nhập đủ Tên Cty, Tên Máy và Ngày hết hạn kiểm định!");
+            if (!data.cong_ty || !data.ten_may || !data.han_kiem_dinh) return showToast("Vui lòng nhập đủ Tên Cty, Tên Máy và Ngày hết hạn kiểm định!", "error");
             await saveDataToFirebase("nha_thau_may_moc", id, data, "btn-save-machine", "machine-modal", loadMachineData);
         }
 
-        // ----------------------------------------------------
-        // LOGIC 4: XỬ LÝ DỮ LIỆU ĐÀO TẠO
-        // ----------------------------------------------------
+        // TAB ĐÀO TẠO
         async function loadTrainingData() {
             const tbody = document.getElementById('training-results-body');
             const loading = document.getElementById('loading-msg');
             const tableContainer = document.getElementById('tab-dao-tao');
-            
             tbody.innerHTML = '';
             tableContainer.classList.add('hidden');
             loading.classList.remove('hidden');
@@ -627,7 +692,6 @@
                     tbody.appendChild(tr);
                 });
             } catch (error) {
-                console.error(error);
                 tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu.</td></tr>`;
             } finally {
                 loading.classList.add('hidden');
@@ -645,55 +709,15 @@
                 nguoi_day: document.getElementById('tr-nguoi-day').value,
                 thoi_gian_cap_nhat: new Date()
             };
-            if (!data.chu_de || !data.cong_ty) return alert("Vui lòng nhập Chủ đề và Tên Công ty tham gia!");
+            if (!data.chu_de || !data.cong_ty) return showToast("Vui lòng nhập Chủ đề và Tên Công ty tham gia!", "error");
             await saveDataToFirebase("nha_thau_dao_tao", id, data, "btn-save-training", "training-modal", loadTrainingData);
         }
 
-        // ----------------------------------------------------
-        // HÀM HELPER DÙNG CHUNG CHO FIREBASE (SAVE / DELETE)
-        // ----------------------------------------------------
-        async function saveDataToFirebase(collectionName, id, data, btnId, modalId, reloadFunc) {
-            const btn = document.getElementById(btnId);
-            const originalText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu...';
-
-            try {
-                if (id) {
-                    await window.updateDoc(window.doc(window.db, collectionName, id), data);
-                } else {
-                    data.thoi_gian_tao = new Date();
-                    await window.addDoc(window.collection(window.db, collectionName), data);
-                }
-                closeModal(modalId);
-                reloadFunc(); // Tải lại bảng dữ liệu của Tab đó
-            } catch (error) {
-                alert("Lỗi lưu dữ liệu: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-            }
-        }
-
-        window.deleteDocItem = async function(collectionName, id, itemName, reloadFunc) {
-            if (confirm(`Bạn có chắc chắn muốn XÓA vĩnh viễn dữ liệu của: ${itemName}?`)) {
-                try {
-                    await window.deleteDoc(window.doc(window.db, collectionName, id));
-                    reloadFunc();
-                } catch (error) {
-                    alert("Lỗi khi xóa: " + error.message);
-                }
-            }
-        }
-
-        // ==========================================
-        // TÍNH NĂNG XUẤT FILE EXCEL (CSV)
-        // ==========================================
+        // TÍNH NĂNG XUẤT FILE EXCEL
         window.exportToExcel = function() {
             let activeTableBodyId = '';
             let fileName = '';
             
-            // Tự động nhận diện đang mở Tab nào để xuất đúng bảng đó
             if (currentTab === 'nhan-su') { activeTableBodyId = 'tab-nhan-su'; fileName = 'DS_NhanSu_NhaThau.csv'; }
             else if (currentTab === 'may-moc') { activeTableBodyId = 'tab-may-moc'; fileName = 'DS_MayMoc_NhaThau.csv'; }
             else if (currentTab === 'dao-tao') { activeTableBodyId = 'tab-dao-tao'; fileName = 'DS_DaoTao_NhaThau.csv'; }
@@ -703,26 +727,22 @@
 
             let csv = [];
             let rows = table.querySelectorAll("tr");
-            let bom = "\uFEFF"; // Hỗ trợ hiển thị tiếng Việt có dấu chuẩn xác trong Excel
+            let bom = "\uFEFF"; 
 
             for (let i = 0; i < rows.length; i++) {
                 let row = [], cols = rows[i].querySelectorAll("td, th");
-                // Bỏ qua cột cuối cùng ("Thao tác")
                 let colCount = i === 0 ? cols.length - 1 : cols.length - 1; 
                 
                 for (let j = 0; j < colCount; j++) {
-                    // Lọc bỏ các thẻ HTML để lấy chữ thuần túy
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""').trim();
-                    
-                    // Làm sạch dữ liệu chữ thừa của nhãn trạng thái
                     if(data.includes("Hợp lệ (")) data = data.replace("Hợp lệ (", "").replace(")", "");
                     if(data.includes("Hết hạn (")) data = data.replace("Hết hạn (", "").replace(")", "");
-
                     row.push('"' + data + '"');
                 }
                 csv.push(row.join(","));
             }
             downloadCSV(bom + csv.join("\n"), fileName);
+            showToast("Đã tải xuống file Excel thành công!");
         }
 
         function downloadCSV(csv, filename) {
