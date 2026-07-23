@@ -11,7 +11,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // CẤU HÌNH FIREBASE CỦA ANH
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -31,7 +30,6 @@
         window.orderBy = orderBy;
     </script>
     <style>
-        /* CSS Ẩn mũi tên lên xuống của ô nhập số */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
@@ -54,8 +52,14 @@
                 <p class="text-sm font-bold">Đang tải danh sách nhân sự...</p>
             </div>
 
+            <!-- Cảnh báo lỗi truy xuất (khi không ai đủ điều kiện) -->
+            <div id="no-worker-msg" class="hidden text-center text-rose-600 py-6 border border-rose-200 bg-rose-50 rounded-xl mb-4">
+                <i class="ph-fill ph-warning-circle text-4xl mb-2"></i>
+                <p class="text-sm font-bold px-4">Không có công nhân nào đủ điều kiện an toàn để vào cổng hôm nay.</p>
+                <p class="text-[11px] mt-2 font-medium">Bắt buộc: Phải có Thẻ ATLĐ & Bảo hiểm TN còn hạn.</p>
+            </div>
+
             <div id="form-content" class="hidden space-y-5">
-                
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">1. Chọn Tên Công Ty</label>
                     <div class="relative">
@@ -74,7 +78,7 @@
                         </select>
                         <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
                     </div>
-                    <p class="text-[11px] text-red-500 font-bold mt-1.5"><i class="ph-fill ph-warning-circle"></i> Chỉ những nhân sự đã đăng ký hồ sơ mới có tên trong danh sách.</p>
+                    <p class="text-[11px] text-red-500 font-bold mt-1.5"><i class="ph-fill ph-warning-circle"></i> Chỉ những nhân sự "ĐỦ HỒ SƠ AN TOÀN" mới có tên.</p>
                 </div>
 
                 <div>
@@ -83,13 +87,11 @@
                     <p class="text-xs text-slate-500 font-medium mt-1.5 text-center">Nhập đúng <span class="font-bold text-blue-600">4 số cuối CCCD</span> của bạn để xác thực.</p>
                 </div>
 
-                <!-- Thông báo lỗi (Thay cho alert) -->
                 <div id="error-msg" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2">
                     <i class="ph-fill ph-warning-circle text-xl"></i>
                     <span id="error-text">Lỗi!</span>
                 </div>
 
-                <!-- Các nút hành động -->
                 <div class="pt-2 grid grid-cols-2 gap-4">
                     <button id="btn-in" onclick="submitCheckInOut('VÀO')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
                         <i class="ph-bold ph-sign-in text-2xl"></i>
@@ -104,6 +106,7 @@
         </div>
     </div>
 
+    <!-- Màn hình thẻ trình bảo vệ -->
     <div id="success-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center p-4">
         <div id="success-bg" class="absolute inset-0 bg-emerald-600 transition-colors duration-300"></div>
         <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl p-8 text-center flex flex-col items-center border-4 border-white/20">
@@ -134,39 +137,62 @@
             const errorDiv = document.getElementById('error-msg');
             document.getElementById('error-text').innerText = message;
             errorDiv.classList.remove('hidden');
-            
-            // Tự động ẩn sau 4 giây
             setTimeout(() => { errorDiv.classList.add('hidden'); }, 4000);
         }
 
-        // Tải dữ liệu từ Firebase
+        // Hàm kiểm tra ngày xem có hợp lệ (từ hôm nay trở về sau) không
+        function isValidDate(dateString) {
+            if (!dateString) return false;
+            const expDate = new Date(dateString);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            return expDate >= today;
+        }
+
         window.onload = async function() {
             try {
                 const q = window.query(window.collection(window.db, "nha_thau_nhan_su"));
                 const querySnapshot = await window.getDocs(q);
                 
                 querySnapshot.forEach((doc) => {
-                    allWorkersData.push(doc.data());
+                    const w = doc.data();
+                    
+                    // ===============================================
+                    // CHỐT CHẶN KIỂM TRA ĐIỀU KIỆN AN TOÀN TẠI ĐÂY
+                    // ===============================================
+                    // 1. Phải khai báo Nhóm ATLĐ & Thẻ còn hạn
+                    const hasValidTraining = w.nhom_atld && w.nhom_atld !== "Chưa đào tạo" && isValidDate(w.han_atld);
+                    // 2. Bảo hiểm TN phải còn hạn
+                    const hasValidInsurance = isValidDate(w.han_bao_hiem);
+
+                    // CHỈ đẩy những người đạt TẤT CẢ yêu cầu vào mảng dữ liệu quét QR
+                    if (hasValidTraining && hasValidInsurance) {
+                        allWorkersData.push(w);
+                    }
                 });
 
-                // Lọc ra danh sách tên công ty (không trùng lặp)
+                document.getElementById('loading-msg').classList.add('hidden');
+
+                if (allWorkersData.length === 0) {
+                    document.getElementById('no-worker-msg').classList.remove('hidden');
+                    return; // Dừng luôn, không hiện form chọn tên nữa
+                }
+
+                // Lọc ra danh sách tên công ty từ mảng những người đạt yêu cầu
                 const companies = [...new Set(allWorkersData.map(w => w.cong_ty))].sort();
-                
                 const selCompany = document.getElementById('sel-company');
                 companies.forEach(company => {
                     selCompany.innerHTML += `<option value="${company}">${company}</option>`;
                 });
 
-                document.getElementById('loading-msg').classList.add('hidden');
                 document.getElementById('form-content').classList.remove('hidden');
 
             } catch (error) {
-                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold">Lỗi tải dữ liệu. Hãy kiểm tra kết nối mạng!</p>`;
+                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold">Lỗi kết nối máy chủ Firebase!</p>`;
                 console.error("Lỗi:", error);
             }
         }
 
-        // Lọc nhân sự khi chọn Công ty
         window.filterWorkers = function() {
             const selectedCompany = document.getElementById('sel-company').value;
             const selWorker = document.getElementById('sel-worker');
@@ -181,8 +207,6 @@
             }
 
             selWorker.disabled = false;
-            
-            // Lọc tên theo công ty và xếp theo ABC. Không hiện đuôi CCCD ra màn hình.
             const filteredWorkers = allWorkersData.filter(w => w.cong_ty === selectedCompany).sort((a,b) => a.ho_ten.localeCompare(b.ho_ten));
             
             filteredWorkers.forEach(worker => {
@@ -206,26 +230,21 @@
                 return;
             }
 
-            // TÌM CCCD GỐC CỦA NHÂN SỰ ĐỂ ĐỐI CHIẾU
             const matchedWorker = allWorkersData.find(w => w.cong_ty === company && w.ho_ten === workerName);
             if (!matchedWorker) return;
 
             const realCccd = matchedWorker.cccd || "";
             const last4Digits = realCccd.slice(-4);
 
-            // Chốt chặn mật khẩu CCCD
             if (inputCccd !== last4Digits) {
-                showError("Sai mã xác thực! Không khớp với 4 số cuối CCCD của bạn.");
+                showError("Sai mã xác thực! Không khớp với 4 số cuối CCCD.");
                 document.getElementById('input-cccd').value = "";
                 document.getElementById('input-cccd').focus();
                 return;
             }
 
-            // NẾU ĐÚNG MẬT KHẨU -> Xử lý đẩy dữ liệu
             const btnIn = document.getElementById('btn-in');
             const btnOut = document.getElementById('btn-out');
-            
-            // Lưu lại text cũ và đổi trạng thái đang load
             const btnTarget = action === 'VÀO' ? btnIn : btnOut;
             const originalContent = btnTarget.innerHTML;
             
@@ -234,17 +253,13 @@
 
             try {
                 const now = new Date();
-                // Đẩy lên Firebase collection "nha_thau_cham_cong"
                 await window.addDoc(window.collection(window.db, "nha_thau_cham_cong"), {
                     cong_ty: company,
                     ho_ten: workerName,
-                    trang_thai: action, // "VÀO" hoặc "RA"
+                    trang_thai: action,
                     thoi_gian: now
                 });
-
-                // HIỂN THỊ MÀN HÌNH THÔNG HÀNH CHO BẢO VỆ XEM
                 showSuccessScreen(action, workerName, company, now);
-
             } catch (error) {
                 showError("Lỗi đường truyền! Vui lòng thử lại.");
                 console.error(error);
@@ -261,13 +276,11 @@
             const icon = document.getElementById('success-icon');
             const actionText = document.getElementById('success-action');
             
-            // Set thông tin
             document.getElementById('success-name').innerText = name;
             document.getElementById('success-company').innerText = company;
             document.getElementById('success-time').innerText = time.toLocaleTimeString('vi-VN') + ' - ' + time.toLocaleDateString('vi-VN');
             actionText.innerText = action + " CỔNG";
 
-            // Set màu sắc tùy theo trạng thái
             if (action === 'VÀO') {
                 bg.className = "absolute inset-0 bg-emerald-600 transition-colors duration-300";
                 iconWrap.className = "w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-emerald-100 text-emerald-600";
@@ -280,19 +293,16 @@
                 actionText.className = "text-4xl font-black text-orange-600 mb-6 uppercase";
             }
 
-            // Ẩn form chính, hiện màn hình trình thẻ
             document.getElementById('main-app').classList.add('hidden');
             screen.classList.remove('hidden');
             screen.classList.add('flex');
         }
 
-        // Khôi phục form cho người tiếp theo quét
         window.resetApp = function() {
             document.getElementById('success-screen').classList.add('hidden');
             document.getElementById('success-screen').classList.remove('flex');
             document.getElementById('main-app').classList.remove('hidden');
             
-            // Xóa form
             document.getElementById('sel-company').value = "";
             document.getElementById('sel-worker').innerHTML = `<option value="">-- Vui lòng chọn Công ty trước --</option>`;
             document.getElementById('sel-worker').disabled = true;
