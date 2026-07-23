@@ -96,8 +96,6 @@
             <span id="toggle-text">Nhà thầu mới?</span> 
             <button onclick="toggleMode()" id="btn-toggle" class="text-blue-600 font-bold hover:underline ml-1">Đăng ký tài khoản</button>
         </div>
-        
-        <!-- KHÔNG CÓ NÚT QUAY VỀ TRANG CHỦ (Cách ly hệ thống) -->
     </div>
 
     <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
@@ -207,7 +205,6 @@
     </div>
 
     <script>
-        // HỆ THỐNG TOAST & CONFIRM MODAL (Tuyệt đối không dùng alert)
         function showToast(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -221,13 +218,8 @@
                 icon.className = "ph-fill ph-warning-circle text-2xl";
             }
             document.getElementById('toast-message').innerText = message;
-            
-            // Xóa class ẩn để trượt vào
             toast.classList.remove('translate-x-[150%]');
-            
-            setTimeout(() => {
-                toast.classList.add('translate-x-[150%]');
-            }, 3000);
+            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         }
 
         let deleteActionCallback = null;
@@ -253,7 +245,6 @@
             document.getElementById('btn-confirm-yes').innerHTML = 'Xóa';
         }
 
-        // BIẾN TOÀN CỤC
         let isLoginMode = true;
         let myCompany = localStorage.getItem("nt_company_name") || "";
         let myPhone = localStorage.getItem("nt_phone") || "";
@@ -302,7 +293,6 @@
 
             try {
                 if (!isLoginMode) {
-                    // Chế độ Đăng ký (Lưu account giả lập vào bảng nha_thau_account)
                     const q = window.query(window.collection(window.db, "nha_thau_account"), window.where("phone", "==", phone));
                     const snap = await window.getDocs(q);
                     if (!snap.empty) {
@@ -313,7 +303,7 @@
                     }
                     await window.addDoc(window.collection(window.db, "nha_thau_account"), {
                         phone: phone,
-                        password: pass, // Pass cơ bản để xác thực nội bộ nhanh
+                        password: pass,
                         company: company,
                         created_at: new Date()
                     });
@@ -321,7 +311,6 @@
                     localStorage.setItem("nt_company_name", company);
                     showToast("Đăng ký thành công!");
                 } else {
-                    // Chế độ Đăng nhập
                     const q = window.query(window.collection(window.db, "nha_thau_account"), window.where("phone", "==", phone), window.where("password", "==", pass));
                     const snap = await window.getDocs(q);
                     if (snap.empty) {
@@ -388,7 +377,6 @@
             loading.classList.remove('hidden');
 
             try {
-                // CHỈ KÉO DỮ LIỆU CỦA ĐÚNG CÔNG TY ĐANG ĐĂNG NHẬP
                 const q = window.query(
                     window.collection(window.db, "nha_thau_nhan_su"), 
                     window.where("cong_ty", "==", myCompany)
@@ -396,7 +384,6 @@
                 const querySnapshot = await window.getDocs(q);
                 let stt = 1;
                 
-                // Thu thập và sắp xếp dữ liệu ở client (Do kết hợp where và orderby trên Firebase cần tạo index phức tạp)
                 let allData = [];
                 querySnapshot.forEach((doc) => {
                     allData.push({ id: doc.id, ...doc.data() });
@@ -475,7 +462,7 @@
         window.saveWorker = async function() {
             const id = document.getElementById('wk-doc-id').value;
             const data = {
-                cong_ty: myCompany, // Ép buộc nhận Tên công ty của tài khoản đang đăng nhập
+                cong_ty: myCompany, 
                 ho_ten: document.getElementById('wk-ho-ten').value.trim(),
                 ngay_sinh: document.getElementById('wk-ngay-sinh').value,
                 cccd: document.getElementById('wk-cccd').value.trim(),
@@ -512,7 +499,6 @@
             }
         }
 
-        // Bật ứng dụng
         checkAuth();
     </script>
 </body>
