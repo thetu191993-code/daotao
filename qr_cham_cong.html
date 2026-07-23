@@ -3,22 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Chấm Công Nhà Thầu EHS</title>
+    <title>Quét Mã Cổng Nhà Thầu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Sử dụng API Key của hệ thống
+        // CẤU HÌNH FIREBASE CỦA ANH
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
             messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -26,96 +27,131 @@
         window.collection = collection;
         window.getDocs = getDocs;
         window.addDoc = addDoc;
+        window.query = query;
+        window.orderBy = orderBy;
     </script>
+    <style>
+        /* CSS Ẩn mũi tên lên xuống của ô nhập số */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen font-sans text-slate-800 flex items-center justify-center p-4">
+<body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col items-center justify-center p-4">
 
-    <!-- Bảng thông báo thành công (Toast) -->
-    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] transition-all duration-300 -translate-y-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white w-[90%] max-w-sm">
-        <i id="toast-icon" class="text-3xl"></i>
-        <div>
-            <p id="toast-title" class="text-lg"></p>
-            <p id="toast-time" class="text-sm font-medium opacity-90"></p>
-        </div>
-    </div>
-
-    <div class="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative z-10" id="main-app">
         <!-- Header -->
         <div class="bg-blue-700 p-6 text-center text-white">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 mb-3 backdrop-blur-sm">
-                <i class="ph-bold ph-fingerprint text-4xl"></i>
-            </div>
-            <h1 class="text-2xl font-bold uppercase tracking-wider">CỔNG KIỂM SOÁT</h1>
-            <p class="text-blue-200 text-sm mt-1">Dành cho nhân sự nhà thầu</p>
+            <i class="ph-fill ph-qr-code text-5xl mb-2"></i>
+            <h1 class="text-2xl font-bold uppercase tracking-wide">Cổng Nhà Thầu</h1>
+            <p class="text-blue-100 text-sm mt-1">Hệ thống khai báo Ra / Vào nhà máy</p>
         </div>
 
-        <div class="p-6 space-y-5">
-            <!-- Đồng hồ thời gian thực -->
-            <div class="text-center bg-slate-50 py-3 rounded-xl border border-slate-200">
-                <p class="text-slate-500 text-xs font-bold uppercase mb-1">Thời gian hiện tại</p>
-                <p id="realtime-clock" class="text-3xl font-mono font-bold text-blue-700 tracking-widest">--:--:--</p>
-                <p id="realtime-date" class="text-sm text-slate-600 font-medium"></p>
+        <div class="p-6">
+            <!-- Loading Message -->
+            <div id="loading-msg" class="text-center text-blue-600 py-8">
+                <i class="ph-bold ph-spinner animate-spin text-4xl mb-3 block"></i>
+                <p class="text-sm font-bold">Đang tải danh sách nhân sự...</p>
             </div>
 
-            <div id="loading-msg" class="text-center text-blue-600 py-4">
-                <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
-                <p class="text-sm font-bold">Đang tải danh sách đăng ký...</p>
-            </div>
-
-            <!-- Form Chọn Tên -->
-            <div id="form-content" class="hidden space-y-4">
+            <div id="form-content" class="hidden space-y-5">
+                
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">1. Chọn Tên Công Ty</label>
-                    <select id="sel-company" onchange="filterWorkers()" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-semibold text-slate-800 appearance-none text-base">
-                        <option value="">-- Bấm để chọn Công ty --</option>
-                    </select>
+                    <div class="relative">
+                        <select id="sel-company" onchange="filterWorkers()" class="w-full pl-4 pr-10 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-bold text-slate-800 appearance-none text-base transition-colors">
+                            <option value="">-- Bấm để chọn Công ty --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+                    </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">2. Chọn Họ và Tên của bạn</label>
-                    <select id="sel-worker" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-semibold text-slate-800 appearance-none text-base disabled:opacity-50">
-                        <option value="">-- Vui lòng chọn Công ty trước --</option>
-                    </select>
-                    <p class="text-xs text-red-500 font-medium mt-1.5"><i class="ph-fill ph-warning-circle"></i> Chỉ những nhân sự đã đăng ký hồ sơ mới có tên trong danh sách này.</p>
+                    <div class="relative">
+                        <select id="sel-worker" class="w-full pl-4 pr-10 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-bold text-slate-800 appearance-none text-base disabled:opacity-50 transition-colors">
+                            <option value="">-- Vui lòng chọn Công ty trước --</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
+                    </div>
+                    <p class="text-[11px] text-red-500 font-bold mt-1.5"><i class="ph-fill ph-warning-circle"></i> Chỉ những nhân sự đã đăng ký hồ sơ mới có tên trong danh sách.</p>
                 </div>
 
-                <div class="pt-4 grid grid-cols-2 gap-3">
-                    <button onclick="submitCheckInOut('VÀO')" id="btn-in" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_4px_0_0_#059669] hover:shadow-[0_2px_0_0_#059669] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] flex flex-col items-center justify-center gap-1">
-                        <i class="ph-bold ph-sign-in text-2xl"></i> VÀO CỔNG
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">3. Mật mã xác thực</label>
+                    <input type="number" id="input-cccd" class="w-full px-4 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-white font-bold text-center tracking-[0.5em] text-2xl transition-colors" placeholder="••••" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);">
+                    <p class="text-xs text-slate-500 font-medium mt-1.5 text-center">Nhập đúng <span class="font-bold text-blue-600">4 số cuối CCCD</span> của bạn để xác thực.</p>
+                </div>
+
+                <!-- Thông báo lỗi (Thay cho alert) -->
+                <div id="error-msg" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2">
+                    <i class="ph-fill ph-warning-circle text-xl"></i>
+                    <span id="error-text">Lỗi!</span>
+                </div>
+
+                <!-- Các nút hành động -->
+                <div class="pt-2 grid grid-cols-2 gap-4">
+                    <button id="btn-in" onclick="submitCheckInOut('VÀO')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                        <i class="ph-bold ph-sign-in text-2xl"></i>
+                        <span class="text-lg">VÀO CỔNG</span>
                     </button>
-                    <button onclick="submitCheckInOut('RA')" id="btn-out" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_4px_0_0_#ea580c] hover:shadow-[0_2px_0_0_#ea580c] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] flex flex-col items-center justify-center gap-1">
-                        <i class="ph-bold ph-sign-out text-2xl"></i> RA CỔNG
+                    <button id="btn-out" onclick="submitCheckInOut('RA')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                        <i class="ph-bold ph-sign-out text-2xl"></i>
+                        <span class="text-lg">RA CỔNG</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // Cập nhật đồng hồ
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('realtime-clock').innerText = now.toLocaleTimeString('vi-VN', { hour12: false });
-            document.getElementById('realtime-date').innerText = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+    <div id="success-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center p-4">
+        <div id="success-bg" class="absolute inset-0 bg-emerald-600 transition-colors duration-300"></div>
+        <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl p-8 text-center flex flex-col items-center border-4 border-white/20">
+            <div id="success-icon-wrap" class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-emerald-100 text-emerald-600">
+                <i id="success-icon" class="ph-fill ph-check-circle text-6xl"></i>
+            </div>
+            
+            <p class="text-slate-500 font-bold uppercase tracking-widest text-sm mb-1">Thông hành</p>
+            <h2 id="success-action" class="text-4xl font-black text-slate-800 mb-6 uppercase">VÀO CỔNG</h2>
+            
+            <div class="w-full bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100">
+                <p id="success-name" class="font-bold text-2xl text-blue-700 mb-1">Nguyễn Văn A</p>
+                <p id="success-company" class="text-sm font-semibold text-slate-500 uppercase">Công ty TNHH ABC</p>
+            </div>
+            
+            <p id="success-time" class="text-slate-400 font-mono text-lg font-semibold mb-6">14:30:00 - 23/07/2026</p>
+            
+            <button onclick="resetApp()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform text-lg">
+                Đóng / Người tiếp theo
+            </button>
+        </div>
+    </div>
 
+    <script>
         let allWorkersData = [];
 
-        // Kéo dữ liệu từ Firebase
+        function showError(message) {
+            const errorDiv = document.getElementById('error-msg');
+            document.getElementById('error-text').innerText = message;
+            errorDiv.classList.remove('hidden');
+            
+            // Tự động ẩn sau 4 giây
+            setTimeout(() => { errorDiv.classList.add('hidden'); }, 4000);
+        }
+
+        // Tải dữ liệu từ Firebase
         window.onload = async function() {
             try {
-                const querySnapshot = await window.getDocs(window.collection(window.db, "nha_thau_nhan_su"));
-                let companies = new Set();
+                const q = window.query(window.collection(window.db, "nha_thau_nhan_su"));
+                const querySnapshot = await window.getDocs(q);
                 
                 querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    allWorkersData.push(data);
-                    companies.add(data.cong_ty);
+                    allWorkersData.push(doc.data());
                 });
 
-                // Đổ dữ liệu vào Select Công ty
+                // Lọc ra danh sách tên công ty (không trùng lặp)
+                const companies = [...new Set(allWorkersData.map(w => w.cong_ty))].sort();
+                
                 const selCompany = document.getElementById('sel-company');
                 companies.forEach(company => {
                     selCompany.innerHTML += `<option value="${company}">${company}</option>`;
@@ -125,16 +161,19 @@
                 document.getElementById('form-content').classList.remove('hidden');
 
             } catch (error) {
-                document.getElementById('loading-msg').innerHTML = `<p class="text-red-500 font-bold">Lỗi tải dữ liệu. Vui lòng thử lại.</p>`;
+                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold">Lỗi tải dữ liệu. Hãy kiểm tra kết nối mạng!</p>`;
+                console.error("Lỗi:", error);
             }
-        };
+        }
 
-        // Lọc nhân viên khi chọn Công ty
+        // Lọc nhân sự khi chọn Công ty
         window.filterWorkers = function() {
             const selectedCompany = document.getElementById('sel-company').value;
             const selWorker = document.getElementById('sel-worker');
             
             selWorker.innerHTML = `<option value="">-- Chọn Tên của bạn --</option>`;
+            document.getElementById('input-cccd').value = ""; 
+            document.getElementById('error-msg').classList.add('hidden');
             
             if (!selectedCompany) {
                 selWorker.disabled = true;
@@ -143,79 +182,121 @@
 
             selWorker.disabled = false;
             
-            // Lọc và sắp xếp tên theo ABC
+            // Lọc tên theo công ty và xếp theo ABC. Không hiện đuôi CCCD ra màn hình.
             const filteredWorkers = allWorkersData.filter(w => w.cong_ty === selectedCompany).sort((a,b) => a.ho_ten.localeCompare(b.ho_ten));
             
             filteredWorkers.forEach(worker => {
-                selWorker.innerHTML += `<option value="${worker.ho_ten}">${worker.ho_ten} (CCCD: ${worker.cccd.slice(-4)})</option>`;
+                selWorker.innerHTML += `<option value="${worker.ho_ten}">${worker.ho_ten}</option>`;
             });
         }
 
-        // Xử lý nút bấm VÀO / RA
         window.submitCheckInOut = async function(action) {
             const company = document.getElementById('sel-company').value;
-            const worker = document.getElementById('sel-worker').value;
+            const workerName = document.getElementById('sel-worker').value;
+            const inputCccd = document.getElementById('input-cccd').value.trim();
 
-            if (!company || !worker) {
-                alert("⚠️ Vui lòng chọn Công ty và Tên của bạn trước khi bấm nút!");
+            if (!company || !workerName) {
+                showError("Vui lòng chọn Công ty và Tên của bạn!");
                 return;
             }
 
+            if (!inputCccd || inputCccd.length !== 4) {
+                showError("Vui lòng nhập đủ 4 số cuối CCCD!");
+                document.getElementById('input-cccd').focus();
+                return;
+            }
+
+            // TÌM CCCD GỐC CỦA NHÂN SỰ ĐỂ ĐỐI CHIẾU
+            const matchedWorker = allWorkersData.find(w => w.cong_ty === company && w.ho_ten === workerName);
+            if (!matchedWorker) return;
+
+            const realCccd = matchedWorker.cccd || "";
+            const last4Digits = realCccd.slice(-4);
+
+            // Chốt chặn mật khẩu CCCD
+            if (inputCccd !== last4Digits) {
+                showError("Sai mã xác thực! Không khớp với 4 số cuối CCCD của bạn.");
+                document.getElementById('input-cccd').value = "";
+                document.getElementById('input-cccd').focus();
+                return;
+            }
+
+            // NẾU ĐÚNG MẬT KHẨU -> Xử lý đẩy dữ liệu
             const btnIn = document.getElementById('btn-in');
             const btnOut = document.getElementById('btn-out');
+            
+            // Lưu lại text cũ và đổi trạng thái đang load
+            const btnTarget = action === 'VÀO' ? btnIn : btnOut;
+            const originalContent = btnTarget.innerHTML;
+            
             btnIn.disabled = true; btnOut.disabled = true;
+            btnTarget.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-3xl"></i>';
 
             try {
-                // Đẩy dữ liệu lên Firebase bảng nha_thau_cham_cong
+                const now = new Date();
+                // Đẩy lên Firebase collection "nha_thau_cham_cong"
                 await window.addDoc(window.collection(window.db, "nha_thau_cham_cong"), {
                     cong_ty: company,
-                    ho_ten: worker,
+                    ho_ten: workerName,
                     trang_thai: action, // "VÀO" hoặc "RA"
-                    thoi_gian: new Date()
+                    thoi_gian: now
                 });
 
-                showToast(action, worker);
-                
-                // Reset form sau 2 giây
-                setTimeout(() => {
-                    document.getElementById('sel-company').value = "";
-                    document.getElementById('sel-worker').innerHTML = `<option value="">-- Vui lòng chọn Công ty trước --</option>`;
-                    document.getElementById('sel-worker').disabled = true;
-                    btnIn.disabled = false; btnOut.disabled = false;
-                }, 2000);
+                // HIỂN THỊ MÀN HÌNH THÔNG HÀNH CHO BẢO VỆ XEM
+                showSuccessScreen(action, workerName, company, now);
 
             } catch (error) {
-                alert("Lỗi kết nối! Vui lòng thử lại.");
+                showError("Lỗi đường truyền! Vui lòng thử lại.");
+                console.error(error);
+            } finally {
                 btnIn.disabled = false; btnOut.disabled = false;
+                btnTarget.innerHTML = originalContent;
             }
         }
 
-        // Hiển thị thông báo trượt từ trên xuống
-        function showToast(action, name) {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const title = document.getElementById('toast-title');
+        function showSuccessScreen(action, name, company, time) {
+            const screen = document.getElementById('success-screen');
+            const bg = document.getElementById('success-bg');
+            const iconWrap = document.getElementById('success-icon-wrap');
+            const icon = document.getElementById('success-icon');
+            const actionText = document.getElementById('success-action');
             
-            toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl font-bold text-white w-[90%] max-w-sm";
-            
-            if (action === "VÀO") {
-                toast.classList.add('bg-emerald-600');
-                icon.className = "ph-fill ph-check-circle";
-                title.innerText = `Xác nhận VÀO CỔNG`;
+            // Set thông tin
+            document.getElementById('success-name').innerText = name;
+            document.getElementById('success-company').innerText = company;
+            document.getElementById('success-time').innerText = time.toLocaleTimeString('vi-VN') + ' - ' + time.toLocaleDateString('vi-VN');
+            actionText.innerText = action + " CỔNG";
+
+            // Set màu sắc tùy theo trạng thái
+            if (action === 'VÀO') {
+                bg.className = "absolute inset-0 bg-emerald-600 transition-colors duration-300";
+                iconWrap.className = "w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-emerald-100 text-emerald-600";
+                icon.className = "ph-fill ph-check-circle text-6xl";
+                actionText.className = "text-4xl font-black text-emerald-600 mb-6 uppercase";
             } else {
-                toast.classList.add('bg-orange-500');
-                icon.className = "ph-fill ph-check-circle";
-                title.innerText = `Xác nhận RA CỔNG`;
+                bg.className = "absolute inset-0 bg-orange-500 transition-colors duration-300";
+                iconWrap.className = "w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-orange-100 text-orange-600";
+                icon.className = "ph-fill ph-sign-out text-6xl";
+                actionText.className = "text-4xl font-black text-orange-600 mb-6 uppercase";
             }
 
-            document.getElementById('toast-time').innerText = `${name} - ${new Date().toLocaleTimeString('vi-VN')}`;
+            // Ẩn form chính, hiện màn hình trình thẻ
+            document.getElementById('main-app').classList.add('hidden');
+            screen.classList.remove('hidden');
+            screen.classList.add('flex');
+        }
+
+        // Khôi phục form cho người tiếp theo quét
+        window.resetApp = function() {
+            document.getElementById('success-screen').classList.add('hidden');
+            document.getElementById('success-screen').classList.remove('flex');
+            document.getElementById('main-app').classList.remove('hidden');
             
-            setTimeout(() => {
-                toast.classList.add('-translate-y-[150%]');
-                setTimeout(() => {
-                    toast.classList.remove('bg-emerald-600', 'bg-orange-500');
-                }, 300);
-            }, 3000);
+            // Xóa form
+            document.getElementById('sel-company').value = "";
+            document.getElementById('sel-worker').innerHTML = `<option value="">-- Vui lòng chọn Công ty trước --</option>`;
+            document.getElementById('sel-worker').disabled = true;
+            document.getElementById('input-cccd').value = "";
         }
     </script>
 </body>
