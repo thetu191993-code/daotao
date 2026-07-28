@@ -1406,5 +1406,21 @@
 "Appendix": "PL 1 & PL3",
 "Chemical formula": 0,
 "Link SDS": "msds/msds_axit_sulfuric.pdf"
+},
+{
+"No.": 29,
+"Production name": "Caxi hydroxit - Ca(OH)2",
+"Normal name": "CALCIUM DIHYDROXIDE 98%",
+"Manufacturing": "HOANG CO",
+"Production code": "Calcium dihydroxide",
+"Chemical composition": "Calcium dihydroxide",
+"from %": 94,
+"to %": 98,
+"CAS #": "1305-62-0",
+"Classify": "Mixtures",
+"Using position": "WWTP",
+"Appendix": "0",
+"Chemical formula": 0,
+"Link SDS": "msds/msds_canxi_hydroxit.pdf"
 }
 ]
