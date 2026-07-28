@@ -51,6 +51,16 @@
 "id": "tt10",
 "nhom": "4. AN TOÀN MÁY MÓC & PPE",
 "noi_dung": "Các thiết bị chuyển động (băng tải, nhông xích) đều có lồng che chắn bảo vệ an toàn (Machine Guarding)."
+},
+{
+"id": "tt11",
+"nhom": "5. AN TOÀN HÓA CHẤT & MÔI TRƯỜNG",
+"noi_dung": "Các thùng/can hóa chất tại khu vực sản xuất có nhãn phụ rõ ràng, đậy kín nắp và để trên khay chống tràn."
+},
+{
+"id": "tt12",
+"nhom": "5. AN TOÀN HÓA CHẤT & MÔI TRƯỜNG",
+"noi_dung": "Khu vực sử dụng hóa chất có sẵn Thẻ an toàn (SDS) và phương tiện ứng phó sự cố (cát, giẻ lau, thùng rác nguy hại)."
 }
 ]
 }
