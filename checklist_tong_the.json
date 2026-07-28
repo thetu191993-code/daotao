@@ -1,0 +1,56 @@
+{
+"ten_bien_ban": "Kiểm tra An toàn, Vệ sinh & PCCC Tổng thể",
+"ma_form": "FRM.EHS.05.1",
+"danh_sach_kiem_tra": [
+{
+"id": "tt1",
+"nhom": "1. 5S & VỆ SINH CÔNG NGHIỆP",
+"noi_dung": "Đường đi lối lại (Walkway) thông thoáng, không có vật cản, hàng hóa lấn vạch giới hạn."
+},
+{
+"id": "tt2",
+"nhom": "1. 5S & VỆ SINH CÔNG NGHIỆP",
+"noi_dung": "Khu vực làm việc sạch sẽ, không có dầu mỡ tràn đổ hay rác thải vứt bừa bãi dưới sàn."
+},
+{
+"id": "tt3",
+"nhom": "1. 5S & VỆ SINH CÔNG NGHIỆP",
+"noi_dung": "Rác thải được phân loại đúng quy định (Rác sinh hoạt, rác tái chế, rác nguy hại)."
+},
+{
+"id": "tt4",
+"nhom": "2. AN TOÀN PHÒNG CHÁY CHỮA CHÁY",
+"noi_dung": "Bình chữa cháy đúng vị trí, còn niêm phong chì, kim đồng hồ áp suất chỉ vạch xanh."
+},
+{
+"id": "tt5",
+"nhom": "2. AN TOÀN PHÒNG CHÁY CHỮA CHÁY",
+"noi_dung": "Khu vực để bình chữa cháy, vòi rồng, tủ báo cháy không bị hàng hóa che khuất."
+},
+{
+"id": "tt6",
+"nhom": "2. AN TOÀN PHÒNG CHÁY CHỮA CHÁY",
+"noi_dung": "Cửa thoát hiểm mở dễ dàng, đèn Exit sáng, hành lang thoát hiểm không bị khóa/chặn."
+},
+{
+"id": "tt7",
+"nhom": "3. AN TOÀN THIẾT BỊ ĐIỆN",
+"noi_dung": "Các tủ điện được đóng kín, có cảnh báo an toàn điện, khu vực trước tủ điện thông thoáng."
+},
+{
+"id": "tt8",
+"nhom": "3. AN TOÀN THIẾT BỊ ĐIỆN",
+"noi_dung": "Không có dây điện câu mắc tạm bợ, vỏ bọc dây điện không bị bong tróc, hở mạch."
+},
+{
+"id": "tt9",
+"nhom": "4. AN TOÀN MÁY MÓC & PPE",
+"noi_dung": "Người lao động tuân thủ mặc đầy đủ đồ Bảo hộ lao động (Giày, nón, kính, nút tai...) đúng quy định."
+},
+{
+"id": "tt10",
+"nhom": "4. AN TOÀN MÁY MÓC & PPE",
+"noi_dung": "Các thiết bị chuyển động (băng tải, nhông xích) đều có lồng che chắn bảo vệ an toàn (Machine Guarding)."
+}
+]
+}
