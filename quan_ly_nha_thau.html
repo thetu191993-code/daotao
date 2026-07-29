@@ -10,6 +10,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", 
@@ -22,6 +23,7 @@
 
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
+        window.auth = getAuth(app);
         window.collection = collection;
         window.getDocs = getDocs;
         window.addDoc = addDoc;
@@ -342,11 +344,19 @@
             finally { btn.disabled = false; btn.innerHTML = ogText; }
         }
 
-        const ADMIN_PASS = "ADMIN2026";
         let currentTab = 'nhan-su';
 
-        window.checkAdminPassword = function() {
-            if (document.getElementById('admin-pass').value === ADMIN_PASS) {
+        window.checkAdminPassword = async function() {
+            const btn = document.querySelector('#login-screen button');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+
+            const pass = document.getElementById('admin-pass').value;
+            try {
+                // Đăng nhập ngầm để hỏi máy chủ Google xem mật khẩu đúng không
+                await window.signInWithEmailAndPassword(window.auth, "admin@ehs.com", pass);
+                
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 
@@ -358,7 +368,12 @@
                 document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
 
                 switchTab('nhan-su');
-            } else { document.getElementById('pass-error').classList.remove('hidden'); }
+            } catch (error) { 
+                document.getElementById('pass-error').classList.remove('hidden'); 
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
         }
 
         window.switchTab = function(tabId) {
