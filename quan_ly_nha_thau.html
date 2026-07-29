@@ -12,7 +12,7 @@
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA", 
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", 
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -167,12 +167,13 @@
 
         <!-- TAB CHẤM CÔNG (RA/VÀO CỔNG) -->
         <div id="tab-cham-cong" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
-            <table class="w-full text-left border-collapse min-w-[800px]">
+            <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-semibold w-12 text-center">STT</th>
                         <th class="p-4 font-semibold">Ngày Giờ Quét Mã</th>
                         <th class="p-4 font-semibold">Tên Nhà Thầu</th>
+                        <th class="p-4 font-semibold text-center">Nhà Máy</th>
                         <th class="p-4 font-semibold">Họ và Tên Nhân Sự</th>
                         <th class="p-4 font-semibold text-center">Hành Động</th>
                     </tr>
@@ -268,13 +269,6 @@
     </div>
 
     <script>
-        // Các biến dùng chung
-        let currentTab = 'nhan-su';
-        const ADMIN_PASS = "ADMIN2026";
-
-        // ==========================================
-        // CÁC HÀM TIỆN ÍCH (HELPER)
-        // ==========================================
         function showToast(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -286,14 +280,10 @@
             setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         }
 
-        window.closeModal = function(modalId) { 
-            document.getElementById(modalId).classList.add('hidden'); 
-        }
+        window.closeModal = function(modalId) { document.getElementById(modalId).classList.add('hidden'); }
 
-        window.closeConfirmModal = function() { 
-            document.getElementById('confirm-modal').classList.add('hidden'); 
-        }
-
+        let deleteActionParams = null;
+        window.closeConfirmModal = function() { document.getElementById('confirm-modal').classList.add('hidden'); }
         window.deleteDocItem = async function(collectionName, id, itemName, reloadFunc) {
             document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn XÓA: <b>${itemName}</b>?`;
             document.getElementById('confirm-modal').classList.remove('hidden');
@@ -303,61 +293,40 @@
                     showToast("Xóa thành công!");
                     closeConfirmModal();
                     reloadFunc();
-                } catch (error) { 
-                    showToast("Lỗi xóa: " + error.message, "error"); 
-                }
+                } catch (error) { showToast("Lỗi xóa: " + error.message, "error"); }
             };
         }
 
         function formatDateAndStatus(dateString) {
             if (!dateString) return { html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[11px] font-bold">Chưa có</span>` };
             const expDate = new Date(dateString);
-            const today = new Date(); 
-            today.setHours(0,0,0,0);
+            const today = new Date(); today.setHours(0,0,0,0);
             const formatted = expDate.toLocaleDateString('vi-VN');
             if (expDate < today) return { html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold">Hết hạn (${formatted})</span>` };
             return { html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold">Hợp lệ (${formatted})</span>` };
         }
-
-        function formatSimpleDate(dateString) { 
-            return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); 
-        }
+        function formatSimpleDate(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
 
         async function saveDataToFirebase(collectionName, id, data, btnId, modalId, reloadFunc) {
             const btn = document.getElementById(btnId);
-            const ogText = btn.innerHTML; 
-            btn.disabled = true; 
-            btn.innerHTML = 'Đang lưu...';
+            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = 'Đang lưu...';
             try {
-                if (id) { 
-                    await window.updateDoc(window.doc(window.db, collectionName, id), data); 
-                    showToast("Cập nhật thành công!"); 
-                } else { 
-                    data.thoi_gian_tao = new Date(); 
-                    await window.addDoc(window.collection(window.db, collectionName), data); 
-                    showToast("Thêm mới thành công!"); 
-                }
-                closeModal(modalId); 
-                reloadFunc();
-            } catch (error) { 
-                showToast("Lỗi: " + error.message, "error"); 
-            } finally { 
-                btn.disabled = false; 
-                btn.innerHTML = ogText; 
-            }
+                if (id) { await window.updateDoc(window.doc(window.db, collectionName, id), data); showToast("Cập nhật thành công!"); } 
+                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, collectionName), data); showToast("Thêm mới thành công!"); }
+                closeModal(modalId); reloadFunc();
+            } catch (error) { showToast("Lỗi: " + error.message, "error"); } 
+            finally { btn.disabled = false; btn.innerHTML = ogText; }
         }
 
-        // ==========================================
-        // QUẢN LÝ TAB & ĐĂNG NHẬP
-        // ==========================================
+        const ADMIN_PASS = "ADMIN2026";
+        let currentTab = 'nhan-su';
+
         window.checkAdminPassword = function() {
             if (document.getElementById('admin-pass').value === ADMIN_PASS) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 switchTab('nhan-su');
-            } else { 
-                document.getElementById('pass-error').classList.remove('hidden'); 
-            }
+            } else { document.getElementById('pass-error').classList.remove('hidden'); }
         }
 
         window.switchTab = function(tabId) {
@@ -382,16 +351,9 @@
                 loadChamCongData();
             } else {
                 addBtn.classList.remove('hidden');
-                if (tabId === 'nhan-su') { 
-                    addBtn.innerHTML = '<i class="ph-bold ph-user-plus"></i> Thêm Nhân sự'; 
-                    loadWorkerData(); 
-                } else if (tabId === 'may-moc') { 
-                    addBtn.innerHTML = '<i class="ph-bold ph-truck"></i> Thêm Máy móc'; 
-                    loadMachineData(); 
-                } else if (tabId === 'dao-tao') { 
-                    addBtn.innerHTML = '<i class="ph-bold ph-chalkboard-teacher"></i> Thêm Khóa học'; 
-                    loadTrainingData(); 
-                }
+                if (tabId === 'nhan-su') { addBtn.innerHTML = '<i class="ph-bold ph-user-plus"></i> Thêm Nhân sự'; loadWorkerData(); }
+                else if (tabId === 'may-moc') { addBtn.innerHTML = '<i class="ph-bold ph-truck"></i> Thêm Máy móc'; loadMachineData(); }
+                else if (tabId === 'dao-tao') { addBtn.innerHTML = '<i class="ph-bold ph-chalkboard-teacher"></i> Thêm Khóa học'; loadTrainingData(); }
             }
         }
 
@@ -417,9 +379,6 @@
             }
         }
 
-        // ==========================================
-        // DỮ LIỆU NHÂN SỰ
-        // ==========================================
         async function loadWorkerData() {
             const tbody = document.getElementById('worker-results-body');
             document.getElementById('loading-msg').classList.remove('hidden');
@@ -430,14 +389,10 @@
             const snap = await window.getDocs(q);
             let stt = 1;
             
-            if(snap.empty) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-500">Chưa có dữ liệu.</td></tr>`;
-            }
+            if(snap.empty) tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-500">Chưa có dữ liệu.</td></tr>`;
             
             snap.forEach(doc => {
                 const data = doc.data();
-                
-                // Gộp chung Hạn ATLĐ và Nhóm ATLĐ
                 const atldStatus = formatDateAndStatus(data.han_atld);
                 let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700";
                 
@@ -455,8 +410,8 @@
                         <td class="p-4 text-center">${formatDateAndStatus(data.han_bao_hiem).html}</td>
                         <td class="p-4 text-center">${formatDateAndStatus(data.han_suc_khoe).html}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="editWorker('${doc.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh||''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld||''}', '${data.han_bao_hiem||''}', '${data.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                            <button onclick="deleteDocItem('nha_thau_nhan_su', '${doc.id}', '${data.ho_ten}', loadWorkerData)" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                            <button onclick="editWorker('${doc.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh||''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld||''}', '${data.han_bao_hiem||''}', '${data.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="deleteDocItem('nha_thau_nhan_su', '${doc.id}', '${data.ho_ten}', loadWorkerData)" class="text-red-500 hover:text-red-700 p-1"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     </tr>`;
             });
@@ -494,83 +449,48 @@
             await saveDataToFirebase("nha_thau_nhan_su", document.getElementById('wk-doc-id').value, data, "btn-save-worker", "worker-modal", loadWorkerData);
         }
 
-        // ==========================================
-        // DỮ LIỆU MÁY MÓC
-        // ==========================================
         async function loadMachineData() {
             const tbody = document.getElementById('machine-results-body');
-            document.getElementById('loading-msg').classList.remove('hidden'); 
-            document.getElementById('tab-may-moc').classList.add('hidden'); 
-            tbody.innerHTML = '';
-            
+            document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-may-moc').classList.add('hidden'); tbody.innerHTML = '';
             const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_may_moc"), window.orderBy("thoi_gian_tao", "desc")));
             let stt = 1;
             snap.forEach(doc => {
                 const d = doc.data();
-                tbody.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-4 text-center">${stt++}</td><td class="p-4 font-bold text-slate-700">${d.cong_ty}</td><td class="p-4 font-bold text-amber-700">${d.ten_may}</td><td class="p-4">${d.bien_so||''}</td><td class="p-4 text-center">${formatSimpleDate(d.ngay_kiem_dinh)}</td><td class="p-4 text-center">${formatDateAndStatus(d.han_kiem_dinh).html}</td><td class="p-4 text-center"><button onclick="editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button><button onclick="deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',loadMachineData)" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-4 text-center">${stt++}</td><td class="p-4 font-bold text-slate-700">${d.cong_ty}</td><td class="p-4 font-bold text-amber-700">${d.ten_may}</td><td class="p-4">${d.bien_so||''}</td><td class="p-4 text-center">${formatSimpleDate(d.ngay_kiem_dinh)}</td><td class="p-4 text-center">${formatDateAndStatus(d.han_kiem_dinh).html}</td><td class="p-4 text-center"><button onclick="editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}')" class="text-blue-600 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button><button onclick="deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',loadMachineData)" class="text-red-500 p-1"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
             });
-            document.getElementById('loading-msg').classList.add('hidden'); 
-            document.getElementById('tab-may-moc').classList.remove('hidden');
+            document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-may-moc').classList.remove('hidden');
         }
 
         window.editMachine = function(id, cty, ten, bs, ng, han) {
-            document.getElementById('mac-doc-id').value = id; 
-            document.getElementById('mac-cong-ty').value = cty; 
-            document.getElementById('mac-ten-may').value = ten;
-            document.getElementById('mac-bien-so').value = bs; 
-            document.getElementById('mac-ngay-kd').value = ng; 
-            document.getElementById('mac-han-kd').value = han;
+            document.getElementById('mac-doc-id').value = id; document.getElementById('mac-cong-ty').value = cty; document.getElementById('mac-ten-may').value = ten;
+            document.getElementById('mac-bien-so').value = bs; document.getElementById('mac-ngay-kd').value = ng; document.getElementById('mac-han-kd').value = han;
             document.getElementById('machine-modal').classList.remove('hidden');
         }
 
         window.saveMachine = async function() {
-            const data = { 
-                cong_ty: document.getElementById('mac-cong-ty').value, 
-                ten_may: document.getElementById('mac-ten-may').value, 
-                bien_so: document.getElementById('mac-bien-so').value, 
-                ngay_kiem_dinh: document.getElementById('mac-ngay-kd').value, 
-                han_kiem_dinh: document.getElementById('mac-han-kd').value, 
-                thoi_gian_cap_nhat: new Date() 
-            };
+            const data = { cong_ty: document.getElementById('mac-cong-ty').value, ten_may: document.getElementById('mac-ten-may').value, bien_so: document.getElementById('mac-bien-so').value, ngay_kiem_dinh: document.getElementById('mac-ngay-kd').value, han_kiem_dinh: document.getElementById('mac-han-kd').value, thoi_gian_cap_nhat: new Date() };
             if (!data.cong_ty || !data.ten_may || !data.han_kiem_dinh) return showToast("Nhập đủ Cty, Tên máy và Hạn KĐ!", "error");
             await saveDataToFirebase("nha_thau_may_moc", document.getElementById('mac-doc-id').value, data, "btn-save-machine", "machine-modal", loadMachineData);
         }
 
-        // ==========================================
-        // DỮ LIỆU ĐÀO TẠO
-        // ==========================================
         async function loadTrainingData() {
             const tbody = document.getElementById('training-results-body');
-            document.getElementById('loading-msg').classList.remove('hidden'); 
-            document.getElementById('tab-dao-tao').classList.add('hidden'); 
-            tbody.innerHTML = '';
-            
+            document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-dao-tao').classList.add('hidden'); tbody.innerHTML = '';
             const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_dao_tao"), window.orderBy("thoi_gian_tao", "desc")));
             let stt = 1;
             snap.forEach(doc => {
                 const d = doc.data();
                 tbody.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-4 text-center">${stt++}</td><td class="p-4">${formatSimpleDate(d.ngay_dao_tao)}</td><td class="p-4 font-bold text-slate-800">${d.chu_de}</td><td class="p-4 font-bold text-amber-700">${d.cong_ty}</td><td class="p-4 text-center font-bold text-blue-600">${d.so_luong||0}</td><td class="p-4 text-center">${d.nguoi_day}</td><td class="p-4 text-center"><button onclick="deleteDocItem('nha_thau_dao_tao','${doc.id}','${d.chu_de}',loadTrainingData)" class="text-red-500 p-1"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
             });
-            document.getElementById('loading-msg').classList.add('hidden'); 
-            document.getElementById('tab-dao-tao').classList.remove('hidden');
+            document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-dao-tao').classList.remove('hidden');
         }
 
         window.saveTraining = async function() {
-            const data = { 
-                chu_de: document.getElementById('tr-chu-de').value, 
-                cong_ty: document.getElementById('tr-cong-ty').value, 
-                ngay_dao_tao: document.getElementById('tr-ngay').value, 
-                so_luong: document.getElementById('tr-so-luong').value, 
-                nguoi_day: document.getElementById('tr-nguoi-day').value, 
-                thoi_gian_cap_nhat: new Date() 
-            };
+            const data = { chu_de: document.getElementById('tr-chu-de').value, cong_ty: document.getElementById('tr-cong-ty').value, ngay_dao_tao: document.getElementById('tr-ngay').value, so_luong: document.getElementById('tr-so-luong').value, nguoi_day: document.getElementById('tr-nguoi-day').value, thoi_gian_cap_nhat: new Date() };
             if (!data.chu_de || !data.cong_ty) return showToast("Nhập đủ Chủ đề và Cty!", "error");
             await saveDataToFirebase("nha_thau_dao_tao", document.getElementById('tr-doc-id').value, data, "btn-save-training", "training-modal", loadTrainingData);
         }
 
-        // ==========================================
-        // DỮ LIỆU CHẤM CÔNG VÀO/RA
-        // ==========================================
         async function loadChamCongData() {
             const tbody = document.getElementById('cham-cong-results-body');
             document.getElementById('loading-msg').classList.remove('hidden');
@@ -583,7 +503,7 @@
                 let stt = 1;
                 
                 if(snap.empty) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">Chưa có lượt quét mã nào.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Chưa có lượt quét mã nào.</td></tr>`;
                 }
 
                 snap.forEach(doc => {
@@ -593,6 +513,8 @@
                         const dateObj = data.thoi_gian.toDate();
                         timeString = dateObj.toLocaleDateString('vi-VN') + " - " + dateObj.toLocaleTimeString('vi-VN');
                     }
+                    
+                    const nhaMay = data.nha_may || "Chưa xác định";
 
                     const actionClass = data.trang_thai === "VÀO" 
                                         ? "bg-emerald-100 text-emerald-700 border-emerald-200" 
@@ -603,6 +525,7 @@
                             <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
                             <td class="p-4 text-slate-600 font-semibold">${timeString}</td>
                             <td class="p-4 font-bold text-slate-700">${data.cong_ty}</td>
+                            <td class="p-4 text-center font-bold text-purple-600">${nhaMay}</td>
                             <td class="p-4 font-bold text-blue-700">${data.ho_ten}</td>
                             <td class="p-4 text-center">
                                 <span class="px-4 py-1 border rounded-lg text-xs font-bold whitespace-nowrap ${actionClass}">
@@ -613,20 +536,15 @@
                     `;
                 });
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu. Cần cập nhật Index trên Firebase.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu. Cần cập nhật Index trên Firebase.</td></tr>`;
             } finally {
                 document.getElementById('loading-msg').classList.add('hidden');
                 document.getElementById('tab-cham-cong').classList.remove('hidden');
             }
         }
 
-        // ==========================================
-        // TÍNH NĂNG XUẤT EXCEL
-        // ==========================================
         window.exportToExcel = function() {
-            let activeTableBodyId = ''; 
-            let fileName = '';
-            
+            let activeTableBodyId = ''; let fileName = '';
             if (currentTab === 'nhan-su') { activeTableBodyId = 'tab-nhan-su'; fileName = 'DS_NhanSu.csv'; }
             else if (currentTab === 'may-moc') { activeTableBodyId = 'tab-may-moc'; fileName = 'DS_MayMoc.csv'; }
             else if (currentTab === 'dao-tao') { activeTableBodyId = 'tab-dao-tao'; fileName = 'DS_DaoTao.csv'; }
@@ -635,10 +553,7 @@
             const table = document.querySelector(`#${activeTableBodyId} table`);
             if(!table) return;
 
-            let csv = []; 
-            let rows = table.querySelectorAll("tr"); 
-            let bom = "\uFEFF";
-            
+            let csv = []; let rows = table.querySelectorAll("tr"); let bom = "\uFEFF";
             for (let i = 0; i < rows.length; i++) {
                 let row = [], cols = rows[i].querySelectorAll("td, th");
                 let colCount = currentTab === 'cham-cong' ? cols.length : cols.length - 1;
@@ -651,15 +566,11 @@
                 }
                 csv.push(row.join(","));
             }
-            
             let csvFile = new Blob([bom + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
             let downloadLink = document.createElement("a");
-            downloadLink.download = fileName; 
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = "none"; 
-            document.body.appendChild(downloadLink);
-            downloadLink.click(); 
-            document.body.removeChild(downloadLink);
+            downloadLink.download = fileName; downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none"; document.body.appendChild(downloadLink);
+            downloadLink.click(); document.body.removeChild(downloadLink);
         }
     </script>
 </body>
