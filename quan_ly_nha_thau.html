@@ -166,20 +166,44 @@
         </div>
 
         <!-- TAB CHẤM CÔNG (RA/VÀO CỔNG) -->
-        <div id="tab-cham-cong" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
-            <table class="w-full text-left border-collapse min-w-[900px]">
-                <thead>
-                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                        <th class="p-4 font-semibold w-12 text-center">STT</th>
-                        <th class="p-4 font-semibold">Ngày Giờ Quét Mã</th>
-                        <th class="p-4 font-semibold">Tên Nhà Thầu</th>
-                        <th class="p-4 font-semibold text-center">Nhà Máy</th>
-                        <th class="p-4 font-semibold">Họ và Tên Nhân Sự</th>
-                        <th class="p-4 font-semibold text-center">Hành Động</th>
-                    </tr>
-                </thead>
-                <tbody id="cham-cong-results-body" class="text-sm divide-y divide-slate-100"></tbody>
-            </table>
+        <div id="tab-cham-cong" class="tab-content rounded-xl border border-slate-200 shadow-sm hidden">
+            
+            <!-- Dashboard Thống kê nhanh trong ngày -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border-b border-slate-200 rounded-t-xl" id="cham-cong-dashboard">
+                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-center">
+                    <p class="text-xs text-slate-500 font-semibold uppercase mb-1">Ngày đang xem</p>
+                    <input type="date" id="filter-date" onchange="loadChamCongData()" class="w-full text-sm font-bold text-center outline-none border-b border-dashed border-slate-300">
+                </div>
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center">
+                    <p class="text-xs text-blue-600 font-semibold uppercase mb-1">Đã vào xưởng</p>
+                    <p class="text-xl font-black text-blue-800" id="stat-total-in">0</p>
+                </div>
+                <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm text-center">
+                    <p class="text-xs text-emerald-600 font-semibold uppercase mb-1">Đã hoàn thành (Ra)</p>
+                    <p class="text-xl font-black text-emerald-800" id="stat-total-out">0</p>
+                </div>
+                <div class="bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm text-center">
+                    <p class="text-xs text-amber-600 font-semibold uppercase mb-1">Đang trong xưởng</p>
+                    <p class="text-xl font-black text-amber-800" id="stat-inside">0</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                            <th class="p-4 font-semibold w-12 text-center">STT</th>
+                            <th class="p-4 font-semibold">Tên Nhà Thầu</th>
+                            <th class="p-4 font-semibold">Họ và Tên Nhân Sự</th>
+                            <th class="p-4 font-semibold text-center">Nhà Máy</th>
+                            <th class="p-4 font-semibold text-center">Giờ Vào</th>
+                            <th class="p-4 font-semibold text-center">Giờ Ra</th>
+                            <th class="p-4 font-semibold text-center">Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cham-cong-results-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -325,6 +349,14 @@
             if (document.getElementById('admin-pass').value === ADMIN_PASS) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
+                
+                // Set ngày mặc định cho bộ lọc chấm công là hôm nay
+                const today = new Date();
+                const dd = String(today.getDate()).padStart(2, '0');
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const yyyy = today.getFullYear();
+                document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
+
                 switchTab('nhan-su');
             } else { document.getElementById('pass-error').classList.remove('hidden'); }
         }
@@ -491,64 +523,130 @@
             await saveDataToFirebase("nha_thau_dao_tao", document.getElementById('tr-doc-id').value, data, "btn-save-training", "training-modal", loadTrainingData);
         }
 
-        async function loadChamCongData() {
+        window.loadChamCongData = async function() {
             const tbody = document.getElementById('cham-cong-results-body');
             document.getElementById('loading-msg').classList.remove('hidden');
             document.getElementById('tab-cham-cong').classList.add('hidden');
             tbody.innerHTML = '';
 
             try {
+                // 1. Lấy dữ liệu từ Firebase
                 const q = window.query(window.collection(window.db, "nha_thau_cham_cong"), window.orderBy("thoi_gian", "desc"));
                 const snap = await window.getDocs(q);
-                let stt = 1;
                 
-                if(snap.empty) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Chưa có lượt quét mã nào.</td></tr>`;
-                }
+                // Lấy ngày cần lọc từ Date Picker (YYYY-MM-DD)
+                const filterDateStr = document.getElementById('filter-date').value;
+
+                // Dictionary để gom nhóm: Key là "Tên Công ty_Họ Tên", Value là object chứa thông tin vào/ra
+                let dailyAttendance = {};
 
                 snap.forEach(doc => {
                     const data = doc.data();
-                    let timeString = "N/A";
-                    if (data.thoi_gian) {
-                        const dateObj = data.thoi_gian.toDate();
-                        timeString = dateObj.toLocaleDateString('vi-VN') + " - " + dateObj.toLocaleTimeString('vi-VN');
-                    }
+                    if (!data.thoi_gian) return;
                     
-                    const nhaMay = data.nha_may || "Chưa xác định";
+                    const dateObj = data.thoi_gian.toDate();
+                    
+                    // Format lại ngày của bản ghi này thành YYYY-MM-DD để so sánh
+                    const dd = String(dateObj.getDate()).padStart(2, '0');
+                    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const yyyy = dateObj.getFullYear();
+                    const recordDateStr = `${yyyy}-${mm}-${dd}`;
 
-                    const actionClass = data.trang_thai === "VÀO" 
-                                        ? "bg-emerald-100 text-emerald-700 border-emerald-200" 
-                                        : "bg-orange-100 text-orange-700 border-orange-200";
+                    // Chỉ xử lý những bản ghi thuộc ngày đang được lọc
+                    if (recordDateStr === filterDateStr) {
+                        const personKey = `${data.cong_ty}_${data.ho_ten}`;
+                        const timeStr = dateObj.toLocaleTimeString('vi-VN');
+
+                        if (!dailyAttendance[personKey]) {
+                            dailyAttendance[personKey] = {
+                                cong_ty: data.cong_ty,
+                                ho_ten: data.ho_ten,
+                                nha_may: data.nha_may || "Chưa xác định",
+                                gio_vao: null,
+                                gio_ra: null
+                            };
+                        }
+
+                        // Cập nhật giờ vào/ra. 
+                        // Note: Vì dữ liệu sort giảm dần (mới nhất ở trên), nên lấy bản ghi vào/ra cuối cùng trong ngày
+                        if (data.trang_thai === "VÀO" && !dailyAttendance[personKey].gio_vao) {
+                            dailyAttendance[personKey].gio_vao = timeStr;
+                        } else if (data.trang_thai === "RA" && !dailyAttendance[personKey].gio_ra) {
+                            dailyAttendance[personKey].gio_ra = timeStr;
+                        }
+                    }
+                });
+
+                // 2. Tính toán Thống kê (Dashboard)
+                let totalIn = 0;
+                let totalOut = 0;
+                let totalInside = 0;
+                let stt = 1;
+
+                if (Object.keys(dailyAttendance).length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có lượt ra/vào nào trong ngày này.</td></tr>`;
+                }
+
+                // 3. Render ra bảng và xử lý logic Trạng thái
+                for (const key in dailyAttendance) {
+                    const person = dailyAttendance[key];
+                    let statusHtml = "";
+                    let timeInDisplay = person.gio_vao || '<span class="text-slate-300">-</span>';
+                    let timeOutDisplay = person.gio_ra || '<span class="text-slate-300">-</span>';
+
+                    if (person.gio_vao && person.gio_ra) {
+                        // Có cả vào và ra
+                        totalIn++;
+                        totalOut++;
+                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Hoàn thành</span>`;
+                    } else if (person.gio_vao && !person.gio_ra) {
+                        // Chỉ có vào, chưa ra
+                        totalIn++;
+                        totalInside++;
+                        statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`;
+                    } else if (!person.gio_vao && person.gio_ra) {
+                        // Không có vào nhưng lại có ra (Lỗi/Lậu)
+                        totalOut++;
+                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-x-circle"></i> Lỗi dữ liệu</span>`;
+                    }
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
-                            <td class="p-4 text-slate-600 font-semibold">${timeString}</td>
-                            <td class="p-4 font-bold text-slate-700">${data.cong_ty}</td>
-                            <td class="p-4 text-center font-bold text-purple-600">${nhaMay}</td>
-                            <td class="p-4 font-bold text-blue-700">${data.ho_ten}</td>
-                            <td class="p-4 text-center">
-                                <span class="px-4 py-1 border rounded-lg text-xs font-bold whitespace-nowrap ${actionClass}">
-                                    ${data.trang_thai} CỔNG
-                                </span>
-                            </td>
+                            <td class="p-4 font-bold text-slate-700">${person.cong_ty}</td>
+                            <td class="p-4 font-bold text-blue-700">${person.ho_ten}</td>
+                            <td class="p-4 text-center font-bold text-purple-600">${person.nha_may}</td>
+                            <td class="p-4 text-center text-slate-600 font-mono font-semibold">${timeInDisplay}</td>
+                            <td class="p-4 text-center text-slate-600 font-mono font-semibold">${timeOutDisplay}</td>
+                            <td class="p-4 text-center">${statusHtml}</td>
                         </tr>
                     `;
-                });
+                }
+
+                // Cập nhật số liệu lên giao diện
+                document.getElementById('stat-total-in').innerText = totalIn;
+                document.getElementById('stat-total-out').innerText = totalOut;
+                document.getElementById('stat-inside').innerText = totalInside;
+
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu. Cần cập nhật Index trên Firebase.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu. Cần cập nhật Index trên Firebase.</td></tr>`;
             } finally {
                 document.getElementById('loading-msg').classList.add('hidden');
                 document.getElementById('tab-cham-cong').classList.remove('hidden');
             }
         }
 
+        // Cập nhật lại hàm xuất Excel để phù hợp với định dạng bảng Chấm công mới
         window.exportToExcel = function() {
             let activeTableBodyId = ''; let fileName = '';
             if (currentTab === 'nhan-su') { activeTableBodyId = 'tab-nhan-su'; fileName = 'DS_NhanSu.csv'; }
             else if (currentTab === 'may-moc') { activeTableBodyId = 'tab-may-moc'; fileName = 'DS_MayMoc.csv'; }
             else if (currentTab === 'dao-tao') { activeTableBodyId = 'tab-dao-tao'; fileName = 'DS_DaoTao.csv'; }
-            else if (currentTab === 'cham-cong') { activeTableBodyId = 'tab-cham-cong'; fileName = 'DS_VaoRa_Cong.csv'; }
+            else if (currentTab === 'cham-cong') { 
+                const dateStr = document.getElementById('filter-date').value;
+                activeTableBodyId = 'tab-cham-cong'; 
+                fileName = `Bao_Cao_Cham_Cong_Ngay_${dateStr}.csv`; 
+            }
 
             const table = document.querySelector(`#${activeTableBodyId} table`);
             if(!table) return;
