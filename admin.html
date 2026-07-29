@@ -7,12 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <!-- Cấu hình Firebase và logic đăng nhập chung 1 module để tránh lỗi Async -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // CONFIG Firebase của dự án EHS
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -25,15 +25,107 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        window.db = db;
-        window.auth = getAuth(app);
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.query = query;
-        window.orderBy = orderBy;
+        // Xuất hàm loadData ra global để nút "Làm mới" có thể gọi
+        window.loadData = async function() {
+            const tbody = document.getElementById('results-body');
+            const loading = document.getElementById('loading-msg');
+            
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+
+            try {
+                const q = query(collection(db, "ket_qua_kiem_tra"), orderBy("thoi_gian_nop", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                let stt = 1;
+                
+                if(querySnapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-500">Chưa có ai làm bài kiểm tra.</td></tr>`;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    
+                    let timeString = "N/A";
+                    let shortDate = "N/A";
+                    if (data.thoi_gian_nop) {
+                        const date = data.thoi_gian_nop.toDate();
+                        timeString = date.toLocaleString('vi-VN');
+                        shortDate = date.toLocaleDateString('vi-VN'); 
+                    }
+
+                    // TÍNH ĐIỂM ĐẠT TỪ 8 TRỞ LÊN (80%)
+                    const tiLePass = 0.8; 
+                    const isPass = data.diem_so >= (data.tong_cau * tiLePass);
+                    
+                    const badgeClass = isPass ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-600 border-red-100";
+                    const badgeText = isPass ? "Đạt" : "Không đạt";
+                    
+                    const courseName = data.ten_khoa_hoc || "Đào tạo EHS Chung";
+
+                    let actionHtml = '-';
+                    if(isPass) {
+                        actionHtml = `<button onclick="printCert('${data.ho_ten}', '${courseName}', '${shortDate}', '${data.diem_so}/${data.tong_cau}')" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-indigo-600 hover:text-white transition flex items-center gap-1 mx-auto"><i class="ph-bold ph-printer"></i> Chứng nhận</button>`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="p-4 text-slate-600">${timeString}</td>
+                        <td class="p-4 text-center font-semibold text-slate-700 uppercase">${data.nhan_vien_id || 'N/A'}</td>
+                        <td class="p-4 font-bold text-blue-700">${data.ho_ten || 'Khách'}</td>
+                        <td class="p-4 text-slate-600 text-xs font-semibold uppercase">${courseName}</td>
+                        <td class="p-4 text-center font-bold text-base text-slate-800">${data.diem_so} / ${data.tong_cau}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${badgeText}</span>
+                        </td>
+                        <td class="p-4 text-center">${actionHtml}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu: ", error);
+                tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        // Logic xử lý nút đăng nhập
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-login');
+            const ogText = btn.innerHTML;
+            const errorMsg = document.getElementById('pass-error');
+            const pass = document.getElementById('admin-pass').value;
+
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            try {
+                // Đăng nhập ngầm bằng tài khoản admin@ehs.com
+                await signInWithEmailAndPassword(auth, "admin@ehs.com", pass);
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                window.loadData(); 
+            } catch(error) {
+                console.error("Lỗi đăng nhập:", error);
+                errorMsg.innerText = error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' ? "Sai mật khẩu!" : "Lỗi xác thực: " + error.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        });
+
+        // Bắt sự kiện phím Enter
+        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') document.getElementById('btn-login').click();
+        });
     </script>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center">
@@ -48,7 +140,7 @@
         <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-center tracking-[0.3em] font-mono text-xl focus:ring-2 focus:ring-blue-500 outline-none mb-2" placeholder="••••••••">
         <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4">Sai mật khẩu! Vui lòng thử lại.</p>
         
-        <button onclick="checkAdminPassword()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-md">
+        <button id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition shadow-md">
             Mở Khóa Hệ Thống
         </button>
         <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-blue-600 hover:underline">Quay lại Trang chủ</a>
@@ -69,7 +161,7 @@
                 <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
                     <i class="ph-bold ph-house"></i> Trang chủ
                 </a>
-                <button onclick="loadData()" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
+                <button onclick="window.loadData()" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
                     <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
                 </button>
                 <button onclick="exportTableToCSV('Ket_Qua_EHS.csv')" class="bg-teal-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center gap-2 shadow-sm">
@@ -104,140 +196,33 @@
         </div>
     </div>
 
+    <!-- Script xuất chứng nhận và CSV giữ nguyên ngoài module -->
     <script>
-        window.checkAdminPassword = async function() {
-            const btn = document.querySelector('#login-screen button');
-            const ogText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
-            btn.disabled = true;
-
-            const pass = document.getElementById('admin-pass').value;
-            try {
-                await window.signInWithEmailAndPassword(window.auth, "admin@ehs.com", pass);
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                loadData(); 
-            } catch(error) {
-                document.getElementById('pass-error').classList.remove('hidden');
-            } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-            }
-        }
-
-        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkAdminPassword();
-        });
-
-        async function loadData() {
-            const tbody = document.getElementById('results-body');
-            const loading = document.getElementById('loading-msg');
-            
-            tbody.innerHTML = '';
-            loading.classList.remove('hidden');
-
-            try {
-                const q = window.query(window.collection(window.db, "ket_qua_kiem_tra"), window.orderBy("thoi_gian_nop", "desc"));
-                const querySnapshot = await window.getDocs(q);
-                
-                let stt = 1;
-                
-                if(querySnapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có ai làm bài kiểm tra.</td></tr>`;
-                }
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    
-                    let timeString = "N/A";
-                    let shortDate = "N/A";
-                    if (data.thoi_gian_nop) {
-                        const date = data.thoi_gian_nop.toDate();
-                        timeString = date.toLocaleString('vi-VN');
-                        shortDate = date.toLocaleDateString('vi-VN'); 
-                    }
-
-                    // TÍNH ĐIỂM ĐẠT TỪ 8 TRỞ LÊN (80%)
-                    const tiLePass = 0.8; 
-                    const isPass = data.diem_so >= (data.tong_cau * tiLePass);
-                    
-                    const badgeClass = isPass ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-600 border-red-100";
-                    const badgeText = isPass ? "Đạt" : "Không đạt";
-                    
-                    // Lấy tên khóa học từ database
-                    const courseName = data.ten_khoa_hoc || "Đào tạo EHS Chung";
-
-                    let actionHtml = '-';
-                    if(isPass) {
-                        // Nút in chứng nhận (Chỉ hiện khi Đạt)
-                        actionHtml = `<button onclick="printCert('${data.ho_ten}', '${courseName}', '${shortDate}', '${data.diem_so}/${data.tong_cau}')" class="bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-md text-xs font-bold hover:bg-indigo-600 hover:text-white transition flex items-center gap-1 mx-auto"><i class="ph-bold ph-printer"></i> Chứng nhận</button>`;
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition-colors";
-                    tr.innerHTML = `
-                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
-                        <td class="p-4 text-slate-600">${timeString}</td>
-                        <td class="p-4 text-center font-semibold text-slate-700 uppercase">${data.nhan_vien_id || 'N/A'}</td>
-                        <td class="p-4 font-bold text-blue-700">${data.ho_ten || 'Khách'}</td>
-                        <td class="p-4 text-slate-600 text-xs font-semibold uppercase">${courseName}</td>
-                        <td class="p-4 text-center font-bold text-base text-slate-800">${data.diem_so} / ${data.tong_cau}</td>
-                        <td class="p-4 text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${badgeText}</span>
-                        </td>
-                        <td class="p-4 text-center">${actionHtml}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu: ", error);
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
-            } finally {
-                loading.classList.add('hidden');
-            }
-        }
-
         window.printCert = function(name, course, dateStr, score) {
             const printWindow = window.open('', '', 'width=1000,height=700');
-            
-            // ==========================================
-            // CHỖ CHÈN LINK LOGO CÔNG TY CỦA ANH
-            // Anh dán link ảnh logo vào giữa 2 dấu ngoặc kép ở biến dưới đây nhé:
-            // ==========================================
             const LOGO_URL = "https://placehold.co/300x100/ffffff/005088?text=LOGO+CONG+TY"; 
-
             const htmlContent = `
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <meta charset="UTF-8"> <!-- Khắc phục lỗi Font chữ tiếng Việt -->
+                    <meta charset="UTF-8">
                     <title>Chứng Nhận Đào Tạo - ${name}</title>
                     <style>
                         body { font-family: 'Arial', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; background: #f0f4f8; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                         .cert-container { width: 900px; height: 630px; background: white; padding: 20px; position: relative; border: 2px solid #ccc; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
                         .cert-border { border: 12px solid #005088; width: 100%; height: 100%; box-sizing: border-box; padding: 40px; text-align: center; position: relative; border-radius: 4px; }
-                        
-                        /* Căn chỉnh Logo */
                         .logo { position: absolute; top: 30px; left: 40px; }
                         .logo img { max-width: 180px; max-height: 70px; object-fit: contain; }
-                        
                         h1 { font-family: 'Arial', sans-serif; color: #005088; font-size: 46px; margin-top: 30px; text-transform: uppercase; letter-spacing: 3px; font-weight: bold; }
                         h3 { color: #555; font-size: 22px; font-weight: normal; margin-bottom: 30px; }
-                        
-                        /* Font chữ tên nhân viên an toàn cho tiếng Việt */
                         h2 { font-size: 52px; color: #b32d00; margin: 15px 0; font-family: 'Times New Roman', Times, serif; font-style: italic; font-weight: bold; }
-                        
                         .content { font-size: 22px; color: #333; line-height: 1.6; margin-top: 40px; }
                         .course-name { font-size: 28px; font-weight: bold; color: #005088; display: block; margin: 15px 0; text-transform: uppercase; }
                         .footer { display: flex; justify-content: space-between; margin-top: 70px; padding: 0 60px; }
                         .signature { text-align: center; }
                         .signature p { margin: 5px 0; font-size: 18px; }
                         .line { border-top: 1px solid #000; width: 220px; margin: 10px auto; margin-top: 50px;}
-                        
                         .seal { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); width: 110px; height: 110px; border: 4px solid #b32d00; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #b32d00; font-weight: bold; font-size: 15px; text-align: center; text-transform: uppercase; box-shadow: 0 0 0 2px white, 0 0 0 3px #b32d00; }
-                        
-                        /* Lệnh ép máy in in đúng 1 trang A4 nằm ngang */
                         @media print {
                             @page { size: A4 landscape; margin: 0; }
                             body { background: white; padding: 0; margin: 0; }
@@ -249,47 +234,26 @@
                 <body>
                     <div class="cert-container">
                         <div class="cert-border">
-                            
-                            <!-- LOGO HIỂN THỊ TẠI ĐÂY -->
-                            <div class="logo">
-                                <img src="${LOGO_URL}" alt="Logo">
-                            </div>
-
+                            <div class="logo"><img src="${LOGO_URL}" alt="Logo"></div>
                             <h1>GIẤY CHỨNG NHẬN</h1>
                             <h3>Chứng nhận sự hoàn thành xuất sắc</h3>
-                            
                             <h2>${name}</h2>
-                            
                             <div class="content">
                                 Đã tham gia và vượt qua kỳ kiểm tra đánh giá năng lực<br>
                                 <span class="course-name">"${course}"</span>
                                 Đạt số điểm: <strong>${score}</strong>
                             </div>
-
-                            <div class="seal">
-                                ĐẠT<br>TIÊU CHUẨN
-                            </div>
-
+                            <div class="seal">ĐẠT<br>TIÊU CHUẨN</div>
                             <div class="footer">
-                                <div class="signature">
-                                    <p>Ngày chứng nhận</p>
-                                    <p><strong>${dateStr}</strong></p>
-                                </div>
-                                <div class="signature">
-                                    <div class="line"></div>
-                                    <p><strong>Trưởng phòng EHS</strong></p>
-                                </div>
+                                <div class="signature"><p>Ngày chứng nhận</p><p><strong>${dateStr}</strong></p></div>
+                                <div class="signature"><div class="line"></div><p><strong>Trưởng phòng EHS</strong></p></div>
                             </div>
                         </div>
                     </div>
-                    <script>
-                        // Đợi HTML load hình ảnh xong thì mới gọi lệnh In (để tránh lỗi logo không hiện)
-                        setTimeout(window.print, 800);
-                    <\/script>
+                    <script>setTimeout(window.print, 800);<\/script>
                 </body>
                 </html>
             `;
-            
             printWindow.document.write(htmlContent);
             printWindow.document.close();
         }
@@ -298,7 +262,6 @@
             const rows = document.querySelectorAll("table tr");
             let csv = [];
             let bom = "\uFEFF"; 
-
             for (let i = 0; i < rows.length; i++) {
                 let row = [], cols = rows[i].querySelectorAll("td, th");
                 let length = i === 0 ? cols.length - 1 : cols.length - 1;
@@ -308,7 +271,6 @@
                 }
                 csv.push(row.join(","));
             }
-
             downloadCSV(bom + csv.join("\n"), filename);
         }
 
