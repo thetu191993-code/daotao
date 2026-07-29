@@ -12,7 +12,7 @@
         import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -39,10 +39,15 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative z-10" id="main-app">
         <!-- Header -->
-        <div class="bg-blue-700 p-6 text-center text-white">
-            <i class="ph-fill ph-qr-code text-5xl mb-2"></i>
+        <div class="bg-blue-700 p-6 text-center text-white relative">
+            <!-- Hiển thị tên nhà máy góc trên -->
+            <div class="absolute top-4 right-4 bg-white/20 px-3 py-1 rounded-full text-xs font-bold border border-white/40 tracking-wider uppercase shadow-sm" id="display-plant">
+                NHÀ MÁY 1
+            </div>
+            
+            <i class="ph-fill ph-qr-code text-5xl mb-2 mt-2"></i>
             <h1 class="text-2xl font-bold uppercase tracking-wide">Cổng Nhà Thầu</h1>
-            <p class="text-blue-100 text-sm mt-1">Hệ thống khai báo Ra / Vào nhà máy</p>
+            <p class="text-blue-100 text-sm mt-1">Hệ thống khai báo Ra / Vào tự động</p>
         </div>
 
         <div class="p-6">
@@ -52,11 +57,10 @@
                 <p class="text-sm font-bold">Đang tải danh sách nhân sự...</p>
             </div>
 
-            <!-- Cảnh báo lỗi truy xuất (khi không ai đủ điều kiện) -->
+            <!-- Cảnh báo lỗi truy xuất -->
             <div id="no-worker-msg" class="hidden text-center text-rose-600 py-6 border border-rose-200 bg-rose-50 rounded-xl mb-4">
                 <i class="ph-fill ph-warning-circle text-4xl mb-2"></i>
                 <p class="text-sm font-bold px-4">Không có công nhân nào đủ điều kiện an toàn để vào cổng hôm nay.</p>
-                <p class="text-[11px] mt-2 font-medium">Bắt buộc: Phải có Thẻ ATLĐ & Bảo hiểm TN còn hạn.</p>
             </div>
 
             <div id="form-content" class="hidden space-y-5">
@@ -131,6 +135,20 @@
     </div>
 
     <script>
+        // LOGIC LẤY THÔNG TIN NHÀ MÁY TỪ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const plantParam = urlParams.get('nha_may');
+        let currentPlant = "Nhà Máy 1"; // Mặc định nếu không có tham số
+
+        if (plantParam === '2') {
+            currentPlant = "Nhà Máy 2";
+        } else if (plantParam) {
+            currentPlant = decodeURIComponent(plantParam); // Hỗ trợ nếu truyền tên tùy chỉnh
+        }
+        
+        // Cập nhật UI hiển thị
+        document.getElementById('display-plant').innerText = currentPlant;
+
         let allWorkersData = [];
 
         function showError(message) {
@@ -140,7 +158,7 @@
             setTimeout(() => { errorDiv.classList.add('hidden'); }, 4000);
         }
 
-        // Hàm kiểm tra ngày xem có hợp lệ (từ hôm nay trở về sau) không
+        // Hàm kiểm tra ngày xem có còn hạn không
         function isValidDate(dateString) {
             if (!dateString) return false;
             const expDate = new Date(dateString);
@@ -157,15 +175,9 @@
                 querySnapshot.forEach((doc) => {
                     const w = doc.data();
                     
-                    // ===============================================
-                    // CHỐT CHẶN KIỂM TRA ĐIỀU KIỆN AN TOÀN TẠI ĐÂY
-                    // ===============================================
-                    // 1. Phải khai báo Nhóm ATLĐ & Thẻ còn hạn
                     const hasValidTraining = w.nhom_atld && w.nhom_atld !== "Chưa đào tạo" && isValidDate(w.han_atld);
-                    // 2. Bảo hiểm TN phải còn hạn
                     const hasValidInsurance = isValidDate(w.han_bao_hiem);
 
-                    // CHỈ đẩy những người đạt TẤT CẢ yêu cầu vào mảng dữ liệu quét QR
                     if (hasValidTraining && hasValidInsurance) {
                         allWorkersData.push(w);
                     }
@@ -175,10 +187,9 @@
 
                 if (allWorkersData.length === 0) {
                     document.getElementById('no-worker-msg').classList.remove('hidden');
-                    return; // Dừng luôn, không hiện form chọn tên nữa
+                    return; 
                 }
 
-                // Lọc ra danh sách tên công ty từ mảng những người đạt yêu cầu
                 const companies = [...new Set(allWorkersData.map(w => w.cong_ty))].sort();
                 const selCompany = document.getElementById('sel-company');
                 companies.forEach(company => {
@@ -257,7 +268,8 @@
                     cong_ty: company,
                     ho_ten: workerName,
                     trang_thai: action,
-                    thoi_gian: now
+                    thoi_gian: now,
+                    nha_may: currentPlant // Đẩy thêm trường thông tin Nhà máy lên hệ thống
                 });
                 showSuccessScreen(action, workerName, company, now);
             } catch (error) {
