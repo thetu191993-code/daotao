@@ -10,7 +10,7 @@
     <!-- FIREBASE ĐỂ XỬ LÝ TÍNH NĂNG ĐĂNG NHẬP / ĐỔI MẬT KHẨU -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
@@ -27,6 +27,7 @@
         window.EmailAuthProvider = EmailAuthProvider;
         window.reauthenticateWithCredential = reauthenticateWithCredential;
         window.updatePassword = updatePassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     </script>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
@@ -403,15 +404,26 @@
             document.getElementById('report-modal').classList.add('hidden');
         }
 
-        function checkPassword() {
+        window.checkPassword = async function() {
             const inputPass = document.getElementById('report-password').value;
-            if (inputPass === MAT_KHAU_BAO_CAO) {
+            const btn = document.querySelector('#password-view button');
+            const ogText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+            document.getElementById('password-error').classList.add('hidden');
+
+            try {
+                await window.signInWithEmailAndPassword(window.auth, "baocao@ehs.com", inputPass);
                 document.getElementById('password-view').classList.add('hidden');
                 document.getElementById('report-list-view').classList.remove('hidden');
                 document.getElementById('report-list-view').classList.add('flex');
                 document.getElementById('modal-icon').className = "ph-fill ph-folder-open text-teal-600 text-2xl";
-            } else {
+            } catch (error) {
                 document.getElementById('password-error').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
             }
         }
 
