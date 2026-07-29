@@ -10,10 +10,11 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         // CONFIG Firebase của dự án EHS
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -26,6 +27,7 @@
         const db = getFirestore(app);
 
         window.db = db;
+        window.auth = getAuth(app);
         window.collection = collection;
         window.getDocs = getDocs;
         window.query = query;
@@ -87,6 +89,7 @@
                         <th class="p-4 font-semibold">Thời gian nộp</th>
                         <th class="p-4 font-semibold text-center">Mã NV</th>
                         <th class="p-4 font-semibold">Họ và Tên</th>
+                        <th class="p-4 font-semibold">Khóa Học</th>
                         <th class="p-4 font-semibold text-center">Điểm số</th>
                         <th class="p-4 font-semibold text-center">Xếp loại</th>
                         <th class="p-4 font-semibold text-center">Hành động</th>
@@ -100,16 +103,23 @@
     </div>
 
     <script>
-        const ADMIN_PASS = "ADMIN2026";
+        window.checkAdminPassword = async function() {
+            const btn = document.querySelector('#login-screen button');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
 
-        function checkAdminPassword() {
-            const inputPass = document.getElementById('admin-pass').value;
-            if (inputPass === ADMIN_PASS) {
+            const pass = document.getElementById('admin-pass').value;
+            try {
+                await window.signInWithEmailAndPassword(window.auth, "admin@ehs.com", pass);
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 loadData(); 
-            } else {
+            } catch(error) {
                 document.getElementById('pass-error').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
             }
         }
 
@@ -152,8 +162,8 @@
                     const badgeClass = isPass ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-600 border-red-100";
                     const badgeText = isPass ? "Đạt" : "Không đạt";
                     
-                    // Sửa lỗi "undefined" nếu dữ liệu cũ không có tên khóa học
-                    const courseName = data.ten_khoa_hoc || "Đào tạo EHS Chung 2026";
+                    // Lấy tên khóa học từ database
+                    const courseName = data.ten_khoa_hoc || "Đào tạo EHS Chung";
 
                     let actionHtml = '-';
                     if(isPass) {
@@ -168,6 +178,7 @@
                         <td class="p-4 text-slate-600">${timeString}</td>
                         <td class="p-4 text-center font-semibold text-slate-700 uppercase">${data.nhan_vien_id || 'N/A'}</td>
                         <td class="p-4 font-bold text-blue-700">${data.ho_ten || 'Khách'}</td>
+                        <td class="p-4 text-slate-600 text-xs font-semibold uppercase">${courseName}</td>
                         <td class="p-4 text-center font-bold text-base text-slate-800">${data.diem_so} / ${data.tong_cau}</td>
                         <td class="p-4 text-center">
                             <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${badgeText}</span>
@@ -192,7 +203,7 @@
             // CHỖ CHÈN LINK LOGO CÔNG TY CỦA ANH
             // Anh dán link ảnh logo vào giữa 2 dấu ngoặc kép ở biến dưới đây nhé:
             // ==========================================
-            const LOGO_URL = "logo.png"; 
+            const LOGO_URL = "https://placehold.co/300x100/ffffff/005088?text=LOGO+CONG+TY"; 
 
             const htmlContent = `
                 <!DOCTYPE html>
