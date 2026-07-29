@@ -3,17 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Thêm thư viện html2pdf -->
+    <title>Admin - Báo Cáo Kiểm Tra</title>
+    <!-- Thư viện giao diện Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Thư viện html2pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
+    <!-- GOM TOÀN BỘ CẤU HÌNH FIREBASE VÀO 1 MODULE DUY NHẤT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // ANH DÁN API KEY MỚI VÀO ĐÂY NHÉ
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", 
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA", 
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -23,19 +27,126 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.auth = getAuth(app);
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-        
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.query = query;
-        window.orderBy = orderBy;
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Xuất hàm loadData ra global
+        window.loadData = async function() {
+            const tbody = document.getElementById('results-body');
+            const loading = document.getElementById('loading-msg');
+            
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+            loading.classList.add('block');
+
+            try {
+                const q = query(collection(db, "bien_ban_kiem_tra"), orderBy("thoi_gian", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                let stt = 1;
+                window.reportDataStore = {}; // Xóa bộ nhớ đệm cũ
+                
+                if(querySnapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có biên bản nào được ghi nhận.</td></tr>`;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const docId = doc.id;
+                    
+                    let timeString = "N/A";
+                    if (data.thoi_gian) {
+                        const date = data.thoi_gian.toDate();
+                        timeString = date.toLocaleString('vi-VN');
+                    }
+
+                    // Đếm số lỗi Không Đạt
+                    let errorCount = 0;
+                    if (data.chi_tiet && Array.isArray(data.chi_tiet)) {
+                        data.chi_tiet.forEach(item => {
+                            if (item.danh_gia === "Không Đạt") errorCount++;
+                        });
+                    }
+
+                    // Lưu vào store
+                    window.reportDataStore[docId] = {
+                        ...data,
+                        timeString: timeString,
+                        errorCount: errorCount
+                    };
+
+                    let badgeClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
+                    let badgeText = "An Toàn";
+                    if (errorCount > 0) {
+                        badgeClass = "bg-red-50 text-red-600 border-red-100";
+                        badgeText = `Phát hiện ${errorCount} Lỗi`;
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="p-4 text-slate-700">${timeString}</td>
+                        <td class="p-4 text-slate-800 font-bold text-xs uppercase">${data.ten_bien_ban || 'Báo cáo'}</td>
+                        <td class="p-4 font-bold text-orange-600">${data.khu_vuc || 'N/A'}</td>
+                        <td class="p-4 text-slate-700 font-medium">${data.nguoi_kiem_tra || data.ma_nv || 'Khách'}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${badgeText}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="viewDetail('${docId}')" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold text-sm">
+                                Xem
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu: ", error);
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
+            } finally {
+                loading.classList.add('hidden');
+                loading.classList.remove('block');
+            }
+        };
+
+        // Gắn sự kiện click cho nút đăng nhập
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-login');
+            const ogText = btn.innerHTML;
+            const errorMsg = document.getElementById('pass-error');
+            const pass = document.getElementById('admin-pass').value;
+
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            try {
+                // Đăng nhập ngầm Firebase bằng tài khoản admin@ehs.com
+                await signInWithEmailAndPassword(auth, "admin@ehs.com", pass);
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                window.loadData(); 
+            } catch (error) {
+                console.error("Lỗi đăng nhập:", error);
+                errorMsg.innerText = error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' ? "Sai mật khẩu!" : "Lỗi xác thực: " + error.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        });
+
+        // Bắt sự kiện phím Enter
+        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') document.getElementById('btn-login').click();
+        });
     </script>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center">
 
-    <!-- BẢNG ĐĂNG NHẬP (Giống trang quản trị điểm thi) -->
+    <!-- BẢNG ĐĂNG NHẬP -->
     <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-800 text-white mb-4">
             <i class="ph-fill ph-files text-4xl"></i>
@@ -46,13 +157,13 @@
         <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-center tracking-[0.3em] font-mono text-xl focus:ring-2 focus:ring-slate-800 outline-none mb-2" placeholder="••••••••">
         <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4">Sai mật khẩu! Vui lòng thử lại.</p>
         
-        <button onclick="checkAdminPassword()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-900 transition shadow-md">
+        <button id="btn-login" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg hover:bg-slate-900 transition shadow-md">
             Mở Khóa Hệ Thống
         </button>
         <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-slate-800 hover:underline">Quay lại Trang chủ</a>
     </div>
 
-    <!-- NỘI DUNG CHÍNH (Ẩn khi chưa đăng nhập) -->
+    <!-- NỘI DUNG CHÍNH -->
     <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
         
         <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b pb-4 gap-4">
@@ -68,7 +179,10 @@
                 <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
                     <i class="ph-bold ph-house"></i> Trang chủ
                 </a>
-                <button onclick="loadData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
+                <button onclick="exportSummaryToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-download-simple text-lg"></i> Tải Danh Sách
+                </button>
+                <button onclick="window.loadData()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
                 </button>
             </div>
@@ -80,7 +194,7 @@
         </div>
 
         <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-            <table class="w-full text-left border-collapse min-w-[900px]">
+            <table class="w-full text-left border-collapse min-w-[900px]" id="reports-table">
                 <thead>
                     <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-semibold w-12 text-center">STT</th>
@@ -108,136 +222,56 @@
                     <i class="ph-bold ph-x text-2xl"></i>
                 </button>
             </div>
-            <div class="p-5 overflow-y-auto" id="modal-content">
+            <!-- Phần tử sẽ được chuyển thành PDF -->
+            <div class="p-5 overflow-y-auto bg-white" id="modal-content">
                 <!-- Nội dung chi tiết -->
             </div>
-            <div class="p-4 border-t border-slate-100 bg-slate-50 text-right">
+            <!-- Các nút hành động -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                <button onclick="exportModalToPDF()" class="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition shadow-sm flex items-center gap-2">
+                    <i class="ph-bold ph-file-pdf text-lg"></i> Tải PDF
+                </button>
                 <button onclick="closeModal()" class="bg-slate-800 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-700 transition">Đóng</button>
             </div>
         </div>
     </div>
 
+    <!-- Script xuất PDF và Modal -->
     <script>
-        window.checkAdminPassword = async function() {
-            const btn = document.querySelector('#login-screen button');
-            const ogText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
-            btn.disabled = true;
+        window.reportDataStore = {}; // Khởi tạo biến toàn cục
 
-            const pass = document.getElementById('admin-pass').value;
-            try {
-                await window.signInWithEmailAndPassword(window.auth, "admin@ehs.com", pass);
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-                loadData(); 
-            } catch (error) {
-                document.getElementById('pass-error').classList.remove('hidden');
-            } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-            }
-        }
+        window.viewDetail = function(docId) {
+            const report = window.reportDataStore[docId];
+            if (!report) return;
 
-        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkAdminPassword();
-        });
-
-        // Biến toàn cục lưu chi tiết biên bản để hiển thị Modal
-        window.reportDetails = {};
-
-        async function loadData() {
-            const tbody = document.getElementById('results-body');
-            const loading = document.getElementById('loading-msg');
-            
-            tbody.innerHTML = '';
-            loading.classList.remove('hidden');
-            loading.classList.add('block');
-
-            try {
-                // Kéo dữ liệu từ bảng "bien_ban_kiem_tra"
-                const q = window.query(window.collection(window.db, "bien_ban_kiem_tra"), window.orderBy("thoi_gian", "desc"));
-                const querySnapshot = await window.getDocs(q);
-                
-                let stt = 1;
-                window.reportDetails = {}; // Xóa bộ nhớ đệm cũ
-                
-                if(querySnapshot.empty) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có biên bản nào được ghi nhận.</td></tr>`;
-                }
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const docId = doc.id;
-                    
-                    let timeString = "N/A";
-                    if (data.thoi_gian) {
-                        const date = data.thoi_gian.toDate();
-                        timeString = date.toLocaleString('vi-VN');
-                    }
-
-                    // Tính toán số lỗi (Không Đạt)
-                    let errorCount = 0;
-                    if (data.chi_tiet && Array.isArray(data.chi_tiet)) {
-                        data.chi_tiet.forEach(item => {
-                            if (item.danh_gia === "Không Đạt") errorCount++;
-                        });
-                        // Lưu data vào bộ nhớ đệm
-                        window.reportDetails[docId] = data.chi_tiet;
-                    }
-
-                    // Huy hiệu
-                    let badgeClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
-                    let badgeText = "An Toàn";
-                    if (errorCount > 0) {
-                        badgeClass = "bg-red-50 text-red-600 border-red-100";
-                        badgeText = `Phát hiện ${errorCount} Lỗi`;
-                    }
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition-colors";
-                    tr.innerHTML = `
-                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
-                        <td class="p-4 text-slate-700">${timeString}</td>
-                        <td class="p-4 text-slate-800 font-bold text-xs uppercase">${data.ten_bien_ban || 'Báo cáo'}</td>
-                        <td class="p-4 font-bold text-orange-600">${data.khu_vuc || 'N/A'}</td>
-                        <td class="p-4 text-slate-700 font-medium">${data.nguoi_kiem_tra || data.ma_nv || 'Khách'}</td>
-                        <td class="p-4 text-center">
-                            <span class="px-3 py-1 rounded-full text-xs font-bold border ${badgeClass}">${badgeText}</span>
-                        </td>
-                        <td class="p-4 text-center">
-                            <button onclick="viewDetail('${docId}', '${data.khu_vuc}')" class="text-blue-600 hover:text-blue-800 hover:underline font-semibold text-sm">
-                                Xem
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu: ", error);
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu. Hãy kiểm tra API Key.</td></tr>`;
-            } finally {
-                loading.classList.add('hidden');
-                loading.classList.remove('block');
-            }
-        }
-
-        // Logic Mở/Đóng Modal
-        window.viewDetail = function(docId, khuVuc) {
-            const details = window.reportDetails[docId];
+            const details = report.chi_tiet;
             const modalContent = document.getElementById('modal-content');
-            document.getElementById('modal-title').innerText = `Chi tiết kiểm tra: ${khuVuc}`;
+            document.getElementById('modal-title').innerText = `Chi tiết kiểm tra: ${report.khu_vuc}`;
             
+            let html = `
+                <div id="pdf-container" class="p-4">
+                    <div class="border-b-2 border-slate-800 pb-4 mb-6">
+                        <h1 class="text-2xl font-bold text-slate-800 uppercase text-center mb-2">${report.ten_bien_ban || 'BIÊN BẢN KIỂM TRA'}</h1>
+                        <p class="text-center text-slate-500 text-sm mb-4">Mã Form: ${report.ma_form || 'N/A'}</p>
+                        <div class="grid grid-cols-2 gap-4 text-sm text-slate-700">
+                            <div><strong>Khu vực:</strong> ${report.khu_vuc}</div>
+                            <div><strong>Thời gian:</strong> ${report.timeString}</div>
+                            <div><strong>Người kiểm tra:</strong> ${report.nguoi_kiem_tra} (${report.ma_nv})</div>
+                            <div><strong>Tổng số lỗi:</strong> <span class="text-red-600 font-bold">${report.errorCount}</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+            `;
+
             if (!details || details.length === 0) {
-                modalContent.innerHTML = "<p class='text-slate-500 text-center py-4'>Không có dữ liệu chi tiết.</p>";
+                html += "<p class='text-slate-500 text-center py-4'>Không có dữ liệu chi tiết.</p>";
             } else {
-                let html = '<div class="space-y-4">';
                 details.forEach((item, index) => {
                     let color = item.danh_gia === "Đạt" ? "text-emerald-600" : (item.danh_gia === "Không Đạt" ? "text-red-600 font-bold" : "text-slate-500");
                     let noteHtml = item.ghi_chu ? `<p class="mt-2 text-sm text-amber-700 bg-amber-50 p-2 rounded border border-amber-100"><b>Ghi chú:</b> ${item.ghi_chu}</p>` : '';
                     
                     html += `
-                        <div class="p-4 border border-slate-200 rounded-lg bg-white shadow-sm">
+                        <div class="p-4 border border-slate-200 rounded-lg bg-white shadow-sm mb-4" style="page-break-inside: avoid;">
                             <p class="font-medium text-slate-800 mb-2">${index + 1}. ${item.hang_muc}</p>
                             <div class="flex items-center justify-between">
                                 <span class="text-sm uppercase tracking-wider font-semibold ${color}">Đánh giá: ${item.danh_gia}</span>
@@ -246,15 +280,86 @@
                         </div>
                     `;
                 });
-                html += '</div>';
-                modalContent.innerHTML = html;
             }
-
+            
+            html += `
+                    </div>
+                    <div class="mt-10 grid grid-cols-2 gap-4 text-center" style="page-break-inside: avoid;">
+                        <div>
+                            <p class="font-bold mb-16">Đại diện khu vực</p>
+                            <p class="border-t border-slate-300 w-32 mx-auto pt-2 text-sm text-slate-500">(Ký và ghi rõ họ tên)</p>
+                        </div>
+                        <div>
+                            <p class="font-bold mb-16">Người kiểm tra</p>
+                            <p class="border-t border-slate-300 w-32 mx-auto pt-2 text-sm text-slate-500">${report.nguoi_kiem_tra}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modalContent.innerHTML = html;
             document.getElementById('detail-modal').classList.remove('hidden');
         }
 
         window.closeModal = function() {
             document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        window.exportModalToPDF = function() {
+            const element = document.getElementById('pdf-container');
+            const titleElement = document.getElementById('modal-title').innerText;
+            const fileName = `EHS_Bao_Cao_${titleElement.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+            
+            const opt = {
+                margin:       [10, 10, 10, 10], 
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            const btn = document.querySelector('button[onclick="exportModalToPDF()"]');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang tải...';
+            btn.disabled = true;
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }).catch(err => {
+                alert("Lỗi khi tạo PDF: " + err);
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            });
+        }
+
+        window.exportSummaryToExcel = function() {
+            const table = document.getElementById('reports-table');
+            if(!table) return;
+
+            let csv = [];
+            let rows = table.querySelectorAll("tr");
+            let bom = "\uFEFF"; 
+
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                let colCount = cols.length - 1; 
+                
+                for (let j = 0; j < colCount; j++) {
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""').trim();
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+
+            let csvFile = new Blob([bom + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+            let downloadLink = document.createElement("a");
+            downloadLink.download = 'Danh_Sach_Bao_Cao_EHS.csv';
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
         }
     </script>
 </body>
