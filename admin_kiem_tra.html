@@ -25,6 +25,8 @@
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
         window.auth = getAuth(app);
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        
         window.collection = collection;
         window.getDocs = getDocs;
         window.query = query;
