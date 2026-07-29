@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EHS Data Dashboard & Training</title>
+    <!-- Tránh mất CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- FIREBASE ĐỂ XỬ LÝ TÍNH NĂNG ĐĂNG NHẬP / ĐỔI MẬT KHẨU -->
+    <!-- GOM TOÀN BỘ FIREBASE VÀO MODULE CHUNG -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -23,11 +24,46 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app);
+        const auth = getAuth(app);
+        
+        // Xuất ra global để gọi được ngoài thẻ script
+        window.auth = auth;
         window.EmailAuthProvider = EmailAuthProvider;
         window.reauthenticateWithCredential = reauthenticateWithCredential;
         window.updatePassword = updatePassword;
-        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+
+        // Bắt sự kiện click cho nút "Xác nhận" ở Kho Báo Cáo
+        document.getElementById('btn-report-login').addEventListener('click', async () => {
+            const inputPass = document.getElementById('report-password').value;
+            const btn = document.getElementById('btn-report-login');
+            const ogText = btn.innerHTML;
+            const errorMsg = document.getElementById('password-error');
+            
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
+            try {
+                // Đăng nhập Firebase
+                await signInWithEmailAndPassword(auth, "baocao@ehs.com", inputPass);
+                document.getElementById('password-view').classList.add('hidden');
+                document.getElementById('report-list-view').classList.remove('hidden');
+                document.getElementById('report-list-view').classList.add('flex');
+                document.getElementById('modal-icon').className = "ph-fill ph-folder-open text-teal-600 text-2xl";
+            } catch (error) {
+                console.error(error);
+                errorMsg.innerText = error.code === 'auth/wrong-password' ? "Sai mật khẩu!" : "Lỗi: " + error.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        });
+
+        // Bắt phím Enter
+        document.getElementById('report-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('btn-report-login').click();
+        });
     </script>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
@@ -35,7 +71,7 @@
     <div class="max-w-6xl mx-auto">
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
             
-            <!-- 1. TIÊU ĐỀ VÀ KHU VỰC ĐĂNG NHẬP -->
+            <!-- TIÊU ĐỀ VÀ KHU VỰC ĐĂNG NHẬP -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
                 <div>
                     <h2 class="text-2xl font-bold text-blue-700 flex items-center">
@@ -45,7 +81,6 @@
                     <p class="text-slate-500 mt-1">Nền tảng đào tạo, quản lý hóa chất & rủi ro môi trường.</p>
                 </div>
                 
-                <!-- Khu vực hiển thị Đăng nhập / Thông tin User -->
                 <div id="user-profile-section">
                     <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
                         <i class="ph-bold ph-sign-in text-xl"></i> Đăng nhập hệ thống
@@ -53,7 +88,7 @@
                 </div>
             </div>
 
-            <!-- 2. KHU VỰC MENU ĐIỀU HƯỚNG CÁC CHỨC NĂNG (DÙNG CSS GRID ĐỂ CHỐNG LỆCH NÚT) -->
+            <!-- KHU VỰC MENU ĐIỀU HƯỚNG CÁC CHỨC NĂNG -->
             <div class="space-y-6 mb-8">
                 
                 <!-- NHÓM 1: ĐÀO TẠO EHS -->
@@ -130,7 +165,7 @@
 
             </div>
 
-            <!-- 3. MODAL KHO BÁO CÁO -->
+            <!-- MODAL KHO BÁO CÁO -->
             <div id="report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
                     <div class="flex justify-between items-center p-5 border-b border-slate-100">
@@ -144,9 +179,10 @@
 
                     <div id="password-view" class="p-6 flex flex-col items-center gap-4">
                         <p class="text-sm text-slate-600 text-center">Tài liệu nội bộ. Vui lòng nhập mật khẩu cấp quản lý để truy cập.</p>
-                        <input type="password" id="report-password" onkeypress="handleEnter(event)" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-center tracking-[0.3em] font-mono text-lg" placeholder="•••••••">
+                        <input type="password" id="report-password" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-center tracking-[0.3em] font-mono text-lg" placeholder="•••••••">
                         <p id="password-error" class="text-red-500 text-sm hidden font-medium">Sai mật khẩu! Vui lòng thử lại.</p>
-                        <button onclick="checkPassword()" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition shadow-sm">Xác nhận</button>
+                        <!-- Gắn id=btn-report-login để Javascript nhận lệnh -->
+                        <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition shadow-sm">Xác nhận</button>
                     </div>
 
                     <div id="report-list-view" class="p-5 flex-col gap-3 hidden h-80 overflow-y-auto">
@@ -233,7 +269,7 @@
                 </div>
             </div>
 
-            <!-- 4. KHU VỰC BẢNG DỮ LIỆU ĐỒNG BỘ JSON -->
+            <!-- BẢNG DỮ LIỆU ĐỒNG BỘ JSON -->
             <div id="errorMessage" class="hidden bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100 flex items-start gap-2">
                 <i class="ph-fill ph-warning-circle text-xl"></i>
                 <div>
@@ -263,11 +299,7 @@
         </div>
     </div>
 
-    <!-- TẤT CẢ JAVASCRIPT -->
     <script>
-        // ==========================================
-        // LOGIC 1: ĐĂNG NHẬP / ĐĂNG XUẤT VÀ ĐỔI PASS
-        // ==========================================
         function checkLoginStatus() {
             const userId = localStorage.getItem("ehs_user_id");
             const userName = localStorage.getItem("ehs_user_name");
@@ -285,7 +317,6 @@
                             <p class="text-[11px] text-blue-600 font-medium uppercase tracking-wider">Nhân sự EHS</p>
                         </div>
                         <div class="flex items-center gap-1">
-                            <!-- NÚT MỞ ĐỔI MẬT KHẨU -->
                             <button onclick="openChangePassModal()" class="text-blue-600 hover:text-blue-800 hover:bg-blue-100 p-2 rounded-full transition duration-200" title="Đổi mật khẩu">
                                 <i class="ph-bold ph-key text-xl"></i>
                             </button>
@@ -307,7 +338,6 @@
 
         checkLoginStatus();
 
-        // LOGIC BẬT/TẮT VÀ XỬ LÝ ĐỔI MẬT KHẨU
         function openChangePassModal() {
             document.getElementById('change-pass-modal').classList.remove('hidden');
             document.getElementById('cp-error').classList.add('hidden');
@@ -349,25 +379,20 @@
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xử lý...';
 
             try {
-                // Kiểm tra xem Firebase đã sẵn sàng và user có tồn tại chưa
                 const user = window.auth.currentUser;
                 if(!user) {
                     throw new Error("Bạn chưa đăng nhập hoặc mạng đang lag. Vui lòng tải lại trang và thử lại!");
                 }
 
-                // Dựng lại Email giả từ Mã NV lưu trong máy
                 const userId = localStorage.getItem("ehs_user_id").toLowerCase();
                 const fakeEmail = `${userId}@ehs.com`;
 
-                // 1. Xác thực lại người dùng bằng mật khẩu cũ
                 const credential = window.EmailAuthProvider.credential(fakeEmail, oldPass);
                 await window.reauthenticateWithCredential(user, credential);
-
-                // 2. Tiến hành đổi sang mật khẩu mới
                 await window.updatePassword(user, newPass);
 
                 alert("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
-                handleLogout(); // Đổi pass xong thì cho văng ra ngoài bắt đăng nhập lại
+                handleLogout();
 
             } catch(error) {
                 console.error(error);
@@ -385,11 +410,6 @@
             }
         }
 
-        // ==========================================
-        // LOGIC 2: MẬT KHẨU KHO BÁO CÁO
-        // ==========================================
-        const MAT_KHAU_BAO_CAO = "EHS2026";
-
         function openReportModal() {
             document.getElementById('report-modal').classList.remove('hidden');
             document.getElementById('report-password').value = '';
@@ -404,36 +424,6 @@
             document.getElementById('report-modal').classList.add('hidden');
         }
 
-        window.checkPassword = async function() {
-            const inputPass = document.getElementById('report-password').value;
-            const btn = document.querySelector('#password-view button');
-            const ogText = btn.innerHTML;
-            
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
-            btn.disabled = true;
-            document.getElementById('password-error').classList.add('hidden');
-
-            try {
-                await window.signInWithEmailAndPassword(window.auth, "baocao@ehs.com", inputPass);
-                document.getElementById('password-view').classList.add('hidden');
-                document.getElementById('report-list-view').classList.remove('hidden');
-                document.getElementById('report-list-view').classList.add('flex');
-                document.getElementById('modal-icon').className = "ph-fill ph-folder-open text-teal-600 text-2xl";
-            } catch (error) {
-                document.getElementById('password-error').classList.remove('hidden');
-            } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-            }
-        }
-
-        function handleEnter(event) {
-            if (event.key === "Enter") checkPassword();
-        }
-
-        // ==========================================
-        // LOGIC 3: MỞ MODAL KHÓA HỌC
-        // ==========================================
         function openCourseModal() {
             document.getElementById('course-modal').classList.remove('hidden');
         }
@@ -442,9 +432,6 @@
             document.getElementById('course-modal').classList.add('hidden');
         }
 
-        // ==========================================
-        // LOGIC 4: TẢI BẢNG DỮ LIỆU JSON
-        // ==========================================
         const GITHUB_DATA_URL = 'https://thetu191993-code.github.io/daotao/data_ehs.json';
 
         function loadDataFromGitHub() {
