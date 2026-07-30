@@ -29,7 +29,6 @@
         window.allChamCongData = [];
         let unsubscribe = null;
 
-        // ĐĂNG NHẬP
         window.checkGuardPassword = async function() {
             const btn = document.querySelector('#login-screen button');
             const ogText = btn.innerHTML;
@@ -62,7 +61,8 @@
             const loading = document.getElementById('loading-msg');
             loading.classList.remove('hidden');
 
-            const q = query(collection(db, "nha_thau_cham_cong"), orderBy("thoi_gian", "desc"));
+            // Lấy dữ liệu sắp xếp theo thời gian tăng dần để việc đè dữ liệu sau lên trước là chính xác
+            const q = query(collection(db, "nha_thau_cham_cong"), orderBy("thoi_gian", "asc"));
             
             unsubscribe = onSnapshot(q, (snapshot) => {
                 window.allChamCongData = [];
@@ -84,7 +84,7 @@
             tbody.innerHTML = '';
             let dailyAttendance = {};
 
-            // 1. Gom nhóm
+            // 1. Gom nhóm - LOGIC ĐÃ ĐƯỢC ĐỒNG BỘ 100% VỚI ADMIN
             window.allChamCongData.forEach(data => {
                 if (!data.thoi_gian) return;
                 
@@ -108,9 +108,10 @@
                         };
                     }
 
-                    // Ưu tiên cập nhật nhà máy mới nhất nếu họ có thay đổi
+                    // Ưu tiên cập nhật nhà máy mới nhất nếu họ có thay đổi (vd quét ra ở cổng khác)
                     if (data.nha_may && data.nha_may !== "Chưa xác định") {
-                        dailyAttendance[personKey].nha_may = data.nha_may;
+                        // Đảm bảo gán đúng nguyên chuỗi (Ví dụ: "Nhà Máy 2")
+                        dailyAttendance[personKey].nha_may = String(data.nha_may).trim();
                     }
 
                     if (data.trang_thai === "VÀO" && !dailyAttendance[personKey].gio_vao) {
@@ -123,11 +124,12 @@
 
             let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
 
-            // 2. Render Card trên Mobile / Table trên Desktop
+            // 2. Render Dữ liệu
             for (const key in dailyAttendance) {
                 const person = dailyAttendance[key];
                 
-                if (filterPlant === "Tất cả" || person.nha_may === filterPlant) {
+                // Lọc theo Nhà máy
+                if (filterPlant === "Tất cả" || person.nha_may === filterPlant || (filterPlant === "Nhà Máy 1" && person.nha_may === "1") || (filterPlant === "Nhà Máy 2" && person.nha_may === "2")) {
                     
                     let statusHtml = "";
                     let timeInDisplay = person.gio_vao || '<span class="text-slate-300">-</span>';
@@ -144,13 +146,17 @@
                         statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-x-circle"></i> Lỗi dữ liệu</span>`;
                     }
 
+                    // Chỉnh format hiển thị nhà máy cho đẹp
+                    let displayPlant = person.nha_may;
+                    if(displayPlant === "1") displayPlant = "Nhà Máy 1";
+                    if(displayPlant === "2") displayPlant = "Nhà Máy 2";
+
                     tbody.innerHTML += `
                         <tr class="block md:table-row bg-white md:bg-transparent p-4 md:p-0 mb-4 md:mb-0 rounded-xl md:rounded-none shadow-sm md:shadow-none border border-slate-200 md:border-b md:border-x-0 md:border-t-0 hover:bg-slate-50 transition-colors">
                             
-                            <!-- Header của Thẻ trên mobile -->
                             <div class="md:hidden flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
                                 <span class="bg-slate-100 text-slate-500 text-[10px] font-black px-2 py-1 rounded">STT: ${stt}</span>
-                                <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">${person.nha_may}</span>
+                                <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">${displayPlant}</span>
                             </div>
 
                             <td class="hidden md:table-cell p-4 text-center font-medium text-slate-500">${stt++}</td>
@@ -169,7 +175,7 @@
                                 </div>
                             </td>
                             
-                            <td class="hidden md:table-cell p-4 text-center font-bold text-purple-600 uppercase tracking-wider">${person.nha_may}</td>
+                            <td class="hidden md:table-cell p-4 text-center font-bold text-purple-600 uppercase tracking-wider">${displayPlant}</td>
                             
                             <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
                                 <div class="flex justify-between md:block items-center">
@@ -204,7 +210,6 @@
             document.getElementById('stat-inside').innerText = totalInside;
         };
 
-        // Gắn sự kiện
         document.addEventListener('DOMContentLoaded', () => {
             const passInput = document.getElementById('guard-pass');
             if(passInput) {
@@ -223,7 +228,6 @@
 </head>
 <body class="bg-slate-100 min-h-screen p-2 md:p-8 font-sans text-slate-800 flex flex-col items-center">
 
-    <!-- BẢNG ĐĂNG NHẬP -->
     <div id="login-screen" class="w-full max-w-md mt-10 md:mt-20 bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
             <i class="ph-fill ph-shield-check text-4xl"></i>
@@ -240,7 +244,6 @@
         <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-blue-600 hover:underline">Quay lại Trang chủ</a>
     </div>
 
-    <!-- NỘI DUNG CHÍNH (DASHBOARD BẢO VỆ) -->
     <div id="main-content" class="w-full max-w-7xl bg-transparent md:bg-white p-0 md:p-8 rounded-none md:rounded-2xl shadow-none md:shadow-sm border-none md:border border-slate-200 hidden">
         
         <div class="bg-white p-4 md:p-0 rounded-2xl md:rounded-none shadow-sm md:shadow-none mb-4 md:mb-6 border border-slate-200 md:border-none flex flex-col md:flex-row justify-between items-start md:items-center md:border-b md:pb-4 gap-4">
@@ -263,10 +266,8 @@
             Đang đồng bộ dữ liệu...
         </div>
 
-        <!-- CÁC THÔNG SỐ -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 p-4 md:p-4 bg-white md:bg-slate-50 border border-slate-200 rounded-xl mb-4 md:mb-6 shadow-sm md:shadow-none">
             
-            <!-- Trọn bề ngang trên điện thoại -->
             <div class="col-span-2 md:col-span-1 bg-slate-50 md:bg-white p-3 rounded-lg border md:border border-slate-200 md:shadow-sm">
                 <p class="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase mb-1">Ngày giám sát</p>
                 <input type="date" id="filter-date" onchange="window.renderTable()" class="w-full text-sm font-bold outline-none border-b border-dashed border-slate-300 pb-1 bg-transparent">
@@ -281,7 +282,6 @@
                 </select>
             </div>
 
-            <!-- Các ô thông số -->
             <div class="col-span-1 bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center flex flex-col justify-center">
                 <p class="text-[10px] md:text-[11px] text-blue-600 font-bold uppercase mb-1">Đã vào xưởng</p>
                 <p class="text-xl md:text-2xl font-black text-blue-800" id="stat-total-in">0</p>
@@ -294,15 +294,13 @@
             
             <div class="col-span-2 md:col-span-1 bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm text-center relative overflow-hidden flex flex-col justify-center">
                 <div class="absolute -right-2 -top-2 w-8 h-8 bg-amber-200 rounded-full opacity-50"></div>
-                <p class="text-[10px] md:text-[11px] text-amber-700 font-bold uppercase mb-1 relative z-10">Đang trong xưởng</p>
+                <p class="text-[10px] md:text-[11px] text-amber-700 font-bold uppercase mb-1 relative z-10">Đang kẹt trong xưởng</p>
                 <p class="text-2xl font-black text-amber-900 relative z-10" id="stat-inside">0</p>
             </div>
         </div>
 
-        <!-- BẢNG DỮ LIỆU -->
         <div class="w-full bg-transparent md:bg-white rounded-none md:rounded-xl md:border border-slate-200 md:shadow-sm overflow-hidden">
             <table class="w-full text-left border-collapse" id="main-table">
-                <!-- Ẩn tiêu đề cột trên mobile -->
                 <thead class="hidden md:table-header-group">
                     <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-semibold w-12 text-center">STT</th>
