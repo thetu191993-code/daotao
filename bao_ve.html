@@ -18,7 +18,8 @@
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
             messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -42,7 +43,17 @@
                 document.getElementById('main-content').classList.remove('hidden');
                 startRealtimeListener();
             } catch (error) {
+                console.error("Lỗi đăng nhập:", error); // In lỗi ra console để debug
                 document.getElementById('pass-error').classList.remove('hidden');
+                
+                // Cung cấp thông báo lỗi chi tiết hơn nếu có thể
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                     document.getElementById('pass-error').innerText = "Sai mật khẩu! Vui lòng thử lại.";
+                } else if (error.code === 'auth/user-not-found') {
+                     document.getElementById('pass-error').innerText = "Tài khoản bảo vệ chưa được tạo trên Firebase.";
+                } else {
+                     document.getElementById('pass-error').innerText = "Lỗi xác thực: " + error.message;
+                }
             } finally {
                 btn.innerHTML = ogText;
                 btn.disabled = false;
