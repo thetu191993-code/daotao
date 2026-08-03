@@ -9,8 +9,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        // Bổ sung thêm lệnh 'where' vào import
-        import { getFirestore, collection, getDocs, addDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -28,8 +27,6 @@
         window.getDocs = getDocs;
         window.addDoc = addDoc;
         window.query = query;
-        window.orderBy = orderBy;
-        window.where = where; // Xuất hàm where ra ngoài
     </script>
     <style>
         input[type=number]::-webkit-inner-spin-button, 
@@ -41,8 +38,11 @@
 
     <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden relative z-10" id="main-app">
         <!-- Header -->
-        <div class="bg-blue-700 p-6 text-center text-white">
-            <i class="ph-fill ph-qr-code text-5xl mb-2"></i>
+        <div class="bg-blue-700 p-6 text-center text-white relative">
+            <div class="absolute top-4 right-4 bg-white/20 px-3 py-1 rounded-full text-xs font-bold border border-white/40 tracking-wider uppercase shadow-sm" id="display-plant">
+                NHÀ MÁY 1
+            </div>
+            <i class="ph-fill ph-qr-code text-5xl mb-2 mt-2"></i>
             <h1 class="text-2xl font-bold uppercase tracking-wide">Cổng Nhà Thầu</h1>
             <p class="text-blue-100 text-sm mt-1">Hệ thống khai báo Ra / Vào nhà máy</p>
         </div>
@@ -54,18 +54,17 @@
                 <p class="text-sm font-bold">Đang tải danh sách nhân sự...</p>
             </div>
 
-            <!-- Cảnh báo lỗi truy xuất (khi không ai đủ điều kiện) -->
             <div id="no-worker-msg" class="hidden text-center text-rose-600 py-6 border border-rose-200 bg-rose-50 rounded-xl mb-4">
                 <i class="ph-fill ph-warning-circle text-4xl mb-2"></i>
                 <p class="text-sm font-bold px-4">Không có công nhân nào đủ điều kiện an toàn để vào cổng hôm nay.</p>
-                <p class="text-[11px] mt-2 font-medium">Bắt buộc: Phải có Thẻ ATLĐ & Bảo hiểm TN còn hạn.</p>
             </div>
 
             <div id="form-content" class="hidden space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">1. Chọn Tên Công Ty</label>
                     <div class="relative">
-                        <select id="sel-company" onchange="filterWorkers()" class="w-full pl-4 pr-10 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-bold text-slate-800 appearance-none text-base transition-colors">
+                        <!-- Đã sửa thành window.filterWorkers() -->
+                        <select id="sel-company" onchange="window.filterWorkers()" class="w-full pl-4 pr-10 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-bold text-slate-800 appearance-none text-base transition-colors">
                             <option value="">-- Bấm để chọn Công ty --</option>
                         </select>
                         <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none"></i>
@@ -95,30 +94,15 @@
                 </div>
 
                 <div class="pt-2 grid grid-cols-2 gap-4">
-                    <button id="btn-in" onclick="submitCheckInOut('VÀO')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <button id="btn-in" onclick="window.submitCheckInOut('VÀO')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
                         <i class="ph-bold ph-sign-in text-2xl"></i>
                         <span class="text-lg">VÀO CỔNG</span>
                     </button>
-                    <button id="btn-out" onclick="submitCheckInOut('RA')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <button id="btn-out" onclick="window.submitCheckInOut('RA')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
                         <i class="ph-bold ph-sign-out text-2xl"></i>
                         <span class="text-lg">RA CỔNG</span>
                     </button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Cảnh Báo Quên Quét Ra Mới Thêm Vào -->
-    <div id="warning-modal" class="fixed inset-0 z-50 hidden flex-col items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-6 border-t-4 border-orange-500 relative">
-            <div class="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-4">
-                <i class="ph-fill ph-warning text-4xl"></i>
-            </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Cảnh báo thiếu dữ liệu!</h3>
-            <p id="warning-message" class="text-slate-600 font-medium mb-6 text-sm"></p>
-            <div class="flex gap-3">
-                <button onclick="closeWarningModal()" class="w-1/2 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition">Hủy bỏ</button>
-                <button onclick="forceProceed()" class="w-1/2 px-4 py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition shadow-md">Vẫn Tiếp Tục</button>
             </div>
         </div>
     </div>
@@ -130,25 +114,54 @@
             <div id="success-icon-wrap" class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-emerald-100 text-emerald-600">
                 <i id="success-icon" class="ph-fill ph-check-circle text-6xl"></i>
             </div>
-            
             <p class="text-slate-500 font-bold uppercase tracking-widest text-sm mb-1">Thông hành</p>
             <h2 id="success-action" class="text-4xl font-black text-slate-800 mb-6 uppercase">VÀO CỔNG</h2>
-            
             <div class="w-full bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100">
                 <p id="success-name" class="font-bold text-2xl text-blue-700 mb-1">Nguyễn Văn A</p>
                 <p id="success-company" class="text-sm font-semibold text-slate-500 uppercase">Công ty TNHH ABC</p>
             </div>
-            
             <p id="success-time" class="text-slate-400 font-mono text-lg font-semibold mb-6">14:30:00 - 23/07/2026</p>
-            
-            <button onclick="resetApp()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform text-lg">
+            <button onclick="window.resetApp()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform text-lg">
                 Đóng / Người tiếp theo
             </button>
         </div>
     </div>
 
+    <!-- Modal Cảnh Báo Quên Check-out -->
+    <div id="warning-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6 border-t-4 border-orange-500 relative z-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-600 mb-4">
+                <i class="ph-fill ph-warning text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Cảnh báo An toàn</h3>
+            <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+                Hệ thống ghi nhận lần gần nhất bạn đã <span class="font-bold text-orange-600">VÀO CỔNG</span> nhưng chưa xác nhận <span class="font-bold text-orange-600">RA CỔNG</span>. Bạn có muốn tiếp tục vào ca mới không?
+            </p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="window.closeWarningModal()" class="px-4 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2">Hủy Bỏ</button>
+                <button onclick="window.forceCheckIn()" class="bg-orange-500 text-white px-4 py-3 rounded-xl font-bold hover:bg-orange-600 shadow-md w-1/2">Vẫn Tiếp Tục</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const plantParam = urlParams.get('nha_may');
+        let currentPlant = "1"; // Mặc định là Nhà Máy 1 nếu không có tham số
+
+        if (plantParam === '2') {
+            currentPlant = "2";
+            document.getElementById('display-plant').innerText = "NHÀ MÁY 2";
+        } else if (plantParam === '1') {
+            currentPlant = "1";
+            document.getElementById('display-plant').innerText = "NHÀ MÁY 1";
+        } else if (plantParam) {
+            currentPlant = decodeURIComponent(plantParam);
+            document.getElementById('display-plant').innerText = currentPlant.toUpperCase();
+        }
+        
         let allWorkersData = [];
+        window.pendingAction = null; // Dùng lưu tạm thông tin nếu bị vướng modal cảnh báo
 
         function showError(message) {
             const errorDiv = document.getElementById('error-msg');
@@ -157,7 +170,6 @@
             setTimeout(() => { errorDiv.classList.add('hidden'); }, 4000);
         }
 
-        // Hàm kiểm tra ngày xem có hợp lệ (từ hôm nay trở về sau) không
         function isValidDate(dateString) {
             if (!dateString) return false;
             const expDate = new Date(dateString);
@@ -173,16 +185,9 @@
                 
                 querySnapshot.forEach((doc) => {
                     const w = doc.data();
-                    
-                    // ===============================================
-                    // CHỐT CHẶN KIỂM TRA ĐIỀU KIỆN AN TOÀN TẠI ĐÂY
-                    // ===============================================
-                    // 1. Phải khai báo Nhóm ATLĐ & Thẻ còn hạn
                     const hasValidTraining = w.nhom_atld && w.nhom_atld !== "Chưa đào tạo" && isValidDate(w.han_atld);
-                    // 2. Bảo hiểm TN phải còn hạn
                     const hasValidInsurance = isValidDate(w.han_bao_hiem);
 
-                    // CHỈ đẩy những người đạt TẤT CẢ yêu cầu vào mảng dữ liệu quét QR
                     if (hasValidTraining && hasValidInsurance) {
                         allWorkersData.push(w);
                     }
@@ -192,10 +197,9 @@
 
                 if (allWorkersData.length === 0) {
                     document.getElementById('no-worker-msg').classList.remove('hidden');
-                    return; // Dừng luôn, không hiện form chọn tên nữa
+                    return; 
                 }
 
-                // Lọc ra danh sách tên công ty từ mảng những người đạt yêu cầu
                 const companies = [...new Set(allWorkersData.map(w => w.cong_ty))].sort();
                 const selCompany = document.getElementById('sel-company');
                 companies.forEach(company => {
@@ -211,16 +215,27 @@
         }
 
         window.filterWorkers = function() {
-            // ... (Đoạn code cũ) ...
+            const selectedCompany = document.getElementById('sel-company').value;
+            const selWorker = document.getElementById('sel-worker');
+            
+            selWorker.innerHTML = `<option value="">-- Chọn Tên của bạn --</option>`;
+            document.getElementById('input-cccd').value = ""; 
+            document.getElementById('error-msg').classList.add('hidden');
+            
+            if (!selectedCompany) {
+                selWorker.innerHTML = `<option value="">-- Vui lòng chọn Công ty trước --</option>`;
+                selWorker.disabled = true;
+                return;
+            }
+
+            selWorker.disabled = false;
+            const filteredWorkers = allWorkersData.filter(w => w.cong_ty === selectedCompany).sort((a,b) => a.ho_ten.localeCompare(b.ho_ten));
+            
             filteredWorkers.forEach(worker => {
                 selWorker.innerHTML += `<option value="${worker.ho_ten}">${worker.ho_ten}</option>`;
             });
         }
 
-        // Biến lưu trữ tạm thời thông tin người dùng đang bị cảnh báo
-        let pendingActionContext = null;
-
-        // VIẾT LẠI HÀM submitCheckInOut
         window.submitCheckInOut = async function(action) {
             const company = document.getElementById('sel-company').value;
             const workerName = document.getElementById('sel-worker').value;
@@ -250,102 +265,91 @@
                 return;
             }
 
-            const btnIn = document.getElementById('btn-in');
-            const btnOut = document.getElementById('btn-out');
-            const btnTarget = action === 'VÀO' ? btnIn : btnOut;
-            const originalContent = btnTarget.innerHTML;
-            
-            btnIn.disabled = true; btnOut.disabled = true;
-            btnTarget.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-3xl"></i>';
+            setLoadingButtons(true, action);
 
             try {
+                // Kiểm tra lịch sử để xem họ có quên bấm RA không
                 if (action === 'VÀO') {
-                    // Truy vấn lịch sử để kiểm tra lần quét cuối cùng của riêng cá nhân này
-                    const q = window.query(
-                        window.collection(window.db, "nha_thau_cham_cong"),
-                        window.where("cong_ty", "==", company),
-                        window.where("ho_ten", "==", workerName)
-                    );
-                    const snap = await window.getDocs(q);
-                    let history = [];
-                    snap.forEach(doc => history.push(doc.data()));
+                    const qCheck = window.query(window.collection(window.db, "nha_thau_cham_cong"));
+                    const snapCheck = await window.getDocs(qCheck);
+                    let lastRecord = null;
                     
-                    if (history.length > 0) {
-                        // Sắp xếp thời gian giảm dần để lấy bản ghi mới nhất
-                        history.sort((a, b) => b.thoi_gian.toMillis() - a.thoi_gian.toMillis());
-                        const lastRecord = history[0];
-                        
-                        // Nếu lần cuối cùng cũng là VÀO -> có nghĩa là lần trước đã quên quét RA
-                        if (lastRecord.trang_thai === 'VÀO') {
-                            const d = lastRecord.thoi_gian.toDate();
-                            const dateStr = d.toLocaleDateString('vi-VN');
-                            
-                            // Hiển thị Modal Cảnh báo
-                            document.getElementById('warning-message').innerHTML = `Lần trước (Ngày <b>${dateStr}</b>) bạn đã VÀO xưởng nhưng chưa bấm giờ RA.<br><br>Hệ thống đã ghi nhận điểm không phù hợp. Bạn có muốn tiếp tục VÀO CỔNG hôm nay?`;
-                            
-                            // Lưu lại dữ liệu để chạy tiếp nếu họ bấm "Vẫn tiếp tục"
-                            pendingActionContext = { company, workerName, action, originalContent, btnTarget };
-                            
-                            document.getElementById('warning-modal').classList.remove('hidden');
-                            document.getElementById('warning-modal').classList.add('flex');
-                            
-                            // Mở lại nút vì quy trình đang tạm dừng để đợi xác nhận
-                            btnIn.disabled = false; btnOut.disabled = false;
-                            btnTarget.innerHTML = originalContent;
-                            return; 
+                    snapCheck.forEach(doc => {
+                        const d = doc.data();
+                        if (d.cong_ty === company && d.ho_ten === workerName && d.thoi_gian) {
+                            if (!lastRecord || d.thoi_gian.toDate() > lastRecord.thoi_gian.toDate()) {
+                                lastRecord = d;
+                            }
                         }
+                    });
+
+                    // Nếu lần gần nhất là VÀO (chưa RA) -> Hiện cảnh báo
+                    if (lastRecord && lastRecord.trang_thai === 'VÀO') {
+                        setLoadingButtons(false, action);
+                        window.pendingAction = { company, workerName, action };
+                        document.getElementById('warning-modal').classList.remove('hidden');
+                        document.getElementById('warning-modal').classList.add('flex');
+                        return;
                     }
                 }
 
-                // Nếu mọi thứ bình thường thì thực thi ngay
-                await executeCheckInOut(company, workerName, action);
+                // Nếu mọi thứ ổn, hoặc nếu là bấm RA, thì tiến hành ghi nhận luôn
+                await window.executeCheckIn(company, workerName, action);
 
             } catch (error) {
                 showError("Lỗi đường truyền! Vui lòng thử lại.");
                 console.error(error);
-                btnIn.disabled = false; btnOut.disabled = false;
-                btnTarget.innerHTML = originalContent;
+                setLoadingButtons(false, action);
             }
         }
 
         window.closeWarningModal = function() {
             document.getElementById('warning-modal').classList.add('hidden');
             document.getElementById('warning-modal').classList.remove('flex');
-            pendingActionContext = null;
+            window.pendingAction = null;
         }
 
-        window.forceProceed = async function() {
-            closeWarningModal();
-            if (pendingActionContext) {
-                const { company, workerName, action, originalContent, btnTarget } = pendingActionContext;
-                const btnIn = document.getElementById('btn-in');
-                const btnOut = document.getElementById('btn-out');
-                
-                // Khóa nút lại trong lúc đẩy dữ liệu lên
-                btnIn.disabled = true; btnOut.disabled = true;
-                btnTarget.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-3xl"></i>';
-                
-                try {
-                    await executeCheckInOut(company, workerName, action);
-                } catch (e) {
-                    showError("Lỗi hệ thống khi quét mã.");
-                    btnIn.disabled = false; btnOut.disabled = false;
-                    btnTarget.innerHTML = originalContent;
-                }
+        window.forceCheckIn = async function() {
+            if (!window.pendingAction) return;
+            window.closeWarningModal();
+            setLoadingButtons(true, window.pendingAction.action);
+            await window.executeCheckIn(window.pendingAction.company, window.pendingAction.workerName, window.pendingAction.action);
+        }
+
+        window.executeCheckIn = async function(company, workerName, action) {
+            try {
+                const now = new Date();
+                await window.addDoc(window.collection(window.db, "nha_thau_cham_cong"), {
+                    cong_ty: company,
+                    ho_ten: workerName,
+                    trang_thai: action,
+                    thoi_gian: now,
+                    nha_may: currentPlant
+                });
+                showSuccessScreen(action, workerName, company, now);
+            } catch (error) {
+                showError("Lỗi hệ thống khi lưu dữ liệu!");
+                console.error(error);
+            } finally {
+                setLoadingButtons(false, action);
             }
         }
 
-        // Tách phần đẩy dữ liệu ra thành 1 hàm riêng để tái sử dụng
-        async function executeCheckInOut(company, workerName, action) {
-            const now = new Date();
-            await window.addDoc(window.collection(window.db, "nha_thau_cham_cong"), {
-                cong_ty: company,
-                ho_ten: workerName,
-                trang_thai: action,
-                thoi_gian: now,
-                nha_may: currentPlant 
-            });
-            showSuccessScreen(action, workerName, company, now);
+        function setLoadingButtons(isLoading, action) {
+            const btnIn = document.getElementById('btn-in');
+            const btnOut = document.getElementById('btn-out');
+            const btnTarget = action === 'VÀO' ? btnIn : btnOut;
+
+            if (isLoading) {
+                btnIn.disabled = true; btnOut.disabled = true;
+                btnTarget.dataset.original = btnTarget.innerHTML;
+                btnTarget.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-3xl"></i>';
+            } else {
+                btnIn.disabled = false; btnOut.disabled = false;
+                if (btnTarget.dataset.original) {
+                    btnTarget.innerHTML = btnTarget.dataset.original;
+                }
+            }
         }
 
         function showSuccessScreen(action, name, company, time) {
