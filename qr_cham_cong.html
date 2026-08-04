@@ -12,7 +12,7 @@
         import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -100,6 +100,7 @@
                     <p class="text-xs text-slate-500 font-medium mt-1.5 text-center">Nhập đúng <span class="font-bold text-blue-600">4 số cuối CCCD</span> của bạn để xác thực.</p>
                 </div>
 
+                <!-- Dùng để hiển thị chi tiết lỗi nếu có -->
                 <div id="error-msg" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2">
                     <i class="ph-fill ph-warning-circle text-xl"></i>
                     <span id="error-text">Lỗi!</span>
@@ -235,7 +236,8 @@
                 document.getElementById('form-content').classList.remove('hidden');
 
             } catch (error) {
-                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold">Lỗi kết nối máy chủ!</p>`;
+                // Nếu rules sai ở nha_thau_nhan_su, in lỗi chi tiết
+                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold text-sm px-4">Lỗi: ${error.message}</p>`;
                 console.error("Lỗi tải nhân sự:", error);
             }
         }
@@ -262,7 +264,7 @@
             });
         }
 
-        // XỬ LÝ NÚT BẤM
+        // XỬ LÝ NÚT BẤM (CÓ TÍNH NĂNG GRACEFUL DEGRADATION CHỐNG SẬP)
         window.submitCheckInOut = async function(action) {
             const company = document.getElementById('sel-company').value;
             const workerName = document.getElementById('sel-worker').value;
@@ -289,33 +291,33 @@
 
             setLoadingButtons(true, action);
 
+            let lastRecord = null;
+            let canCheckHistory = true;
+
+            // KIỂM TRA LỊCH SỬ (Nếu rules Firebase chưa mở, phần này sẽ lỗi nhưng KHÔNG chặn quy trình)
             try {
-                /*
-                 * [QUAN TRỌNG] THUẬT TOÁN TỐI ƯU MỚI: 
-                 * Bỏ dùng query có where/orderBy (Tránh lỗi Index Timeout).
-                 * Yêu cầu Firebase tải xuống giới hạn 500 bản ghi chấm công gần nhất.
-                 * Client tự filter tìm lịch sử của đúng người công nhân.
-                 */
                 const qCheck = window.query(
                     window.collection(window.db, "nha_thau_cham_cong"),
-                    // Không dùng where, dùng orderBy giảm dần thời gian, lấy 500 dòng gần nhất
                     window.orderBy("thoi_gian", "desc"),
                     window.limit(500)
                 );
                 
                 const snapCheck = await window.getDocs(qCheck);
                 
-                let lastRecord = null;
-                
-                // Lặp qua để tìm dòng đầu tiên khớp với công ty và tên
                 for (const doc of snapCheck.docs) {
                     const d = doc.data();
                     if (d.cong_ty === company && d.ho_ten === workerName) {
                         lastRecord = d;
-                        break; // Đã tìm thấy lịch sử gần nhất, dừng vòng lặp
+                        break; 
                     }
                 }
+            } catch (err) {
+                console.warn("Bỏ qua kiểm tra lịch sử do lỗi Rules Firebase/Mạng:", err);
+                canCheckHistory = false; // Bỏ qua việc chặn nếu không lấy được lịch sử
+            }
 
+            // XỬ LÝ LOGIC KIỂM SOÁT (Chỉ chạy nếu lấy được lịch sử thành công)
+            if (canCheckHistory) {
                 // TRƯỜNG HỢP BẤM "RA": Chặn đứng nếu sáng nay chưa VÀO
                 if (action === 'RA') {
                     if (!lastRecord || lastRecord.trang_thai === 'RA') {
@@ -353,14 +355,10 @@
                         }
                     }
                 }
-
-                await window.executeCheckIn(company, workerName, action);
-
-            } catch (error) {
-                console.error("Chi tiết lỗi:", error);
-                showError("Lỗi kết nối máy chủ! Hãy thử lại.");
-                setLoadingButtons(false, action);
             }
+
+            // TIẾN HÀNH LƯU DỮ LIỆU CHẤM CÔNG VÀO FIREBASE
+            await window.executeCheckIn(company, workerName, action);
         }
 
         window.closeWarningModal = function() {
@@ -393,7 +391,8 @@
                 });
                 showSuccessScreen(action, workerName, company, now);
             } catch (error) {
-                showError("Lỗi hệ thống khi lưu dữ liệu lên đám mây!");
+                // IN CHÍNH XÁC TÊN LỖI NẾU FIREBASE TỪ CHỐI LƯU
+                showError("Lỗi kết nối máy chủ: " + error.message);
                 console.error(error);
             } finally {
                 setLoadingButtons(false, action);
