@@ -9,7 +9,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, query, orderBy, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -25,6 +25,12 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+
+        window.db = db;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.getDocs = getDocs;
 
         window.allChamCongData = [];
         let unsubscribe = null;
@@ -44,13 +50,6 @@
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
                 document.getElementById('pass-error').classList.remove('hidden');
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-                     document.getElementById('pass-error').innerText = "Sai mật khẩu! Vui lòng thử lại.";
-                } else if (error.code === 'auth/user-not-found') {
-                     document.getElementById('pass-error').innerText = "Tài khoản bảo vệ chưa được tạo trên Firebase.";
-                } else {
-                     document.getElementById('pass-error').innerText = "Lỗi xác thực: " + error.message;
-                }
             } finally {
                 btn.innerHTML = ogText;
                 btn.disabled = false;
@@ -58,172 +57,15 @@
         };
 
         function startRealtimeListener() {
-            const loading = document.getElementById('loading-msg');
-            loading.classList.remove('hidden');
-
-            // Lấy dữ liệu sắp xếp theo thời gian tăng dần để việc đè dữ liệu sau lên trước là chính xác
             const q = query(collection(db, "nha_thau_cham_cong"), orderBy("thoi_gian", "asc"));
-            
             unsubscribe = onSnapshot(q, (snapshot) => {
                 window.allChamCongData = [];
                 snapshot.forEach(doc => {
                     window.allChamCongData.push(doc.data());
                 });
-                window.renderTable();
-                loading.classList.add('hidden');
-            }, (error) => {
-                console.error("Lỗi đồng bộ thời gian thực:", error);
+                if(window.currentGuardTab === 'ra-vao') window.renderTable();
             });
         }
-
-        window.renderTable = function() {
-            const tbody = document.getElementById('cham-cong-results-body');
-            const filterDateStr = document.getElementById('filter-date').value;
-            const filterPlant = document.getElementById('filter-plant').value;
-            
-            tbody.innerHTML = '';
-            let dailyAttendance = {};
-
-            // 1. Gom nhóm - LOGIC ĐÃ ĐƯỢC ĐỒNG BỘ 100% VỚI ADMIN
-            window.allChamCongData.forEach(data => {
-                if (!data.thoi_gian) return;
-                
-                const dateObj = data.thoi_gian.toDate();
-                const dd = String(dateObj.getDate()).padStart(2, '0');
-                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const yyyy = dateObj.getFullYear();
-                const recordDateStr = `${yyyy}-${mm}-${dd}`;
-
-                if (recordDateStr === filterDateStr) {
-                    const personKey = `${data.cong_ty}_${data.ho_ten}`;
-                    const timeStr = dateObj.toLocaleTimeString('vi-VN');
-
-                    if (!dailyAttendance[personKey]) {
-                        dailyAttendance[personKey] = {
-                            cong_ty: data.cong_ty,
-                            ho_ten: data.ho_ten,
-                            nha_may: data.nha_may || "Chưa xác định",
-                            gio_vao: null,
-                            gio_ra: null
-                        };
-                    }
-
-                    // Ưu tiên cập nhật nhà máy mới nhất nếu họ có thay đổi (vd quét ra ở cổng khác)
-                    if (data.nha_may && data.nha_may !== "Chưa xác định") {
-                        // Đảm bảo gán đúng nguyên chuỗi (Ví dụ: "Nhà Máy 2")
-                        dailyAttendance[personKey].nha_may = String(data.nha_may).trim();
-                    }
-
-                    if (data.trang_thai === "VÀO" && !dailyAttendance[personKey].gio_vao) {
-                        dailyAttendance[personKey].gio_vao = timeStr;
-                    } else if (data.trang_thai === "RA" && !dailyAttendance[personKey].gio_ra) {
-                        dailyAttendance[personKey].gio_ra = timeStr;
-                    }
-                }
-            });
-
-            let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
-
-            // 2. Render Dữ liệu
-            for (const key in dailyAttendance) {
-                const person = dailyAttendance[key];
-                
-                // Lọc theo Nhà máy
-                if (filterPlant === "Tất cả" || person.nha_may === filterPlant || (filterPlant === "Nhà Máy 1" && person.nha_may === "1") || (filterPlant === "Nhà Máy 2" && person.nha_may === "2")) {
-                    
-                    let statusHtml = "";
-                    let timeInDisplay = person.gio_vao || '<span class="text-slate-300">-</span>';
-                    let timeOutDisplay = person.gio_ra || '<span class="text-slate-300">-</span>';
-
-                    if (person.gio_vao && person.gio_ra) {
-                        totalIn++; totalOut++;
-                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-check-circle"></i> Đã ra khỏi xưởng</span>`;
-                    } else if (person.gio_vao && !person.gio_ra) {
-                        totalIn++; totalInside++;
-                        statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`;
-                    } else if (!person.gio_vao && person.gio_ra) {
-                        totalOut++;
-                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-x-circle"></i> Lỗi dữ liệu</span>`;
-                    }
-
-                    // Chỉnh format hiển thị nhà máy cho đẹp
-                    let displayPlant = person.nha_may;
-                    if(displayPlant === "1") displayPlant = "Nhà Máy 1";
-                    if(displayPlant === "2") displayPlant = "Nhà Máy 2";
-
-                    tbody.innerHTML += `
-                        <tr class="block md:table-row bg-white md:bg-transparent p-4 md:p-0 mb-4 md:mb-0 rounded-xl md:rounded-none shadow-sm md:shadow-none border border-slate-200 md:border-b md:border-x-0 md:border-t-0 hover:bg-slate-50 transition-colors">
-                            
-                            <div class="md:hidden flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
-                                <span class="bg-slate-100 text-slate-500 text-[10px] font-black px-2 py-1 rounded">STT: ${stt}</span>
-                                <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">${displayPlant}</span>
-                            </div>
-
-                            <td class="hidden md:table-cell p-4 text-center font-medium text-slate-500">${stt++}</td>
-                            
-                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
-                                <div class="flex flex-col md:block">
-                                    <span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Công Ty</span>
-                                    <span class="font-bold text-slate-700">${person.cong_ty}</span>
-                                </div>
-                            </td>
-                            
-                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
-                                <div class="flex flex-col md:block">
-                                    <span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Nhân Sự</span>
-                                    <span class="font-bold text-blue-700 text-lg md:text-base">${person.ho_ten}</span>
-                                </div>
-                            </td>
-                            
-                            <td class="hidden md:table-cell p-4 text-center font-bold text-purple-600 uppercase tracking-wider">${displayPlant}</td>
-                            
-                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
-                                <div class="flex justify-between md:block items-center">
-                                    <span class="md:hidden text-[10px] text-slate-400 font-bold uppercase">Giờ Vào</span>
-                                    <span class="text-slate-600 font-mono font-semibold">${timeInDisplay}</span>
-                                </div>
-                            </td>
-                            
-                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
-                                <div class="flex justify-between md:block items-center">
-                                    <span class="md:hidden text-[10px] text-slate-400 font-bold uppercase">Giờ Ra</span>
-                                    <span class="text-slate-600 font-mono font-semibold">${timeOutDisplay}</span>
-                                </div>
-                            </td>
-                            
-                            <td class="block md:table-cell p-2 md:p-4 mt-2 md:mt-0">
-                                <div class="flex justify-center md:block items-center w-full">
-                                    ${statusHtml}
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }
-            }
-
-            if (stt === 1) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có dữ liệu ra/vào tại khu vực này trong ngày.</td></tr>`;
-            }
-
-            document.getElementById('stat-total-in').innerText = totalIn;
-            document.getElementById('stat-total-out').innerText = totalOut;
-            document.getElementById('stat-inside').innerText = totalInside;
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const passInput = document.getElementById('guard-pass');
-            if(passInput) {
-                passInput.addEventListener('keypress', function (e) {
-                    if (e.key === 'Enter') window.checkGuardPassword();
-                });
-            }
-            
-            const today = new Date();
-            const dd = String(today.getDate()).padStart(2, '0');
-            const mm = String(today.getMonth() + 1).padStart(2, '0');
-            const yyyy = today.getFullYear();
-            document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
-        });
     </script>
 </head>
 <body class="bg-slate-100 min-h-screen p-2 md:p-8 font-sans text-slate-800 flex flex-col items-center">
@@ -250,10 +92,10 @@
             <div>
                 <h2 class="text-xl md:text-2xl font-bold text-slate-800 flex items-center">
                     <i class="ph-fill ph-camera text-blue-600 text-2xl md:text-3xl mr-3"></i>
-                    Giám Sát Cổng Ra Vào
+                    Trạm Gác An Ninh
                 </h2>
                 <p class="text-slate-500 text-sm md:text-base mt-1 flex items-center gap-1">
-                    <span class="text-emerald-500 animate-pulse text-lg">●</span> Trực tiếp
+                    <span class="text-emerald-500 animate-pulse text-lg">●</span> Theo dõi trực tiếp
                 </p>
             </div>
             <a href="index.html" class="w-full md:w-auto bg-slate-100 text-slate-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center justify-center gap-2 border border-slate-200">
@@ -261,61 +103,318 @@
             </a>
         </div>
 
+        <!-- TABS BẢO VỆ -->
+        <div class="flex flex-wrap gap-2 mb-4 md:mb-6 border-b border-slate-200 pb-px">
+            <button id="btn-tab-ra-vao" onclick="switchGuardTab('ra-vao')" class="px-6 py-2.5 bg-blue-50 text-blue-700 font-bold border-b-2 border-blue-500 rounded-t-lg transition flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-clock"></i> Giám sát Ra/Vào</button>
+            <button id="btn-tab-danh-sach" onclick="switchGuardTab('danh-sach')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-shield-check"></i> DS Được Cấp Phép</button>
+        </div>
+
         <div id="loading-msg" class="text-center py-6 text-blue-600 font-medium hidden bg-white rounded-xl shadow-sm mb-4">
             <i class="ph-bold ph-spinner animate-spin text-3xl mb-2 block mx-auto"></i>
-            Đang đồng bộ dữ liệu...
+            Đang tải dữ liệu...
         </div>
 
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 p-4 md:p-4 bg-white md:bg-slate-50 border border-slate-200 rounded-xl mb-4 md:mb-6 shadow-sm md:shadow-none">
-            
-            <div class="col-span-2 md:col-span-1 bg-slate-50 md:bg-white p-3 rounded-lg border md:border border-slate-200 md:shadow-sm">
-                <p class="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase mb-1">Ngày giám sát</p>
-                <input type="date" id="filter-date" onchange="window.renderTable()" class="w-full text-sm font-bold outline-none border-b border-dashed border-slate-300 pb-1 bg-transparent">
-            </div>
-            
-            <div class="col-span-2 md:col-span-1 bg-slate-50 md:bg-white p-3 rounded-lg border md:border border-slate-200 md:shadow-sm">
-                <p class="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase mb-1">Khu vực trạm gác</p>
-                <select id="filter-plant" onchange="window.renderTable()" class="w-full text-sm font-bold outline-none border-b border-dashed border-slate-300 pb-1 text-purple-700 bg-transparent">
-                    <option value="Tất cả">Hiển thị Tất cả</option>
-                    <option value="Nhà Máy 1">Chỉ xem Nhà Máy 1</option>
-                    <option value="Nhà Máy 2">Chỉ xem Nhà Máy 2</option>
-                </select>
+        <div id="tab-ra-vao" class="guard-tab">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 p-4 md:p-4 bg-white md:bg-slate-50 border border-slate-200 rounded-xl mb-4 md:mb-6 shadow-sm md:shadow-none">
+                
+                <div class="col-span-2 md:col-span-1 bg-slate-50 md:bg-white p-3 rounded-lg border md:border border-slate-200 md:shadow-sm">
+                    <p class="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase mb-1">Ngày giám sát</p>
+                    <input type="date" id="filter-date" onchange="window.renderTable()" class="w-full text-sm font-bold outline-none border-b border-dashed border-slate-300 pb-1 bg-transparent">
+                </div>
+                
+                <div class="col-span-2 md:col-span-1 bg-slate-50 md:bg-white p-3 rounded-lg border md:border border-slate-200 md:shadow-sm">
+                    <p class="text-[10px] md:text-[11px] text-slate-500 font-bold uppercase mb-1">Khu vực trạm gác</p>
+                    <select id="filter-plant" onchange="window.renderTable()" class="w-full text-sm font-bold outline-none border-b border-dashed border-slate-300 pb-1 text-purple-700 bg-transparent">
+                        <option value="Tất cả">Hiển thị Tất cả</option>
+                        <option value="Nhà Máy 1">Chỉ xem Nhà Máy 1</option>
+                        <option value="Nhà Máy 2">Chỉ xem Nhà Máy 2</option>
+                    </select>
+                </div>
+
+                <div class="col-span-1 bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center flex flex-col justify-center">
+                    <p class="text-[10px] md:text-[11px] text-blue-600 font-bold uppercase mb-1">Đã vào xưởng</p>
+                    <p class="text-xl md:text-2xl font-black text-blue-800" id="stat-total-in">0</p>
+                </div>
+                
+                <div class="col-span-1 bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm text-center flex flex-col justify-center">
+                    <p class="text-[10px] md:text-[11px] text-emerald-600 font-bold uppercase mb-1">Đã hoàn thành</p>
+                    <p class="text-xl md:text-2xl font-black text-emerald-800" id="stat-total-out">0</p>
+                </div>
+                
+                <div class="col-span-2 md:col-span-1 bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm text-center relative overflow-hidden flex flex-col justify-center">
+                    <div class="absolute -right-2 -top-2 w-8 h-8 bg-amber-200 rounded-full opacity-50"></div>
+                    <p class="text-[10px] md:text-[11px] text-amber-700 font-bold uppercase mb-1 relative z-10">Đang kẹt trong xưởng</p>
+                    <p class="text-2xl font-black text-amber-900 relative z-10" id="stat-inside">0</p>
+                </div>
             </div>
 
-            <div class="col-span-1 bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center flex flex-col justify-center">
-                <p class="text-[10px] md:text-[11px] text-blue-600 font-bold uppercase mb-1">Đã vào xưởng</p>
-                <p class="text-xl md:text-2xl font-black text-blue-800" id="stat-total-in">0</p>
-            </div>
-            
-            <div class="col-span-1 bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm text-center flex flex-col justify-center">
-                <p class="text-[10px] md:text-[11px] text-emerald-600 font-bold uppercase mb-1">Đã hoàn thành</p>
-                <p class="text-xl md:text-2xl font-black text-emerald-800" id="stat-total-out">0</p>
-            </div>
-            
-            <div class="col-span-2 md:col-span-1 bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm text-center relative overflow-hidden flex flex-col justify-center">
-                <div class="absolute -right-2 -top-2 w-8 h-8 bg-amber-200 rounded-full opacity-50"></div>
-                <p class="text-[10px] md:text-[11px] text-amber-700 font-bold uppercase mb-1 relative z-10">Đang trong xưởng</p>
-                <p class="text-2xl font-black text-amber-900 relative z-10" id="stat-inside">0</p>
+            <div class="w-full bg-transparent md:bg-white rounded-none md:rounded-xl md:border border-slate-200 md:shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse" id="main-table">
+                    <thead class="hidden md:table-header-group">
+                        <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                            <th class="p-4 font-semibold w-12 text-center">STT</th>
+                            <th class="p-4 font-semibold">Tên Nhà Thầu</th>
+                            <th class="p-4 font-semibold">Họ và Tên Nhân Sự</th>
+                            <th class="p-4 font-semibold text-center">Nhà Máy</th>
+                            <th class="p-4 font-semibold text-center">Giờ Vào</th>
+                            <th class="p-4 font-semibold text-center">Giờ Ra</th>
+                            <th class="p-4 font-semibold text-center">Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cham-cong-results-body" class="text-sm"></tbody>
+                </table>
             </div>
         </div>
 
-        <div class="w-full bg-transparent md:bg-white rounded-none md:rounded-xl md:border border-slate-200 md:shadow-sm overflow-hidden">
-            <table class="w-full text-left border-collapse" id="main-table">
-                <thead class="hidden md:table-header-group">
-                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                        <th class="p-4 font-semibold w-12 text-center">STT</th>
-                        <th class="p-4 font-semibold">Tên Nhà Thầu</th>
-                        <th class="p-4 font-semibold">Họ và Tên Nhân Sự</th>
-                        <th class="p-4 font-semibold text-center">Nhà Máy</th>
-                        <th class="p-4 font-semibold text-center">Giờ Vào</th>
-                        <th class="p-4 font-semibold text-center">Giờ Ra</th>
-                        <th class="p-4 font-semibold text-center">Trạng Thái</th>
-                    </tr>
-                </thead>
-                <tbody id="cham-cong-results-body" class="text-sm"></tbody>
-            </table>
+        <div id="tab-danh-sach" class="guard-tab hidden">
+            <!-- THANH TÌM KIẾM CHO BẢO VỆ -->
+            <div class="mb-4 relative w-full">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i>
+                </div>
+                <input type="text" id="guard-search-worker" onkeyup="filterApprovedTable()" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-semibold text-slate-700 shadow-sm" placeholder="Nhập tên nhà thầu, họ tên hoặc 4 số cuối CCCD để đối chiếu...">
+            </div>
+
+            <div class="w-full bg-transparent md:bg-white rounded-none md:rounded-xl md:border border-slate-200 md:shadow-sm overflow-hidden">
+                <table class="w-full text-left border-collapse" id="approved-table">
+                    <thead class="hidden md:table-header-group">
+                        <tr class="bg-emerald-700 text-white text-xs uppercase tracking-wider">
+                            <th class="p-4 font-semibold w-12 text-center">STT</th>
+                            <th class="p-4 font-semibold">Tên Nhà Thầu</th>
+                            <th class="p-4 font-semibold">Họ và Tên</th>
+                            <th class="p-4 font-semibold text-center">CCCD</th>
+                            <th class="p-4 font-semibold text-center">Điều kiện An toàn</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approved-results-body" class="text-sm"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <script>
+        window.currentGuardTab = 'ra-vao';
+        let rawApprovedData = []; // Danh sách cấp phép gốc
+
+        // Set ngày
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
+        document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
+
+        document.getElementById('guard-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') window.checkGuardPassword();
+        });
+
+        window.switchGuardTab = function(tabId) {
+            window.currentGuardTab = tabId;
+            const tabs = ['ra-vao', 'danh-sach'];
+
+            tabs.forEach(t => {
+                const btn = document.getElementById('btn-tab-' + t);
+                const content = document.getElementById('tab-' + t);
+                if (t === tabId) {
+                    btn.className = "px-6 py-2.5 bg-blue-50 text-blue-700 font-bold border-b-2 border-blue-500 rounded-t-lg transition flex items-center gap-1 w-full md:w-auto justify-center";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1 w-full md:w-auto justify-center";
+                    content.classList.add('hidden'); 
+                }
+            });
+
+            if (tabId === 'ra-vao') {
+                window.renderTable();
+            } else if (tabId === 'danh-sach') {
+                document.getElementById('btn-tab-danh-sach').className = "px-6 py-2.5 bg-emerald-50 text-emerald-700 font-bold border-b-2 border-emerald-500 rounded-t-lg transition flex items-center gap-1 w-full md:w-auto justify-center";
+                window.loadApprovedList();
+            }
+        }
+
+        // ---------- TAB 1: LOGIC RENDER RA/VÀO ----------
+        window.renderTable = function() {
+            const tbody = document.getElementById('cham-cong-results-body');
+            const filterDateStr = document.getElementById('filter-date').value;
+            const filterPlant = document.getElementById('filter-plant').value;
+            
+            tbody.innerHTML = '';
+            let dailyAttendance = {};
+
+            window.allChamCongData.forEach(data => {
+                if (!data.thoi_gian) return;
+                const dateObj = data.thoi_gian.toDate();
+                const dd = String(dateObj.getDate()).padStart(2, '0');
+                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const yyyy = dateObj.getFullYear();
+                const recordDateStr = `${yyyy}-${mm}-${dd}`;
+
+                if (recordDateStr === filterDateStr) {
+                    const personKey = `${data.cong_ty}_${data.ho_ten}`;
+                    const timeStr = dateObj.toLocaleTimeString('vi-VN');
+
+                    if (!dailyAttendance[personKey]) {
+                        dailyAttendance[personKey] = { cong_ty: data.cong_ty, ho_ten: data.ho_ten, nha_may: data.nha_may || "Chưa xác định", gio_vao: null, gio_ra: null };
+                    }
+
+                    if (data.nha_may && data.nha_may !== "Chưa xác định") {
+                        dailyAttendance[personKey].nha_may = String(data.nha_may).trim();
+                    }
+
+                    if (data.trang_thai === "VÀO" && !dailyAttendance[personKey].gio_vao) {
+                        dailyAttendance[personKey].gio_vao = timeStr;
+                    } else if (data.trang_thai === "RA" && !dailyAttendance[personKey].gio_ra) {
+                        dailyAttendance[personKey].gio_ra = timeStr;
+                    }
+                }
+            });
+
+            let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
+
+            for (const key in dailyAttendance) {
+                const person = dailyAttendance[key];
+                
+                if (filterPlant === "Tất cả" || person.nha_may === filterPlant || (filterPlant === "Nhà Máy 1" && person.nha_may === "1") || (filterPlant === "Nhà Máy 2" && person.nha_may === "2")) {
+                    
+                    let statusHtml = "";
+                    let timeInDisplay = person.gio_vao || '<span class="text-slate-300">-</span>';
+                    let timeOutDisplay = person.gio_ra || '<span class="text-slate-300">-</span>';
+
+                    if (person.gio_vao && person.gio_ra) {
+                        totalIn++; totalOut++;
+                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-check-circle"></i> Đã ra khỏi xưởng</span>`;
+                    } else if (person.gio_vao && !person.gio_ra) {
+                        totalIn++; totalInside++;
+                        statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`;
+                    } else if (!person.gio_vao && person.gio_ra) {
+                        totalOut++;
+                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-x-circle"></i> Lỗi dữ liệu</span>`;
+                    }
+
+                    let displayPlant = person.nha_may;
+                    if(displayPlant === "1") displayPlant = "Nhà Máy 1";
+                    if(displayPlant === "2") displayPlant = "Nhà Máy 2";
+
+                    tbody.innerHTML += `
+                        <tr class="block md:table-row bg-white md:bg-transparent p-4 md:p-0 mb-4 md:mb-0 rounded-xl md:rounded-none shadow-sm md:shadow-none border border-slate-200 md:border-b md:border-x-0 md:border-t-0 hover:bg-slate-50 transition-colors">
+                            <div class="md:hidden flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                                <span class="bg-slate-100 text-slate-500 text-[10px] font-black px-2 py-1 rounded">STT: ${stt}</span>
+                                <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">${displayPlant}</span>
+                            </div>
+                            <td class="hidden md:table-cell p-4 text-center font-medium text-slate-500">${stt++}</td>
+                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
+                                <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Công Ty</span><span class="font-bold text-slate-700">${person.cong_ty}</span></div>
+                            </td>
+                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
+                                <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Nhân Sự</span><span class="font-bold text-blue-700 text-lg md:text-base">${person.ho_ten}</span></div>
+                            </td>
+                            <td class="hidden md:table-cell p-4 text-center font-bold text-purple-600 uppercase tracking-wider">${displayPlant}</td>
+                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
+                                <div class="flex justify-between md:block items-center"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase">Giờ Vào</span><span class="text-slate-600 font-mono font-semibold">${timeInDisplay}</span></div>
+                            </td>
+                            <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
+                                <div class="flex justify-between md:block items-center"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase">Giờ Ra</span><span class="text-slate-600 font-mono font-semibold">${timeOutDisplay}</span></div>
+                            </td>
+                            <td class="block md:table-cell p-2 md:p-4 mt-2 md:mt-0">
+                                <div class="flex justify-center md:block items-center w-full">${statusHtml}</div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+
+            if (stt === 1) tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có dữ liệu ra/vào tại khu vực này trong ngày.</td></tr>`;
+            document.getElementById('stat-total-in').innerText = totalIn;
+            document.getElementById('stat-total-out').innerText = totalOut;
+            document.getElementById('stat-inside').innerText = totalInside;
+        };
+
+        // ---------- TAB 2: LOGIC DANH SÁCH PHÊ DUYỆT ----------
+        function isValidDate(dateString) {
+            if (!dateString) return false;
+            const expDate = new Date(dateString);
+            const today = new Date(); today.setHours(0,0,0,0);
+            return expDate >= today;
+        }
+
+        window.loadApprovedList = async function() {
+            const tbody = document.getElementById('approved-results-body');
+            document.getElementById('loading-msg').classList.remove('hidden');
+            tbody.innerHTML = '';
+            
+            if(rawApprovedData.length === 0) {
+                try {
+                    const q = window.query(window.collection(window.db, "nha_thau_nhan_su"));
+                    const snap = await window.getDocs(q);
+                    
+                    snap.forEach(doc => {
+                        const w = doc.data();
+                        // Chỉ lấy những người ĐỦ ĐIỀU KIỆN
+                        const hasValidTraining = w.nhom_atld && w.nhom_atld !== "Chưa đào tạo" && isValidDate(w.han_atld);
+                        const hasValidInsurance = isValidDate(w.han_bao_hiem);
+                        
+                        if (hasValidTraining && hasValidInsurance) {
+                            rawApprovedData.push(w);
+                        }
+                    });
+                    
+                    // Sắp xếp theo tên công ty
+                    rawApprovedData.sort((a,b) => a.cong_ty.localeCompare(b.cong_ty));
+                } catch (error) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu.</td></tr>`;
+                }
+            }
+            
+            document.getElementById('loading-msg').classList.add('hidden');
+            renderApprovedTable(rawApprovedData);
+        };
+
+        window.filterApprovedTable = function() {
+            const keyword = document.getElementById('guard-search-worker').value.toLowerCase();
+            const filteredData = rawApprovedData.filter(item => 
+                (item.cong_ty && item.cong_ty.toLowerCase().includes(keyword)) ||
+                (item.ho_ten && item.ho_ten.toLowerCase().includes(keyword)) ||
+                (item.cccd && item.cccd.toLowerCase().includes(keyword))
+            );
+            renderApprovedTable(filteredData);
+        };
+
+        function renderApprovedTable(dataArray) {
+            const tbody = document.getElementById('approved-results-body');
+            tbody.innerHTML = '';
+            let stt = 1;
+
+            if(dataArray.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500 font-bold">Không tìm thấy công nhân nào đủ điều kiện hoặc khớp với tìm kiếm.</td></tr>`;
+                return;
+            }
+
+            dataArray.forEach(data => {
+                tbody.innerHTML += `
+                    <tr class="block md:table-row bg-white md:bg-transparent p-4 md:p-0 mb-4 md:mb-0 rounded-xl md:rounded-none shadow-sm md:shadow-none border border-slate-200 md:border-b md:border-x-0 md:border-t-0 hover:bg-emerald-50 transition-colors">
+                        
+                        <div class="md:hidden flex justify-between items-center border-b border-slate-100 pb-2 mb-3">
+                            <span class="bg-slate-100 text-slate-500 text-[10px] font-black px-2 py-1 rounded">STT: ${stt}</span>
+                        </div>
+
+                        <td class="hidden md:table-cell p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
+                            <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Công Ty</span><span class="font-bold text-slate-700">${data.cong_ty}</span></div>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
+                            <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Nhân Sự</span><span class="font-bold text-emerald-700 text-lg md:text-base">${data.ho_ten}</span></div>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
+                            <div class="flex justify-between md:block items-center"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase">CCCD</span><span class="text-slate-600 font-mono font-bold">${data.cccd || 'N/A'}</span></div>
+                        </td>
+                        <td class="block md:table-cell p-2 md:p-4 mt-2 md:mt-0">
+                            <div class="flex justify-center md:block items-center w-full">
+                                <span class="px-3 py-1.5 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-shield-check text-lg"></i> Được phép vào cổng</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    </script>
 </body>
 </html>
