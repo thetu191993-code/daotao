@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kiểm tra PCCC Khu Vực</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script>
+        if (!localStorage.getItem("ehs_user_id")) {
+            alert("Bạn chưa đăng nhập! Vui lòng đăng nhập hệ thống để thực hiện kiểm tra.");
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        window.collection = collection;
+        window.addDoc = addDoc;
+    </script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 pb-24">
+
+    <div class="bg-red-600 text-white p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-fire-extinguisher text-3xl"></i>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Kiểm tra PCCC Khu vực</h1>
+                    <p class="text-xs text-red-200">Đánh giá an toàn định kỳ</p>
+                </div>
+            </div>
+            <a href="index.html" class="text-white hover:text-red-200"><i class="ph-bold ph-x text-2xl"></i></a>
+        </div>
+    </div>
+
+    <div class="max-w-md mx-auto p-4 mt-2">
+        <div id="gps-warning" class="bg-amber-50 border border-amber-200 p-4 rounded-xl shadow-sm mb-4 flex flex-col items-center text-center">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-2">
+                <i class="ph-fill ph-map-pin text-2xl animate-bounce"></i>
+            </div>
+            <h3 class="font-bold text-amber-800 text-sm mb-1">Yêu cầu Vị Trí (Bắt buộc)</h3>
+            <p class="text-xs text-amber-700 mb-3">Hệ thống cần xác nhận bạn đang đứng tại khu vực kiểm tra.</p>
+            <button onclick="requestGPS()" id="btn-gps" class="bg-amber-500 text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-amber-600 shadow-md transition">
+                Bấm để cấp quyền GPS
+            </button>
+        </div>
+
+        <div id="gps-success" class="hidden bg-emerald-50 border border-emerald-200 p-3 rounded-xl shadow-sm mb-4 flex items-center gap-3">
+            <i class="ph-fill ph-check-circle text-emerald-500 text-2xl"></i>
+            <div>
+                <p class="font-bold text-emerald-800 text-sm">Đã định vị thành công</p>
+                <p class="text-[11px] text-emerald-600 font-mono" id="gps-coords">Lat: --, Lng: --</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 mb-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-3">
+                <span class="text-xs text-slate-500 font-semibold uppercase">Người kiểm tra:</span>
+                <span class="font-bold text-blue-700" id="inspector-name">Loading...</span>
+            </div>
+            <div>
+                <span class="text-xs text-slate-500 font-semibold uppercase block mb-1">Khu vực đang kiểm tra:</span>
+                <input type="text" id="khu-vuc" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-red-600 font-bold uppercase tracking-wider" readonly>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="font-bold text-slate-800 text-lg border-b-2 border-red-200 pb-1 mt-6 text-red-800">Tình trạng các trang thiết bị</h2>
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <p class="font-bold text-slate-800 mb-1 text-sm flex items-center gap-2"><i class="ph-fill ph-fire-extinguisher text-red-500"></i> Bình chữa cháy xách tay</p>
+                <p class="text-xs text-slate-500 mb-3">Đồng hồ áp suất vạch xanh, còn niêm phong chì, vỏ bình không rỉ sét/móp méo.</p>
+                <div class="grid grid-cols-2 gap-2"><label class="cursor-pointer"><input type="radio" name="c1" value="Đạt" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 text-slate-500 font-bold text-sm transition">ĐẠT (Tất cả)</div></label><label class="cursor-pointer"><input type="radio" name="c1" value="Lỗi" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 text-slate-500 font-bold text-sm transition">CÓ BÌNH BỊ LỖI</div></label></div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <p class="font-bold text-slate-800 mb-1 text-sm flex items-center gap-2"><i class="ph-fill ph-speaker-hifi text-red-500"></i> Tủ, Vòi & Lăng phun</p>
+                <p class="text-xs text-slate-500 mb-3">Tủ không bị kẹt khóa, vòi cuộn gọn gàng không bị nứt/mục, lăng phun còn nguyên vẹn.</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <label class="cursor-pointer"><input type="radio" name="c2" value="Đạt" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 text-slate-500 font-bold text-sm transition">ĐẠT</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="c2" value="Lỗi" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 text-slate-500 font-bold text-sm transition">LỖI</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="c2" value="N/A" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-slate-500 peer-checked:bg-slate-100 peer-checked:text-slate-700 text-slate-400 font-bold text-sm transition">K/A</div></label>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <p class="font-bold text-slate-800 mb-1 text-sm flex items-center gap-2"><i class="ph-fill ph-hammer text-red-500"></i> Dụng cụ phá dỡ & Thiết bị khác</p>
+                <p class="text-xs text-slate-500 mb-3">Búa, xà beng, kìm cộng lực (nếu có) để đúng vị trí, dễ lấy. Đèn sự cố/Exit sáng bình thường.</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <label class="cursor-pointer"><input type="radio" name="c3" value="Đạt" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 text-slate-500 font-bold text-sm transition">ĐẠT</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="c3" value="Lỗi" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-red-500 peer-checked:bg-red-50 peer-checked:text-red-700 text-slate-500 font-bold text-sm transition">LỖI</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="c3" value="N/A" class="peer sr-only"><div class="text-center p-2 rounded-lg border border-slate-200 peer-checked:border-slate-500 peer-checked:bg-slate-100 peer-checked:text-slate-700 text-slate-400 font-bold text-sm transition">K/A</div></label>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <p class="font-medium text-slate-800 mb-2 text-sm text-red-600">Ghi chú chi tiết nếu có thiết bị bị LỖI (Mã bình, vị trí tủ...)</p>
+                <textarea id="ghi-chu" rows="3" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-red-500 bg-red-50/50" placeholder="VD: Bình bột số 05 ở cột C mất kẹp chì. Đèn sự cố lối ra cửa sau không sáng..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50">
+        <div class="max-w-md mx-auto">
+            <button id="btn-submit" onclick="submitReport()" class="w-full bg-slate-300 text-slate-500 font-bold py-3.5 rounded-xl text-lg flex justify-center items-center gap-2 shadow-md transition pointer-events-none">
+                <i class="ph-bold ph-paper-plane-tilt text-2xl"></i> NỘP BÁO CÁO KHU VỰC
+            </button>
+            <p class="text-center text-[10px] text-red-500 mt-1 font-bold" id="btn-hint">Vui lòng Cấp quyền Vị trí (GPS) trước</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('inspector-name').innerText = localStorage.getItem("ehs_user_name") || localStorage.getItem("ehs_user_id");
+
+        // Lấy Khu Vực từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        let currentKhuVuc = urlParams.get('khu_vuc');
+        if (currentKhuVuc) {
+            // Chuyển mã URL thành tiếng Việt có dấu (nếu có)
+            currentKhuVuc = decodeURIComponent(currentKhuVuc).replace(/_/g, ' ');
+        } else {
+            currentKhuVuc = "Khu Vực Chưa Xác Định";
+        }
+        document.getElementById('khu-vuc').value = currentKhuVuc;
+
+        let currentLat = null;
+        let currentLng = null;
+
+        // Hàm lấy GPS
+        function requestGPS() {
+            const btnGps = document.getElementById('btn-gps');
+            btnGps.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tìm vệ tinh...';
+            btnGps.disabled = true;
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentLat = position.coords.latitude;
+                        currentLng = position.coords.longitude;
+                        
+                        document.getElementById('gps-warning').classList.add('hidden');
+                        document.getElementById('gps-success').classList.remove('hidden');
+                        document.getElementById('gps-coords').innerText = `${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}`;
+                        
+                        // Mở khóa nút Nộp
+                        const btnSubmit = document.getElementById('btn-submit');
+                        btnSubmit.className = "w-full bg-red-600 text-white font-bold py-3.5 rounded-xl text-lg hover:bg-red-700 flex justify-center items-center gap-2 shadow-md transition";
+                        document.getElementById('btn-hint').classList.add('hidden');
+                    },
+                    (error) => {
+                        alert("Không thể lấy vị trí! Vui lòng bật GPS trên điện thoại và cho phép trình duyệt truy cập Vị trí.");
+                        btnGps.innerHTML = 'Thử lại GPS';
+                        btnGps.disabled = false;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                alert("Điện thoại của bạn không hỗ trợ GPS!");
+            }
+        }
+
+        async function submitReport() {
+            if (!currentLat || !currentLng) {
+                alert("Lỗi: Chưa có dữ liệu định vị!");
+                return;
+            }
+
+            const c1 = document.querySelector('input[name="c1"]:checked');
+            const c2 = document.querySelector('input[name="c2"]:checked');
+            const c3 = document.querySelector('input[name="c3"]:checked');
+
+            if (!c1 || !c2 || !c3) {
+                alert("Vui lòng đánh giá đầy đủ 3 hạng mục kiểm tra!");
+                return;
+            }
+
+            const ghiChu = document.getElementById('ghi-chu').value.trim();
+            if ((c1.value === "Lỗi" || c2.value === "Lỗi" || c3.value === "Lỗi") && ghiChu === "") {
+                alert("Bạn có đánh giá LỖI. Vui lòng Ghi chú chi tiết thiết bị nào bị lỗi ở ô bên dưới!");
+                document.getElementById('ghi-chu').focus();
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i> Đang gửi lên máy chủ...';
+
+            const mapLink = `https://www.google.com/maps?q=${currentLat},${currentLng}`;
+
+            let ketLuan = "An Toàn";
+            if (c1.value === "Lỗi" || c2.value === "Lỗi" || c3.value === "Lỗi") {
+                ketLuan = "Phát hiện Lỗi (Cần khắc phục)";
+            }
+
+            try {
+                await window.addDoc(window.collection(window.db, "bien_ban_pccc"), {
+                    ma_thiet_bi: "KIỂM TRA THEO KHU VỰC",
+                    khu_vuc: currentKhuVuc,
+                    nguoi_kiem_tra: localStorage.getItem("ehs_user_name"),
+                    ma_nv: localStorage.getItem("ehs_user_id"),
+                    thoi_gian: new Date(),
+                    kinh_do: currentLng,
+                    vi_do: currentLat,
+                    link_ban_do: mapLink,
+                    ket_luan: ketLuan,
+                    chi_tiet: [
+                        { hang_muc: "Bình chữa cháy xách tay", danh_gia: c1.value },
+                        { hang_muc: "Tủ, Vòi & Lăng phun", danh_gia: c2.value },
+                        { hang_muc: "Dụng cụ phá dỡ & Khác", danh_gia: c3.value }
+                    ],
+                    ghi_chu: ghiChu
+                });
+
+                alert("Nộp báo cáo PCCC thành công!");
+                window.location.href = "index.html";
+
+            } catch (error) {
+                alert("Lỗi khi nộp: " + error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt text-2xl"></i> NỘP LẠI';
+            }
+        }
+    </script>
+</body>
+</html>
