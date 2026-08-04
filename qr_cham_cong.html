@@ -9,7 +9,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -17,8 +17,7 @@
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
             messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-            measurementId: "G-74ETHWTJCW"
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -27,11 +26,23 @@
         window.getDocs = getDocs;
         window.addDoc = addDoc;
         window.query = query;
+        window.where = where;
+        window.orderBy = orderBy;
+        window.limit = limit;
     </script>
     <style>
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
+        
+        /* Hiệu ứng trượt lên cho Modal */
+        .modal-enter {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 min-h-screen flex flex-col items-center justify-center p-4">
@@ -40,30 +51,31 @@
         <!-- Header -->
         <div class="bg-blue-700 p-6 text-center text-white relative">
             <div class="absolute top-4 right-4 bg-white/20 px-3 py-1 rounded-full text-xs font-bold border border-white/40 tracking-wider uppercase shadow-sm" id="display-plant">
-                NHÀ MÁY 1
+                ĐANG TẢI...
             </div>
             <i class="ph-fill ph-qr-code text-5xl mb-2 mt-2"></i>
             <h1 class="text-2xl font-bold uppercase tracking-wide">Cổng Nhà Thầu</h1>
-            <p class="text-blue-100 text-sm mt-1">Hệ thống khai báo Ra / Vào nhà máy</p>
+            <p class="text-blue-100 text-sm mt-1">Hệ thống khai báo Ra / Vào tự động</p>
         </div>
 
         <div class="p-6">
             <!-- Loading Message -->
             <div id="loading-msg" class="text-center text-blue-600 py-8">
-                <i class="ph-bold ph-spinner animate-spin text-4xl mb-3 block"></i>
+                <i class="ph-bold ph-spinner animate-spin text-4xl mb-3 block mx-auto"></i>
                 <p class="text-sm font-bold">Đang tải danh sách nhân sự...</p>
             </div>
 
+            <!-- Lỗi truy xuất nhân sự -->
             <div id="no-worker-msg" class="hidden text-center text-rose-600 py-6 border border-rose-200 bg-rose-50 rounded-xl mb-4">
                 <i class="ph-fill ph-warning-circle text-4xl mb-2"></i>
                 <p class="text-sm font-bold px-4">Không có công nhân nào đủ điều kiện an toàn để vào cổng hôm nay.</p>
             </div>
 
+            <!-- Form Khai Báo -->
             <div id="form-content" class="hidden space-y-5">
                 <div>
                     <label class="block text-sm font-bold text-slate-700 mb-1">1. Chọn Tên Công Ty</label>
                     <div class="relative">
-                        <!-- Đã sửa thành window.filterWorkers() -->
                         <select id="sel-company" onchange="window.filterWorkers()" class="w-full pl-4 pr-10 py-3.5 border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-blue-500 outline-none bg-slate-50 font-bold text-slate-800 appearance-none text-base transition-colors">
                             <option value="">-- Bấm để chọn Công ty --</option>
                         </select>
@@ -94,11 +106,11 @@
                 </div>
 
                 <div class="pt-2 grid grid-cols-2 gap-4">
-                    <button id="btn-in" onclick="window.submitCheckInOut('VÀO')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <button id="btn-in" onclick="window.submitCheckInOut('VÀO')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1 relative overflow-hidden">
                         <i class="ph-bold ph-sign-in text-2xl"></i>
                         <span class="text-lg">VÀO CỔNG</span>
                     </button>
-                    <button id="btn-out" onclick="window.submitCheckInOut('RA')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1">
+                    <button id="btn-out" onclick="window.submitCheckInOut('RA')" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg transition-transform active:scale-95 flex flex-col items-center justify-center gap-1 relative overflow-hidden">
                         <i class="ph-bold ph-sign-out text-2xl"></i>
                         <span class="text-lg">RA CỔNG</span>
                     </button>
@@ -107,14 +119,14 @@
         </div>
     </div>
 
-    <!-- Màn hình thẻ trình bảo vệ -->
-    <div id="success-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center p-4">
+    <!-- MÀN HÌNH THÀNH CÔNG -->
+    <div id="success-screen" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center p-4">
         <div id="success-bg" class="absolute inset-0 bg-emerald-600 transition-colors duration-300"></div>
-        <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl p-8 text-center flex flex-col items-center border-4 border-white/20">
+        <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl p-8 text-center flex flex-col items-center border-4 border-white/20 modal-enter">
             <div id="success-icon-wrap" class="w-24 h-24 rounded-full flex items-center justify-center mb-6 bg-emerald-100 text-emerald-600">
                 <i id="success-icon" class="ph-fill ph-check-circle text-6xl"></i>
             </div>
-            <p class="text-slate-500 font-bold uppercase tracking-widest text-sm mb-1">Thông hành</p>
+            <p class="text-slate-500 font-bold uppercase tracking-widest text-sm mb-1">Xác nhận</p>
             <h2 id="success-action" class="text-4xl font-black text-slate-800 mb-6 uppercase">VÀO CỔNG</h2>
             <div class="w-full bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100">
                 <p id="success-name" class="font-bold text-2xl text-blue-700 mb-1">Nguyễn Văn A</p>
@@ -122,52 +134,65 @@
             </div>
             <p id="success-time" class="text-slate-400 font-mono text-lg font-semibold mb-6">14:30:00 - 23/07/2026</p>
             <button onclick="window.resetApp()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform text-lg">
-                Đóng / Người tiếp theo
+                Đóng / Trở Về
             </button>
         </div>
     </div>
 
-    <!-- Modal Cảnh Báo Quên Check-out -->
-    <div id="warning-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6 border-t-4 border-orange-500 relative z-10">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-600 mb-4">
+    <!-- CỬA SỔ CẢNH BÁO QUÊN QUẸT THẺ (VÀNG) -->
+    <div id="warning-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6 border-t-4 border-amber-500 relative z-10 modal-enter">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-4">
                 <i class="ph-fill ph-warning text-4xl"></i>
             </div>
             <h3 class="text-xl font-bold text-slate-800 mb-2">Cảnh báo An toàn</h3>
             <p class="text-slate-600 text-sm mb-6 leading-relaxed">
-                Hệ thống ghi nhận lần gần nhất bạn đã <span class="font-bold text-orange-600">VÀO CỔNG</span> nhưng chưa xác nhận <span class="font-bold text-orange-600">RA CỔNG</span>. Bạn có muốn tiếp tục vào ca mới không?
+                Hệ thống phát hiện lần gần nhất bạn đã <span class="font-bold text-amber-600">VÀO CỔNG</span> nhưng chưa xác nhận <span class="font-bold text-amber-600">RA CỔNG</span>. Bạn có muốn tiếp tục vào ca mới không?
             </p>
             <div class="flex gap-3 justify-center">
                 <button onclick="window.closeWarningModal()" class="px-4 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2">Hủy Bỏ</button>
-                <button onclick="window.forceCheckIn()" class="bg-orange-500 text-white px-4 py-3 rounded-xl font-bold hover:bg-orange-600 shadow-md w-1/2">Vẫn Tiếp Tục</button>
+                <button onclick="window.forceCheckIn()" class="bg-amber-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-amber-700 shadow-md w-1/2">Vẫn Tiếp Tục</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CỬA SỔ LỖI CHẶN QUẸT RA (ĐỎ) -->
+    <div id="error-block-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6 border-t-4 border-rose-500 relative z-10 modal-enter">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-rose-100 text-rose-600 mb-4">
+                <i class="ph-fill ph-x-circle text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Không Hợp Lệ</h3>
+            <p class="text-slate-600 text-sm mb-6 leading-relaxed">
+                Bạn <span class="font-bold text-rose-600">CHƯA BẤM VÀO CỔNG</span> trong ca làm việc hôm nay, nên không thể thực hiện thao tác <span class="font-bold text-rose-600">RA CỔNG</span>. Vui lòng liên hệ Bảo vệ.
+            </p>
+            <div class="flex justify-center">
+                <button onclick="window.closeErrorBlockModal()" class="w-full bg-slate-800 text-white px-4 py-3 rounded-xl font-bold hover:bg-slate-900 shadow-md">Đã Hiểu</button>
             </div>
         </div>
     </div>
 
     <script>
+        // XÁC ĐỊNH NHÀ MÁY
         const urlParams = new URLSearchParams(window.location.search);
         const plantParam = urlParams.get('nha_may');
-        let currentPlant = "1"; // Mặc định là Nhà Máy 1 nếu không có tham số
+        let currentPlant = "Nhà Máy 1"; 
 
         if (plantParam === '2') {
-            currentPlant = "2";
-            document.getElementById('display-plant').innerText = "NHÀ MÁY 2";
-        } else if (plantParam === '1') {
-            currentPlant = "1";
-            document.getElementById('display-plant').innerText = "NHÀ MÁY 1";
+            currentPlant = "Nhà Máy 2";
         } else if (plantParam) {
             currentPlant = decodeURIComponent(plantParam);
-            document.getElementById('display-plant').innerText = currentPlant.toUpperCase();
         }
-        
+        document.getElementById('display-plant').innerText = currentPlant.toUpperCase();
+
         let allWorkersData = [];
-        window.pendingAction = null; // Dùng lưu tạm thông tin nếu bị vướng modal cảnh báo
+        window.pendingAction = null; 
 
         function showError(message) {
             const errorDiv = document.getElementById('error-msg');
             document.getElementById('error-text').innerText = message;
             errorDiv.classList.remove('hidden');
-            setTimeout(() => { errorDiv.classList.add('hidden'); }, 4000);
+            setTimeout(() => { errorDiv.classList.add('hidden'); }, 5000);
         }
 
         function isValidDate(dateString) {
@@ -178,8 +203,10 @@
             return expDate >= today;
         }
 
+        // TẢI DANH SÁCH NHÂN SỰ
         window.onload = async function() {
             try {
+                // Tối ưu hóa: Không cần sort ở Firebase, lấy data về trình duyệt tự sort
                 const q = window.query(window.collection(window.db, "nha_thau_nhan_su"));
                 const querySnapshot = await window.getDocs(q);
                 
@@ -209,11 +236,12 @@
                 document.getElementById('form-content').classList.remove('hidden');
 
             } catch (error) {
-                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold">Lỗi kết nối máy chủ Firebase!</p>`;
-                console.error("Lỗi:", error);
+                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold">Lỗi kết nối máy chủ!</p>`;
+                console.error("Lỗi tải nhân sự:", error);
             }
         }
 
+        // LỌC NHÂN SỰ THEO CÔNG TY
         window.filterWorkers = function() {
             const selectedCompany = document.getElementById('sel-company').value;
             const selWorker = document.getElementById('sel-worker');
@@ -236,69 +264,96 @@
             });
         }
 
+        // XỬ LÝ NÚT BẤM
         window.submitCheckInOut = async function(action) {
             const company = document.getElementById('sel-company').value;
             const workerName = document.getElementById('sel-worker').value;
             const inputCccd = document.getElementById('input-cccd').value.trim();
 
             if (!company || !workerName) {
-                showError("Vui lòng chọn Công ty và Tên của bạn!");
-                return;
+                return showError("Vui lòng chọn Công ty và Tên của bạn!");
             }
 
             if (!inputCccd || inputCccd.length !== 4) {
-                showError("Vui lòng nhập đủ 4 số cuối CCCD!");
                 document.getElementById('input-cccd').focus();
-                return;
+                return showError("Vui lòng nhập đủ 4 số cuối CCCD!");
             }
 
             const matchedWorker = allWorkersData.find(w => w.cong_ty === company && w.ho_ten === workerName);
             if (!matchedWorker) return;
 
             const realCccd = matchedWorker.cccd || "";
-            const last4Digits = realCccd.slice(-4);
-
-            if (inputCccd !== last4Digits) {
-                showError("Sai mã xác thực! Không khớp với 4 số cuối CCCD.");
+            if (inputCccd !== realCccd.slice(-4)) {
                 document.getElementById('input-cccd').value = "";
                 document.getElementById('input-cccd').focus();
-                return;
+                return showError("Sai mã xác thực! Không khớp 4 số cuối CCCD.");
             }
 
             setLoadingButtons(true, action);
 
             try {
-                // Kiểm tra lịch sử để xem họ có quên bấm RA không
-                if (action === 'VÀO') {
-                    const qCheck = window.query(window.collection(window.db, "nha_thau_cham_cong"));
-                    const snapCheck = await window.getDocs(qCheck);
-                    let lastRecord = null;
-                    
-                    snapCheck.forEach(doc => {
-                        const d = doc.data();
-                        if (d.cong_ty === company && d.ho_ten === workerName && d.thoi_gian) {
-                            if (!lastRecord || d.thoi_gian.toDate() > lastRecord.thoi_gian.toDate()) {
-                                lastRecord = d;
-                            }
-                        }
-                    });
+                // Tối ưu thuật toán: Chỉ tìm ĐÚNG 1 dòng dữ liệu gần nhất của công nhân này (Cực nhanh)
+                const qCheck = window.query(
+                    window.collection(window.db, "nha_thau_cham_cong"),
+                    window.where("cong_ty", "==", company),
+                    window.where("ho_ten", "==", workerName),
+                    window.orderBy("thoi_gian", "desc"),
+                    window.limit(1)
+                );
+                
+                const snapCheck = await window.getDocs(qCheck);
+                let lastRecord = null;
+                
+                snapCheck.forEach(doc => { lastRecord = doc.data(); });
 
-                    // Nếu lần gần nhất là VÀO (chưa RA) -> Hiện cảnh báo
-                    if (lastRecord && lastRecord.trang_thai === 'VÀO') {
+                // TRƯỜNG HỢP BẤM "RA": Kiểm tra xem sáng nay đã VÀO chưa
+                if (action === 'RA') {
+                    // Nếu chưa từng có dữ liệu VÀO, HOẶC lần quét gần nhất là RA (chứ ko phải VÀO) -> Chặn
+                    if (!lastRecord || lastRecord.trang_thai === 'RA') {
                         setLoadingButtons(false, action);
-                        window.pendingAction = { company, workerName, action };
-                        document.getElementById('warning-modal').classList.remove('hidden');
-                        document.getElementById('warning-modal').classList.add('flex');
-                        return;
+                        document.getElementById('error-block-modal').classList.remove('hidden');
+                        document.getElementById('error-block-modal').classList.add('flex');
+                        return; // Chặn đứng, không đẩy dữ liệu lên Firebase
+                    }
+                    
+                    // Kiểm tra thêm: Phải bấm VÀO trong ngày hôm nay mới cho RA (Chống lỗi lưu qua đêm)
+                    if (lastRecord && lastRecord.trang_thai === 'VÀO') {
+                        const todayStr = new Date().toDateString();
+                        const recordDateStr = lastRecord.thoi_gian.toDate().toDateString();
+                        
+                        if(todayStr !== recordDateStr) {
+                             setLoadingButtons(false, action);
+                             document.getElementById('error-block-modal').classList.remove('hidden');
+                             document.getElementById('error-block-modal').classList.add('flex');
+                             return; // Chặn đứng
+                        }
                     }
                 }
 
-                // Nếu mọi thứ ổn, hoặc nếu là bấm RA, thì tiến hành ghi nhận luôn
+                // TRƯỜNG HỢP BẤM "VÀO": Kiểm tra xem lần trước đã RA chưa
+                if (action === 'VÀO') {
+                    if (lastRecord && lastRecord.trang_thai === 'VÀO') {
+                        // Nếu trong cùng 1 ngày mà bấm VÀO 2 lần liên tiếp thì cho qua (Có thể họ quẹt máy lỗi). 
+                        // Nhưng nếu qua ngày hôm sau mà trạng thái cuối vẫn là VÀO thì cảnh báo.
+                        const todayStr = new Date().toDateString();
+                        const recordDateStr = lastRecord.thoi_gian.toDate().toDateString();
+
+                        if (todayStr !== recordDateStr) {
+                            setLoadingButtons(false, action);
+                            window.pendingAction = { company, workerName, action };
+                            document.getElementById('warning-modal').classList.remove('hidden');
+                            document.getElementById('warning-modal').classList.add('flex');
+                            return; // Tạm dừng để hỏi ý kiến
+                        }
+                    }
+                }
+
+                // Vượt qua hết các lớp bảo vệ -> Tiến hành ghi nhận
                 await window.executeCheckIn(company, workerName, action);
 
             } catch (error) {
-                showError("Lỗi đường truyền! Vui lòng thử lại.");
-                console.error(error);
+                console.error("Lỗi logic quẹt thẻ:", error);
+                showError("Đường truyền không ổn định. Hãy thử lại!");
                 setLoadingButtons(false, action);
             }
         }
@@ -307,6 +362,11 @@
             document.getElementById('warning-modal').classList.add('hidden');
             document.getElementById('warning-modal').classList.remove('flex');
             window.pendingAction = null;
+        }
+
+        window.closeErrorBlockModal = function() {
+            document.getElementById('error-block-modal').classList.add('hidden');
+            document.getElementById('error-block-modal').classList.remove('flex');
         }
 
         window.forceCheckIn = async function() {
@@ -328,7 +388,7 @@
                 });
                 showSuccessScreen(action, workerName, company, now);
             } catch (error) {
-                showError("Lỗi hệ thống khi lưu dữ liệu!");
+                showError("Lỗi hệ thống khi lưu dữ liệu lên đám mây!");
                 console.error(error);
             } finally {
                 setLoadingButtons(false, action);
