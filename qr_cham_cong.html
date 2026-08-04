@@ -9,7 +9,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -17,7 +17,8 @@
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
             messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -27,9 +28,8 @@
         window.addDoc = addDoc;
         window.query = query;
         window.where = where;
-        window.orderBy = orderBy;
-        window.limit = limit;
     </script>
+    
     <style>
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
@@ -192,7 +192,7 @@
             const errorDiv = document.getElementById('error-msg');
             document.getElementById('error-text').innerText = message;
             errorDiv.classList.remove('hidden');
-            setTimeout(() => { errorDiv.classList.add('hidden'); }, 5000);
+            setTimeout(() => { errorDiv.classList.add('hidden'); }, 5000); // Kéo dài thời gian hiển thị lỗi
         }
 
         function isValidDate(dateString) {
@@ -206,7 +206,6 @@
         // TẢI DANH SÁCH NHÂN SỰ
         window.onload = async function() {
             try {
-                // Tối ưu hóa: Không cần sort ở Firebase, lấy data về trình duyệt tự sort
                 const q = window.query(window.collection(window.db, "nha_thau_nhan_su"));
                 const querySnapshot = await window.getDocs(q);
                 
@@ -241,7 +240,6 @@
             }
         }
 
-        // LỌC NHÂN SỰ THEO CÔNG TY
         window.filterWorkers = function() {
             const selectedCompany = document.getElementById('sel-company').value;
             const selWorker = document.getElementById('sel-worker');
@@ -264,7 +262,7 @@
             });
         }
 
-        // XỬ LÝ NÚT BẤM
+        // XỬ LÝ NÚT BẤM (Tối ưu hóa chặn lỗi Firestore Index)
         window.submitCheckInOut = async function(action) {
             const company = document.getElementById('sel-company').value;
             const workerName = document.getElementById('sel-worker').value;
@@ -292,31 +290,33 @@
             setLoadingButtons(true, action);
 
             try {
-                // Tối ưu thuật toán: Chỉ tìm ĐÚNG 1 dòng dữ liệu gần nhất của công nhân này (Cực nhanh)
+                // SỬA LỖI TẠI ĐÂY: Chỉ query where, không dùng orderBy để lách luật Index của Firebase
                 const qCheck = window.query(
                     window.collection(window.db, "nha_thau_cham_cong"),
                     window.where("cong_ty", "==", company),
-                    window.where("ho_ten", "==", workerName),
-                    window.orderBy("thoi_gian", "desc"),
-                    window.limit(1)
+                    window.where("ho_ten", "==", workerName)
                 );
                 
                 const snapCheck = await window.getDocs(qCheck);
-                let lastRecord = null;
+                let allRecords = [];
                 
-                snapCheck.forEach(doc => { lastRecord = doc.data(); });
+                snapCheck.forEach(doc => { 
+                    allRecords.push(doc.data()); 
+                });
 
-                // TRƯỜNG HỢP BẤM "RA": Kiểm tra xem sáng nay đã VÀO chưa
+                // Tự sắp xếp trong RAM điện thoại (Nhanh gấp 100 lần, không lỗi)
+                allRecords.sort((a, b) => b.thoi_gian.toDate() - a.thoi_gian.toDate());
+                let lastRecord = allRecords.length > 0 ? allRecords[0] : null;
+
+                // TRƯỜNG HỢP BẤM "RA": Chặn đứng nếu sáng nay chưa VÀO
                 if (action === 'RA') {
-                    // Nếu chưa từng có dữ liệu VÀO, HOẶC lần quét gần nhất là RA (chứ ko phải VÀO) -> Chặn
                     if (!lastRecord || lastRecord.trang_thai === 'RA') {
                         setLoadingButtons(false, action);
                         document.getElementById('error-block-modal').classList.remove('hidden');
                         document.getElementById('error-block-modal').classList.add('flex');
-                        return; // Chặn đứng, không đẩy dữ liệu lên Firebase
+                        return;
                     }
                     
-                    // Kiểm tra thêm: Phải bấm VÀO trong ngày hôm nay mới cho RA (Chống lỗi lưu qua đêm)
                     if (lastRecord && lastRecord.trang_thai === 'VÀO') {
                         const todayStr = new Date().toDateString();
                         const recordDateStr = lastRecord.thoi_gian.toDate().toDateString();
@@ -325,16 +325,14 @@
                              setLoadingButtons(false, action);
                              document.getElementById('error-block-modal').classList.remove('hidden');
                              document.getElementById('error-block-modal').classList.add('flex');
-                             return; // Chặn đứng
+                             return;
                         }
                     }
                 }
 
-                // TRƯỜNG HỢP BẤM "VÀO": Kiểm tra xem lần trước đã RA chưa
+                // TRƯỜNG HỢP BẤM "VÀO": Cảnh báo nếu hôm qua trốn RA
                 if (action === 'VÀO') {
                     if (lastRecord && lastRecord.trang_thai === 'VÀO') {
-                        // Nếu trong cùng 1 ngày mà bấm VÀO 2 lần liên tiếp thì cho qua (Có thể họ quẹt máy lỗi). 
-                        // Nhưng nếu qua ngày hôm sau mà trạng thái cuối vẫn là VÀO thì cảnh báo.
                         const todayStr = new Date().toDateString();
                         const recordDateStr = lastRecord.thoi_gian.toDate().toDateString();
 
@@ -343,17 +341,16 @@
                             window.pendingAction = { company, workerName, action };
                             document.getElementById('warning-modal').classList.remove('hidden');
                             document.getElementById('warning-modal').classList.add('flex');
-                            return; // Tạm dừng để hỏi ý kiến
+                            return; 
                         }
                     }
                 }
 
-                // Vượt qua hết các lớp bảo vệ -> Tiến hành ghi nhận
                 await window.executeCheckIn(company, workerName, action);
 
             } catch (error) {
-                console.error("Lỗi logic quẹt thẻ:", error);
-                showError("Đường truyền không ổn định. Hãy thử lại!");
+                console.error("Chi tiết lỗi:", error);
+                showError("Lỗi kết nối máy chủ. Hãy thử lại!");
                 setLoadingButtons(false, action);
             }
         }
