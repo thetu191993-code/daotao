@@ -9,7 +9,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -27,7 +27,8 @@
         window.getDocs = getDocs;
         window.addDoc = addDoc;
         window.query = query;
-        window.where = where;
+        window.orderBy = orderBy;
+        window.limit = limit;
     </script>
     
     <style>
@@ -35,7 +36,6 @@
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
         
-        /* Hiệu ứng trượt lên cho Modal */
         .modal-enter {
             animation: slideUp 0.3s ease-out forwards;
         }
@@ -192,7 +192,7 @@
             const errorDiv = document.getElementById('error-msg');
             document.getElementById('error-text').innerText = message;
             errorDiv.classList.remove('hidden');
-            setTimeout(() => { errorDiv.classList.add('hidden'); }, 5000); // Kéo dài thời gian hiển thị lỗi
+            setTimeout(() => { errorDiv.classList.add('hidden'); }, 5000); 
         }
 
         function isValidDate(dateString) {
@@ -262,7 +262,7 @@
             });
         }
 
-        // XỬ LÝ NÚT BẤM (Tối ưu hóa chặn lỗi Firestore Index)
+        // XỬ LÝ NÚT BẤM
         window.submitCheckInOut = async function(action) {
             const company = document.getElementById('sel-company').value;
             const workerName = document.getElementById('sel-worker').value;
@@ -290,23 +290,31 @@
             setLoadingButtons(true, action);
 
             try {
-                // SỬA LỖI TẠI ĐÂY: Chỉ query where, không dùng orderBy để lách luật Index của Firebase
+                /*
+                 * [QUAN TRỌNG] THUẬT TOÁN TỐI ƯU MỚI: 
+                 * Bỏ dùng query có where/orderBy (Tránh lỗi Index Timeout).
+                 * Yêu cầu Firebase tải xuống giới hạn 500 bản ghi chấm công gần nhất.
+                 * Client tự filter tìm lịch sử của đúng người công nhân.
+                 */
                 const qCheck = window.query(
                     window.collection(window.db, "nha_thau_cham_cong"),
-                    window.where("cong_ty", "==", company),
-                    window.where("ho_ten", "==", workerName)
+                    // Không dùng where, dùng orderBy giảm dần thời gian, lấy 500 dòng gần nhất
+                    window.orderBy("thoi_gian", "desc"),
+                    window.limit(500)
                 );
                 
                 const snapCheck = await window.getDocs(qCheck);
-                let allRecords = [];
                 
-                snapCheck.forEach(doc => { 
-                    allRecords.push(doc.data()); 
-                });
-
-                // Tự sắp xếp trong RAM điện thoại (Nhanh gấp 100 lần, không lỗi)
-                allRecords.sort((a, b) => b.thoi_gian.toDate() - a.thoi_gian.toDate());
-                let lastRecord = allRecords.length > 0 ? allRecords[0] : null;
+                let lastRecord = null;
+                
+                // Lặp qua để tìm dòng đầu tiên khớp với công ty và tên
+                for (const doc of snapCheck.docs) {
+                    const d = doc.data();
+                    if (d.cong_ty === company && d.ho_ten === workerName) {
+                        lastRecord = d;
+                        break; // Đã tìm thấy lịch sử gần nhất, dừng vòng lặp
+                    }
+                }
 
                 // TRƯỜNG HỢP BẤM "RA": Chặn đứng nếu sáng nay chưa VÀO
                 if (action === 'RA') {
@@ -350,7 +358,7 @@
 
             } catch (error) {
                 console.error("Chi tiết lỗi:", error);
-                showError("Lỗi kết nối máy chủ. Hãy thử lại!");
+                showError("Lỗi kết nối máy chủ! Hãy thử lại.");
                 setLoadingButtons(false, action);
             }
         }
