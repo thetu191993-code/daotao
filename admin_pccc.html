@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Trị Hệ Thống PCCC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Thư viện xuất PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        window.reportDataStore = {};
+
+        // Đăng nhập
+        window.checkAdminPassword = async function() {
+            const btn = document.querySelector('#login-screen button');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+
+            const pass = document.getElementById('admin-pass').value;
+            try {
+                await signInWithEmailAndPassword(auth, "admin@ehs.com", pass);
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                window.loadData(); 
+            } catch (error) {
+                document.getElementById('pass-error').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        };
+
+        window.loadData = async function() {
+            const tbody = document.getElementById('results-body');
+            const loading = document.getElementById('loading-msg');
+            
+            tbody.innerHTML = '';
+            loading.classList.remove('hidden');
+
+            try {
+                const q = query(collection(db, "bien_ban_pccc"), orderBy("thoi_gian", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                let stt = 1;
+                window.reportDataStore = {}; 
+                
+                if(querySnapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có lịch sử kiểm tra PCCC nào.</td></tr>`;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const docId = doc.id;
+                    
+                    let timeString = "N/A";
+                    if (data.thoi_gian) {
+                        timeString = data.thoi_gian.toDate().toLocaleString('vi-VN');
+                    }
+
+                    window.reportDataStore[docId] = { ...data, timeString: timeString };
+
+                    let badgeClass = data.ket_luan === "An Toàn" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700";
+                    let mapLinkHtml = data.link_ban_do ? `<a href="${data.link_ban_do}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center gap-1"><i class="ph-bold ph-map-pin"></i> Xem Bản Đồ</a>` : `<span class="text-slate-400">Không có GPS</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50";
+                    tr.innerHTML = `
+                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="p-4 text-slate-700">${timeString}</td>
+                        <td class="p-4 font-bold text-slate-800">${data.ma_thiet_bi}</td>
+                        <td class="p-4 font-bold text-orange-600">${data.khu_vuc}</td>
+                        <td class="p-4 text-slate-700 font-medium">${data.nguoi_kiem_tra}</td>
+                        <td class="p-4 text-center text-xs">${mapLinkHtml}</td>
+                        <td class="p-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">${data.ket_luan}</span>
+                        </td>
+                        <td class="p-4 text-center">
+                            <button onclick="viewDetail('${docId}')" class="text-indigo-600 hover:text-indigo-800 font-semibold text-sm underline">
+                                Báo cáo PDF
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-medium">Lỗi tải dữ liệu.</td></tr>`;
+            } finally {
+                loading.classList.add('hidden');
+            }
+        };
+    </script>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center">
+
+    <!-- Đăng nhập -->
+    <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-2xl shadow-xl text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+            <i class="ph-fill ph-fire-extinguisher text-4xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Quản trị PCCC</h2>
+        <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-center tracking-[0.3em] font-mono text-xl outline-none mb-2 mt-4" placeholder="••••••••" onkeypress="if(event.key==='Enter') window.checkAdminPassword()">
+        <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4">Sai mật khẩu!</p>
+        <button onclick="window.checkAdminPassword()" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 shadow-md">Truy cập</button>
+    </div>
+
+    <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+        <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <div>
+                <h2 class="text-2xl font-bold text-red-700 flex items-center">
+                    <i class="ph-fill ph-fire text-3xl mr-3"></i> Lịch Sử Kiểm Tra PCCC
+                </h2>
+                <p class="text-slate-500 mt-1">Đính kèm chống gian lận bằng tọa độ GPS.</p>
+            </div>
+            <button onclick="window.loadData()" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 border border-slate-200 flex items-center gap-2">
+                <i class="ph-bold ph-arrows-clockwise"></i> Làm mới
+            </button>
+        </div>
+
+        <div id="loading-msg" class="text-center py-10 text-slate-600 hidden"><i class="ph-bold ph-spinner animate-spin text-3xl"></i></div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                        <th class="p-4 w-12 text-center">STT</th>
+                        <th class="p-4">Thời gian</th>
+                        <th class="p-4">Mã Thiết bị</th>
+                        <th class="p-4">Vị trí</th>
+                        <th class="p-4">Người kiểm tra</th>
+                        <th class="p-4 text-center">Tọa độ GPS</th>
+                        <th class="p-4 text-center">Kết luận</th>
+                        <th class="p-4 text-center">Báo cáo</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body" class="text-sm divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="pdf-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="font-bold text-lg">Báo Cáo Kiểm Tra PCCC</h3>
+                <button onclick="document.getElementById('pdf-modal').classList.add('hidden')" class="text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto bg-white" id="pdf-content" style="color: #000; font-family: 'Times New Roman', Times, serif;">
+                <!-- Form PDF A4 -->
+                <div class="text-center mb-6 border-b-2 border-black pb-4">
+                    <h1 class="text-2xl font-bold uppercase mb-2">BIÊN BẢN KIỂM TRA THIẾT BỊ PCCC</h1>
+                    <p class="italic text-sm">Hệ thống ghi nhận đánh giá an toàn & Chống gian lận GPS</p>
+                </div>
+                
+                <table class="w-full text-sm mb-6 border border-black">
+                    <tr class="border-b border-black">
+                        <td class="p-2 border-r border-black font-bold w-1/4 bg-gray-100">Mã Thiết Bị:</td>
+                        <td class="p-2 border-r border-black w-1/4 font-bold" id="pdf-ma-tb"></td>
+                        <td class="p-2 border-r border-black font-bold w-1/4 bg-gray-100">Khu Vực:</td>
+                        <td class="p-2 w-1/4" id="pdf-khu-vuc"></td>
+                    </tr>
+                    <tr class="border-b border-black">
+                        <td class="p-2 border-r border-black font-bold bg-gray-100">Người Kiểm Tra:</td>
+                        <td class="p-2 border-r border-black" id="pdf-nguoi-kt"></td>
+                        <td class="p-2 border-r border-black font-bold bg-gray-100">Thời Gian:</td>
+                        <td class="p-2" id="pdf-thoi-gian"></td>
+                    </tr>
+                    <tr>
+                        <td class="p-2 border-r border-black font-bold bg-gray-100">Tọa Độ GPS Thực tế:</td>
+                        <td class="p-2 border-r border-black font-mono text-xs" id="pdf-gps"></td>
+                        <td class="p-2 border-r border-black font-bold bg-gray-100">Kết Luận:</td>
+                        <td class="p-2 font-bold uppercase" id="pdf-ket-luan"></td>
+                    </tr>
+                </table>
+
+                <h3 class="font-bold text-lg mb-2">I. CHI TIẾT HẠNG MỤC KIỂM TRA</h3>
+                <table class="w-full text-sm mb-6 border border-black text-left">
+                    <thead>
+                        <tr class="bg-gray-100 border-b border-black">
+                            <th class="p-2 border-r border-black text-center w-12">STT</th>
+                            <th class="p-2 border-r border-black">Nội dung đánh giá</th>
+                            <th class="p-2 text-center w-32">Kết quả</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-chi-tiet"></tbody>
+                </table>
+                
+                <div class="mb-12">
+                    <p class="font-bold">II. GHI CHÚ THÊM:</p>
+                    <p class="p-2 border border-black min-h-[60px]" id="pdf-ghi-chu"></p>
+                </div>
+
+                <div class="grid grid-cols-2 text-center mt-10">
+                    <div>
+                        <p class="font-bold">Ban Quản Lý EHS</p>
+                        <p class="italic text-sm">(Ký, ghi rõ họ tên)</p>
+                    </div>
+                    <div>
+                        <p class="font-bold">Người kiểm tra thiết bị</p>
+                        <p class="italic text-sm">(Ký, ghi rõ họ tên)</p>
+                        <p class="mt-16 font-bold" id="pdf-chu-ky"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-slate-50 border-t text-right">
+                <button onclick="downloadPDF()" class="bg-red-600 text-white px-6 py-2 rounded font-bold shadow-md hover:bg-red-700 flex items-center gap-2 ml-auto">
+                    <i class="ph-bold ph-printer"></i> XUẤT FILE PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.viewDetail = function(docId) {
+            const data = window.reportDataStore[docId];
+            if(!data) return;
+
+            document.getElementById('pdf-ma-tb').innerText = data.ma_thiet_bi;
+            document.getElementById('pdf-khu-vuc').innerText = data.khu_vuc;
+            document.getElementById('pdf-nguoi-kt').innerText = `${data.nguoi_kiem_tra} (${data.ma_nv})`;
+            document.getElementById('pdf-thoi-gian').innerText = data.timeString;
+            document.getElementById('pdf-gps').innerText = `${data.vi_do.toFixed(4)}, ${data.kinh_do.toFixed(4)}`;
+            
+            const klElement = document.getElementById('pdf-ket-luan');
+            klElement.innerText = data.ket_luan;
+            klElement.className = data.ket_luan === "An Toàn" ? "p-2 font-bold uppercase text-green-700" : "p-2 font-bold uppercase text-red-700";
+
+            const tbody = document.getElementById('pdf-chi-tiet');
+            tbody.innerHTML = '';
+            data.chi_tiet.forEach((item, idx) => {
+                let resColor = item.danh_gia === "Đạt" ? "text-green-700" : "text-red-700 font-bold";
+                tbody.innerHTML += `
+                    <tr class="border-b border-black">
+                        <td class="p-2 border-r border-black text-center">${idx + 1}</td>
+                        <td class="p-2 border-r border-black">${item.hang_muc}</td>
+                        <td class="p-2 text-center uppercase ${resColor}">${item.danh_gia}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('pdf-ghi-chu').innerText = data.ghi_chu || "Không có ghi chú.";
+            document.getElementById('pdf-chu-ky').innerText = data.nguoi_kiem_tra;
+
+            document.getElementById('pdf-modal').classList.remove('hidden');
+        };
+
+        window.downloadPDF = function() {
+            const element = document.getElementById('pdf-content');
+            const maTB = document.getElementById('pdf-ma-tb').innerText;
+            const opt = {
+                margin:       10,
+                filename:     `Bao_Cao_PCCC_${maTB}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        };
+    </script>
+</body>
+</html>
