@@ -13,7 +13,7 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -42,23 +42,18 @@
             errorMsg.classList.add('hidden');
 
             try {
-                await signInWithEmailAndPassword(auth, "admin@ehs.com", pass);
+                // Đơn giản hóa: Dùng mật khẩu nội bộ thay vì bắt tạo tài khoản trên Firebase
+                if (pass !== "EHS2026" && pass !== "ehs2026") {
+                    throw new Error("wrong_pass");
+                }
+                
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 window.loadData(); 
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error);
                 errorMsg.classList.remove('hidden');
-                // Bắt chính xác lỗi Firebase thay vì chỉ báo "Sai mật khẩu"
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-                     errorMsg.innerText = "Sai mật khẩu! Vui lòng thử lại.";
-                } else if (error.code === 'auth/user-not-found') {
-                     errorMsg.innerText = "Tài khoản admin@ehs.com chưa được tạo.";
-                } else if (error.code === 'auth/network-request-failed') {
-                     errorMsg.innerText = "Lỗi kết nối mạng, vui lòng thử lại!";
-                } else {
-                     errorMsg.innerText = "Lỗi xác thực: " + error.message;
-                }
+                errorMsg.innerText = "Sai mật khẩu! (Gợi ý: EHS2026)";
             } finally {
                 btn.innerHTML = ogText;
                 btn.disabled = false;
