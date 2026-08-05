@@ -12,7 +12,7 @@
         import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -375,8 +375,10 @@
         window.forceCheckIn = async function() {
             if (!window.pendingAction) return;
             window.closeWarningModal();
-            setLoadingButtons(true, window.pendingAction.action);
-            await window.executeCheckIn(window.pendingAction.company, window.pendingAction.workerName, window.pendingAction.action);
+            // CHỈNH SỬA: Đảm bảo truyền đúng các biến đã lưu tạm thời vào hàm executeCheckIn
+            const { company, workerName, action } = window.pendingAction;
+            setLoadingButtons(true, action);
+            await window.executeCheckIn(company, workerName, action);
         }
 
         window.executeCheckIn = async function(company, workerName, action) {
