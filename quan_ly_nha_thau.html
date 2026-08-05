@@ -107,7 +107,6 @@
                     <i class="ph-bold ph-house"></i> Trang chủ
                 </a>
                 
-                <!-- NÚT MỞ GÓC NHÌN BẢO VỆ -->
                 <a href="bao_ve.html" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-shield-check text-lg"></i> Trạm Gác An Ninh
                 </a>
@@ -163,7 +162,6 @@
             </div>
         </div>
 
-        <!-- TAB MÁY MÓC -->
         <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead>
@@ -181,7 +179,6 @@
             </table>
         </div>
 
-        <!-- TAB ĐÀO TẠO -->
         <div id="tab-dao-tao" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead>
@@ -199,7 +196,6 @@
             </table>
         </div>
 
-        <!-- TAB CHẤM CÔNG (RA/VÀO CỔNG) -->
         <div id="tab-cham-cong" class="tab-content rounded-xl border border-slate-200 shadow-sm hidden">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border-b border-slate-200 rounded-t-xl" id="cham-cong-dashboard">
                 <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-center">
@@ -207,11 +203,11 @@
                     <input type="date" id="filter-date" onchange="loadChamCongData()" class="w-full text-sm font-bold text-center outline-none border-b border-dashed border-slate-300">
                 </div>
                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center">
-                    <p class="text-xs text-blue-600 font-semibold uppercase mb-1">Đã vào xưởng</p>
+                    <p class="text-xs text-blue-600 font-semibold uppercase mb-1">Đã vào xưởng (Lượt)</p>
                     <p class="text-xl font-black text-blue-800" id="stat-total-in">0</p>
                 </div>
                 <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm text-center">
-                    <p class="text-xs text-emerald-600 font-semibold uppercase mb-1">Đã hoàn thành (Ra)</p>
+                    <p class="text-xs text-emerald-600 font-semibold uppercase mb-1">Đã hoàn thành (Lượt)</p>
                     <p class="text-xl font-black text-emerald-800" id="stat-total-out">0</p>
                 </div>
                 <div class="bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm text-center">
@@ -325,7 +321,6 @@
     </div>
 
     <script>
-        // Set ngày mặc định cho dashboard
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, '0');
         const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -333,7 +328,7 @@
         document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
 
         let currentTab = 'nhan-su';
-        let rawWorkerData = []; // Lưu trữ mảng gốc để làm tính năng TÌM KIẾM
+        let rawWorkerData = []; 
 
         window.switchTab = function(tabId) {
             currentTab = tabId;
@@ -433,7 +428,6 @@
             }
         }
 
-        // Tải dữ liệu từ Firebase
         window.loadWorkerData = async function() {
             document.getElementById('loading-msg').classList.remove('hidden');
             document.getElementById('tab-nhan-su').classList.add('hidden');
@@ -446,14 +440,13 @@
                 rawWorkerData.push({ id: doc.id, ...doc.data() });
             });
             
-            document.getElementById('search-worker').value = ""; // Xóa bộ lọc cũ
+            document.getElementById('search-worker').value = ""; 
             renderWorkerTable(rawWorkerData);
             
             document.getElementById('loading-msg').classList.add('hidden');
             document.getElementById('tab-nhan-su').classList.remove('hidden');
         }
 
-        // Hàm TÌM KIẾM nhân sự
         window.filterWorkerTable = function() {
             const keyword = document.getElementById('search-worker').value.toLowerCase();
             const filteredData = rawWorkerData.filter(item => 
@@ -464,7 +457,6 @@
             renderWorkerTable(filteredData);
         }
 
-        // Tách riêng hàm vẽ bảng HTML
         function renderWorkerTable(dataArray) {
             const tbody = document.getElementById('worker-results-body');
             tbody.innerHTML = '';
@@ -572,6 +564,7 @@
             await saveDataToFirebase("nha_thau_dao_tao", document.getElementById('tr-doc-id').value, data, "btn-save-training", "training-modal", window.loadTrainingData);
         }
 
+        // THUẬT TOÁN ĐA LƯỢT (MULTI-SESSION) HOÀN CHỈNH
         window.loadChamCongData = async function() {
             const tbody = document.getElementById('cham-cong-results-body');
             document.getElementById('loading-msg').classList.remove('hidden');
@@ -582,8 +575,10 @@
                 const q = window.query(window.collection(window.db, "nha_thau_cham_cong"), window.orderBy("thoi_gian", "asc"));
                 const snap = await window.getDocs(q);
                 const filterDateStr = document.getElementById('filter-date').value;
-                let dailyAttendance = {};
+                
+                let personSessions = {}; 
 
+                // Gom nhóm các sự kiện theo từng người trong ngày được chọn
                 snap.forEach(doc => {
                     const data = doc.data();
                     if (!data.thoi_gian) return;
@@ -595,58 +590,105 @@
                     const recordDateStr = `${yyyy}-${mm}-${dd}`;
 
                     if (recordDateStr === filterDateStr) {
-                        const personKey = `${data.cong_ty}_${data.ho_ten}`;
-                        const timeStr = dateObj.toLocaleTimeString('vi-VN');
-
-                        if (!dailyAttendance[personKey]) {
-                            dailyAttendance[personKey] = { cong_ty: data.cong_ty, ho_ten: data.ho_ten, nha_may: data.nha_may || "Chưa xác định", gio_vao: null, gio_ra: null };
-                        }
-                        if (data.nha_may && data.nha_may !== "Chưa xác định") {
-                            dailyAttendance[personKey].nha_may = String(data.nha_may).trim();
-                        }
-                        if (data.trang_thai === "VÀO" && !dailyAttendance[personKey].gio_vao) {
-                            dailyAttendance[personKey].gio_vao = timeStr;
-                        } else if (data.trang_thai === "RA" && !dailyAttendance[personKey].gio_ra) {
-                            dailyAttendance[personKey].gio_ra = timeStr;
-                        }
+                        const pKey = `${data.cong_ty}_${data.ho_ten}`;
+                        if (!personSessions[pKey]) personSessions[pKey] = [];
+                        personSessions[pKey].push(data);
                     }
                 });
 
-                let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
+                let allSessionsToRender = [];
 
-                for (const key in dailyAttendance) {
-                    const person = dailyAttendance[key];
+                // Xử lý từng người để bóc tách thành các "Lượt" (Session)
+                for (let key in personSessions) {
+                    let events = personSessions[key];
+                    // Chắc chắn sắp xếp theo thời gian tăng dần
+                    events.sort((a, b) => a.thoi_gian.toDate().getTime() - b.thoi_gian.toDate().getTime());
+
+                    let currentSession = null;
+
+                    events.forEach(ev => {
+                        let timeStr = ev.thoi_gian.toDate().toLocaleTimeString('vi-VN');
+                        if (ev.trang_thai === 'VÀO') {
+                            if (currentSession) {
+                                // Quẹt VÀO nhưng chưa quẹt RA lần trước -> Đóng luôn lượt trước
+                                allSessionsToRender.push(currentSession); 
+                            }
+                            // Mở lượt mới
+                            currentSession = {
+                                cong_ty: ev.cong_ty,
+                                ho_ten: ev.ho_ten,
+                                nha_may: ev.nha_may || "Chưa xác định",
+                                gio_vao: timeStr,
+                                gio_ra: null,
+                                timestamp: ev.thoi_gian.toDate().getTime()
+                            };
+                        } else if (ev.trang_thai === 'RA') {
+                            if (currentSession) {
+                                // Quẹt RA bình thường
+                                currentSession.gio_ra = timeStr;
+                                allSessionsToRender.push(currentSession);
+                                currentSession = null;
+                            } else {
+                                // Quẹt RA nhưng không có lượt VÀO nào đang mở (Lỗi thao tác)
+                                allSessionsToRender.push({
+                                    cong_ty: ev.cong_ty,
+                                    ho_ten: ev.ho_ten,
+                                    nha_may: ev.nha_may || "Chưa xác định",
+                                    gio_vao: null,
+                                    gio_ra: timeStr,
+                                    timestamp: ev.thoi_gian.toDate().getTime()
+                                });
+                            }
+                        }
+                    });
+                    
+                    // Nếu cuối ngày vẫn còn 1 lượt đang mở (đang trong xưởng)
+                    if (currentSession) {
+                        allSessionsToRender.push(currentSession); 
+                    }
+                }
+
+                // Sắp xếp lại bảng để các sự kiện mới nhất lên trên đầu
+                allSessionsToRender.sort((a,b) => b.timestamp - a.timestamp);
+
+                let totalIn = 0; let totalOut = 0; let totalInside = 0;
+                let stt = 1;
+
+                allSessionsToRender.forEach(session => {
                     let statusHtml = "";
-                    let timeInDisplay = person.gio_vao || '<span class="text-slate-300">-</span>';
-                    let timeOutDisplay = person.gio_ra || '<span class="text-slate-300">-</span>';
+                    let timeInDisplay = session.gio_vao || '<span class="text-slate-300">-</span>';
+                    let timeOutDisplay = session.gio_ra || '<span class="text-slate-300">-</span>';
 
-                    if (person.gio_vao && person.gio_ra) {
-                        totalIn++; totalOut++;
-                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Hoàn thành</span>`;
-                    } else if (person.gio_vao && !person.gio_ra) {
-                        totalIn++; totalInside++;
+                    // Thống kê dựa trên các Lượt
+                    if (session.gio_vao) totalIn++;
+                    if (session.gio_ra) totalOut++;
+
+                    if (session.gio_vao && session.gio_ra) {
+                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Xong lượt</span>`;
+                    } else if (session.gio_vao && !session.gio_ra) {
+                        totalInside++;
                         statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`;
-                    } else if (!person.gio_vao && person.gio_ra) {
-                        totalOut++;
-                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-x-circle"></i> Lỗi dữ liệu</span>`;
+                    } else if (!session.gio_vao && session.gio_ra) {
+                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-x-circle"></i> Lỗi (Chỉ có RA)</span>`;
                     }
 
-                    let displayPlant = person.nha_may;
+                    let displayPlant = session.nha_may;
                     if(displayPlant === "1") displayPlant = "Nhà Máy 1";
                     if(displayPlant === "2") displayPlant = "Nhà Máy 2";
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
-                            <td class="p-4 font-bold text-slate-700">${person.cong_ty}</td>
-                            <td class="p-4 font-bold text-blue-700">${person.ho_ten}</td>
+                            <td class="p-4 font-bold text-slate-700">${session.cong_ty}</td>
+                            <td class="p-4 font-bold text-blue-700">${session.ho_ten}</td>
                             <td class="p-4 text-center font-bold text-purple-600">${displayPlant}</td>
                             <td class="p-4 text-center text-slate-600 font-mono font-semibold">${timeInDisplay}</td>
                             <td class="p-4 text-center text-slate-600 font-mono font-semibold">${timeOutDisplay}</td>
                             <td class="p-4 text-center">${statusHtml}</td>
                         </tr>
                     `;
-                }
+                });
+
                 if (stt === 1) tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có lượt ra/vào nào trong ngày này.</td></tr>`;
                 
                 document.getElementById('stat-total-in').innerText = totalIn;
@@ -654,7 +696,7 @@
                 document.getElementById('stat-inside').innerText = totalInside;
 
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu. Cần cập nhật Index trên Firebase.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
             } finally {
                 document.getElementById('loading-msg').classList.add('hidden');
                 document.getElementById('tab-cham-cong').classList.remove('hidden');
