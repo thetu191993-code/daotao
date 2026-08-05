@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <!-- THƯ VIỆN ĐỌC FILE EXCEL (MỚI) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -30,7 +33,7 @@
         window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; window.doc = doc;
         window.query = query; window.orderBy = orderBy;
 
-        // Bắt đăng nhập Admin
+        // Đăng nhập nội bộ bằng Passcode
         window.checkAdmin = async function() {
             const btn = document.getElementById('btn-login');
             const ogText = btn.innerHTML;
@@ -42,18 +45,15 @@
             errorMsg.classList.add('hidden');
 
             try {
-                // Đơn giản hóa: Dùng mật khẩu nội bộ thay vì bắt tạo tài khoản trên Firebase
                 if (pass !== "EHS2026" && pass !== "ehs2026") {
-                    throw new Error("wrong_pass");
+                    throw new Error("Sai mật khẩu truy cập!");
                 }
-                
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 window.loadData(); 
             } catch (error) {
-                console.error("Lỗi đăng nhập:", error);
                 errorMsg.classList.remove('hidden');
-                errorMsg.innerText = "Sai mật khẩu! (Gợi ý: EHS2026)";
+                errorMsg.innerText = error.message;
             } finally {
                 btn.innerHTML = ogText;
                 btn.disabled = false;
@@ -63,12 +63,11 @@
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800">
 
-    <!-- CẢNH BÁO / THÔNG BÁO -->
     <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white bg-emerald-600">
         <i class="ph-fill ph-check-circle text-2xl"></i> <span id="toast-msg">Thành công!</span>
     </div>
 
-    <!-- ĐĂNG NHẬP -->
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="login-screen" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl text-center">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
             <i class="ph-fill ph-users-three text-4xl"></i>
@@ -90,9 +89,16 @@
                 </h2>
                 <p class="text-slate-500 mt-1">Hệ thống phân loại tự động dựa trên vị trí làm việc.</p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex flex-wrap gap-3">
                 <a href="index.html" class="bg-slate-100 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 flex items-center gap-2"><i class="ph-bold ph-house"></i> Trang chủ</a>
-                <button onclick="window.openModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2 shadow-sm"><i class="ph-bold ph-plus"></i> Thêm Nhân Sự</button>
+                
+                <!-- NÚT UPLOAD EXCEL BỔ SUNG -->
+                <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden" onchange="window.handleExcelUpload(event)">
+                <button id="btn-excel" onclick="document.getElementById('excel-upload').click()" class="bg-emerald-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-emerald-700 flex items-center gap-2 shadow-sm">
+                    <i class="ph-bold ph-file-xls text-xl"></i> Nhập từ Excel
+                </button>
+
+                <button onclick="window.openModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2 shadow-sm"><i class="ph-bold ph-user-plus"></i> Thêm Nhân Sự</button>
             </div>
         </div>
 
@@ -107,11 +113,17 @@
             </select>
         </div>
 
+        <!-- THANH TIẾN ĐỘ IMPORT EXCEL -->
+        <div id="progress-bar-container" class="hidden mb-4 bg-slate-100 rounded-full h-4 overflow-hidden relative">
+            <div id="progress-bar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+            <p id="progress-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-800">0/500</p>
+        </div>
+
         <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
             <table class="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                        <th class="p-4 w-12">STT</th>
+                        <th class="p-4 w-12 text-center">STT</th>
                         <th class="p-4">Mã NV</th>
                         <th class="p-4">Họ và Tên</th>
                         <th class="p-4">Vị trí / Bộ phận</th>
@@ -126,7 +138,7 @@
         </div>
     </div>
 
-    <!-- MODAL THÊM/SỬA (TÍCH HỢP RULE-BASED ENGINE) -->
+    <!-- MODAL THÊM/SỬA NHÂN SỰ -->
     <div id="staff-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -188,28 +200,124 @@
     <script>
         let rawData = [];
 
-        // THE MAGIC: RULE-BASED ENGINE (MA TRẬN TỰ ĐỘNG)
+        // Logic Hệ chuyên gia để tự gán nhóm khi import Excel
+        function getAutoGroupFromRole(roleStr) {
+            if (!roleStr) return "";
+            const role = roleStr.toLowerCase();
+            if (role.includes("hóa chất") || role.includes("bảo trì") || role.includes("vận hành") || role.includes("kho")) return "Nhóm 3";
+            if (role.includes("văn phòng") || role.includes("gián tiếp")) return "Nhóm 4";
+            if (role.includes("quản lý") || role.includes("giám đốc")) return "Nhóm 1";
+            if (role.includes("y tế")) return "Nhóm 5";
+            return "Chưa phân loại"; // Nếu tên chức danh lạ quá
+        }
+
+        // TÍNH NĂNG NHẬP EXCEL TỰ ĐỘNG
+        window.handleExcelUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                if(json.length === 0) {
+                    alert("File Excel trống hoặc định dạng sai!");
+                    return;
+                }
+
+                const btn = document.getElementById('btn-excel');
+                const progContainer = document.getElementById('progress-bar-container');
+                const progBar = document.getElementById('progress-bar');
+                const progText = document.getElementById('progress-text');
+
+                btn.disabled = true;
+                btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang nạp...';
+                progContainer.classList.remove('hidden');
+
+                let successCount = 0;
+                let totalItems = json.length;
+
+                // Push từng dòng lên Firebase
+                for (let i = 0; i < totalItems; i++) {
+                    const row = json[i];
+                    
+                    // Linh hoạt tự tìm tên cột trong Excel
+                    const maNV = row['Mã NV'] || row['Ma NV'] || row['ID'] || '';
+                    const hoTen = row['Họ Tên'] || row['Ho Ten'] || row['Họ và Tên'] || '';
+                    const viTri = row['Vị trí'] || row['Bộ phận'] || row['Phòng ban'] || row['Công việc'] || '';
+                    
+                    if (!maNV || !hoTen) continue; // Bỏ qua nếu thiếu dữ liệu cơ bản
+
+                    // Chạy AI phân loại tự động
+                    const nhom_atld = getAutoGroupFromRole(viTri);
+
+                    // Xử lý Ngày tháng từ Excel (nếu có nhập ngày trong file)
+                    let han_atld = row['Hạn ATLĐ'] ? formatExcelDate(row['Hạn ATLĐ']) : '';
+                    let han_suc_khoe = row['Hạn Khám SK'] ? formatExcelDate(row['Hạn Khám SK']) : '';
+
+                    const docData = {
+                        ma_nv: String(maNV).toUpperCase(),
+                        ho_ten: hoTen,
+                        vi_tri: viTri,
+                        nhom_atld: nhom_atld,
+                        han_atld: han_atld,
+                        han_suc_khoe: han_suc_khoe,
+                        thoi_gian_tao: new Date(),
+                        thoi_gian_cap_nhat: new Date()
+                    };
+
+                    try {
+                        await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), docData);
+                        successCount++;
+                    } catch(err) {
+                        console.error("Lỗi dòng " + i, err);
+                    }
+
+                    // Cập nhật thanh tiến độ
+                    let percent = Math.round(((i + 1) / totalItems) * 100);
+                    progBar.style.width = percent + '%';
+                    progText.innerText = `${i + 1} / ${totalItems}`;
+                }
+
+                // Hoàn tất
+                btn.disabled = false;
+                btn.innerHTML = '<i class="ph-bold ph-file-xls text-xl"></i> Nhập từ Excel';
+                progContainer.classList.add('hidden');
+                event.target.value = ''; // Reset input để up lại file khác nếu cần
+                
+                alert(`Đã nạp thành công: ${successCount} nhân sự! Hệ thống đã tự động gán Nhóm An Toàn dựa vào vị trí làm việc.`);
+                window.loadData();
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        // Hàm hỗ trợ đổi định dạng số ngày của Excel sang ngày chuẩn
+        function formatExcelDate(excelDate) {
+            if (!excelDate) return '';
+            if (typeof excelDate === 'number') {
+                const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
+                return date.toISOString().split('T')[0];
+            }
+            return String(excelDate);
+        }
+
+
+        // THE MAGIC: RULE-BASED ENGINE CHO FORM NHẬP TAY
         window.autoClassify = function() {
             const role = document.getElementById('emp-role').value;
             const groupInput = document.getElementById('emp-group');
             
-            // Logic Luật của Nghị định 44
-            if (role.includes("Hóa chất") || role.includes("Bảo trì") || role.includes("Vận hành") || role.includes("Kho")) {
-                groupInput.value = "Nhóm 3"; // Nghiêm ngặt
-                groupInput.className = "w-full border border-rose-300 px-3 py-2 rounded-lg bg-rose-50 text-rose-700 font-bold";
-            } else if (role.includes("Văn phòng")) {
-                groupInput.value = "Nhóm 4"; // Lao động chung
-                groupInput.className = "w-full border border-emerald-300 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold";
-            } else if (role.includes("Quản lý")) {
-                groupInput.value = "Nhóm 1"; // Quản lý
-                groupInput.className = "w-full border border-purple-300 px-3 py-2 rounded-lg bg-purple-50 text-purple-700 font-bold";
-            } else if (role.includes("Y tế")) {
-                groupInput.value = "Nhóm 5"; // Y tế
-                groupInput.className = "w-full border border-teal-300 px-3 py-2 rounded-lg bg-teal-50 text-teal-700 font-bold";
-            } else {
-                groupInput.value = "";
-                groupInput.className = "w-full border border-slate-300 px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold";
-            }
+            groupInput.value = getAutoGroupFromRole(role);
+
+            if (groupInput.value === "Nhóm 3") groupInput.className = "w-full border border-rose-300 px-3 py-2 rounded-lg bg-rose-50 text-rose-700 font-bold";
+            else if (groupInput.value === "Nhóm 4") groupInput.className = "w-full border border-emerald-300 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold";
+            else if (groupInput.value === "Nhóm 1") groupInput.className = "w-full border border-purple-300 px-3 py-2 rounded-lg bg-purple-50 text-purple-700 font-bold";
+            else if (groupInput.value === "Nhóm 5") groupInput.className = "w-full border border-teal-300 px-3 py-2 rounded-lg bg-teal-50 text-teal-700 font-bold";
+            else groupInput.className = "w-full border border-slate-300 px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold";
         };
 
         window.openModal = function() {
@@ -233,15 +341,14 @@
             setTimeout(() => document.getElementById('toast').classList.add('translate-x-[150%]'), 3000);
         };
 
-        // Tính toán tình trạng hạn (Thông minh)
         function checkExpiry(dateStr) {
-            if (!dateStr) return { status: 'danger', text: 'CHƯA CÓ DỮ LIỆU', html: '<span class="bg-red-50 text-red-600 px-2 py-1 rounded font-bold text-xs border border-red-200">Chưa có</span>' };
+            if (!dateStr) return { status: 'danger', text: 'CHƯA CÓ DỮ LIỆU', html: '<span class="bg-red-50 text-red-600 px-2 py-1 rounded font-bold text-xs border border-red-200 whitespace-nowrap">Chưa có</span>' };
             const exp = new Date(dateStr); const today = new Date();
             const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
             
-            if (diffDays < 0) return { status: 'danger', text: 'ĐÃ HẾT HẠN', html: `<span class="bg-red-600 text-white px-2 py-1 rounded font-bold text-xs shadow-sm">Hết hạn (${exp.toLocaleDateString('vi-VN')})</span>` };
-            if (diffDays <= 30) return { status: 'warning', text: 'SẮP HẾT HẠN', html: `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold text-xs border border-amber-300 animate-pulse">Sắp hết hạn (${diffDays} ngày)</span>` };
-            return { status: 'safe', text: 'AN TOÀN', html: `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded font-bold text-xs border border-emerald-200">Hợp lệ (${exp.toLocaleDateString('vi-VN')})</span>` };
+            if (diffDays < 0) return { status: 'danger', text: 'ĐÃ HẾT HẠN', html: `<span class="bg-red-600 text-white px-2 py-1 rounded font-bold text-xs shadow-sm whitespace-nowrap">Hết hạn (${exp.toLocaleDateString('vi-VN')})</span>` };
+            if (diffDays <= 30) return { status: 'warning', text: 'SẮP HẾT HẠN', html: `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold text-xs border border-amber-300 animate-pulse whitespace-nowrap">Sắp hết hạn (${diffDays} ngày)</span>` };
+            return { status: 'safe', text: 'AN TOÀN', html: `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded font-bold text-xs border border-emerald-200 whitespace-nowrap">Hợp lệ (${exp.toLocaleDateString('vi-VN')})</span>` };
         }
 
         window.loadData = async function() {
@@ -254,7 +361,7 @@
                 snap.forEach(doc => rawData.push({ id: doc.id, ...doc.data() }));
                 renderTable(rawData);
             } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-500">Lỗi: Cần tạo collection "nhan_su_noi_bo" trong Rules Firebase.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-500">Lỗi kết nối CSDL: ${e.message}</td></tr>`;
             }
         };
 
@@ -268,21 +375,21 @@
                 const atld = checkExpiry(d.han_atld);
                 const health = checkExpiry(d.han_suc_khoe);
                 
-                // Đánh dấu dòng vi phạm
                 const isDanger = atld.status === 'danger' || health.status === 'danger' || atld.status === 'warning';
                 const rowClass = isDanger ? "bg-rose-50/50 hover:bg-rose-50" : "hover:bg-slate-50";
 
                 tbody.innerHTML += `
-                    <tr class="${rowClass} border-b border-slate-100" data-danger="${isDanger}">
+                    <tr class="${rowClass} border-b border-slate-100">
                         <td class="p-4 text-center font-medium">${stt++}</td>
                         <td class="p-4 font-mono font-bold uppercase text-slate-600">${d.ma_nv}</td>
-                        <td class="p-4 font-bold text-blue-700">${d.ho_ten}</td>
+                        <td class="p-4 font-bold text-blue-700 whitespace-nowrap">${d.ho_ten}</td>
                         <td class="p-4 text-slate-700 font-medium">${d.vi_tri}</td>
-                        <td class="p-4 text-center"><span class="px-2 py-1 rounded bg-slate-200 text-slate-800 font-bold text-xs shadow-sm">${d.nhom_atld}</span></td>
+                        <td class="p-4 text-center"><span class="px-2 py-1 rounded bg-slate-200 text-slate-800 font-bold text-xs shadow-sm whitespace-nowrap">${d.nhom_atld}</span></td>
                         <td class="p-4 text-center">${atld.html}</td>
                         <td class="p-4 text-center">${health.html}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="window.editData('${d.id}')" class="text-blue-600 hover:text-blue-800 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                        <td class="p-4 text-center whitespace-nowrap">
+                            <button onclick="window.editData('${d.id}')" class="text-blue-600 hover:text-blue-800 p-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="window.deleteData('${d.id}')" class="text-red-500 hover:text-red-700 p-1 ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     </tr>
                 `;
@@ -312,11 +419,39 @@
             document.getElementById('emp-doc-id').value = d.id;
             document.getElementById('emp-id').value = d.ma_nv;
             document.getElementById('emp-name').value = d.ho_ten;
-            document.getElementById('emp-role').value = d.vi_tri;
+            
+            // Tìm option tương ứng trong select, nếu ko có thì gán vào cái gần giống
+            const sel = document.getElementById('emp-role');
+            let found = false;
+            for(let i=0; i<sel.options.length; i++) {
+                if(sel.options[i].value === d.vi_tri) {
+                    sel.selectedIndex = i;
+                    found = true; break;
+                }
+            }
+            if(!found && d.vi_tri) {
+                // Thêm tạm option để hiển thị sửa
+                const opt = document.createElement('option');
+                opt.value = d.vi_tri; opt.text = d.vi_tri;
+                sel.add(opt); sel.value = d.vi_tri;
+            }
+
             document.getElementById('emp-date-atld').value = d.han_atld || '';
             document.getElementById('emp-date-health').value = d.han_suc_khoe || '';
             window.autoClassify();
             document.getElementById('staff-modal').classList.remove('hidden');
+        };
+
+        window.deleteData = async function(id) {
+            if(confirm("Bạn có chắc chắn muốn xóa nhân sự này khỏi hệ thống?")) {
+                try {
+                    await window.deleteDoc(window.doc(window.db, "nhan_su_noi_bo", id));
+                    window.showToast("Đã xóa nhân sự!");
+                    window.loadData();
+                } catch(e) {
+                    alert("Lỗi: " + e.message);
+                }
+            }
         };
 
         window.saveData = async function() {
