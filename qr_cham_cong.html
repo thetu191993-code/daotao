@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <!-- FIREBASE INITIALIZATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -100,7 +101,6 @@
                     <p class="text-xs text-slate-500 font-medium mt-1.5 text-center">Nhập đúng <span class="font-bold text-blue-600">4 số cuối CCCD</span> của bạn để xác thực.</p>
                 </div>
 
-                <!-- Dùng để hiển thị chi tiết lỗi nếu có -->
                 <div id="error-msg" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold text-center border border-red-100 flex items-center justify-center gap-2">
                     <i class="ph-fill ph-warning-circle text-xl"></i>
                     <span id="error-text">Lỗi!</span>
@@ -165,7 +165,7 @@
             </div>
             <h3 class="text-xl font-bold text-slate-800 mb-2">Không Hợp Lệ</h3>
             <p class="text-slate-600 text-sm mb-6 leading-relaxed">
-                Bạn <span class="font-bold text-rose-600">CHƯA BẤM VÀO CỔNG</span> trong ca làm việc hôm nay, nên không thể thực hiện thao tác <span class="font-bold text-rose-600">RA CỔNG</span>. Vui lòng liên hệ Bảo vệ.
+                Bạn <span class="font-bold text-rose-600">CHƯA BẤM VÀO CỔNG</span> trong ngày hôm nay, nên không thể thực hiện thao tác <span class="font-bold text-rose-600">RA CỔNG</span>. Vui lòng liên hệ Bảo vệ.
             </p>
             <div class="flex justify-center">
                 <button onclick="window.closeErrorBlockModal()" class="w-full bg-slate-800 text-white px-4 py-3 rounded-xl font-bold hover:bg-slate-900 shadow-md">Đã Hiểu</button>
@@ -174,7 +174,7 @@
     </div>
 
     <script>
-        // XÁC ĐỊNH NHÀ MÁY
+        // Lấy tham số nhà máy từ URL
         const urlParams = new URLSearchParams(window.location.search);
         const plantParam = urlParams.get('nha_may');
         let currentPlant = "Nhà Máy 1"; 
@@ -204,7 +204,6 @@
             return expDate >= today;
         }
 
-        // TẢI DANH SÁCH NHÂN SỰ
         window.onload = async function() {
             try {
                 const q = window.query(window.collection(window.db, "nha_thau_nhan_su"));
@@ -236,9 +235,7 @@
                 document.getElementById('form-content').classList.remove('hidden');
 
             } catch (error) {
-                // Nếu rules sai ở nha_thau_nhan_su, in lỗi chi tiết
-                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold text-sm px-4">Lỗi: ${error.message}</p>`;
-                console.error("Lỗi tải nhân sự:", error);
+                document.getElementById('loading-msg').innerHTML = `<i class="ph-fill ph-warning-circle text-red-500 text-4xl mb-2"></i><p class="text-red-500 font-bold text-sm px-4">Lỗi tải dữ liệu: ${error.message}</p>`;
             }
         }
 
@@ -264,20 +261,13 @@
             });
         }
 
-        // XỬ LÝ NÚT BẤM (CÓ TÍNH NĂNG GRACEFUL DEGRADATION CHỐNG SẬP)
         window.submitCheckInOut = async function(action) {
             const company = document.getElementById('sel-company').value;
             const workerName = document.getElementById('sel-worker').value;
             const inputCccd = document.getElementById('input-cccd').value.trim();
 
-            if (!company || !workerName) {
-                return showError("Vui lòng chọn Công ty và Tên của bạn!");
-            }
-
-            if (!inputCccd || inputCccd.length !== 4) {
-                document.getElementById('input-cccd').focus();
-                return showError("Vui lòng nhập đủ 4 số cuối CCCD!");
-            }
+            if (!company || !workerName) return showError("Vui lòng chọn Công ty và Tên của bạn!");
+            if (!inputCccd || inputCccd.length !== 4) return showError("Vui lòng nhập đủ 4 số cuối CCCD!");
 
             const matchedWorker = allWorkersData.find(w => w.cong_ty === company && w.ho_ten === workerName);
             if (!matchedWorker) return;
@@ -285,7 +275,6 @@
             const realCccd = matchedWorker.cccd || "";
             if (inputCccd !== realCccd.slice(-4)) {
                 document.getElementById('input-cccd').value = "";
-                document.getElementById('input-cccd').focus();
                 return showError("Sai mã xác thực! Không khớp 4 số cuối CCCD.");
             }
 
@@ -294,8 +283,8 @@
             let lastRecord = null;
             let canCheckHistory = true;
 
-            // KIỂM TRA LỊCH SỬ (Nếu rules Firebase chưa mở, phần này sẽ lỗi nhưng KHÔNG chặn quy trình)
             try {
+                // Tải 500 lịch sử gần nhất về để lọc tại máy khách (nhằm lách tường lửa Index của Firebase)
                 const qCheck = window.query(
                     window.collection(window.db, "nha_thau_cham_cong"),
                     window.orderBy("thoi_gian", "desc"),
@@ -303,7 +292,6 @@
                 );
                 
                 const snapCheck = await window.getDocs(qCheck);
-                
                 for (const doc of snapCheck.docs) {
                     const d = doc.data();
                     if (d.cong_ty === company && d.ho_ten === workerName) {
@@ -312,25 +300,23 @@
                     }
                 }
             } catch (err) {
-                console.warn("Bỏ qua kiểm tra lịch sử do lỗi Rules Firebase/Mạng:", err);
-                canCheckHistory = false; // Bỏ qua việc chặn nếu không lấy được lịch sử
+                console.warn("Bỏ qua kiểm tra lịch sử do lỗi Rules Firebase:", err);
+                canCheckHistory = false;
             }
 
-            // XỬ LÝ LOGIC KIỂM SOÁT (Chỉ chạy nếu lấy được lịch sử thành công)
             if (canCheckHistory) {
-                // TRƯỜNG HỢP BẤM "RA": Chặn đứng nếu sáng nay chưa VÀO
                 if (action === 'RA') {
+                    // Nếu bấm RA mà không có lịch sử hoặc lần trước đã RA rồi -> Chặn
                     if (!lastRecord || lastRecord.trang_thai === 'RA') {
                         setLoadingButtons(false, action);
                         document.getElementById('error-block-modal').classList.remove('hidden');
                         document.getElementById('error-block-modal').classList.add('flex');
                         return;
                     }
-                    
+                    // Nếu bấm RA mà lần VÀO trước đó không phải là hôm nay -> Chặn
                     if (lastRecord && lastRecord.trang_thai === 'VÀO') {
                         const todayStr = new Date().toDateString();
                         const recordDateStr = lastRecord.thoi_gian.toDate().toDateString();
-                        
                         if(todayStr !== recordDateStr) {
                              setLoadingButtons(false, action);
                              document.getElementById('error-block-modal').classList.remove('hidden');
@@ -340,8 +326,8 @@
                     }
                 }
 
-                // TRƯỜNG HỢP BẤM "VÀO": Cảnh báo nếu hôm qua trốn RA
                 if (action === 'VÀO') {
+                    // Nếu bấm VÀO mà lần gần nhất cũng là VÀO, nhưng lại khác ngày (ví dụ hôm qua trốn RA) -> Cảnh báo
                     if (lastRecord && lastRecord.trang_thai === 'VÀO') {
                         const todayStr = new Date().toDateString();
                         const recordDateStr = lastRecord.thoi_gian.toDate().toDateString();
@@ -357,7 +343,6 @@
                 }
             }
 
-            // TIẾN HÀNH LƯU DỮ LIỆU CHẤM CÔNG VÀO FIREBASE
             await window.executeCheckIn(company, workerName, action);
         }
 
@@ -374,9 +359,10 @@
 
         window.forceCheckIn = async function() {
             if (!window.pendingAction) return;
-            window.closeWarningModal();
-            // CHỈNH SỬA: Đảm bảo truyền đúng các biến đã lưu tạm thời vào hàm executeCheckIn
+            // Lấy dữ liệu tạm ra trước khi đóng cửa sổ
             const { company, workerName, action } = window.pendingAction;
+            window.closeWarningModal();
+            
             setLoadingButtons(true, action);
             await window.executeCheckIn(company, workerName, action);
         }
@@ -393,9 +379,7 @@
                 });
                 showSuccessScreen(action, workerName, company, now);
             } catch (error) {
-                // IN CHÍNH XÁC TÊN LỖI NẾU FIREBASE TỪ CHỐI LƯU
                 showError("Lỗi kết nối máy chủ: " + error.message);
-                console.error(error);
             } finally {
                 setLoadingButtons(false, action);
             }
