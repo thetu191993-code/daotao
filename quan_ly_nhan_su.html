@@ -126,6 +126,8 @@
                         <th class="p-4 w-12 text-center">STT</th>
                         <th class="p-4">Mã NV</th>
                         <th class="p-4">Họ và Tên</th>
+                        <th class="p-4 text-center">Giới tính</th>
+                        <th class="p-4 text-center">Ngày sinh</th>
                         <th class="p-4">Vị trí / Bộ phận</th>
                         <th class="p-4 text-center">Yêu cầu Nhóm ATLĐ</th>
                         <th class="p-4 text-center">Hạn Đào Tạo</th>
@@ -159,17 +161,44 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày sinh</label>
+                        <input type="date" id="emp-dob" class="w-full border border-slate-300 px-3 py-2 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giới tính</label>
+                        <select id="emp-gender" class="w-full border border-slate-300 px-3 py-2 rounded-lg outline-none bg-white font-medium text-slate-700">
+                            <option value="">-- Chọn --</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl">
                     <label class="block text-xs font-bold text-blue-800 uppercase mb-2">Phân loại khu vực / Công việc (Hệ chuyên gia)</label>
                     <select id="emp-role" onchange="window.autoClassify()" class="w-full border border-blue-300 px-3 py-2.5 rounded-lg font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm">
                         <option value="">-- Chọn công việc thực tế --</option>
-                        <option value="Hóa chất (Máy rửa, Tẩy rửa)">Làm việc với Hóa chất (Washer, Xử lý nước...)</option>
-                        <option value="Bảo trì (Điện, Hàn cắt)">Bảo trì kỹ thuật (Điện, Hàn, Trèo cao...)</option>
-                        <option value="Vận hành máy (Cơ khí)">Vận hành máy móc cơ khí chung</option>
-                        <option value="Kho (Nâng hạ, Xe nâng)">Lái xe nâng, Vận hành kho</option>
-                        <option value="Văn phòng">Nhân viên Văn phòng / Gián tiếp</option>
-                        <option value="Quản lý cấp cao">Giám đốc, Trưởng phòng</option>
-                        <option value="Y tế">Nhân viên Y tế / Sơ cấp cứu</option>
+                        <optgroup label="Sản xuất">
+                            <option value="Sản xuất - Body maker">Sản xuất - Body maker</option>
+                            <option value="Sản xuất - Washer">Sản xuất - Washer (Rửa)</option>
+                            <option value="Sản xuất - Decorator">Sản xuất - Decorator (In)</option>
+                            <option value="Sản xuất - LSM">Sản xuất - LSM</option>
+                            <option value="Sản xuất - Necker">Sản xuất - Necker</option>
+                            <option value="Sản xuất - Palletizer">Sản xuất - Palletizer</option>
+                        </optgroup>
+                        <option value="QC">Kiểm tra chất lượng (QC)</option>
+                        <optgroup label="Phụ trợ & Kỹ thuật">
+                            <option value="Điện - Phụ trợ - Hạ tầng">Điện - Phụ trợ - Hạ tầng</option>
+                            <option value="Vệ sinh công nghiệp">Vệ sinh công nghiệp</option>
+                            <option value="Kỹ thuật">Kỹ thuật</option>
+                        </optgroup>
+                        <optgroup label="Kho & Gián tiếp">
+                            <option value="Kho - Phụ kho">Kho - Phụ kho</option>
+                            <option value="Kho - Tài xế xe nâng">Kho - Tài xế xe nâng</option>
+                            <option value="Văn phòng">Văn phòng / Gián tiếp</option>
+                        </optgroup>
                     </select>
                     <p class="text-[11px] text-blue-600 mt-2 font-medium italic">* Hệ thống sẽ tự động đề xuất Nhóm ATLĐ dựa trên công việc.</p>
                 </div>
@@ -204,11 +233,21 @@
         function getAutoGroupFromRole(roleStr) {
             if (!roleStr) return "";
             const role = roleStr.toLowerCase();
-            if (role.includes("hóa chất") || role.includes("bảo trì") || role.includes("vận hành") || role.includes("kho")) return "Nhóm 3";
-            if (role.includes("văn phòng") || role.includes("gián tiếp")) return "Nhóm 4";
-            if (role.includes("quản lý") || role.includes("giám đốc")) return "Nhóm 1";
+            
+            // Nhóm 3: Yêu cầu nghiêm ngặt (Thiết bị áp lực, điện, xe nâng, hóa chất...)
+            if (role.includes("washer") || role.includes("điện") || role.includes("phụ trợ") || role.includes("hạ tầng") || role.includes("xe nâng") || role.includes("kỹ thuật") || role.includes("hóa chất") || role.includes("bảo trì")) {
+                return "Nhóm 3";
+            }
+            // Nhóm 4: Sản xuất chung, QC, Vệ sinh, Văn phòng
+            if (role.includes("sản xuất") || role.includes("body maker") || role.includes("decorator") || role.includes("lsm") || role.includes("necker") || role.includes("palletizer") || role.includes("qc") || role.includes("vệ sinh") || role.includes("phụ kho") || role.includes("văn phòng") || role.includes("kho")) {
+                return "Nhóm 4";
+            }
+            // Nhóm 1: Quản lý
+            if (role.includes("quản lý") || role.includes("giám đốc") || role.includes("trưởng")) return "Nhóm 1";
+            // Nhóm 5: Y tế
             if (role.includes("y tế")) return "Nhóm 5";
-            return "Chưa phân loại"; // Nếu tên chức danh lạ quá
+            
+            return "Chưa phân loại"; 
         }
 
         // TÍNH NĂNG NHẬP EXCEL TỰ ĐỘNG
@@ -248,6 +287,8 @@
                     // Linh hoạt tự tìm tên cột trong Excel
                     const maNV = row['Mã NV'] || row['Ma NV'] || row['ID'] || '';
                     const hoTen = row['Họ Tên'] || row['Ho Ten'] || row['Họ và Tên'] || '';
+                    const gioiTinh = row['Giới tính'] || row['Gioi tinh'] || row['Giới Tính'] || '';
+                    const ngaySinh = row['Ngày sinh'] || row['Ngay sinh'] || row['Ngày Sinh'] || '';
                     const viTri = row['Vị trí'] || row['Bộ phận'] || row['Phòng ban'] || row['Công việc'] || '';
                     
                     if (!maNV || !hoTen) continue; // Bỏ qua nếu thiếu dữ liệu cơ bản
@@ -256,12 +297,15 @@
                     const nhom_atld = getAutoGroupFromRole(viTri);
 
                     // Xử lý Ngày tháng từ Excel (nếu có nhập ngày trong file)
+                    let ngay_sinh_format = ngaySinh ? formatExcelDate(ngaySinh) : '';
                     let han_atld = row['Hạn ATLĐ'] ? formatExcelDate(row['Hạn ATLĐ']) : '';
                     let han_suc_khoe = row['Hạn Khám SK'] ? formatExcelDate(row['Hạn Khám SK']) : '';
 
                     const docData = {
                         ma_nv: String(maNV).toUpperCase(),
                         ho_ten: hoTen,
+                        gioi_tinh: gioiTinh,
+                        ngay_sinh: ngay_sinh_format,
                         vi_tri: viTri,
                         nhom_atld: nhom_atld,
                         han_atld: han_atld,
@@ -324,6 +368,8 @@
             document.getElementById('emp-doc-id').value = '';
             document.getElementById('emp-id').value = '';
             document.getElementById('emp-name').value = '';
+            document.getElementById('emp-dob').value = '';
+            document.getElementById('emp-gender').value = '';
             document.getElementById('emp-role').value = '';
             document.getElementById('emp-date-atld').value = '';
             document.getElementById('emp-date-health').value = '';
@@ -377,12 +423,15 @@
                 
                 const isDanger = atld.status === 'danger' || health.status === 'danger' || atld.status === 'warning';
                 const rowClass = isDanger ? "bg-rose-50/50 hover:bg-rose-50" : "hover:bg-slate-50";
+                const dobText = d.ngay_sinh ? new Date(d.ngay_sinh).toLocaleDateString('vi-VN') : '-';
 
                 tbody.innerHTML += `
                     <tr class="${rowClass} border-b border-slate-100">
                         <td class="p-4 text-center font-medium">${stt++}</td>
                         <td class="p-4 font-mono font-bold uppercase text-slate-600">${d.ma_nv}</td>
                         <td class="p-4 font-bold text-blue-700 whitespace-nowrap">${d.ho_ten}</td>
+                        <td class="p-4 text-center">${d.gioi_tinh || '-'}</td>
+                        <td class="p-4 text-center text-slate-600">${dobText}</td>
                         <td class="p-4 text-slate-700 font-medium">${d.vi_tri}</td>
                         <td class="p-4 text-center"><span class="px-2 py-1 rounded bg-slate-200 text-slate-800 font-bold text-xs shadow-sm whitespace-nowrap">${d.nhom_atld}</span></td>
                         <td class="p-4 text-center">${atld.html}</td>
@@ -419,6 +468,8 @@
             document.getElementById('emp-doc-id').value = d.id;
             document.getElementById('emp-id').value = d.ma_nv;
             document.getElementById('emp-name').value = d.ho_ten;
+            document.getElementById('emp-dob').value = d.ngay_sinh || '';
+            document.getElementById('emp-gender').value = d.gioi_tinh || '';
             
             // Tìm option tương ứng trong select, nếu ko có thì gán vào cái gần giống
             const sel = document.getElementById('emp-role');
@@ -459,6 +510,8 @@
             const data = {
                 ma_nv: document.getElementById('emp-id').value.trim().toUpperCase(),
                 ho_ten: document.getElementById('emp-name').value.trim(),
+                ngay_sinh: document.getElementById('emp-dob').value,
+                gioi_tinh: document.getElementById('emp-gender').value,
                 vi_tri: document.getElementById('emp-role').value,
                 nhom_atld: document.getElementById('emp-group').value,
                 han_atld: document.getElementById('emp-date-atld').value,
