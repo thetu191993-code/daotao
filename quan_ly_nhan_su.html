@@ -180,24 +180,30 @@
                     <label class="block text-xs font-bold text-blue-800 uppercase mb-2">Phân loại khu vực / Công việc (Hệ chuyên gia)</label>
                     <select id="emp-role" onchange="window.autoClassify()" class="w-full border border-blue-300 px-3 py-2.5 rounded-lg font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm">
                         <option value="">-- Chọn công việc thực tế --</option>
-                        <optgroup label="Sản xuất">
+                        <optgroup label="Sản xuất Lon (Can)">
                             <option value="Sản xuất - Body maker">Sản xuất - Body maker</option>
-                            <option value="Sản xuất - Washer">Sản xuất - Washer (Rửa)</option>
+                            <option value="Sản xuất - Washer">Sản xuất - Washer (Rửa/Hóa chất)</option>
                             <option value="Sản xuất - Decorator">Sản xuất - Decorator (In)</option>
                             <option value="Sản xuất - LSM">Sản xuất - LSM</option>
                             <option value="Sản xuất - Necker">Sản xuất - Necker</option>
                             <option value="Sản xuất - Palletizer">Sản xuất - Palletizer</option>
                         </optgroup>
+                        <optgroup label="Sản xuất Nắp (End)">
+                            <option value="Sản xuất - Shell press">Sản xuất - Shell press</option>
+                            <option value="Sản xuất - Liner">Sản xuất - Liner</option>
+                            <option value="Sản xuất - Conversion">Sản xuất - Conversion</option>
+                        </optgroup>
                         <option value="QC">Kiểm tra chất lượng (QC)</option>
                         <optgroup label="Phụ trợ & Kỹ thuật">
-                            <option value="Điện - Phụ trợ - Hạ tầng">Điện - Phụ trợ - Hạ tầng</option>
-                            <option value="Vệ sinh công nghiệp">Vệ sinh công nghiệp</option>
+                            <option value="Utility">Điện / Khí nén (Utility)</option>
+                            <option value="Workshop">Hàn cắt / Gia công (Workshop)</option>
+                            <option value="Cleaning">Vệ sinh công nghiệp (Cleaning)</option>
                             <option value="Kỹ thuật">Kỹ thuật</option>
                         </optgroup>
                         <optgroup label="Kho & Gián tiếp">
-                            <option value="Kho - Phụ kho">Kho - Phụ kho</option>
-                            <option value="Kho - Tài xế xe nâng">Kho - Tài xế xe nâng</option>
-                            <option value="Văn phòng">Văn phòng / Gián tiếp</option>
+                            <option value="Kho - Phụ kho">Kho - Phụ kho (Nhóm 4)</option>
+                            <option value="Tài xế xe nâng">Kho - Tài xế xe nâng</option>
+                            <option value="Văn phòng">Văn phòng / Gián tiếp (Nhóm 4)</option>
                         </optgroup>
                     </select>
                     <p class="text-[11px] text-blue-600 mt-2 font-medium italic">* Hệ thống sẽ tự động đề xuất Nhóm ATLĐ dựa trên công việc.</p>
@@ -234,18 +240,25 @@
             if (!roleStr) return "";
             const role = roleStr.toLowerCase();
             
-            // Nhóm 3: Yêu cầu nghiêm ngặt (Thiết bị áp lực, điện, xe nâng, hóa chất...)
-            if (role.includes("washer") || role.includes("điện") || role.includes("phụ trợ") || role.includes("hạ tầng") || role.includes("xe nâng") || role.includes("kỹ thuật") || role.includes("hóa chất") || role.includes("bảo trì")) {
-                return "Nhóm 3";
-            }
-            // Nhóm 4: Sản xuất chung, QC, Vệ sinh, Văn phòng
-            if (role.includes("sản xuất") || role.includes("body maker") || role.includes("decorator") || role.includes("lsm") || role.includes("necker") || role.includes("palletizer") || role.includes("qc") || role.includes("vệ sinh") || role.includes("phụ kho") || role.includes("văn phòng") || role.includes("kho")) {
-                return "Nhóm 4";
-            }
             // Nhóm 1: Quản lý
             if (role.includes("quản lý") || role.includes("giám đốc") || role.includes("trưởng")) return "Nhóm 1";
             // Nhóm 5: Y tế
             if (role.includes("y tế")) return "Nhóm 5";
+
+            // Nhóm 3: Yêu cầu nghiêm ngặt (TẤT CẢ VẬN HÀNH MÁY, ĐIỆN, HÓA CHẤT, NÂNG HẠ ĐỀU Ở ĐÂY)
+            if (role.includes("washer") || role.includes("decorator") || role.includes("lsm") || role.includes("liner") || 
+                role.includes("body maker") || role.includes("necker") || role.includes("palletizer") || role.includes("shell press") || role.includes("conversion") ||
+                role.includes("điện") || role.includes("utility") || role.includes("khí nén") || 
+                role.includes("cleaning") || role.includes("vệ sinh công nghiệp") || role.includes("vệ sinh") ||
+                role.includes("workshop") || role.includes("hàn") || role.includes("cắt") ||
+                role.includes("xe nâng") || role.includes("kỹ thuật") || role.includes("bảo trì") || role.includes("sản xuất")) {
+                return "Nhóm 3";
+            }
+            
+            // Nhóm 4: Sản xuất chung, QC, Phụ kho, Văn phòng
+            if (role.includes("qc") || role.includes("phụ kho") || role.includes("văn phòng") || role.includes("gián tiếp") || role === "kho") {
+                return "Nhóm 4";
+            }
             
             return "Chưa phân loại"; 
         }
