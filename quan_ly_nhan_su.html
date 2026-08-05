@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ Sơ Năng Lực EHS Nội Bộ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.db = getFirestore(app);
+        const auth = getAuth(app);
+
+        window.collection = collection; window.getDocs = getDocs; window.addDoc = addDoc; 
+        window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; window.doc = doc;
+        window.query = query; window.orderBy = orderBy;
+
+        // Bắt đăng nhập Admin
+        window.checkAdmin = async function() {
+            const btn = document.getElementById('btn-login');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            const pass = document.getElementById('admin-pass').value;
+            try {
+                await signInWithEmailAndPassword(auth, "admin@ehs.com", pass);
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                window.loadData(); 
+            } catch (error) {
+                document.getElementById('pass-error').classList.remove('hidden');
+                btn.innerHTML = 'Mở Khóa Dữ Liệu';
+            }
+        };
+    </script>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800">
+
+    <!-- CẢNH BÁO / THÔNG BÁO -->
+    <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white bg-emerald-600">
+        <i class="ph-fill ph-check-circle text-2xl"></i> <span id="toast-msg">Thành công!</span>
+    </div>
+
+    <!-- ĐĂNG NHẬP -->
+    <div id="login-screen" class="max-w-md mx-auto mt-20 bg-white p-8 rounded-2xl shadow-xl text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+            <i class="ph-fill ph-users-three text-4xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">Nhân Sự Nội Bộ</h2>
+        <p class="text-slate-500 text-sm mb-6">Nhập mật khẩu Admin để quản lý hồ sơ đào tạo.</p>
+        <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-center tracking-[0.3em] font-mono text-xl focus:ring-2 focus:ring-blue-500 outline-none mb-2" placeholder="••••••••" onkeypress="if(event.key==='Enter') window.checkAdmin()">
+        <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4">Sai mật khẩu!</p>
+        <button id="btn-login" onclick="window.checkAdmin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 shadow-md">Mở Khóa Dữ Liệu</button>
+        <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-blue-600 hover:underline">Về Trang chủ</a>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main-content" class="max-w-7xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-identification-card text-blue-600 text-3xl mr-3"></i> Ma Trận Đào Tạo & Sức Khỏe
+                </h2>
+                <p class="text-slate-500 mt-1">Hệ thống phân loại tự động dựa trên vị trí làm việc.</p>
+            </div>
+            <div class="flex gap-3">
+                <a href="index.html" class="bg-slate-100 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 flex items-center gap-2"><i class="ph-bold ph-house"></i> Trang chủ</a>
+                <button onclick="window.openModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2 shadow-sm"><i class="ph-bold ph-plus"></i> Thêm Nhân Sự</button>
+            </div>
+        </div>
+
+        <div class="flex gap-4 mb-4">
+            <div class="relative flex-grow">
+                <i class="ph-bold ph-magnifying-glass absolute left-3 top-3 text-slate-400"></i>
+                <input type="text" id="search-box" onkeyup="window.filterTable()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="Tìm tên, mã NV, phòng ban...">
+            </div>
+            <select id="filter-status" onchange="window.filterTable()" class="border border-slate-300 rounded-lg px-4 font-bold text-slate-700 outline-none">
+                <option value="all">Tất cả trạng thái</option>
+                <option value="nguy-hiem">Cần Đào tạo / Khám gấp</option>
+            </select>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+            <table class="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                        <th class="p-4 w-12">STT</th>
+                        <th class="p-4">Mã NV</th>
+                        <th class="p-4">Họ và Tên</th>
+                        <th class="p-4">Vị trí / Bộ phận</th>
+                        <th class="p-4 text-center">Yêu cầu Nhóm ATLĐ</th>
+                        <th class="p-4 text-center">Hạn Đào Tạo</th>
+                        <th class="p-4 text-center">Hạn Khám SK</th>
+                        <th class="p-4 text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="data-body" class="text-sm divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL THÊM/SỬA (TÍCH HỢP RULE-BASED ENGINE) -->
+    <div id="staff-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-lg font-bold text-blue-800 flex items-center gap-2"><i class="ph-fill ph-brain"></i> Trợ lý Phân loại EHS</h3>
+                <button onclick="window.closeModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="emp-doc-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mã NV <span class="text-red-500">*</span></label>
+                        <input type="text" id="emp-id" class="w-full border border-slate-300 px-3 py-2 rounded-lg font-mono uppercase" placeholder="VD: NV001">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ Tên <span class="text-red-500">*</span></label>
+                        <input type="text" id="emp-name" class="w-full border border-slate-300 px-3 py-2 rounded-lg font-bold text-blue-700" placeholder="Nguyễn Văn A">
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl">
+                    <label class="block text-xs font-bold text-blue-800 uppercase mb-2">Phân loại khu vực / Công việc (Hệ chuyên gia)</label>
+                    <select id="emp-role" onchange="window.autoClassify()" class="w-full border border-blue-300 px-3 py-2.5 rounded-lg font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-sm">
+                        <option value="">-- Chọn công việc thực tế --</option>
+                        <option value="Hóa chất (Máy rửa, Tẩy rửa)">Làm việc với Hóa chất (Washer, Xử lý nước...)</option>
+                        <option value="Bảo trì (Điện, Hàn cắt)">Bảo trì kỹ thuật (Điện, Hàn, Trèo cao...)</option>
+                        <option value="Vận hành máy (Cơ khí)">Vận hành máy móc cơ khí chung</option>
+                        <option value="Kho (Nâng hạ, Xe nâng)">Lái xe nâng, Vận hành kho</option>
+                        <option value="Văn phòng">Nhân viên Văn phòng / Gián tiếp</option>
+                        <option value="Quản lý cấp cao">Giám đốc, Trưởng phòng</option>
+                        <option value="Y tế">Nhân viên Y tế / Sơ cấp cứu</option>
+                    </select>
+                    <p class="text-[11px] text-blue-600 mt-2 font-medium italic">* Hệ thống sẽ tự động đề xuất Nhóm ATLĐ dựa trên công việc.</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 border-t border-slate-100 pt-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nhóm ATLĐ Yêu cầu</label>
+                        <input type="text" id="emp-group" class="w-full border border-slate-300 px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Thẻ ATLĐ</label>
+                        <input type="date" id="emp-date-atld" class="w-full border border-slate-300 px-3 py-2 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Khám Sức Khỏe</label>
+                        <input type="date" id="emp-date-health" class="w-full border border-slate-300 px-3 py-2 rounded-lg">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-5 bg-slate-50 border-t flex justify-end gap-3">
+                <button onclick="window.closeModal()" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
+                <button id="btn-save" onclick="window.saveData()" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-md">Lưu Hồ Sơ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let rawData = [];
+
+        // THE MAGIC: RULE-BASED ENGINE (MA TRẬN TỰ ĐỘNG)
+        window.autoClassify = function() {
+            const role = document.getElementById('emp-role').value;
+            const groupInput = document.getElementById('emp-group');
+            
+            // Logic Luật của Nghị định 44
+            if (role.includes("Hóa chất") || role.includes("Bảo trì") || role.includes("Vận hành") || role.includes("Kho")) {
+                groupInput.value = "Nhóm 3"; // Nghiêm ngặt
+                groupInput.className = "w-full border border-rose-300 px-3 py-2 rounded-lg bg-rose-50 text-rose-700 font-bold";
+            } else if (role.includes("Văn phòng")) {
+                groupInput.value = "Nhóm 4"; // Lao động chung
+                groupInput.className = "w-full border border-emerald-300 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold";
+            } else if (role.includes("Quản lý")) {
+                groupInput.value = "Nhóm 1"; // Quản lý
+                groupInput.className = "w-full border border-purple-300 px-3 py-2 rounded-lg bg-purple-50 text-purple-700 font-bold";
+            } else if (role.includes("Y tế")) {
+                groupInput.value = "Nhóm 5"; // Y tế
+                groupInput.className = "w-full border border-teal-300 px-3 py-2 rounded-lg bg-teal-50 text-teal-700 font-bold";
+            } else {
+                groupInput.value = "";
+                groupInput.className = "w-full border border-slate-300 px-3 py-2 rounded-lg bg-slate-100 text-slate-600 font-bold";
+            }
+        };
+
+        window.openModal = function() {
+            document.getElementById('emp-doc-id').value = '';
+            document.getElementById('emp-id').value = '';
+            document.getElementById('emp-name').value = '';
+            document.getElementById('emp-role').value = '';
+            document.getElementById('emp-date-atld').value = '';
+            document.getElementById('emp-date-health').value = '';
+            window.autoClassify();
+            document.getElementById('staff-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('staff-modal').classList.add('hidden');
+        };
+
+        window.showToast = function(msg) {
+            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast').classList.remove('translate-x-[150%]');
+            setTimeout(() => document.getElementById('toast').classList.add('translate-x-[150%]'), 3000);
+        };
+
+        // Tính toán tình trạng hạn (Thông minh)
+        function checkExpiry(dateStr) {
+            if (!dateStr) return { status: 'danger', text: 'CHƯA CÓ DỮ LIỆU', html: '<span class="bg-red-50 text-red-600 px-2 py-1 rounded font-bold text-xs border border-red-200">Chưa có</span>' };
+            const exp = new Date(dateStr); const today = new Date();
+            const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) return { status: 'danger', text: 'ĐÃ HẾT HẠN', html: `<span class="bg-red-600 text-white px-2 py-1 rounded font-bold text-xs shadow-sm">Hết hạn (${exp.toLocaleDateString('vi-VN')})</span>` };
+            if (diffDays <= 30) return { status: 'warning', text: 'SẮP HẾT HẠN', html: `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded font-bold text-xs border border-amber-300 animate-pulse">Sắp hết hạn (${diffDays} ngày)</span>` };
+            return { status: 'safe', text: 'AN TOÀN', html: `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded font-bold text-xs border border-emerald-200">Hợp lệ (${exp.toLocaleDateString('vi-VN')})</span>` };
+        }
+
+        window.loadData = async function() {
+            const tbody = document.getElementById('data-body');
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8"><i class="ph-bold ph-spinner animate-spin text-2xl text-blue-600"></i></td></tr>`;
+            
+            try {
+                const snap = await window.getDocs(window.query(window.collection(window.db, "nhan_su_noi_bo"), window.orderBy("thoi_gian_tao", "desc")));
+                rawData = [];
+                snap.forEach(doc => rawData.push({ id: doc.id, ...doc.data() }));
+                renderTable(rawData);
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-red-500">Lỗi: Cần tạo collection "nhan_su_noi_bo" trong Rules Firebase.</td></tr>`;
+            }
+        };
+
+        function renderTable(dataArray) {
+            const tbody = document.getElementById('data-body');
+            tbody.innerHTML = '';
+            if (dataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 text-slate-500">Chưa có dữ liệu.</td></tr>`;
+
+            let stt = 1;
+            dataArray.forEach(d => {
+                const atld = checkExpiry(d.han_atld);
+                const health = checkExpiry(d.han_suc_khoe);
+                
+                // Đánh dấu dòng vi phạm
+                const isDanger = atld.status === 'danger' || health.status === 'danger' || atld.status === 'warning';
+                const rowClass = isDanger ? "bg-rose-50/50 hover:bg-rose-50" : "hover:bg-slate-50";
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass} border-b border-slate-100" data-danger="${isDanger}">
+                        <td class="p-4 text-center font-medium">${stt++}</td>
+                        <td class="p-4 font-mono font-bold uppercase text-slate-600">${d.ma_nv}</td>
+                        <td class="p-4 font-bold text-blue-700">${d.ho_ten}</td>
+                        <td class="p-4 text-slate-700 font-medium">${d.vi_tri}</td>
+                        <td class="p-4 text-center"><span class="px-2 py-1 rounded bg-slate-200 text-slate-800 font-bold text-xs shadow-sm">${d.nhom_atld}</span></td>
+                        <td class="p-4 text-center">${atld.html}</td>
+                        <td class="p-4 text-center">${health.html}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="window.editData('${d.id}')" class="text-blue-600 hover:text-blue-800 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.filterTable = function() {
+            const key = document.getElementById('search-box').value.toLowerCase();
+            const filterDanger = document.getElementById('filter-status').value === 'nguy-hiem';
+            
+            const filtered = rawData.filter(d => {
+                const matchText = d.ho_ten.toLowerCase().includes(key) || d.ma_nv.toLowerCase().includes(key) || d.vi_tri.toLowerCase().includes(key);
+                if (!matchText) return false;
+                if (filterDanger) {
+                    const atld = checkExpiry(d.han_atld).status;
+                    const health = checkExpiry(d.han_suc_khoe).status;
+                    return atld === 'danger' || health === 'danger' || atld === 'warning';
+                }
+                return true;
+            });
+            renderTable(filtered);
+        };
+
+        window.editData = function(id) {
+            const d = rawData.find(x => x.id === id);
+            if(!d) return;
+            document.getElementById('emp-doc-id').value = d.id;
+            document.getElementById('emp-id').value = d.ma_nv;
+            document.getElementById('emp-name').value = d.ho_ten;
+            document.getElementById('emp-role').value = d.vi_tri;
+            document.getElementById('emp-date-atld').value = d.han_atld || '';
+            document.getElementById('emp-date-health').value = d.han_suc_khoe || '';
+            window.autoClassify();
+            document.getElementById('staff-modal').classList.remove('hidden');
+        };
+
+        window.saveData = async function() {
+            const id = document.getElementById('emp-doc-id').value;
+            const data = {
+                ma_nv: document.getElementById('emp-id').value.trim().toUpperCase(),
+                ho_ten: document.getElementById('emp-name').value.trim(),
+                vi_tri: document.getElementById('emp-role').value,
+                nhom_atld: document.getElementById('emp-group').value,
+                han_atld: document.getElementById('emp-date-atld').value,
+                han_suc_khoe: document.getElementById('emp-date-health').value,
+                thoi_gian_cap_nhat: new Date()
+            };
+
+            if(!data.ma_nv || !data.ho_ten || !data.vi_tri) return alert("Vui lòng điền đủ Mã, Tên và Vị trí!");
+            
+            const btn = document.getElementById('btn-save'); btn.disabled = true; btn.innerText = "Đang lưu...";
+            try {
+                if (id) await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", id), data);
+                else {
+                    data.thoi_gian_tao = new Date();
+                    await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), data);
+                }
+                window.closeModal();
+                window.showToast("Đã lưu hồ sơ nhân sự!");
+                window.loadData();
+            } catch(e) { alert("Lỗi: " + e.message); }
+            finally { btn.disabled = false; btn.innerText = "Lưu Hồ Sơ"; }
+        };
+    </script>
+</body>
+</html>
