@@ -103,7 +103,6 @@
             </a>
         </div>
 
-        <!-- TABS BẢO VỆ -->
         <div class="flex flex-wrap gap-2 mb-4 md:mb-6 border-b border-slate-200 pb-px">
             <button id="btn-tab-ra-vao" onclick="switchGuardTab('ra-vao')" class="px-6 py-2.5 bg-blue-50 text-blue-700 font-bold border-b-2 border-blue-500 rounded-t-lg transition flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-clock"></i> Giám sát Ra/Vào</button>
             <button id="btn-tab-danh-sach" onclick="switchGuardTab('danh-sach')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-shield-check"></i> DS Được Cấp Phép</button>
@@ -132,18 +131,18 @@
                 </div>
 
                 <div class="col-span-1 bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center flex flex-col justify-center">
-                    <p class="text-[10px] md:text-[11px] text-blue-600 font-bold uppercase mb-1">Đã vào xưởng</p>
+                    <p class="text-[10px] md:text-[11px] text-blue-600 font-bold uppercase mb-1">Đã vào (Lượt)</p>
                     <p class="text-xl md:text-2xl font-black text-blue-800" id="stat-total-in">0</p>
                 </div>
                 
                 <div class="col-span-1 bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm text-center flex flex-col justify-center">
-                    <p class="text-[10px] md:text-[11px] text-emerald-600 font-bold uppercase mb-1">Đã hoàn thành</p>
+                    <p class="text-[10px] md:text-[11px] text-emerald-600 font-bold uppercase mb-1">Đã ra (Lượt)</p>
                     <p class="text-xl md:text-2xl font-black text-emerald-800" id="stat-total-out">0</p>
                 </div>
                 
                 <div class="col-span-2 md:col-span-1 bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm text-center relative overflow-hidden flex flex-col justify-center">
                     <div class="absolute -right-2 -top-2 w-8 h-8 bg-amber-200 rounded-full opacity-50"></div>
-                    <p class="text-[10px] md:text-[11px] text-amber-700 font-bold uppercase mb-1 relative z-10">Đang trong xưởng</p>
+                    <p class="text-[10px] md:text-[11px] text-amber-700 font-bold uppercase mb-1 relative z-10">Đang kẹt trong xưởng</p>
                     <p class="text-2xl font-black text-amber-900 relative z-10" id="stat-inside">0</p>
                 </div>
             </div>
@@ -167,7 +166,6 @@
         </div>
 
         <div id="tab-danh-sach" class="guard-tab hidden">
-            <!-- THANH TÌM KIẾM CHO BẢO VỆ -->
             <div class="mb-4 relative w-full">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i>
@@ -194,9 +192,8 @@
 
     <script>
         window.currentGuardTab = 'ra-vao';
-        let rawApprovedData = []; // Danh sách cấp phép gốc
+        let rawApprovedData = []; 
 
-        // Set ngày
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, '0');
         const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -231,15 +228,16 @@
             }
         }
 
-        // ---------- TAB 1: LOGIC RENDER RA/VÀO ----------
+        // THUẬT TOÁN ĐA LƯỢT CHO BẢO VỆ
         window.renderTable = function() {
             const tbody = document.getElementById('cham-cong-results-body');
             const filterDateStr = document.getElementById('filter-date').value;
             const filterPlant = document.getElementById('filter-plant').value;
             
             tbody.innerHTML = '';
-            let dailyAttendance = {};
+            let personSessions = {}; 
 
+            // Phân loại data theo người
             window.allChamCongData.forEach(data => {
                 if (!data.thoi_gian) return;
                 const dateObj = data.thoi_gian.toDate();
@@ -249,48 +247,83 @@
                 const recordDateStr = `${yyyy}-${mm}-${dd}`;
 
                 if (recordDateStr === filterDateStr) {
-                    const personKey = `${data.cong_ty}_${data.ho_ten}`;
-                    const timeStr = dateObj.toLocaleTimeString('vi-VN');
-
-                    if (!dailyAttendance[personKey]) {
-                        dailyAttendance[personKey] = { cong_ty: data.cong_ty, ho_ten: data.ho_ten, nha_may: data.nha_may || "Chưa xác định", gio_vao: null, gio_ra: null };
-                    }
-
-                    if (data.nha_may && data.nha_may !== "Chưa xác định") {
-                        dailyAttendance[personKey].nha_may = String(data.nha_may).trim();
-                    }
-
-                    if (data.trang_thai === "VÀO" && !dailyAttendance[personKey].gio_vao) {
-                        dailyAttendance[personKey].gio_vao = timeStr;
-                    } else if (data.trang_thai === "RA" && !dailyAttendance[personKey].gio_ra) {
-                        dailyAttendance[personKey].gio_ra = timeStr;
-                    }
+                    const pKey = `${data.cong_ty}_${data.ho_ten}`;
+                    if (!personSessions[pKey]) personSessions[pKey] = [];
+                    personSessions[pKey].push(data);
                 }
             });
 
-            let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
+            let allSessionsToRender = [];
 
-            for (const key in dailyAttendance) {
-                const person = dailyAttendance[key];
+            for (let key in personSessions) {
+                let events = personSessions[key];
+                events.sort((a, b) => a.thoi_gian.toDate().getTime() - b.thoi_gian.toDate().getTime());
+
+                let currentSession = null;
+
+                events.forEach(ev => {
+                    let timeStr = ev.thoi_gian.toDate().toLocaleTimeString('vi-VN');
+                    if (ev.trang_thai === 'VÀO') {
+                        if (currentSession) {
+                            allSessionsToRender.push(currentSession); 
+                        }
+                        currentSession = {
+                            cong_ty: ev.cong_ty,
+                            ho_ten: ev.ho_ten,
+                            nha_may: ev.nha_may || "Chưa xác định",
+                            gio_vao: timeStr,
+                            gio_ra: null,
+                            timestamp: ev.thoi_gian.toDate().getTime()
+                        };
+                    } else if (ev.trang_thai === 'RA') {
+                        if (currentSession) {
+                            currentSession.gio_ra = timeStr;
+                            allSessionsToRender.push(currentSession); 
+                            currentSession = null;
+                        } else {
+                            allSessionsToRender.push({ 
+                                cong_ty: ev.cong_ty,
+                                ho_ten: ev.ho_ten,
+                                nha_may: ev.nha_may || "Chưa xác định",
+                                gio_vao: null,
+                                gio_ra: timeStr,
+                                timestamp: ev.thoi_gian.toDate().getTime()
+                            });
+                        }
+                    }
+                });
                 
-                if (filterPlant === "Tất cả" || person.nha_may === filterPlant || (filterPlant === "Nhà Máy 1" && person.nha_may === "1") || (filterPlant === "Nhà Máy 2" && person.nha_may === "2")) {
+                if (currentSession) {
+                    allSessionsToRender.push(currentSession); 
+                }
+            }
+
+            allSessionsToRender.sort((a,b) => b.timestamp - a.timestamp);
+
+            let totalIn = 0; let totalOut = 0; let totalInside = 0;
+            let stt = 1;
+
+            allSessionsToRender.forEach(session => {
+                
+                if (filterPlant === "Tất cả" || session.nha_may === filterPlant || (filterPlant === "Nhà Máy 1" && session.nha_may === "1") || (filterPlant === "Nhà Máy 2" && session.nha_may === "2")) {
                     
                     let statusHtml = "";
-                    let timeInDisplay = person.gio_vao || '<span class="text-slate-300">-</span>';
-                    let timeOutDisplay = person.gio_ra || '<span class="text-slate-300">-</span>';
+                    let timeInDisplay = session.gio_vao || '<span class="text-slate-300">-</span>';
+                    let timeOutDisplay = session.gio_ra || '<span class="text-slate-300">-</span>';
 
-                    if (person.gio_vao && person.gio_ra) {
-                        totalIn++; totalOut++;
-                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-check-circle"></i> Đã ra khỏi xưởng</span>`;
-                    } else if (person.gio_vao && !person.gio_ra) {
-                        totalIn++; totalInside++;
+                    if (session.gio_vao) totalIn++;
+                    if (session.gio_ra) totalOut++;
+
+                    if (session.gio_vao && session.gio_ra) {
+                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-check-circle"></i> Xong lượt</span>`;
+                    } else if (session.gio_vao && !session.gio_ra) {
+                        totalInside++;
                         statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`;
-                    } else if (!person.gio_vao && person.gio_ra) {
-                        totalOut++;
-                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-x-circle"></i> Lỗi dữ liệu</span>`;
+                    } else if (!session.gio_vao && session.gio_ra) {
+                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap inline-flex items-center gap-1 w-full md:w-auto justify-center"><i class="ph-bold ph-x-circle"></i> Lỗi (Chỉ có RA)</span>`;
                     }
 
-                    let displayPlant = person.nha_may;
+                    let displayPlant = session.nha_may;
                     if(displayPlant === "1") displayPlant = "Nhà Máy 1";
                     if(displayPlant === "2") displayPlant = "Nhà Máy 2";
 
@@ -302,10 +335,10 @@
                             </div>
                             <td class="hidden md:table-cell p-4 text-center font-medium text-slate-500">${stt++}</td>
                             <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
-                                <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Công Ty</span><span class="font-bold text-slate-700">${person.cong_ty}</span></div>
+                                <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Công Ty</span><span class="font-bold text-slate-700">${session.cong_ty}</span></div>
                             </td>
                             <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
-                                <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Nhân Sự</span><span class="font-bold text-blue-700 text-lg md:text-base">${person.ho_ten}</span></div>
+                                <div class="flex flex-col md:block"><span class="md:hidden text-[10px] text-slate-400 font-bold uppercase mb-1">Nhân Sự</span><span class="font-bold text-blue-700 text-lg md:text-base">${session.ho_ten}</span></div>
                             </td>
                             <td class="hidden md:table-cell p-4 text-center font-bold text-purple-600 uppercase tracking-wider">${displayPlant}</td>
                             <td class="block md:table-cell p-2 md:p-4 border-b border-slate-50 md:border-none">
@@ -320,7 +353,7 @@
                         </tr>
                     `;
                 }
-            }
+            });
 
             if (stt === 1) tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có dữ liệu ra/vào tại khu vực này trong ngày.</td></tr>`;
             document.getElementById('stat-total-in').innerText = totalIn;
@@ -348,7 +381,6 @@
                     
                     snap.forEach(doc => {
                         const w = doc.data();
-                        // Chỉ lấy những người ĐỦ ĐIỀU KIỆN
                         const hasValidTraining = w.nhom_atld && w.nhom_atld !== "Chưa đào tạo" && isValidDate(w.han_atld);
                         const hasValidInsurance = isValidDate(w.han_bao_hiem);
                         
@@ -357,7 +389,6 @@
                         }
                     });
                     
-                    // Sắp xếp theo tên công ty
                     rawApprovedData.sort((a,b) => a.cong_ty.localeCompare(b.cong_ty));
                 } catch (error) {
                     tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu.</td></tr>`;
