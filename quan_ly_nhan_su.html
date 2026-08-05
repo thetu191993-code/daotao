@@ -13,7 +13,7 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -33,16 +33,35 @@
         // Bắt đăng nhập Admin
         window.checkAdmin = async function() {
             const btn = document.getElementById('btn-login');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            const ogText = btn.innerHTML;
+            const errorMsg = document.getElementById('pass-error');
             const pass = document.getElementById('admin-pass').value;
+
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
+            btn.disabled = true;
+            errorMsg.classList.add('hidden');
+
             try {
                 await signInWithEmailAndPassword(auth, "admin@ehs.com", pass);
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 window.loadData(); 
             } catch (error) {
-                document.getElementById('pass-error').classList.remove('hidden');
-                btn.innerHTML = 'Mở Khóa Dữ Liệu';
+                console.error("Lỗi đăng nhập:", error);
+                errorMsg.classList.remove('hidden');
+                // Bắt chính xác lỗi Firebase thay vì chỉ báo "Sai mật khẩu"
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                     errorMsg.innerText = "Sai mật khẩu! Vui lòng thử lại.";
+                } else if (error.code === 'auth/user-not-found') {
+                     errorMsg.innerText = "Tài khoản admin@ehs.com chưa được tạo.";
+                } else if (error.code === 'auth/network-request-failed') {
+                     errorMsg.innerText = "Lỗi kết nối mạng, vui lòng thử lại!";
+                } else {
+                     errorMsg.innerText = "Lỗi xác thực: " + error.message;
+                }
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
             }
         };
     </script>
