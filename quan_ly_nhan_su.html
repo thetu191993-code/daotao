@@ -90,6 +90,10 @@
                     <i class="ph-bold ph-file-pdf text-lg"></i> Xuất PDF
                 </button>
 
+                <button onclick="window.syncUsers(event)" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-indigo-700 flex items-center gap-2 shadow-sm" title="Kéo danh sách từ những người đã tạo tài khoản">
+                    <i class="ph-bold ph-cloud-arrow-down text-lg"></i> Đồng bộ User
+                </button>
+
                 <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden" onchange="window.handleExcelUpload(event)">
                 <button id="btn-excel" onclick="document.getElementById('excel-upload').click()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-file-xls text-lg"></i> Nhập từ Excel
@@ -202,10 +206,6 @@
                             <option value="Tài xế xe nâng">Kho - Tài xế xe nâng</option>
                             <option value="Văn phòng">Văn phòng / Gián tiếp (Nhóm 4)</option>
                         </optgroup>
-                        <optgroup label="Quản lý EHS">
-                            <option value="Tổng Giám đốc - Giám đốc Nhà máy - Giám đốc bộ phận">Quản lý (Nhóm 1)</option>
-                            <option value="Phòng EHS">EHS (Nhóm 2)</option>
-                        </optgroup>
                     </select>
                     <p class="text-[11px] text-blue-600 mt-2 font-medium italic">* Hệ thống tự động đẩy vào Nhóm 3 đối với Hóa chất, Điện, Vận hành máy, Nâng hạ.</p>
                 </div>
@@ -316,6 +316,68 @@
             if (typeof excelDate === 'number') { const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000)); return date.toISOString().split('T')[0]; }
             return String(excelDate);
         }
+
+        window.syncUsers = async function(event) {
+            const btn = event.currentTarget;
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang tải...';
+            btn.disabled = true;
+
+            try {
+                // 1. Lấy danh sách users đăng ký
+                const usersSnap = await window.getDocs(window.collection(window.db, "users"));
+                
+                // 2. Lấy danh sách nhân sự hiện tại
+                const currentStaffSnap = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
+                const existingEmpIds = new Set();
+                currentStaffSnap.forEach(doc => {
+                    const data = doc.data();
+                    if(data.ma_nv) existingEmpIds.add(data.ma_nv.toUpperCase());
+                });
+
+                let addedCount = 0;
+
+                // 3. Đối chiếu và thêm mới
+                for (const userDoc of usersSnap.docs) {
+                    const userData = userDoc.data();
+                    const maNV = userData.ma_nv ? userData.ma_nv.toUpperCase() : null;
+
+                    if (maNV && !existingEmpIds.has(maNV)) {
+                        const viTri = userData.bo_phan || '';
+                        const nhomATLD = getAutoGroupFromRole(viTri);
+
+                        const newStaffData = {
+                            ma_nv: maNV,
+                            ho_ten: userData.ho_ten || '',
+                            vi_tri: viTri,
+                            nhom_atld: nhomATLD,
+                            gioi_tinh: '',
+                            ngay_sinh: '',
+                            han_atld: '',
+                            han_suc_khoe: '',
+                            thoi_gian_tao: new Date(),
+                            thoi_gian_cap_nhat: new Date()
+                        };
+
+                        await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), newStaffData);
+                        addedCount++;
+                        existingEmpIds.add(maNV); 
+                    }
+                }
+
+                if (addedCount > 0) {
+                    window.showToast(`Đã đồng bộ ${addedCount} User mới!`);
+                    window.loadData();
+                } else {
+                    alert("Tất cả User đăng ký đều đã có trong danh sách nhân sự.");
+                }
+            } catch (e) {
+                alert("Lỗi đồng bộ (Vui lòng kiểm tra Firebase Rules bảng 'users'): " + e.message);
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        };
 
         window.autoClassify = function() {
             const role = document.getElementById('emp-role').value;
