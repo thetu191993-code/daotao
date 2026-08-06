@@ -126,7 +126,8 @@
                         <th class="p-4 text-center">Ngày sinh</th>
                         <th class="p-4">Vị trí / Bộ phận</th>
                         <th class="p-4 text-center">Nhóm ATLĐ</th>
-                        <th class="p-4 text-center">Tình trạng Đào Tạo EHS</th>
+                        <th class="p-4 text-center">Hạn Thẻ ATLĐ</th>
+                        <th class="p-4 text-center">Đào tạo EHS Nội bộ</th>
                         <th class="p-4 text-center">Hạn Khám SK</th>
                         <th class="p-4 text-center">Thao tác</th>
                     </tr>
@@ -385,22 +386,35 @@
         function renderTable(dataArray) {
             const tbody = document.getElementById('data-body');
             tbody.innerHTML = '';
-            if (dataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="10" class="text-center p-8 text-slate-500">Chưa có dữ liệu nhân sự.</td></tr>`;
+            if (dataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="11" class="text-center p-8 text-slate-500">Chưa có dữ liệu nhân sự.</td></tr>`;
 
             let stt = 1;
             dataArray.forEach(d => {
                 const atld = checkExpiry(d.han_atld);
                 const health = checkExpiry(d.han_suc_khoe);
                 
-                // Tích hợp Nhãn điểm thi Online
-                let onlineBadge = "";
+                // Tích hợp Nhãn điểm thi Online đa khóa học
+                let onlineBadgesHtml = "<span class='text-slate-400 text-xs font-medium'>Chưa học</span>";
                 let hasOnlinePass = false;
                 if (d.lich_su_thi && d.lich_su_thi.length > 0) {
                     hasOnlinePass = true;
-                    d.lich_su_thi.sort((a,b) => b.thoi_gian_nop.toDate() - a.thoi_gian_nop.toDate());
-                    const lastTest = d.lich_su_thi[0];
-                    const lastTestDate = lastTest.thoi_gian_nop.toDate().toLocaleDateString('vi-VN');
-                    onlineBadge = `<div class="mt-1.5"><span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold text-[10px] border border-blue-200" title="Khóa gần nhất: ${lastTest.ten_khoa_hoc}"><i class="ph-fill ph-monitor-play text-sm"></i> Online: Đạt (${lastTestDate})</span></div>`;
+                    // Lọc để lấy điểm thi MỚI NHẤT của TỪNG khóa học
+                    let passedCourses = {};
+                    d.lich_su_thi.forEach(test => {
+                        if (!passedCourses[test.ten_khoa_hoc] || passedCourses[test.ten_khoa_hoc].thoi_gian_nop.toDate() < test.thoi_gian_nop.toDate()) {
+                            passedCourses[test.ten_khoa_hoc] = test;
+                        }
+                    });
+
+                    // Render danh sách các khóa đã học
+                    onlineBadgesHtml = Object.values(passedCourses).map(test => {
+                        const testDate = test.thoi_gian_nop.toDate().toLocaleDateString('vi-VN');
+                        // Làm ngắn tên khóa học cho đẹp (VD: "Đào tạo EHS Chung 2026" -> "EHS Chung")
+                        let shortName = test.ten_khoa_hoc.replace("Đào tạo ", "").replace(" 2026", "").replace(" Cơ Bản", "");
+                        return `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold text-[10px] border border-blue-200 whitespace-nowrap mb-1" title="${test.ten_khoa_hoc}">
+                                    <i class="ph-fill ph-monitor-play text-sm"></i> ${shortName} (${testDate})
+                                </span>`;
+                    }).join('');
                 }
 
                 // Cảnh báo màu đỏ nếu chưa có thẻ OJT và cũng chưa học Online
@@ -417,10 +431,10 @@
                         <td class="p-4 text-center text-slate-600">${dobText}</td>
                         <td class="p-4 text-slate-700 font-medium">${d.vi_tri}</td>
                         <td class="p-4 text-center"><span class="px-2 py-1 rounded bg-slate-200 text-slate-800 font-bold text-xs shadow-sm whitespace-nowrap">${d.nhom_atld}</span></td>
+                        <td class="p-4 text-center">${atld.html}</td>
                         <td class="p-4 text-center">
                             <div class="flex flex-col items-center justify-center">
-                                ${atld.html}
-                                ${onlineBadge}
+                                ${onlineBadgesHtml}
                             </div>
                         </td>
                         <td class="p-4 text-center">${health.html}</td>
@@ -507,18 +521,24 @@
                                 <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 160px;">Họ và Tên</th>
                                 <th style="border: 1px solid #000; padding: 6px; text-align: left;">Khu vực làm việc</th>
                                 <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 70px;">Nhóm</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 150px;">Tình trạng Đào tạo</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 90px;">Hạn Thẻ ATLĐ</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 150px;">Đào tạo EHS Nội bộ</th>
                                 <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 90px;">Hạn Khám SK</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${rawData.map((d, i) => {
-                                let trainStatus = "Chưa có";
+                                let atldStatus = d.han_atld ? new Date(d.han_atld).toLocaleDateString('vi-VN') : "Chưa có";
+                                
+                                let internalStatus = "Chưa học";
                                 if (d.lich_su_thi && d.lich_su_thi.length > 0) {
-                                    const last = d.lich_su_thi.sort((a,b) => b.thoi_gian_nop.toDate() - a.thoi_gian_nop.toDate())[0];
-                                    trainStatus = `Đạt Online (${last.thoi_gian_nop.toDate().toLocaleDateString('vi-VN')})`;
-                                } else if (d.han_atld) {
-                                    trainStatus = `Có Thẻ (${new Date(d.han_atld).toLocaleDateString('vi-VN')})`;
+                                    let passedCourses = {};
+                                    d.lich_su_thi.forEach(test => {
+                                        if (!passedCourses[test.ten_khoa_hoc] || passedCourses[test.ten_khoa_hoc].thoi_gian_nop.toDate() < test.thoi_gian_nop.toDate()) {
+                                            passedCourses[test.ten_khoa_hoc] = test;
+                                        }
+                                    });
+                                    internalStatus = Object.values(passedCourses).map(t => `${t.ten_khoa_hoc.replace("Đào tạo ", "").replace(" 2026", "").replace(" Cơ Bản", "")} (${t.thoi_gian_nop.toDate().toLocaleDateString('vi-VN')})`).join(',<br>');
                                 }
                                 
                                 let healthStatus = d.han_suc_khoe ? new Date(d.han_suc_khoe).toLocaleDateString('vi-VN') : "Chưa có";
@@ -530,7 +550,8 @@
                                     <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${d.ho_ten}</td>
                                     <td style="border: 1px solid #000; padding: 6px;">${d.vi_tri}</td>
                                     <td style="border: 1px solid #000; padding: 6px; text-align: center;">${d.nhom_atld}</td>
-                                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${trainStatus}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${atldStatus}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${internalStatus}</td>
                                     <td style="border: 1px solid #000; padding: 6px; text-align: center;">${healthStatus}</td>
                                 </tr>
                                 `;
