@@ -287,6 +287,37 @@
     </style>
 
     <script>
+        // KIỂM TRA QUYỀN TRUY CẬP (HÀM TOÀN CỤC)
+        window.openModal = function() {
+            document.getElementById('emp-doc-id').value = '';
+            document.getElementById('emp-id').value = '';
+            document.getElementById('emp-name').value = '';
+            document.getElementById('emp-dob').value = '';
+            document.getElementById('emp-gender').value = '';
+            document.getElementById('emp-dept').value = '';
+            document.getElementById('emp-role').innerHTML = '<option value="">-- Vui lòng chọn Bộ Phận trước --</option>';
+            document.getElementById('emp-group').value = '';
+            document.getElementById('emp-pccc').value = '';
+            document.getElementById('emp-atvsv').checked = false;
+            document.getElementById('emp-date-atld').value = '';
+            document.getElementById('emp-date-health').value = '';
+            
+            document.getElementById('emp-group').className = "w-full border border-slate-300 px-3 py-2.5 rounded-lg bg-slate-200 text-slate-600 font-bold shadow-inner";
+            
+            document.getElementById('staff-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('staff-modal').classList.add('hidden');
+        };
+
+        window.showToast = function(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.remove('translate-x-[150%]');
+            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
+        };
+
         let rawData = [];
         let globalUserTests = {}; 
 
@@ -372,15 +403,11 @@
             }
         }
 
-        // ==========================================
-        // KHẮC PHỤC LỖI HIỂN THỊ DỮ LIỆU ĐA CHIỀU (MULTI-COLUMN & NO-ORDERBY)
-        // ==========================================
         window.loadData = async function() {
             const tbody = document.getElementById('data-body');
             tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8"><i class="ph-bold ph-spinner animate-spin text-3xl text-blue-600 mb-2"></i><br><span class="font-medium text-slate-500">Đang đồng bộ dữ liệu đa chiều...</span></td></tr>`;
             
             try {
-                // Sửa lỗi bốc hơi dữ liệu: Không dùng orderBy trên server để tránh trường hợp thiếu field thoi_gian_tao bị firebase loại bỏ
                 const snapUser = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
                 const snapTest = await window.getDocs(window.collection(window.db, "ket_qua_kiem_tra"));
                 
@@ -391,7 +418,6 @@
                         const id = String(t.nhan_vien_id).trim().toUpperCase();
                         if(!globalUserTests[id]) globalUserTests[id] = {};
                         
-                        // Xử lý an toàn cho toDate()
                         let tTime = t.thoi_gian_nop ? (t.thoi_gian_nop.toDate ? t.thoi_gian_nop.toDate() : new Date(t.thoi_gian_nop)) : new Date(0);
                         let currTime = globalUserTests[id][t.ten_khoa_hoc] ? 
                             (globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop.toDate ? globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop.toDate() : new Date(globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop)) 
@@ -410,7 +436,6 @@
                     rawData.push({ id: doc.id, lich_su_thi_moi_nhat: globalUserTests[maNV] || {}, ...d });
                 });
 
-                // Tự sort trên client
                 rawData.sort((a, b) => {
                     let timeA = a.thoi_gian_tao ? (a.thoi_gian_tao.toDate ? a.thoi_gian_tao.toDate().getTime() : new Date(a.thoi_gian_tao).getTime()) : 0;
                     let timeB = b.thoi_gian_tao ? (b.thoi_gian_tao.toDate ? b.thoi_gian_tao.toDate().getTime() : new Date(b.thoi_gian_tao).getTime()) : 0;
@@ -484,7 +509,6 @@
                     groupHtml = `<span class="px-2 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[11px] whitespace-nowrap">${d.nhom_atld}</span>`;
                 }
 
-                // Chốt lại 13 cột chính xác theo thead để tránh lỗi bể form
                 htmlStr += `
                     <tr class="${rowClass} border-b border-slate-200 transition-colors hover:bg-slate-50">
                         <td class="p-3 text-center font-medium">${stt++}</td>
@@ -562,36 +586,6 @@
             document.getElementById('emp-date-health').value = d.han_suc_khoe || '';
             window.autoClassify(); 
             document.getElementById('staff-modal').classList.remove('hidden');
-        };
-
-        window.openModal = function() {
-            document.getElementById('emp-doc-id').value = '';
-            document.getElementById('emp-id').value = '';
-            document.getElementById('emp-name').value = '';
-            document.getElementById('emp-dob').value = '';
-            document.getElementById('emp-gender').value = '';
-            document.getElementById('emp-dept').value = '';
-            document.getElementById('emp-role').innerHTML = '<option value="">-- Vui lòng chọn Bộ Phận trước --</option>';
-            document.getElementById('emp-group').value = '';
-            document.getElementById('emp-pccc').value = '';
-            document.getElementById('emp-atvsv').checked = false;
-            document.getElementById('emp-date-atld').value = '';
-            document.getElementById('emp-date-health').value = '';
-            
-            document.getElementById('emp-group').className = "w-full border border-slate-300 px-3 py-2.5 rounded-lg bg-slate-200 text-slate-600 font-bold shadow-inner";
-            
-            document.getElementById('staff-modal').classList.remove('hidden');
-        };
-
-        window.closeModal = function() {
-            document.getElementById('staff-modal').classList.add('hidden');
-        };
-
-        window.showToast = function(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toast-msg').innerText = message;
-            toast.classList.remove('translate-x-[150%]');
-            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         };
 
         window.deleteData = async function(id) {
