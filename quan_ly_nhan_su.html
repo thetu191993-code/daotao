@@ -17,7 +17,7 @@
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -562,6 +562,36 @@
             document.getElementById('emp-date-health').value = d.han_suc_khoe || '';
             window.autoClassify(); 
             document.getElementById('staff-modal').classList.remove('hidden');
+        };
+
+        window.openModal = function() {
+            document.getElementById('emp-doc-id').value = '';
+            document.getElementById('emp-id').value = '';
+            document.getElementById('emp-name').value = '';
+            document.getElementById('emp-dob').value = '';
+            document.getElementById('emp-gender').value = '';
+            document.getElementById('emp-dept').value = '';
+            document.getElementById('emp-role').innerHTML = '<option value="">-- Vui lòng chọn Bộ Phận trước --</option>';
+            document.getElementById('emp-group').value = '';
+            document.getElementById('emp-pccc').value = '';
+            document.getElementById('emp-atvsv').checked = false;
+            document.getElementById('emp-date-atld').value = '';
+            document.getElementById('emp-date-health').value = '';
+            
+            document.getElementById('emp-group').className = "w-full border border-slate-300 px-3 py-2.5 rounded-lg bg-slate-200 text-slate-600 font-bold shadow-inner";
+            
+            document.getElementById('staff-modal').classList.remove('hidden');
+        };
+
+        window.closeModal = function() {
+            document.getElementById('staff-modal').classList.add('hidden');
+        };
+
+        window.showToast = function(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = message;
+            toast.classList.remove('translate-x-[150%]');
+            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         };
 
         window.deleteData = async function(id) {
