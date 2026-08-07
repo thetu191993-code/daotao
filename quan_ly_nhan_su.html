@@ -43,14 +43,13 @@
             btn.disabled = true;
             errorMsg.classList.add('hidden');
 
-            // Mật khẩu nội bộ cứng
             if (pass === "EHS2026" || pass === "ehs2026") {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
                 window.loadData(); 
             } else {
                 errorMsg.classList.remove('hidden');
-                errorMsg.innerText = "Sai mật khẩu! (Pass: EHS2026)";
+                errorMsg.innerText = "Sai mật khẩu! Vui lòng thử lại (Pass: EHS2026)";
                 btn.innerHTML = ogText;
                 btn.disabled = false;
             }
@@ -77,7 +76,7 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <div id="main-content" class="w-full max-w-[1400px] mx-auto bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
+    <div id="main-content" class="w-full max-w-[1500px] mx-auto bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
         
         <!-- HEADER BUTTONS -->
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
@@ -120,9 +119,9 @@
             <p id="progress-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-800">0/500</p>
         </div>
 
-        <!-- TABLE BÁO CÁO -->
+        <!-- TABLE BÁO CÁO (CHUẨN 13 CỘT) -->
         <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[1500px]">
+            <table class="w-full text-left border-collapse min-w-[1600px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
                         <th class="p-3 w-12 text-center">STT</th>
@@ -132,7 +131,7 @@
                         <th class="p-3 text-center">Ngày sinh</th>
                         <th class="p-3">Bộ Phận</th>
                         <th class="p-3">Vị trí Công việc</th>
-                        <th class="p-3">Vai trò phụ (PCCC/ATVSV)</th>
+                        <th class="p-3 text-center">Vai trò phụ (PCCC/ATVSV)</th>
                         <th class="p-3 text-center">Phân loại ATLĐ</th>
                         <th class="p-3 text-center">Hạn Thẻ ATLĐ</th>
                         <th class="p-3 text-center">Đào tạo EHS Nội bộ</th>
@@ -156,7 +155,6 @@
             <div class="p-6 space-y-4 overflow-y-auto">
                 <input type="hidden" id="emp-doc-id">
                 
-                <!-- Hàng 1: TT Cơ bản -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-1">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mã NV <span class="text-red-500">*</span></label>
@@ -168,7 +166,6 @@
                     </div>
                 </div>
 
-                <!-- Hàng 2: TT Cá nhân -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày sinh</label>
@@ -189,7 +186,7 @@
                     </div>
                 </div>
 
-                <!-- Hàng 3: Công việc (KÍCH HOẠT HỆ CHUYÊN GIA) - ĐÃ CẬP NHẬT THÀNH SELECT DROPDOWN -->
+                <!-- HỆ CHUYÊN GIA -->
                 <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl space-y-4">
                     <div class="flex items-center gap-2 mb-2">
                         <i class="ph-fill ph-robot text-blue-600 text-xl"></i>
@@ -229,14 +226,12 @@
                         </div>
                     </div>
 
-                    <!-- KẾT QUẢ CỦA HỆ CHUYÊN GIA SẼ HIỆN Ở ĐÂY -->
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kết quả phân loại Nhóm ATLĐ</label>
                         <input type="text" id="emp-group" class="w-full border border-slate-300 px-3 py-2.5 rounded-lg bg-slate-200 text-slate-600 font-bold" readonly>
                     </div>
                 </div>
 
-                <!-- Hàng 4: Vai trò phụ PCCC / ATVSV -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-orange-50 border border-orange-100 rounded-xl">
                     <div>
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">Vai trò Đội PCCC Cơ Sở</label>
@@ -260,7 +255,6 @@
                     </div>
                 </div>
 
-                <!-- Hàng 5: Hạn thẻ -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Thẻ/Chứng nhận ATLĐ</label>
@@ -296,101 +290,47 @@
         let rawData = [];
         let globalUserTests = {}; 
 
-        // ==========================================
-        // CẬP NHẬT DANH SÁCH VỊ TRÍ THEO BỘ PHẬN (ĐÃ FIX SELECT)
-        // ==========================================
         window.updatePositionDropdown = function(selectedValue = "") {
             const dept = document.getElementById('emp-dept').value;
             const roleSelect = document.getElementById('emp-role');
             
             roleSelect.innerHTML = '<option value="">-- Chọn Vị trí --</option>';
-            
             let options = [];
             
-            if (dept === "Sản xuất - Can") {
-                options = ["Trưởng ca", "Teamleader Sản xuất", "Cupper", "Body maker", "Washer", "Decorator", "LSM", "Necker", "Palletizer", "Scrap baler"];
-            } else if (dept === "Sản xuất - End") {
-                options = ["Trưởng ca", "Teamleader Sản xuất", "Shell press", "Conversion", "Liner", "Palletizer"];
-            } else if (dept === "QC") {
-                options = ["Quản lý QC", "Trưởng ca QC", "Nhân viên QC"];
-            } else if (dept === "Điện - Utility - EHS") {
-                options = ["Trưởng phòng Điện - Utility - EHS", "Bảo trì điện", "Utility", "EHS", "Vệ sinh công nghiệp"];
-            } else if (dept === "Kỹ thuật") {
-                options = ["Trưởng phòng Kỹ thuật", "Kỹ thuật", "Workshop"];
-            } else if (dept === "Kho - Logistic - PPIC") {
-                options = ["Quản lý Kho", "Tài xế xe nâng", "Nhân viên Kho", "Phụ kho"];
-            } else if (dept === "Văn phòng") {
-                options = ["Trưởng phòng", "Nhân viên", "Y tế"];
-            } else if (dept === "Ban Giám Đốc") {
-                options = ["Giám đốc", "Phó Giám đốc"];
-            }
+            if (dept === "Sản xuất - Can") options = ["Trưởng ca", "Teamleader Sản xuất", "Cupper", "Body maker", "Washer", "Decorator", "LSM", "Necker", "Palletizer", "Scrap baler"];
+            else if (dept === "Sản xuất - End") options = ["Trưởng ca", "Teamleader Sản xuất", "Shell press", "Conversion", "Liner", "Palletizer"];
+            else if (dept === "QC") options = ["Quản lý QC", "Trưởng ca QC", "Nhân viên QC"];
+            else if (dept === "Điện - Utility - EHS") options = ["Trưởng phòng Điện - Utility - EHS", "Bảo trì điện", "Utility", "EHS", "Vệ sinh công nghiệp", "Cleaning"];
+            else if (dept === "Kỹ thuật") options = ["Trưởng phòng Kỹ thuật", "Kỹ thuật", "Workshop"];
+            else if (dept === "Kho - Logistic - PPIC") options = ["Quản lý Kho", "Tài xế xe nâng", "Nhân viên Kho", "Phụ kho"];
+            else if (dept === "Văn phòng") options = ["Trưởng phòng", "Nhân viên", "Y tế"];
+            else if (dept === "Ban Giám Đốc") options = ["Giám đốc", "Phó Giám đốc"];
 
             if (options.length === 0) {
                 roleSelect.innerHTML = '<option value="">-- Vui lòng chọn Bộ Phận trước --</option>';
             } else {
-                options.forEach(opt => {
-                    roleSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
-                });
+                options.forEach(opt => { roleSelect.innerHTML += `<option value="${opt}">${opt}</option>`; });
             }
-
-            // Phục hồi lại giá trị cũ nếu đang edit
-            if (selectedValue) {
-                roleSelect.value = selectedValue;
-            }
+            if (selectedValue) roleSelect.value = selectedValue;
         };
 
-        // ==========================================
-        // HỆ CHUYÊN GIA: PHÂN LOẠI NHÓM ATLĐ (V2.0)
-        // ==========================================
         function getAutoGroupFromRole(deptStr, posStr) {
             const d = (deptStr || "").toLowerCase();
             const p = (posStr || "").toLowerCase();
 
             if (!d && !p) return "Chưa phân loại";
 
-            // Nhóm 1: Quản lý
-            if (p.includes("quản lý") || p.includes("giám đốc") || p.includes("trưởng phòng") || p.includes("phó phòng") || p.includes("manager")) {
-                return "Nhóm 1";
-            }
-            // Nhóm 2: EHS, Trưởng ca
-            if (d.includes("ehs") || p.includes("ehs") || p.includes("trưởng ca") || p.includes("supervisor")) {
-                return "Nhóm 2";
-            }
-            // Nhóm 5: Y tế
-            if (p.includes("y tế") || p.includes("nurse") || p.includes("bác sĩ") || d.includes("y tế")) {
-                return "Nhóm 5";
-            }
+            if (p.includes("quản lý") || p.includes("giám đốc") || p.includes("trưởng phòng") || p.includes("phó phòng") || p.includes("manager")) return "Nhóm 1";
+            if (d.includes("ehs") || p.includes("ehs") || p.includes("trưởng ca") || p.includes("supervisor")) return "Nhóm 2";
+            if (p.includes("y tế") || p.includes("nurse") || p.includes("bác sĩ") || d.includes("y tế")) return "Nhóm 5";
 
-            // ================= NHÓM 3 (PHÂN CHI TIẾT) =================
-            // 3a. Máy móc thiết bị
-            if (p.includes("cupper") || p.includes("body maker") || p.includes("necker") || p.includes("palletizer") || p.includes("scrap baler") || p.includes("shell press") || p.includes("conversion") || (p === "kỹ thuật")) {
-                return "Nhóm 3 - Vận hành máy";
-            }
-            // 3b. Hóa chất
-            if (p.includes("washer") || p.includes("decorator") || p.includes("lsm") || p.includes("liner") || p.includes("teamleader sản xuất") || p.includes("team leader")) {
-                return "Nhóm 3 - Hóa chất";
-            }
-            // 3c. Điện
-            if (p.includes("bảo trì điện") || p.includes("thợ điện") || p.includes("electrician")) {
-                return "Nhóm 3 - Điện";
-            }
-            // 3d. Thiết bị áp lực
-            if (p.includes("utility") || p.includes("lò hơi") || p.includes("máy nén khí") || p.includes("áp lực")) {
-                return "Nhóm 3 - Thiết bị áp lực";
-            }
-            // 3e. Hàn cắt
-            if (p.includes("workshop") || p.includes("hàn") || p.includes("cắt") || p.includes("welder")) {
-                return "Nhóm 3 - Hàn cắt";
-            }
-            // 3f. Thiết bị nâng
-            if (p.includes("tài xế xe nâng") || p.includes("lái xe nâng") || p.includes("forklift")) {
-                return "Nhóm 3 - Thiết bị nâng";
-            }
-
-            // Nhóm 4: Nhân viên, LĐ Phổ thông
-            if (p.includes("nhân viên") || p.includes("staff") || p.includes("qc") || p.includes("phụ kho") || p.includes("vệ sinh công nghiệp") || p.includes("cleaning") || d.includes("văn phòng") || d.includes("tài chính") || d.includes("nhân sự")) {
-                return "Nhóm 4";
-            }
+            if (p.includes("cupper") || p.includes("body maker") || p.includes("necker") || p.includes("palletizer") || p.includes("scrap baler") || p.includes("shell press") || p.includes("conversion") || (p === "kỹ thuật")) return "Nhóm 3 - Vận hành máy";
+            if (p.includes("washer") || p.includes("decorator") || p.includes("lsm") || p.includes("liner") || p.includes("teamleader sản xuất") || p.includes("team leader")) return "Nhóm 3 - Hóa chất";
+            if (p.includes("bảo trì điện") || p.includes("thợ điện") || p.includes("electrician")) return "Nhóm 3 - Điện";
+            if (p.includes("utility") || p.includes("lò hơi") || p.includes("máy nén khí") || p.includes("áp lực")) return "Nhóm 3 - Thiết bị áp lực";
+            if (p.includes("workshop") || p.includes("hàn") || p.includes("cắt") || p.includes("welder")) return "Nhóm 3 - Hàn cắt";
+            if (p.includes("tài xế xe nâng") || p.includes("lái xe nâng") || p.includes("forklift")) return "Nhóm 3 - Thiết bị nâng";
+            if (p.includes("nhân viên") || p.includes("staff") || p.includes("qc") || p.includes("phụ kho") || p.includes("vệ sinh công nghiệp") || p.includes("cleaning") || d.includes("văn phòng") || d.includes("tài chính") || d.includes("nhân sự")) return "Nhóm 4";
 
             return "Chưa phân loại"; 
         }
@@ -412,8 +352,231 @@
         };
 
         // ==========================================
-        // XỬ LÝ NHẬP EXCEL
+        // KHẮC PHỤC LỖI HIỂN THỊ DỮ LIỆU ĐA CHIỀU (MULTI-COLUMN & NO-ORDERBY)
         // ==========================================
+        window.loadData = async function() {
+            const tbody = document.getElementById('data-body');
+            tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8"><i class="ph-bold ph-spinner animate-spin text-3xl text-blue-600 mb-2"></i><br><span class="font-medium text-slate-500">Đang đồng bộ dữ liệu đa chiều...</span></td></tr>`;
+            
+            try {
+                // Sửa lỗi bốc hơi dữ liệu: Không dùng orderBy trên server để tránh trường hợp thiếu field thoi_gian_tao bị firebase loại bỏ
+                const snapUser = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
+                const snapTest = await window.getDocs(window.collection(window.db, "ket_qua_kiem_tra"));
+                
+                globalUserTests = {};
+                snapTest.forEach(doc => {
+                    const t = doc.data();
+                    if(t.nhan_vien_id) {
+                        const id = String(t.nhan_vien_id).trim().toUpperCase();
+                        if(!globalUserTests[id]) globalUserTests[id] = {};
+                        
+                        // Xử lý an toàn cho toDate()
+                        let tTime = t.thoi_gian_nop ? (t.thoi_gian_nop.toDate ? t.thoi_gian_nop.toDate() : new Date(t.thoi_gian_nop)) : new Date(0);
+                        let currTime = globalUserTests[id][t.ten_khoa_hoc] ? 
+                            (globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop.toDate ? globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop.toDate() : new Date(globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop)) 
+                            : new Date(0);
+
+                        if(!globalUserTests[id][t.ten_khoa_hoc] || currTime < tTime) {
+                            globalUserTests[id][t.ten_khoa_hoc] = t;
+                        }
+                    }
+                });
+
+                rawData = [];
+                snapUser.forEach(doc => {
+                    const d = doc.data();
+                    const maNV = String(d.ma_nv).trim().toUpperCase();
+                    rawData.push({ id: doc.id, lich_su_thi_moi_nhat: globalUserTests[maNV] || {}, ...d });
+                });
+
+                // Tự sort trên client
+                rawData.sort((a, b) => {
+                    let timeA = a.thoi_gian_tao ? (a.thoi_gian_tao.toDate ? a.thoi_gian_tao.toDate().getTime() : new Date(a.thoi_gian_tao).getTime()) : 0;
+                    let timeB = b.thoi_gian_tao ? (b.thoi_gian_tao.toDate ? b.thoi_gian_tao.toDate().getTime() : new Date(b.thoi_gian_tao).getTime()) : 0;
+                    return timeB - timeA;
+                });
+
+                renderTable(rawData);
+            } catch(e) {
+                console.error("Lỗi CSDL:", e);
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-red-500 font-bold">Lỗi CSDL: ${e.message}</td></tr>`;
+            }
+        };
+
+        function renderTable(dataArray) {
+            const tbody = document.getElementById('data-body');
+            tbody.innerHTML = '';
+            
+            if (dataArray.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-slate-500 font-medium">Chưa có dữ liệu nhân sự trong sổ quản lý.</td></tr>`;
+                return;
+            }
+
+            let stt = 1;
+            let htmlStr = "";
+
+            dataArray.forEach(d => {
+                const atld = checkExpiry(d.han_atld);
+                const health = checkExpiry(d.han_suc_khoe);
+                
+                let onlineBadgesHtml = "<span class='text-slate-400 text-xs font-medium'>Chưa học</span>";
+                let hasPassedAny = false;
+
+                if (d.lich_su_thi_moi_nhat && Object.keys(d.lich_su_thi_moi_nhat).length > 0) {
+                    const badges = Object.values(d.lich_su_thi_moi_nhat).map(test => {
+                        const isPass = test.diem_so >= (test.tong_cau * 0.8);
+                        let testDate = "N/A";
+                        if(test.thoi_gian_nop) {
+                             testDate = test.thoi_gian_nop.toDate ? test.thoi_gian_nop.toDate().toLocaleDateString('vi-VN') : new Date(test.thoi_gian_nop).toLocaleDateString('vi-VN');
+                        }
+                        let shortName = test.ten_khoa_hoc ? test.ten_khoa_hoc.replace("Đào tạo ", "").replace(" 2026", "").replace(" Cơ Bản", "") : "Khoá học";
+                        
+                        if (isPass) {
+                            hasPassedAny = true;
+                            return `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold text-[10px] border border-blue-200 whitespace-nowrap mb-1" title="Điểm: ${test.diem_so}/${test.tong_cau}"><i class="ph-fill ph-monitor-play"></i> ${shortName} (${testDate})</span>`;
+                        } else {
+                            return `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-bold text-[10px] border border-amber-200 whitespace-nowrap mb-1" title="Chưa đạt: ${test.diem_so}/${test.tong_cau} (Cần thi lại)"><i class="ph-fill ph-info"></i> ${shortName}: Đã tham dự</span>`;
+                        }
+                    });
+                    onlineBadgesHtml = badges.join('<br>');
+                }
+
+                let rolesHtml = "";
+                if (d.vai_tro_phu) {
+                    if (d.vai_tro_phu.pccc) {
+                        let pColor = String(d.vai_tro_phu.pccc).includes("Trưởng") ? "bg-red-600 text-white" : "bg-red-100 text-red-700 border-red-200";
+                        rolesHtml += `<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${pColor} whitespace-nowrap mb-1"><i class="ph-fill ph-fire-extinguisher"></i> ${d.vai_tro_phu.pccc}</span><br>`;
+                    }
+                    if (d.vai_tro_phu.atvsv) {
+                        rolesHtml += `<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border bg-emerald-100 text-emerald-700 border-emerald-200 whitespace-nowrap"><i class="ph-fill ph-first-aid"></i> ATVSV (Nhóm 6)</span>`;
+                    }
+                }
+
+                const isDanger = (atld.status === 'danger' && !hasPassedAny) || health.status === 'danger' || atld.status === 'warning';
+                const rowClass = isDanger ? "bg-rose-50/50" : "bg-white";
+                const dobText = d.ngay_sinh ? new Date(d.ngay_sinh).toLocaleDateString('vi-VN') : '-';
+
+                let groupHtml = d.nhom_atld;
+                if (d.nhom_atld && String(d.nhom_atld).includes("Nhóm 3")) {
+                    groupHtml = `<span class="px-2 py-1 rounded bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] whitespace-nowrap">${d.nhom_atld}</span>`;
+                } else if (d.nhom_atld) {
+                    groupHtml = `<span class="px-2 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[11px] whitespace-nowrap">${d.nhom_atld}</span>`;
+                }
+
+                // Chốt lại 13 cột chính xác theo thead để tránh lỗi bể form
+                htmlStr += `
+                    <tr class="${rowClass} border-b border-slate-200 transition-colors hover:bg-slate-50">
+                        <td class="p-3 text-center font-medium">${stt++}</td>
+                        <td class="p-3 text-center font-mono font-bold uppercase text-slate-600">${d.ma_nv || '-'}</td>
+                        <td class="p-3 font-bold text-blue-700 whitespace-nowrap">${d.ho_ten || '-'}</td>
+                        <td class="p-3 text-center text-slate-600">${d.gioi_tinh || '-'}</td>
+                        <td class="p-3 text-center text-slate-600">${dobText}</td>
+                        <td class="p-3 font-medium text-slate-700">${d.bo_phan || '-'}</td>
+                        <td class="p-3 font-bold text-slate-800">${d.vi_tri || '-'}</td>
+                        <td class="p-3 text-center">${rolesHtml || '<span class="text-slate-400">-</span>'}</td>
+                        <td class="p-3 text-center">${groupHtml || '-'}</td>
+                        <td class="p-3 text-center">${atld.html}</td>
+                        <td class="p-3 text-left">
+                            <div class="flex flex-col items-start justify-center">
+                                ${onlineBadgesHtml}
+                            </div>
+                        </td>
+                        <td class="p-3 text-center">${health.html}</td>
+                        <td class="p-3 text-center whitespace-nowrap">
+                            <button onclick="window.editData('${d.id}')" class="text-blue-600 hover:text-blue-800 p-1.5 bg-blue-50 hover:bg-blue-100 rounded transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="window.deleteData('${d.id}')" class="text-red-500 hover:text-red-700 p-1.5 bg-red-50 hover:bg-red-100 rounded ml-1 transition" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = htmlStr;
+        }
+
+        window.filterTable = function() {
+            const key = document.getElementById('search-box').value.toLowerCase();
+            const filterDanger = document.getElementById('filter-status').value === 'nguy-hiem';
+            
+            const filtered = rawData.filter(d => {
+                const textSearch = (d.ho_ten || "") + " " + (d.ma_nv || "") + " " + (d.bo_phan || "") + " " + (d.vi_tri || "");
+                const matchText = textSearch.toLowerCase().includes(key);
+                if (!matchText) return false;
+                
+                if (filterDanger) {
+                    let hasPassedAny = false;
+                    if (d.lich_su_thi_moi_nhat) {
+                        hasPassedAny = Object.values(d.lich_su_thi_moi_nhat).some(test => test.diem_so >= (test.tong_cau * 0.8));
+                    }
+                    const atld = checkExpiry(d.han_atld).status;
+                    const health = checkExpiry(d.han_suc_khoe).status;
+                    return (atld === 'danger' && !hasPassedAny) || health === 'danger' || atld === 'warning';
+                }
+                return true;
+            });
+            renderTable(filtered);
+        };
+
+        window.editData = function(id) {
+            const d = rawData.find(x => x.id === id);
+            if(!d) return;
+            document.getElementById('emp-doc-id').value = d.id;
+            document.getElementById('emp-id').value = d.ma_nv; 
+            document.getElementById('emp-name').value = d.ho_ten;
+            document.getElementById('emp-dob').value = d.ngay_sinh || ''; 
+            document.getElementById('emp-gender').value = d.gioi_tinh || '';
+            
+            const deptSelect = document.getElementById('emp-dept');
+            deptSelect.value = d.bo_phan || '';
+            window.updatePositionDropdown(d.vi_tri || '');
+            
+            if (d.vai_tro_phu) {
+                document.getElementById('emp-pccc').value = d.vai_tro_phu.pccc || "";
+                document.getElementById('emp-atvsv').checked = d.vai_tro_phu.atvsv || false;
+            } else {
+                document.getElementById('emp-pccc').value = "";
+                document.getElementById('emp-atvsv').checked = false;
+            }
+
+            document.getElementById('emp-date-atld').value = d.han_atld || ''; 
+            document.getElementById('emp-date-health').value = d.han_suc_khoe || '';
+            window.autoClassify(); 
+            document.getElementById('staff-modal').classList.remove('hidden');
+        };
+
+        window.deleteData = async function(id) {
+            if(confirm("Bạn có chắc chắn muốn xóa nhân sự này?")) {
+                try { await window.deleteDoc(window.doc(window.db, "nhan_su_noi_bo", id)); window.showToast("Đã xóa nhân sự!"); window.loadData(); } catch(e) { alert("Lỗi: " + e.message); }
+            }
+        };
+
+        window.saveData = async function() {
+            const id = document.getElementById('emp-doc-id').value;
+            const data = { 
+                ma_nv: document.getElementById('emp-id').value.trim().toUpperCase(), 
+                ho_ten: document.getElementById('emp-name').value.trim(), 
+                ngay_sinh: document.getElementById('emp-dob').value, 
+                gioi_tinh: document.getElementById('emp-gender').value, 
+                bo_phan: document.getElementById('emp-dept').value,
+                vi_tri: document.getElementById('emp-role').value, 
+                nhom_atld: document.getElementById('emp-group').value, 
+                vai_tro_phu: {
+                    pccc: document.getElementById('emp-pccc').value,
+                    atvsv: document.getElementById('emp-atvsv').checked
+                },
+                han_atld: document.getElementById('emp-date-atld').value, 
+                han_suc_khoe: document.getElementById('emp-date-health').value, 
+                thoi_gian_cap_nhat: new Date() 
+            };
+            if(!data.ma_nv || !data.ho_ten) return alert("Vui lòng điền Mã NV và Họ Tên!");
+            
+            const btn = document.getElementById('btn-save'); btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...';
+            try {
+                if (id) await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", id), data);
+                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), data); }
+                window.closeModal(); window.showToast("Đã lưu hồ sơ!"); window.loadData();
+            } catch(e) { alert("Lỗi: " + e.message); } finally { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> Lưu Hồ Sơ'; }
+        };
+
         window.handleExcelUpload = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -494,9 +657,6 @@
             return String(excelDate);
         }
 
-        // ==========================================
-        // ĐỒNG BỘ USER TỪ BẢNG ĐĂNG KÝ
-        // ==========================================
         window.syncUsers = async function(event) {
             const btn = event.currentTarget;
             const ogText = btn.innerHTML;
@@ -555,240 +715,11 @@
             }
         };
 
-        window.openModal = function() {
-            document.getElementById('emp-doc-id').value = '';
-            document.getElementById('emp-id').value = ''; document.getElementById('emp-name').value = '';
-            document.getElementById('emp-dob').value = ''; document.getElementById('emp-gender').value = '';
-            document.getElementById('emp-dept').value = ''; document.getElementById('emp-role').value = ''; 
-            document.getElementById('emp-pccc').value = ''; document.getElementById('emp-atvsv').checked = false;
-            document.getElementById('emp-date-atld').value = ''; document.getElementById('emp-date-health').value = '';
-            window.autoClassify(); 
-            document.getElementById('staff-modal').classList.remove('hidden');
-        };
-
-        window.closeModal = function() { document.getElementById('staff-modal').classList.add('hidden'); };
-        window.showToast = function(msg) { document.getElementById('toast-msg').innerText = msg; document.getElementById('toast').classList.remove('translate-x-[150%]'); setTimeout(() => document.getElementById('toast').classList.add('translate-x-[150%]'), 3000); };
-
-        function checkExpiry(dateStr) {
-            if (!dateStr) return { status: 'danger', html: '<span class="bg-red-50 text-red-600 px-2 py-1 rounded-md font-bold text-[10px] border border-red-200 whitespace-nowrap inline-block">Chưa có Thẻ</span>', hasData: false };
-            const exp = new Date(dateStr); const today = new Date(); const diffDays = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
-            const dateFmt = exp.toLocaleDateString('vi-VN');
-            if (diffDays < 0) return { status: 'danger', html: `<span class="bg-red-600 text-white px-2 py-1 rounded-md font-bold text-[10px] shadow-sm whitespace-nowrap inline-block">Hết hạn (${dateFmt})</span>`, hasData: true };
-            if (diffDays <= 30) return { status: 'warning', html: `<span class="bg-amber-100 text-amber-700 px-2 py-1 rounded-md font-bold text-[10px] border border-amber-300 animate-pulse whitespace-nowrap inline-block">Sắp hết (${diffDays} ngày)</span>`, hasData: true };
-            return { status: 'safe', html: `<span class="bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md font-bold text-[10px] border border-emerald-200 whitespace-nowrap inline-block"><i class="ph-bold ph-check-circle"></i> Tốt (${dateFmt})</span>`, hasData: true };
-        }
-
-        // ==========================================
-        // RENDER GIAO DIỆN & TÍCH HỢP ĐIỂM THI
-        // ==========================================
-        window.loadData = async function() {
-            const tbody = document.getElementById('data-body');
-            tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8"><i class="ph-bold ph-spinner animate-spin text-3xl text-blue-600 mb-2"></i><br><span class="font-medium text-slate-500">Đang đồng bộ dữ liệu đa chiều...</span></td></tr>`;
-            
-            try {
-                const snapUser = await window.getDocs(window.query(window.collection(window.db, "nhan_su_noi_bo"), window.orderBy("thoi_gian_tao", "desc")));
-                const snapTest = await window.getDocs(window.collection(window.db, "ket_qua_kiem_tra"));
-                
-                globalUserTests = {};
-                snapTest.forEach(doc => {
-                    const t = doc.data();
-                    if(t.nhan_vien_id) {
-                        const id = String(t.nhan_vien_id).trim().toUpperCase();
-                        if(!globalUserTests[id]) globalUserTests[id] = {};
-                        
-                        if(!globalUserTests[id][t.ten_khoa_hoc] || globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop.toDate() < t.thoi_gian_nop.toDate()) {
-                            globalUserTests[id][t.ten_khoa_hoc] = t;
-                        }
-                    }
-                });
-
-                rawData = [];
-                snapUser.forEach(doc => {
-                    const d = doc.data();
-                    const maNV = String(d.ma_nv).trim().toUpperCase();
-                    rawData.push({ id: doc.id, lich_su_thi_moi_nhat: globalUserTests[maNV] || {}, ...d });
-                });
-
-                renderTable(rawData);
-            } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-red-500 font-bold">Lỗi CSDL: ${e.message}</td></tr>`;
-            }
-        };
-
-        function renderTable(dataArray) {
-            const tbody = document.getElementById('data-body');
-            tbody.innerHTML = '';
-            if (dataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-slate-500">Chưa có dữ liệu nhân sự.</td></tr>`;
-
-            let stt = 1;
-            dataArray.forEach(d => {
-                const atld = checkExpiry(d.han_atld);
-                const health = checkExpiry(d.han_suc_khoe);
-                
-                let onlineBadgesHtml = "<span class='text-slate-400 text-xs font-medium'>Chưa học</span>";
-                let hasPassedAny = false;
-
-                if (d.lich_su_thi_moi_nhat && Object.keys(d.lich_su_thi_moi_nhat).length > 0) {
-                    const badges = Object.values(d.lich_su_thi_moi_nhat).map(test => {
-                        const isPass = test.diem_so >= (test.tong_cau * 0.8);
-                        const testDate = test.thoi_gian_nop.toDate().toLocaleDateString('vi-VN');
-                        let shortName = test.ten_khoa_hoc.replace("Đào tạo ", "").replace(" 2026", "").replace(" Cơ Bản", "");
-                        
-                        if (isPass) {
-                            hasPassedAny = true;
-                            return `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold text-[10px] border border-blue-200 whitespace-nowrap mb-1" title="Điểm: ${test.diem_so}/${test.tong_cau}"><i class="ph-fill ph-monitor-play"></i> ${shortName} (${testDate})</span>`;
-                        } else {
-                            return `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-bold text-[10px] border border-amber-200 whitespace-nowrap mb-1" title="Chưa đạt: ${test.diem_so}/${test.tong_cau} (Cần thi lại)"><i class="ph-fill ph-info"></i> ${shortName}: Đã tham dự</span>`;
-                        }
-                    });
-                    onlineBadgesHtml = badges.join('<br>');
-                }
-
-                let rolesHtml = "";
-                if (d.vai_tro_phu) {
-                    if (d.vai_tro_phu.pccc) {
-                        let pColor = d.vai_tro_phu.pccc.includes("Trưởng") ? "bg-red-600 text-white" : "bg-red-100 text-red-700 border-red-200";
-                        rolesHtml += `<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${pColor} whitespace-nowrap mb-1"><i class="ph-fill ph-fire-extinguisher"></i> ${d.vai_tro_phu.pccc}</span><br>`;
-                    }
-                    if (d.vai_tro_phu.atvsv) {
-                        rolesHtml += `<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border bg-emerald-100 text-emerald-700 border-emerald-200 whitespace-nowrap"><i class="ph-fill ph-first-aid"></i> ATVSV (Nhóm 6)</span>`;
-                    }
-                }
-                
-                let combinedRole = `<div class="font-bold text-slate-800">${d.vi_tri || '-'}</div>`;
-                if(d.bo_phan) combinedRole += `<div class="text-[11px] text-slate-500">${d.bo_phan}</div>`;
-                if(rolesHtml) combinedRole += `<div class="mt-1">${rolesHtml}</div>`;
-
-                const isDanger = (atld.status === 'danger' && !hasPassedAny) || health.status === 'danger' || atld.status === 'warning';
-                const rowClass = isDanger ? "bg-rose-50/50 hover:bg-rose-50" : "bg-white hover:bg-slate-50";
-                const dobText = d.ngay_sinh ? new Date(d.ngay_sinh).toLocaleDateString('vi-VN') : '-';
-
-                let groupHtml = d.nhom_atld;
-                if (d.nhom_atld && d.nhom_atld.includes("Nhóm 3")) {
-                    groupHtml = `<span class="px-2 py-1 rounded bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] whitespace-nowrap">${d.nhom_atld}</span>`;
-                } else if (d.nhom_atld) {
-                    groupHtml = `<span class="px-2 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold text-[11px] whitespace-nowrap">${d.nhom_atld}</span>`;
-                }
-
-                tbody.innerHTML += `
-                    <tr class="${rowClass} border-b border-slate-200 transition-colors">
-                        <td class="p-3 text-center font-medium">${stt++}</td>
-                        <td class="p-3 text-center font-mono font-bold uppercase text-slate-600">${d.ma_nv}</td>
-                        <td class="p-3 font-bold text-blue-700 whitespace-nowrap">${d.ho_ten}</td>
-                        <td class="p-3 text-center text-slate-600">${d.gioi_tinh || '-'}</td>
-                        <td class="p-3 text-center text-slate-600">${dobText}</td>
-                        <td class="p-3">${combinedRole}</td>
-                        <td class="p-3 text-center">${groupHtml}</td>
-                        <td class="p-3 text-center">${atld.html}</td>
-                        <td class="p-3 text-left">
-                            <div class="flex flex-col items-start justify-center">
-                                ${onlineBadgesHtml}
-                            </div>
-                        </td>
-                        <td class="p-3 text-center">${health.html}</td>
-                        <td class="p-3 text-center whitespace-nowrap">
-                            <button onclick="window.editData('${d.id}')" class="text-blue-600 hover:text-blue-800 p-1 bg-blue-50 rounded" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                            <button onclick="window.deleteData('${d.id}')" class="text-red-500 hover:text-red-700 p-1 bg-red-50 rounded ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        window.filterTable = function() {
-            const key = document.getElementById('search-box').value.toLowerCase();
-            const filterDanger = document.getElementById('filter-status').value === 'nguy-hiem';
-            
-            const filtered = rawData.filter(d => {
-                const textSearch = (d.ho_ten || "") + " " + (d.ma_nv || "") + " " + (d.bo_phan || "") + " " + (d.vi_tri || "");
-                const matchText = textSearch.toLowerCase().includes(key);
-                if (!matchText) return false;
-                
-                if (filterDanger) {
-                    let hasPassedAny = false;
-                    if (d.lich_su_thi_moi_nhat) {
-                        hasPassedAny = Object.values(d.lich_su_thi_moi_nhat).some(test => test.diem_so >= (test.tong_cau * 0.8));
-                    }
-                    const atld = checkExpiry(d.han_atld).status;
-                    const health = checkExpiry(d.han_suc_khoe).status;
-                    return (atld === 'danger' && !hasPassedAny) || health === 'danger' || atld === 'warning';
-                }
-                return true;
-            });
-            renderTable(filtered);
-        };
-
-        window.editData = function(id) {
-            const d = rawData.find(x => x.id === id);
-            if(!d) return;
-            document.getElementById('emp-doc-id').value = d.id;
-            document.getElementById('emp-id').value = d.ma_nv; 
-            document.getElementById('emp-name').value = d.ho_ten;
-            document.getElementById('emp-dob').value = d.ngay_sinh || ''; 
-            document.getElementById('emp-gender').value = d.gioi_tinh || '';
-            
-            // Render department and position
-            const deptSelect = document.getElementById('emp-dept');
-            deptSelect.value = d.bo_phan || '';
-            window.updatePositionDropdown(d.vi_tri || '');
-            
-            if (d.vai_tro_phu) {
-                document.getElementById('emp-pccc').value = d.vai_tro_phu.pccc || "";
-                document.getElementById('emp-atvsv').checked = d.vai_tro_phu.atvsv || false;
-            } else {
-                document.getElementById('emp-pccc').value = "";
-                document.getElementById('emp-atvsv').checked = false;
-            }
-
-            document.getElementById('emp-date-atld').value = d.han_atld || ''; 
-            document.getElementById('emp-date-health').value = d.han_suc_khoe || '';
-            window.autoClassify(); 
-            document.getElementById('staff-modal').classList.remove('hidden');
-        };
-
-        window.deleteData = async function(id) {
-            if(confirm("Bạn có chắc chắn muốn xóa nhân sự này?")) {
-                try { await window.deleteDoc(window.doc(window.db, "nhan_su_noi_bo", id)); window.showToast("Đã xóa nhân sự!"); window.loadData(); } catch(e) { alert("Lỗi: " + e.message); }
-            }
-        };
-
-        window.saveData = async function() {
-            const id = document.getElementById('emp-doc-id').value;
-            const data = { 
-                ma_nv: document.getElementById('emp-id').value.trim().toUpperCase(), 
-                ho_ten: document.getElementById('emp-name').value.trim(), 
-                ngay_sinh: document.getElementById('emp-dob').value, 
-                gioi_tinh: document.getElementById('emp-gender').value, 
-                bo_phan: document.getElementById('emp-dept').value,
-                vi_tri: document.getElementById('emp-role').value, 
-                nhom_atld: document.getElementById('emp-group').value, 
-                vai_tro_phu: {
-                    pccc: document.getElementById('emp-pccc').value,
-                    atvsv: document.getElementById('emp-atvsv').checked
-                },
-                han_atld: document.getElementById('emp-date-atld').value, 
-                han_suc_khoe: document.getElementById('emp-date-health').value, 
-                thoi_gian_cap_nhat: new Date() 
-            };
-            if(!data.ma_nv || !data.ho_ten) return alert("Vui lòng điền Mã NV và Họ Tên!");
-            
-            const btn = document.getElementById('btn-save'); btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...';
-            try {
-                if (id) await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", id), data);
-                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), data); }
-                window.closeModal(); window.showToast("Đã lưu hồ sơ!"); window.loadData();
-            } catch(e) { alert("Lỗi: " + e.message); } finally { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> Lưu Hồ Sơ'; }
-        };
-
-        // ==========================================
-        // XUẤT BÁO CÁO PDF ĐẲNG CẤP
-        // ==========================================
         window.exportPDF = function() {
             if (rawData.length === 0) return alert("Chưa có dữ liệu để xuất PDF!");
 
             const container = document.getElementById('pdf-export-container');
             
-            // Xây dựng Layout
             container.innerHTML = `
                 <div style="padding: 20px; font-family: 'Times New Roman', Times, serif; color: #000; width: 1050px;">
                     <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
@@ -801,4 +732,69 @@
                             <tr style="background-color: #f1f5f9;">
                                 <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 30px;">STT</th>
                                 <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 50px;">Mã NV</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: left;
+                                <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 120px;">Họ Tên</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 80px;">Bộ Phận</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 100px;">Vị trí / Chức danh</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 80px;">Nhóm ATLĐ</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 70px;">Hạn Thẻ<br>Huấn Luyện</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 160px;">Đào tạo EHS Nội bộ<br>(Kết quả thi)</th>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 70px;">Hạn Khám<br>Sức Khỏe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rawData.map((d, i) => {
+                                let rolesArr = [];
+                                if(d.vai_tro_phu?.pccc) rolesArr.push(d.vai_tro_phu.pccc);
+                                if(d.vai_tro_phu?.atvsv) rolesArr.push("ATVSV");
+                                let roleStr = rolesArr.length > 0 ? `<br><i style="color: #555;">[${rolesArr.join(", ")}]</i>` : '';
+
+                                let atldStatus = d.han_atld ? new Date(d.han_atld).toLocaleDateString('vi-VN') : "Chưa có";
+                                let healthStatus = d.han_suc_khoe ? new Date(d.han_suc_khoe).toLocaleDateString('vi-VN') : "Chưa có";
+                                
+                                let internalStatus = "Chưa học";
+                                if (d.lich_su_thi_moi_nhat && Object.keys(d.lich_su_thi_moi_nhat).length > 0) {
+                                    internalStatus = Object.values(d.lich_su_thi_moi_nhat).map(t => {
+                                        let sn = t.ten_khoa_hoc ? t.ten_khoa_hoc.replace("Đào tạo ", "").replace(" 2026", "").replace(" Cơ Bản", "") : "Khóa học";
+                                        let dt = t.thoi_gian_nop && t.thoi_gian_nop.toDate ? t.thoi_gian_nop.toDate().toLocaleDateString('vi-VN') : new Date(t.thoi_gian_nop).toLocaleDateString('vi-VN');
+                                        let pass = (t.diem_so >= t.tong_cau * 0.8) ? `<b style="color: green;">Đạt</b>` : `<b style="color: #b45309;">Đã tham dự</b>`;
+                                        return `- ${sn}: ${pass} (${dt})`;
+                                    }).join('<br>');
+                                }
+                                
+                                return `
+                                <tr>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${i+1}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align: center; font-family: monospace;">${d.ma_nv || '-'}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${d.ho_ten || '-'}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${d.bo_phan || '-'}</td>
+                                    <td style="border: 1px solid #000; padding: 6px;"><b>${d.vi_tri || '-'}</b>${roleStr}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${d.nhom_atld || '-'}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align: center; color: ${atldStatus==='Chưa có'?'red':'inherit'};">${atldStatus}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${internalStatus}</td>
+                                    <td style="border: 1px solid #000; padding: 6px; text-align: center; color: ${healthStatus==='Chưa có'?'red':'inherit'};">${healthStatus}</td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.classList.remove('hidden');
+
+            const opt = {
+                margin:       [10, 10, 10, 10],
+                filename:     `Ho_So_Nhan_Su_EHS_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(container.firstElementChild).save().then(() => {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+            });
+        };
+    </script>
+</body>
+</html>
