@@ -135,7 +135,7 @@
                         <th class="p-3">Vai trò phụ (PCCC/ATVSV)</th>
                         <th class="p-3 text-center">Phân loại ATLĐ</th>
                         <th class="p-3 text-center">Hạn Thẻ ATLĐ</th>
-                        <th class="p-3 text-center">Khóa học EHS (LMS)</th>
+                        <th class="p-3 text-center">Đào tạo EHS Nội bộ</th>
                         <th class="p-3 text-center">Hạn Khám SK</th>
                         <th class="p-3 text-center">Thao tác</th>
                     </tr>
@@ -176,15 +176,20 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giới tính</label>
-                        <select id="emp-gender" class="w-full border border-slate-300 px-3 py-2 rounded-lg outline-none focus:border-blue-500 bg-white font-medium text-slate-700">
-                            <option value="">-- Chọn --</option>
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                        </select>
+                        <div class="relative">
+                            <select id="emp-gender" class="w-full border border-slate-300 pl-3 pr-8 py-2 rounded-lg outline-none focus:border-blue-500 bg-white font-medium text-slate-700 appearance-none">
+                                <option value="">-- Chọn --</option>
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
+                                <i class="ph-bold ph-caret-down"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Hàng 3: Công việc (KÍCH HOẠT HỆ CHUYÊN GIA) -->
+                <!-- Hàng 3: Công việc (KÍCH HOẠT HỆ CHUYÊN GIA) - ĐÃ CẬP NHẬT THÀNH SELECT DROPDOWN -->
                 <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl space-y-4">
                     <div class="flex items-center gap-2 mb-2">
                         <i class="ph-fill ph-robot text-blue-600 text-xl"></i>
@@ -194,23 +199,33 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[11px] font-bold text-blue-700 uppercase mb-1">Bộ Phận / Phòng Ban</label>
-                            <select id="emp-dept" onchange="window.updatePositionDropdown(); window.autoClassify()" class="w-full border border-blue-300 px-3 py-2 rounded-lg font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white cursor-pointer">
-                                <option value="">-- Chọn Bộ Phận --</option>
-                                <option value="Sản xuất - Can">Sản xuất - Can</option>
-                                <option value="Sản xuất - End">Sản xuất - End</option>
-                                <option value="QC">QC</option>
-                                <option value="Điện - Utility - EHS">Điện - Utility - EHS</option>
-                                <option value="Kỹ thuật">Kỹ thuật</option>
-                                <option value="Kho - Logistic - PPIC">Kho - Logistic - PPIC</option>
-                                <option value="Văn phòng">Văn phòng (Nhân sự, Tài chính, Bán hàng...)</option>
-                                <option value="Ban Giám Đốc">Ban Giám Đốc</option>
-                            </select>
+                            <div class="relative">
+                                <select id="emp-dept" onchange="window.updatePositionDropdown(); window.autoClassify()" class="w-full border border-blue-300 pl-3 pr-8 py-2 rounded-lg font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white cursor-pointer appearance-none">
+                                    <option value="">-- Chọn Bộ Phận --</option>
+                                    <option value="Sản xuất - Can">Sản xuất - Can</option>
+                                    <option value="Sản xuất - End">Sản xuất - End</option>
+                                    <option value="QC">QC</option>
+                                    <option value="Điện - Utility - EHS">Điện - Utility - EHS</option>
+                                    <option value="Kỹ thuật">Kỹ thuật</option>
+                                    <option value="Kho - Logistic - PPIC">Kho - Logistic - PPIC</option>
+                                    <option value="Văn phòng">Văn phòng</option>
+                                    <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
+                                    <i class="ph-bold ph-caret-down"></i>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-blue-700 uppercase mb-1">Vị Trí Công Việc Thực Tế</label>
-                            <select id="emp-role" onchange="window.autoClassify()" class="w-full border border-blue-300 px-3 py-2 rounded-lg font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white cursor-pointer">
-                                <option value="">-- Vui lòng chọn Bộ Phận trước --</option>
-                            </select>
+                            <div class="relative">
+                                <select id="emp-role" onchange="window.autoClassify()" class="w-full border border-blue-300 pl-3 pr-8 py-2 rounded-lg font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white cursor-pointer appearance-none">
+                                    <option value="">-- Vui lòng chọn Bộ Phận trước --</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
+                                    <i class="ph-bold ph-caret-down"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -225,12 +240,17 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-orange-50 border border-orange-100 rounded-xl">
                     <div>
                         <label class="block text-xs font-bold text-orange-800 uppercase mb-1">Vai trò Đội PCCC Cơ Sở</label>
-                        <select id="emp-pccc" class="w-full border border-orange-300 px-3 py-2 rounded-lg outline-none focus:border-orange-500 bg-white font-bold text-slate-700">
-                            <option value="">Không tham gia</option>
-                            <option value="Đội Trưởng PCCC">Đội Trưởng PCCC</option>
-                            <option value="Đội Phó PCCC">Đội Phó PCCC</option>
-                            <option value="Đội Viên PCCC">Đội Viên PCCC</option>
-                        </select>
+                        <div class="relative">
+                            <select id="emp-pccc" class="w-full border border-orange-300 pl-3 pr-8 py-2 rounded-lg outline-none focus:border-orange-500 bg-white font-bold text-slate-700 appearance-none">
+                                <option value="">Không tham gia</option>
+                                <option value="Đội Trưởng PCCC">Đội Trưởng PCCC</option>
+                                <option value="Đội Phó PCCC">Đội Phó PCCC</option>
+                                <option value="Đội Viên PCCC">Đội Viên PCCC</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
+                                <i class="ph-bold ph-caret-down"></i>
+                            </div>
+                        </div>
                     </div>
                     <div class="flex items-center mt-6">
                         <label class="cursor-pointer flex items-center gap-2">
@@ -274,10 +294,10 @@
 
     <script>
         let rawData = [];
-        let globalUserTests = {}; // Cache điểm thi
+        let globalUserTests = {}; 
 
         // ==========================================
-        // CẬP NHẬT DANH SÁCH VỊ TRÍ THEO BỘ PHẬN
+        // CẬP NHẬT DANH SÁCH VỊ TRÍ THEO BỘ PHẬN (ĐÃ FIX SELECT)
         // ==========================================
         window.updatePositionDropdown = function(selectedValue = "") {
             const dept = document.getElementById('emp-dept').value;
@@ -294,7 +314,7 @@
             } else if (dept === "QC") {
                 options = ["Quản lý QC", "Trưởng ca QC", "Nhân viên QC"];
             } else if (dept === "Điện - Utility - EHS") {
-                options = ["Trưởng phòng Điện - Utility - EHS", "Bảo trì điện", "Utility", "EHS", "Vệ sinh (Cleaning)"];
+                options = ["Trưởng phòng Điện - Utility - EHS", "Bảo trì điện", "Utility", "EHS", "Vệ sinh công nghiệp"];
             } else if (dept === "Kỹ thuật") {
                 options = ["Trưởng phòng Kỹ thuật", "Kỹ thuật", "Workshop"];
             } else if (dept === "Kho - Logistic - PPIC") {
@@ -343,7 +363,7 @@
 
             // ================= NHÓM 3 (PHÂN CHI TIẾT) =================
             // 3a. Máy móc thiết bị
-            if (p.includes("cupper") || p.includes("body maker") || p.includes("necker") || p.includes("palletizer") || p.includes("scrap baler") || p.includes("shell press") || p.includes("conversion") || (d.includes("kỹ thuật") && p.includes("kỹ thuật"))) {
+            if (p.includes("cupper") || p.includes("body maker") || p.includes("necker") || p.includes("palletizer") || p.includes("scrap baler") || p.includes("shell press") || p.includes("conversion") || (p === "kỹ thuật")) {
                 return "Nhóm 3 - Vận hành máy";
             }
             // 3b. Hóa chất
@@ -368,7 +388,7 @@
             }
 
             // Nhóm 4: Nhân viên, LĐ Phổ thông
-            if (p.includes("nhân viên") || p.includes("staff") || p.includes("qc") || p.includes("phụ kho") || p.includes("vệ sinh") || p.includes("cleaning") || d.includes("văn phòng") || d.includes("tài chính") || d.includes("nhân sự") || d.includes("kho")) {
+            if (p.includes("nhân viên") || p.includes("staff") || p.includes("qc") || p.includes("phụ kho") || p.includes("vệ sinh công nghiệp") || p.includes("cleaning") || d.includes("văn phòng") || d.includes("tài chính") || d.includes("nhân sự")) {
                 return "Nhóm 4";
             }
 
@@ -383,7 +403,6 @@
             const result = getAutoGroupFromRole(dept, pos);
             groupInput.value = result;
 
-            // Đổi màu input theo Nhóm
             if (result.includes("Nhóm 3")) groupInput.className = "w-full border border-rose-300 px-3 py-2.5 rounded-lg bg-rose-50 text-rose-700 font-bold shadow-inner";
             else if (result === "Nhóm 4") groupInput.className = "w-full border border-emerald-300 px-3 py-2.5 rounded-lg bg-emerald-50 text-emerald-700 font-bold shadow-inner";
             else if (result === "Nhóm 1") groupInput.className = "w-full border border-purple-300 px-3 py-2.5 rounded-lg bg-purple-50 text-purple-700 font-bold shadow-inner";
@@ -393,7 +412,7 @@
         };
 
         // ==========================================
-        // XỬ LÝ NHẬP EXCEL (HỖ TRỢ 2 CỘT MỚI)
+        // XỬ LÝ NHẬP EXCEL
         // ==========================================
         window.handleExcelUpload = function(event) {
             const file = event.target.files[0];
@@ -426,7 +445,6 @@
                     const gioiTinh = row['Giới tính'] || row['Gioi tinh'] || row['Giới Tính'] || '';
                     const ngaySinh = row['Ngày sinh'] || row['Ngay sinh'] || row['Ngày Sinh'] || '';
                     
-                    // Linh hoạt bắt tên cột
                     const boPhan = row['Bộ phận'] || row['Bộ Phận'] || row['Phòng ban'] || '';
                     const viTri = row['Vị trí'] || row['Vị trí công việc'] || row['Công việc'] || '';
                     
@@ -437,7 +455,6 @@
                     let han_atld = row['Hạn ATLĐ'] ? formatExcelDate(row['Hạn ATLĐ']) : '';
                     let han_suc_khoe = row['Hạn Khám SK'] ? formatExcelDate(row['Hạn Khám SK']) : '';
 
-                    // Gom role phụ (Ban đầu Excel tải lên sẽ để rỗng phần này, có thể cho Admin cập nhật sau)
                     let vaiTroPhu = { pccc: "", atvsv: false };
 
                     const docData = { 
@@ -503,7 +520,6 @@
                     const maNV = userData.ma_nv ? userData.ma_nv.toUpperCase() : null;
 
                     if (maNV && !existingEmpIds.has(maNV)) {
-                        // User web thường khai báo chung ở cột bo_phan, ta sẽ lưu vào bo_phan và để vi_tri rỗng
                         const boPhan = userData.bo_phan || '';
                         const viTri = ''; 
                         const nhomATLD = getAutoGroupFromRole(boPhan, viTri);
@@ -567,7 +583,7 @@
         // ==========================================
         window.loadData = async function() {
             const tbody = document.getElementById('data-body');
-            tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8"><i class="ph-bold ph-spinner animate-spin text-3xl text-blue-600 mb-2"></i><br><span class="font-medium text-slate-500">Đang đồng bộ dữ liệu đa chiều...</span></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8"><i class="ph-bold ph-spinner animate-spin text-3xl text-blue-600 mb-2"></i><br><span class="font-medium text-slate-500">Đang đồng bộ dữ liệu đa chiều...</span></td></tr>`;
             
             try {
                 const snapUser = await window.getDocs(window.query(window.collection(window.db, "nhan_su_noi_bo"), window.orderBy("thoi_gian_tao", "desc")));
@@ -580,7 +596,6 @@
                         const id = String(t.nhan_vien_id).trim().toUpperCase();
                         if(!globalUserTests[id]) globalUserTests[id] = {};
                         
-                        // Cập nhật lấy bài thi mới nhất của khóa học
                         if(!globalUserTests[id][t.ten_khoa_hoc] || globalUserTests[id][t.ten_khoa_hoc].thoi_gian_nop.toDate() < t.thoi_gian_nop.toDate()) {
                             globalUserTests[id][t.ten_khoa_hoc] = t;
                         }
@@ -591,27 +606,25 @@
                 snapUser.forEach(doc => {
                     const d = doc.data();
                     const maNV = String(d.ma_nv).trim().toUpperCase();
-                    // Lưu luôn object chứa các bài thi mới nhất của ng này vào data
                     rawData.push({ id: doc.id, lich_su_thi_moi_nhat: globalUserTests[maNV] || {}, ...d });
                 });
 
                 renderTable(rawData);
             } catch(e) {
-                tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-red-500 font-bold">Lỗi CSDL: ${e.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-red-500 font-bold">Lỗi CSDL: ${e.message}</td></tr>`;
             }
         };
 
         function renderTable(dataArray) {
             const tbody = document.getElementById('data-body');
             tbody.innerHTML = '';
-            if (dataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-slate-500">Chưa có dữ liệu nhân sự.</td></tr>`;
+            if (dataArray.length === 0) return tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-slate-500">Chưa có dữ liệu nhân sự.</td></tr>`;
 
             let stt = 1;
             dataArray.forEach(d => {
                 const atld = checkExpiry(d.han_atld);
                 const health = checkExpiry(d.han_suc_khoe);
                 
-                // --- XỬ LÝ NHÃN KẾT QUẢ HỌC LMS ---
                 let onlineBadgesHtml = "<span class='text-slate-400 text-xs font-medium'>Chưa học</span>";
                 let hasPassedAny = false;
 
@@ -623,16 +636,14 @@
                         
                         if (isPass) {
                             hasPassedAny = true;
-                            return `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold text-[10px] border border-blue-200 whitespace-nowrap mb-1" title="Điểm: ${test.diem_so}/${test.tong_cau}"><i class="ph-fill ph-monitor-play"></i> ${shortName}: Đạt (${testDate})</span>`;
+                            return `<span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold text-[10px] border border-blue-200 whitespace-nowrap mb-1" title="Điểm: ${test.diem_so}/${test.tong_cau}"><i class="ph-fill ph-monitor-play"></i> ${shortName} (${testDate})</span>`;
                         } else {
-                            // NHÃN "ĐÃ THAM DỰ" MÀU VÀNG
                             return `<span class="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-1 rounded-md font-bold text-[10px] border border-amber-200 whitespace-nowrap mb-1" title="Chưa đạt: ${test.diem_so}/${test.tong_cau} (Cần thi lại)"><i class="ph-fill ph-info"></i> ${shortName}: Đã tham dự</span>`;
                         }
                     });
                     onlineBadgesHtml = badges.join('<br>');
                 }
 
-                // --- XỬ LÝ NHÃN VAI TRÒ PHỤ (ATVSV / PCCC) ---
                 let rolesHtml = "";
                 if (d.vai_tro_phu) {
                     if (d.vai_tro_phu.pccc) {
@@ -643,14 +654,15 @@
                         rolesHtml += `<span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold border bg-emerald-100 text-emerald-700 border-emerald-200 whitespace-nowrap"><i class="ph-fill ph-first-aid"></i> ATVSV (Nhóm 6)</span>`;
                     }
                 }
-                if (!rolesHtml) rolesHtml = '<span class="text-slate-300">-</span>';
+                
+                let combinedRole = `<div class="font-bold text-slate-800">${d.vi_tri || '-'}</div>`;
+                if(d.bo_phan) combinedRole += `<div class="text-[11px] text-slate-500">${d.bo_phan}</div>`;
+                if(rolesHtml) combinedRole += `<div class="mt-1">${rolesHtml}</div>`;
 
-                // --- MÀU CẢNH BÁO ROW ---
                 const isDanger = (atld.status === 'danger' && !hasPassedAny) || health.status === 'danger' || atld.status === 'warning';
                 const rowClass = isDanger ? "bg-rose-50/50 hover:bg-rose-50" : "bg-white hover:bg-slate-50";
                 const dobText = d.ngay_sinh ? new Date(d.ngay_sinh).toLocaleDateString('vi-VN') : '-';
 
-                // Định dạng Nhóm ATLĐ (Nếu là Nhóm 3 thì in thêm màu đỏ để chú ý)
                 let groupHtml = d.nhom_atld;
                 if (d.nhom_atld && d.nhom_atld.includes("Nhóm 3")) {
                     groupHtml = `<span class="px-2 py-1 rounded bg-rose-100 text-rose-700 border border-rose-200 font-bold text-[11px] whitespace-nowrap">${d.nhom_atld}</span>`;
@@ -665,9 +677,7 @@
                         <td class="p-3 font-bold text-blue-700 whitespace-nowrap">${d.ho_ten}</td>
                         <td class="p-3 text-center text-slate-600">${d.gioi_tinh || '-'}</td>
                         <td class="p-3 text-center text-slate-600">${dobText}</td>
-                        <td class="p-3 text-slate-700 font-medium">${d.bo_phan || '-'}</td>
-                        <td class="p-3 text-slate-800 font-bold">${d.vi_tri || '-'}</td>
-                        <td class="p-3">${rolesHtml}</td>
+                        <td class="p-3">${combinedRole}</td>
                         <td class="p-3 text-center">${groupHtml}</td>
                         <td class="p-3 text-center">${atld.html}</td>
                         <td class="p-3 text-left">
@@ -695,7 +705,6 @@
                 if (!matchText) return false;
                 
                 if (filterDanger) {
-                    // Xem có bài nào PASS không
                     let hasPassedAny = false;
                     if (d.lich_su_thi_moi_nhat) {
                         hasPassedAny = Object.values(d.lich_su_thi_moi_nhat).some(test => test.diem_so >= (test.tong_cau * 0.8));
@@ -717,9 +726,10 @@
             document.getElementById('emp-name').value = d.ho_ten;
             document.getElementById('emp-dob').value = d.ngay_sinh || ''; 
             document.getElementById('emp-gender').value = d.gioi_tinh || '';
-            document.getElementById('emp-dept').value = d.bo_phan || '';
             
-            // Render lại list Vị trí rồi gán giá trị
+            // Render department and position
+            const deptSelect = document.getElementById('emp-dept');
+            deptSelect.value = d.bo_phan || '';
             window.updatePositionDropdown(d.vi_tri || '');
             
             if (d.vai_tro_phu) {
@@ -749,8 +759,8 @@
                 ho_ten: document.getElementById('emp-name').value.trim(), 
                 ngay_sinh: document.getElementById('emp-dob').value, 
                 gioi_tinh: document.getElementById('emp-gender').value, 
-                bo_phan: document.getElementById('emp-dept').value.trim(),
-                vi_tri: document.getElementById('emp-role').value.trim(), 
+                bo_phan: document.getElementById('emp-dept').value,
+                vi_tri: document.getElementById('emp-role').value, 
                 nhom_atld: document.getElementById('emp-group').value, 
                 vai_tro_phu: {
                     pccc: document.getElementById('emp-pccc').value,
@@ -771,7 +781,7 @@
         };
 
         // ==========================================
-        // XUẤT BÁO CÁO PDF ĐẲNG CẤP (CẬP NHẬT CỘT MỚI)
+        // XUẤT BÁO CÁO PDF ĐẲNG CẤP
         // ==========================================
         window.exportPDF = function() {
             if (rawData.length === 0) return alert("Chưa có dữ liệu để xuất PDF!");
@@ -791,69 +801,4 @@
                             <tr style="background-color: #f1f5f9;">
                                 <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 30px;">STT</th>
                                 <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 50px;">Mã NV</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 120px;">Họ Tên</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 100px;">Bộ phận</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: left;">Vị trí / Chức danh</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 100px;">Nhóm ATLĐ</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 70px;">Hạn Thẻ<br>Huấn Luyện</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: left; width: 160px;">Đào tạo EHS Nội bộ<br>(Kết quả thi)</th>
-                                <th style="border: 1px solid #000; padding: 6px; text-align: center; width: 70px;">Hạn Khám<br>Sức Khỏe</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rawData.map((d, i) => {
-                                let rolesArr = [];
-                                if(d.vai_tro_phu?.pccc) rolesArr.push(d.vai_tro_phu.pccc);
-                                if(d.vai_tro_phu?.atvsv) rolesArr.push("ATVSV");
-                                let roleStr = rolesArr.length > 0 ? `<br><i style="color: #555;">[${rolesArr.join(", ")}]</i>` : '';
-
-                                let atldStatus = d.han_atld ? new Date(d.han_atld).toLocaleDateString('vi-VN') : "Chưa có";
-                                let healthStatus = d.han_suc_khoe ? new Date(d.han_suc_khoe).toLocaleDateString('vi-VN') : "Chưa có";
-                                
-                                let internalStatus = "Chưa học";
-                                if (d.lich_su_thi_moi_nhat && Object.keys(d.lich_su_thi_moi_nhat).length > 0) {
-                                    internalStatus = Object.values(d.lich_su_thi_moi_nhat).map(t => {
-                                        let sn = t.ten_khoa_hoc.replace("Đào tạo ", "").replace(" 2026", "").replace(" Cơ Bản", "");
-                                        let dt = t.thoi_gian_nop.toDate().toLocaleDateString('vi-VN');
-                                        let pass = (t.diem_so >= t.tong_cau * 0.8) ? `<b style="color: green;">Đạt</b>` : `<b style="color: #b45309;">Đã tham dự</b>`;
-                                        return `- ${sn}: ${pass} (${dt})`;
-                                    }).join('<br>');
-                                }
-                                
-                                return `
-                                <tr>
-                                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${i+1}</td>
-                                    <td style="border: 1px solid #000; padding: 6px; text-align: center; font-family: monospace;">${d.ma_nv}</td>
-                                    <td style="border: 1px solid #000; padding: 6px; font-weight: bold;">${d.ho_ten}</td>
-                                    <td style="border: 1px solid #000; padding: 6px;">${d.bo_phan || '-'}</td>
-                                    <td style="border: 1px solid #000; padding: 6px;"><b>${d.vi_tri || '-'}</b>${roleStr}</td>
-                                    <td style="border: 1px solid #000; padding: 6px; text-align: center;">${d.nhom_atld}</td>
-                                    <td style="border: 1px solid #000; padding: 6px; text-align: center; color: ${atldStatus==='Chưa có'?'red':'inherit'};">${atldStatus}</td>
-                                    <td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${internalStatus}</td>
-                                    <td style="border: 1px solid #000; padding: 6px; text-align: center; color: ${healthStatus==='Chưa có'?'red':'inherit'};">${healthStatus}</td>
-                                </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            container.classList.remove('hidden');
-
-            const opt = {
-                margin:       [10, 10, 10, 10],
-                filename:     `Ho_So_Nhan_Su_EHS_${new Date().toISOString().slice(0,10)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-
-            html2pdf().set(opt).from(container.firstElementChild).save().then(() => {
-                container.classList.add('hidden');
-                container.innerHTML = '';
-            });
-        };
-    </script>
-</body>
-</html>
+                                <th style="border: 1px solid #000; padding: 6px; text-align: left;
