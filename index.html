@@ -3,16 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EHS Data Dashboard & Training</title>
+    <title>EHS System - Trang Chủ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* Tùy chỉnh thanh cuộn cho Sidebar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // ANH DÁN API KEY MỚI VÀO ĐÂY
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -27,15 +34,10 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        window.auth = auth;
-        window.db = db;
-        window.EmailAuthProvider = EmailAuthProvider;
-        window.reauthenticateWithCredential = reauthenticateWithCredential;
-        window.updatePassword = updatePassword;
-        window.collection = collection;
-        window.query = query;
-        window.where = where;
-        window.getDocs = getDocs;
+        window.auth = auth; window.db = db;
+        window.EmailAuthProvider = EmailAuthProvider; window.reauthenticateWithCredential = reauthenticateWithCredential;
+        window.updatePassword = updatePassword; window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
 
         // Xử lý đăng nhập Kho Báo Cáo EHS
         document.getElementById('btn-report-login').addEventListener('click', async () => {
@@ -45,8 +47,7 @@
             const errorMsg = document.getElementById('password-error');
             
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xác thực...';
-            btn.disabled = true;
-            errorMsg.classList.add('hidden');
+            btn.disabled = true; errorMsg.classList.add('hidden');
 
             try {
                 await signInWithEmailAndPassword(auth, "baocao@ehs.com", inputPass);
@@ -58,8 +59,7 @@
                 errorMsg.innerText = error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' ? "Sai mật khẩu!" : "Lỗi: " + error.message;
                 errorMsg.classList.remove('hidden');
             } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
+                btn.innerHTML = ogText; btn.disabled = false;
             }
         });
 
@@ -68,266 +68,353 @@
         });
     </script>
 </head>
-<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
+<!-- Khóa cuộn trang ở body, thiết lập bố cục flex -->
+<body class="bg-slate-50 font-sans text-slate-800 flex h-screen overflow-hidden selection:bg-blue-200">
 
-    <div class="max-w-6xl mx-auto">
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+    <!-- LỚP PHỦ MÀN HÌNH ĐEN TRÊN MOBILE -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-slate-900/50 z-30 hidden md:hidden backdrop-blur-sm transition-opacity" onclick="toggleSidebar()"></div>
+
+    <!-- SIDEBAR (CÂY THƯ MỤC KIỂU GEMINI) -->
+    <!-- Trên máy tính (md): hiện tĩnh. Trên điện thoại: ẩn bên trái, khi bấm menu sẽ trượt ra -->
+    <aside id="sidebar" class="w-72 bg-slate-50 md:bg-slate-50/80 border-r border-slate-200 flex flex-col h-screen fixed md:relative z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none">
+        
+        <!-- Logo / Tiêu đề -->
+        <div class="h-16 flex items-center justify-between px-5 shrink-0">
+            <h1 class="text-xl font-black text-slate-800 flex items-center gap-2 tracking-tight">
+                <i class="ph-fill ph-sparkle text-2xl text-blue-600 animate-pulse"></i> EHS System
+            </h1>
+            <button class="md:hidden text-slate-500 hover:text-red-500 p-2 rounded-full hover:bg-slate-200 transition" onclick="toggleSidebar()">
+                <i class="ph-bold ph-x text-lg"></i>
+            </button>
+        </div>
+
+        <!-- Các mục Menu (Có thanh cuộn riêng nếu quá dài) -->
+        <div class="flex-1 overflow-y-auto px-3 py-2 space-y-1 custom-scrollbar">
             
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-100 pb-6">
-                <div>
-                    <h2 class="text-2xl font-bold text-blue-700 flex items-center">
-                        <i class="ph-fill ph-database text-3xl mr-2"></i>
-                        Hệ thống Quản lý EHS
-                    </h2>
-                    <p class="text-slate-500 mt-1">Nền tảng đào tạo, quản lý hóa chất & rủi ro môi trường.</p>
+            <a href="#" onclick="toggleSidebar(true)" class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-bold text-blue-700 bg-blue-100/50 rounded-xl mb-6 border border-blue-100">
+                <i class="ph-fill ph-squares-four text-lg"></i> Bảng Điều Khiển chính
+            </a>
+
+            <!-- NHÓM 1 -->
+            <div class="mb-2">
+                <button onclick="toggleMenu('menu-1', 'icon-1')" class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200/60 rounded-xl transition group">
+                    <span class="flex items-center gap-3"><i class="ph-fill ph-graduation-cap text-lg text-indigo-500"></i> Nhóm 1: Đào tạo EHS</span>
+                    <i class="ph-bold ph-caret-down text-[10px] text-slate-400 group-hover:text-slate-700 transition-transform duration-300 transform rotate-180" id="icon-1"></i>
+                </button>
+                <ul id="menu-1" class="pl-10 pr-2 py-1 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out origin-top" style="max-height: 500px;">
+                    <li><button onclick="window.openPersonalizedCourseModal(); toggleSidebar(true);" class="w-full text-left px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-indigo-700 hover:shadow-sm rounded-lg transition font-medium">Phòng Học EHS</button></li>
+                    <li><a href="https://thetu191993-code.github.io/daotao/Tai_lieu_daotao_EHS.pdf" target="_blank" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-indigo-700 hover:shadow-sm rounded-lg transition font-medium">Tài liệu Đào tạo</a></li>
+                    <li><a href="quan_ly_nhan_su.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-indigo-700 hover:shadow-sm rounded-lg transition font-medium">Hồ sơ Nhân sự Nội bộ</a></li>
+                </ul>
+            </div>
+
+            <!-- NHÓM 2 -->
+            <div class="mb-2">
+                <button onclick="toggleMenu('menu-2', 'icon-2')" class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200/60 rounded-xl transition group">
+                    <span class="flex items-center gap-3"><i class="ph-fill ph-chart-bar text-lg text-blue-500"></i> Nhóm 2: Quản trị & Báo cáo</span>
+                    <i class="ph-bold ph-caret-down text-[10px] text-slate-400 group-hover:text-slate-700 transition-transform duration-300 transform rotate-180" id="icon-2"></i>
+                </button>
+                <ul id="menu-2" class="pl-10 pr-2 py-1 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out origin-top" style="max-height: 500px;">
+                    <li><a href="trung_tam_kiem_tra.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-blue-700 hover:shadow-sm rounded-lg transition font-medium">Trung tâm Kiểm tra</a></li>
+                    <li><button onclick="openReportModal(); toggleSidebar(true);" class="w-full text-left px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-blue-700 hover:shadow-sm rounded-lg transition font-medium">Kho Báo Cáo EHS</button></li>
+                    <li><a href="admin_kiem_tra.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-blue-700 hover:shadow-sm rounded-lg transition font-medium">Quản trị Báo cáo</a></li>
+                    <li><a href="admin.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-blue-700 hover:shadow-sm rounded-lg transition font-medium">Quản trị Điểm thi</a></li>
+                    <li><a href="admin_pccc.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-blue-700 hover:shadow-sm rounded-lg transition font-medium">Quản trị PCCC</a></li>
+                    <li><button onclick="loadDataFromGitHub(); toggleSidebar(true);" class="w-full text-left px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-blue-700 hover:shadow-sm rounded-lg transition font-medium">Đồng bộ Quan trắc JSON</button></li>
+                </ul>
+            </div>
+
+            <!-- NHÓM 3 -->
+            <div class="mb-2">
+                <button onclick="toggleMenu('menu-3', 'icon-3')" class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200/60 rounded-xl transition group">
+                    <span class="flex items-center gap-3"><i class="ph-fill ph-book-bookmark text-lg text-teal-500"></i> Nhóm 3: Quy trình</span>
+                    <i class="ph-bold ph-caret-down text-[10px] text-slate-400 group-hover:text-slate-700 transition-transform duration-300 transform rotate-180" id="icon-3"></i>
+                </button>
+                <ul id="menu-3" class="pl-10 pr-2 py-1 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out origin-top" style="max-height: 500px;">
+                    <li><a href="https://thetu191993-code.github.io/daotao/So_tay_van_hanh.pdf" target="_blank" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-teal-700 hover:shadow-sm rounded-lg transition font-medium">Sổ tay Vận hành</a></li>
+                    <li><a href="https://thetu191993-code.github.io/daotao/Quy_trinh_su_co.pdf" target="_blank" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-teal-700 hover:shadow-sm rounded-lg transition font-medium">Quy trình Sự cố</a></li>
+                    <li><a href="quan_ly_hoa_chat.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-teal-700 hover:shadow-sm rounded-lg transition font-medium">Quản lý Hóa Chất</a></li>
+                </ul>
+            </div>
+
+            <!-- NHÓM 4 -->
+            <div class="mb-2">
+                <button onclick="toggleMenu('menu-4', 'icon-4')" class="flex items-center justify-between w-full px-3 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200/60 rounded-xl transition group">
+                    <span class="flex items-center gap-3"><i class="ph-fill ph-hard-hat text-lg text-amber-500"></i> Nhóm 4: Nhà thầu</span>
+                    <i class="ph-bold ph-caret-down text-[10px] text-slate-400 group-hover:text-slate-700 transition-transform duration-300 transform rotate-180" id="icon-4"></i>
+                </button>
+                <ul id="menu-4" class="pl-10 pr-2 py-1 space-y-0.5 overflow-hidden transition-all duration-300 ease-in-out origin-top" style="max-height: 500px;">
+                    <li><a href="quan_ly_nha_thau.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-amber-700 hover:shadow-sm rounded-lg transition font-medium">Cổng Nhà thầu (Admin)</a></li>
+                    <li><a href="cong_nha_thau.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-amber-700 hover:shadow-sm rounded-lg transition font-medium">Nhà thầu tự Khai báo</a></li>
+                    <li><a href="bao_ve.html" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-amber-700 hover:shadow-sm rounded-lg transition font-medium">Trạm gác An ninh</a></li>
+                    <li><a href="qr_cham_cong.html" target="_blank" class="block w-full px-3 py-2 text-[13px] text-slate-600 hover:bg-white hover:text-amber-700 hover:shadow-sm rounded-lg transition font-medium border border-orange-200 bg-orange-50 mt-1">Cổng Quét QR Ra/Vào</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Khung User ở góc dưới Sidebar -->
+        <div class="p-4 border-t border-slate-200" id="sidebar-user-footer">
+            <a href="login.html" class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 hover:shadow-md transition">
+                <i class="ph-bold ph-sign-in text-lg"></i> Đăng nhập hệ thống
+            </a>
+        </div>
+    </aside>
+
+    <!-- NỘI DUNG CHÍNH BÊN PHẢI (MAIN CONTENT) -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-white relative">
+        
+        <!-- Header Thanh trên cùng -->
+        <header class="h-16 flex items-center justify-between px-4 sm:px-8 shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-20">
+            <div class="flex items-center gap-3">
+                <button class="md:hidden text-slate-500 hover:text-blue-600 transition p-2 bg-slate-100 rounded-full" onclick="toggleSidebar()">
+                    <i class="ph-bold ph-list text-xl"></i>
+                </button>
+                <!-- Breadcrumb đơn giản -->
+                <div class="hidden sm:flex items-center text-sm font-medium text-slate-500 gap-2">
+                    <span>EHS System</span>
+                    <i class="ph-bold ph-caret-right text-[10px]"></i>
+                    <span class="text-slate-800 font-bold">Bảng Điều Khiển</span>
                 </div>
+            </div>
+            
+            <div id="user-profile-section-top">
+                <!-- Sẽ được điền bằng JS nếu đã đăng nhập -->
+            </div>
+        </header>
+
+        <!-- Khu vực cuộn chính chứa nội dung -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-8 bg-slate-50/50 custom-scrollbar">
+            <div class="max-w-5xl mx-auto space-y-6">
                 
-                <div id="user-profile-section">
-                    <a href="login.html" class="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
-                        <i class="ph-bold ph-sign-in text-xl"></i> Đăng nhập hệ thống
+                <!-- Banner Chào mừng (Kiểu SaaS) -->
+                <div class="bg-gradient-to-br from-blue-700 via-indigo-600 to-purple-700 rounded-3xl p-8 sm:p-10 text-white shadow-xl relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-blue-200 font-medium tracking-widest text-xs uppercase mb-2">Workspace</p>
+                        <h2 class="text-3xl sm:text-4xl font-black mb-3">Trung Tâm Quản Lý EHS</h2>
+                        <p class="text-blue-100 max-w-xl text-sm sm:text-base leading-relaxed">
+                            Nền tảng quản trị thông minh dành riêng cho Phòng An Toàn - Vệ Sinh - Môi Trường. Tự động hóa lộ trình đào tạo, số hóa dữ liệu hóa chất và kiểm soát rủi ro nhà thầu theo thời gian thực.
+                        </p>
+                    </div>
+                    <!-- Họa tiết trang trí -->
+                    <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+                    <div class="absolute right-20 top-10 w-32 h-32 bg-purple-400/20 rounded-full blur-2xl"></div>
+                    <i class="ph-fill ph-shield-check text-[180px] absolute -right-6 -bottom-12 text-white/5 opacity-50 transform -rotate-12"></i>
+                </div>
+
+                <!-- Thẻ Truy cập Nhanh (Quick Actions) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                    <button onclick="window.openPersonalizedCourseModal()" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-indigo-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                            <i class="ph-fill ph-student text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg">Phòng Học EHS</h3>
+                        <p class="text-xs text-slate-500 mt-1">Lộ trình học tập & thi trắc nghiệm</p>
+                    </button>
+                    
+                    <a href="trung_tam_kiem_tra.html" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-orange-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-orange-50 text-orange-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                            <i class="ph-fill ph-clipboard-text text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg">Đi Kiểm Tra (Audit)</h3>
+                        <p class="text-xs text-slate-500 mt-1">Checklist an toàn hiện trường</p>
                     </a>
-                </div>
-            </div>
 
-            <!-- MENU ĐIỀU HƯỚNG CÂY THƯ MỤC -->
-            <div class="space-y-4 mb-8">
+                    <button onclick="openReportModal()" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-teal-300 hover:-translate-y-1 transition-all duration-300 flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+                            <i class="ph-fill ph-folder-open text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 text-lg">Kho Báo Cáo EHS</h3>
+                        <p class="text-xs text-slate-500 mt-1">Tài liệu bảo mật nội bộ</p>
+                    </button>
+                </div>
+
+                <!-- BẢNG DỮ LIỆU ĐỒNG BỘ JSON -->
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden transition-all duration-500" id="dataTableContainer">
+                    <div class="p-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2"><i class="ph-fill ph-chart-line-up text-blue-600 text-xl"></i> Dữ liệu Đồng bộ Quan trắc</h3>
+                        <button onclick="loadDataFromGitHub()" class="text-blue-600 hover:text-blue-800 text-sm font-bold flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded-lg"><i class="ph-bold ph-arrows-clockwise"></i> Tải lại</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-white text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                                    <th class="p-4 font-bold">Ngày Quan Trắc</th>
+                                    <th class="p-4 font-bold">Lưu lượng (m3)</th>
+                                    <th class="p-4 font-bold">COD Đầu ra (mg/L)</th>
+                                    <th class="p-4 font-bold">Fluoride Đầu ra (mg/L)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataBody" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
                 
-                <!-- NHÓM 1: ĐÀO TẠO EHS -->
-                <div class="bg-indigo-50/50 rounded-xl border border-indigo-100 overflow-hidden">
-                    <button onclick="window.toggleAccordion('acc-1', this)" class="w-full text-left p-4 sm:p-5 flex justify-between items-center focus:outline-none hover:bg-indigo-100/50 transition-colors">
-                        <h3 class="text-lg font-bold text-indigo-800 flex items-center">
-                            <i class="ph-fill ph-graduation-cap mr-2 text-2xl"></i> Nhóm 1: Đào tạo EHS
-                        </h3>
-                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                            <i class="ph-bold ph-caret-down text-lg transition-transform duration-300 transform rotate-180 acc-icon"></i>
-                        </div>
-                    </button>
-                    <div id="acc-1" class="grid transition-all duration-300 ease-in-out" style="grid-template-rows: 1fr;">
-                        <div class="overflow-hidden">
-                            <div class="px-4 sm:px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <button onclick="window.openPersonalizedCourseModal()" class="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 shadow-sm relative overflow-hidden">
-                                    <i class="ph-bold ph-chalkboard-teacher text-xl relative z-10"></i> 
-                                    <span class="relative z-10">Phòng Học EHS</span>
-                                    <div class="absolute -right-4 -top-4 w-12 h-12 bg-white/20 rounded-full animate-ping"></div>
-                                </button>
-                                <a href="https://thetu191993-code.github.io/daotao/Tai_lieu_daotao_EHS.pdf" target="_blank" class="w-full bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-file-pdf text-xl"></i> Tài liệu Đào tạo
-                                </a>
-                                <a href="quan_ly_nhan_su.html" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-users-three text-xl"></i> Hồ sơ Nhân sự Nội bộ
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- NHÓM 2: BÁO CÁO & QUẢN TRỊ -->
-                <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
-                    <button onclick="window.toggleAccordion('acc-2', this)" class="w-full text-left p-4 sm:p-5 flex justify-between items-center focus:outline-none hover:bg-slate-100 transition-colors">
-                        <h3 class="text-lg font-bold text-slate-800 flex items-center">
-                            <i class="ph-fill ph-chart-bar mr-2 text-2xl text-blue-600"></i> Nhóm 2: Báo cáo & Quản trị
-                        </h3>
-                        <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600">
-                            <i class="ph-bold ph-caret-down text-lg transition-transform duration-300 transform rotate-180 acc-icon"></i>
-                        </div>
-                    </button>
-                    <div id="acc-2" class="grid transition-all duration-300 ease-in-out" style="grid-template-rows: 1fr;">
-                        <div class="overflow-hidden">
-                            <div class="px-4 sm:px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <a href="trung_tam_kiem_tra.html" class="w-full bg-orange-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-orange-600 transition flex items-center justify-center gap-2 shadow-sm border border-orange-600">
-                                    <i class="ph-bold ph-clipboard-text text-xl"></i> Trung tâm Kiểm tra
-                                </a>
-                                <button onclick="openReportModal()" class="w-full bg-teal-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-folder-open text-xl"></i> Kho Báo Cáo EHS
-                                </button>
-                                <a href="admin_kiem_tra.html" class="w-full bg-slate-800 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-900 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-files text-xl"></i> Quản trị Báo cáo
-                                </a>
-                                <a href="admin.html" class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-shield-check text-xl"></i> Quản trị Điểm thi
-                                </a>
-                                <a href="admin_pccc.html" class="w-full bg-red-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-fire-extinguisher text-xl"></i> Quản trị PCCC
-                                </a>
-                                <button onclick="loadDataFromGitHub()" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-arrows-clockwise text-xl"></i> Đồng bộ Dữ liệu
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- NHÓM 3: QUY TRÌNH & HƯỚNG DẪN -->
-                <div class="bg-teal-50/50 rounded-xl border border-teal-100 overflow-hidden">
-                    <button onclick="window.toggleAccordion('acc-3', this)" class="w-full text-left p-4 sm:p-5 flex justify-between items-center focus:outline-none hover:bg-teal-100/50 transition-colors">
-                        <h3 class="text-lg font-bold text-teal-800 flex items-center">
-                            <i class="ph-fill ph-book-bookmark mr-2 text-2xl"></i> Nhóm 3: Quy trình & Hướng dẫn
-                        </h3>
-                        <div class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
-                            <i class="ph-bold ph-caret-down text-lg transition-transform duration-300 transform rotate-180 acc-icon"></i>
-                        </div>
-                    </button>
-                    <div id="acc-3" class="grid transition-all duration-300 ease-in-out" style="grid-template-rows: 1fr;">
-                        <div class="overflow-hidden">
-                            <div class="px-4 sm:px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <a href="https://thetu191993-code.github.io/daotao/So_tay_van_hanh.pdf" target="_blank" class="w-full bg-emerald-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-book-open text-xl"></i> Sổ tay Vận hành
-                                </a>
-                                <a href="https://thetu191993-code.github.io/daotao/Quy_trinh_su_co.pdf" target="_blank" class="w-full bg-rose-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-rose-600 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-warning-circle text-xl"></i> Quy trình Sự cố
-                                </a>
-                                <a href="quan_ly_hoa_chat.html" class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-flask text-xl"></i> Quản lý Hóa Chất
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- NHÓM 4: QUẢN LÝ NHÀ THẦU -->
-                <div class="bg-amber-50/50 rounded-xl border border-amber-100 overflow-hidden">
-                    <button onclick="window.toggleAccordion('acc-4', this)" class="w-full text-left p-4 sm:p-5 flex justify-between items-center focus:outline-none hover:bg-amber-100/50 transition-colors">
-                        <h3 class="text-lg font-bold text-amber-800 flex items-center">
-                            <i class="ph-fill ph-hard-hat mr-2 text-2xl"></i> Nhóm 4: Quản lý Nhà thầu
-                        </h3>
-                        <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-                            <i class="ph-bold ph-caret-down text-lg transition-transform duration-300 transform rotate-180 acc-icon"></i>
-                        </div>
-                    </button>
-                    <div id="acc-4" class="grid transition-all duration-300 ease-in-out" style="grid-template-rows: 1fr;">
-                        <div class="overflow-hidden">
-                            <div class="px-4 sm:px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <a href="quan_ly_nha_thau.html" class="w-full bg-amber-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center justify-center gap-2 shadow-sm border border-amber-600">
-                                    <i class="ph-bold ph-hard-hat text-xl"></i> Cổng Nhà thầu (Admin)
-                                </a>
-                                <a href="cong_nha_thau.html" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-folder-notch-plus text-xl"></i> Nhà thầu tự Khai báo
-                                </a>
-                                <a href="bao_ve.html" class="w-full bg-slate-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-slate-800 transition flex items-center justify-center gap-2 shadow-sm">
-                                    <i class="ph-bold ph-shield-check text-xl"></i> Trạm gác An ninh
-                                </a>
-                                <a href="qr_cham_cong.html" target="_blank" class="w-full bg-orange-600 text-white px-4 py-3 rounded-lg font-semibold hover:bg-orange-700 transition flex items-center justify-center gap-2 shadow-sm border border-orange-700">
-                                    <i class="ph-bold ph-qr-code text-xl"></i> Cổng Quét QR Ra/Vào
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <div id="loadingStatus" class="text-blue-600 font-bold flex items-center justify-center gap-2 hidden p-10 bg-white rounded-2xl border border-slate-200 shadow-sm">
+                    <i class="ph-bold ph-spinner animate-spin text-3xl"></i> Đang trích xuất dữ liệu JSON...
                 </div>
 
             </div>
+        </div>
+    </main>
 
-            <!-- MODAL KHO BÁO CÁO -->
-            <div id="report-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-                    <div class="flex justify-between items-center p-5 border-b border-slate-100">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="ph-fill ph-lock-key text-teal-600 text-2xl" id="modal-icon"></i> Kho Báo Cáo EHS
-                        </h3>
-                        <button onclick="closeReportModal()" class="text-slate-400 hover:text-red-500 transition">
-                            <i class="ph-bold ph-x text-2xl"></i>
-                        </button>
+    <!-- ================= MODALS ================= -->
+
+    <!-- LỘ TRÌNH ĐÀO TẠO CÁ NHÂN HÓA (LMS) -->
+    <div id="course-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] transform scale-95 transition-transform" id="course-modal-content">
+            <div class="p-6 border-b border-indigo-100 bg-indigo-50 relative">
+                <button onclick="closeCourseModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition bg-white rounded-full p-1 shadow-sm">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+                <div class="flex items-center gap-4">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md text-indigo-600 border-2 border-indigo-100">
+                        <i class="ph-fill ph-student text-3xl"></i>
                     </div>
-
-                    <div id="password-view" class="p-6 flex flex-col items-center gap-4">
-                        <p class="text-sm text-slate-600 text-center">Tài liệu nội bộ. Vui lòng nhập mật khẩu cấp quản lý để truy cập.</p>
-                        <input type="password" id="report-password" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-center tracking-[0.3em] font-mono text-lg" placeholder="•••••••">
-                        <p id="password-error" class="text-red-500 text-sm hidden font-medium">Sai mật khẩu! Vui lòng thử lại.</p>
-                        <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 transition shadow-sm">Xác nhận</button>
-                    </div>
-
-                    <div id="report-list-view" class="p-5 flex-col gap-3 hidden h-80 overflow-y-auto">
-                        <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group mb-2">
-                            <span class="font-medium text-slate-700 group-hover:text-teal-700">Báo cáo EHS Tháng 1</span>
-                            <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600"></i>
-                        </a>
+                    <div>
+                        <h3 class="text-xl font-black text-indigo-900 uppercase tracking-tight">Lộ trình Đào tạo EHS</h3>
+                        <p class="text-sm font-medium text-indigo-600 mt-1">Học viên: <span id="student-name" class="font-bold text-indigo-800">Đang tải...</span></p>
+                        <p class="text-xs text-slate-500 mt-1">Nhóm an toàn: <span id="student-group" class="bg-white border border-slate-200 px-2 py-0.5 rounded font-bold text-slate-700 shadow-sm">-</span></p>
                     </div>
                 </div>
             </div>
 
-            <!-- LỘ TRÌNH ĐÀO TẠO CÁ NHÂN HÓA (LMS) -->
-            <div id="course-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-                    <div class="p-6 border-b border-indigo-100 bg-indigo-50 relative">
-                        <button onclick="closeCourseModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 transition">
-                            <i class="ph-bold ph-x text-2xl"></i>
-                        </button>
-                        <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm text-indigo-600 border-2 border-indigo-200">
-                                <i class="ph-fill ph-student text-3xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-black text-indigo-900 uppercase">Lộ trình Đào tạo EHS</h3>
-                                <p class="text-sm font-medium text-indigo-600 mt-1">Học viên: <span id="student-name" class="font-bold text-indigo-800">Đang tải...</span></p>
-                                <p class="text-xs text-slate-500 mt-1">Nhóm an toàn: <span id="student-group" class="bg-slate-200 px-2 py-0.5 rounded font-bold text-slate-700">-</span></p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-6 overflow-y-auto bg-slate-50 flex-grow relative" id="course-list-container">
-                        <!-- Loading spinner -->
-                        <div id="course-loader" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center z-10">
-                            <i class="ph-bold ph-spinner animate-spin text-4xl text-indigo-500 mb-3"></i>
-                            <p class="text-sm font-bold text-slate-500 animate-pulse">Đang truy xuất dữ liệu từ máy chủ...</p>
-                        </div>
-                        
-                        <!-- Danh sách khóa học được render bằng JS -->
-                        <div class="space-y-4" id="dynamic-courses"></div>
-                    </div>
+            <div class="p-6 overflow-y-auto bg-slate-50 flex-grow relative custom-scrollbar" id="course-list-container">
+                <div id="course-loader" class="absolute inset-0 bg-slate-50 flex flex-col items-center justify-center z-10">
+                    <i class="ph-bold ph-spinner animate-spin text-4xl text-indigo-500 mb-3"></i>
+                    <p class="text-sm font-bold text-slate-500 animate-pulse">Đang phân tích Ma trận đào tạo...</p>
                 </div>
+                <div class="space-y-4" id="dynamic-courses"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KHO BÁO CÁO -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="ph-fill ph-lock-key text-teal-600 text-3xl" id="modal-icon"></i> Kho Báo Cáo EHS
+                </h3>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-red-500 transition bg-white rounded-full p-1 shadow-sm">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
             </div>
 
-            <!-- BẢNG DỮ LIỆU ĐỒNG BỘ JSON -->
-            <div class="overflow-x-auto rounded-lg border border-slate-200 hidden mt-6" id="dataTableContainer">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-600 text-sm uppercase">
-                            <th class="p-4 border-b font-semibold">Ngày</th>
-                            <th class="p-4 border-b font-semibold">Lưu lượng (m3)</th>
-                            <th class="p-4 border-b font-semibold">COD Đầu ra (mg/L)</th>
-                            <th class="p-4 border-b font-semibold">Fluoride Đầu ra (mg/L)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataBody" class="text-sm"></tbody>
-                </table>
+            <div id="password-view" class="p-6 flex flex-col items-center gap-4">
+                <p class="text-sm text-slate-500 text-center font-medium">Tài liệu nội bộ. Vui lòng nhập mật khẩu quản lý để truy cập.</p>
+                <input type="password" id="report-password" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none text-center tracking-[0.4em] font-mono text-xl bg-slate-50 focus:bg-white transition" placeholder="••••••••">
+                <p id="password-error" class="text-red-500 text-sm hidden font-bold">Sai mật khẩu!</p>
+                <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl hover:bg-teal-700 transition shadow-md mt-2">Xác Nhận Truy Cập</button>
             </div>
-            
-            <div id="loadingStatus" class="text-blue-600 font-medium items-center gap-2 hidden mt-6">
-                <i class="ph-bold ph-spinner animate-spin"></i> Đang tải dữ liệu...
+
+            <div id="report-list-view" class="p-5 flex-col gap-3 hidden h-80 overflow-y-auto custom-scrollbar">
+                <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 group-hover:text-teal-800">Báo cáo EHS Tháng 1</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
             </div>
         </div>
     </div>
 
     <!-- MODAL ĐỔI PASS -->
-    <div id="change-pass-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border-t-4 border-blue-600 relative">
-            <button onclick="document.getElementById('change-pass-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
-            <h3 class="text-lg font-bold text-slate-800 mb-4">Đổi Mật Khẩu</h3>
-            <input type="password" id="cp-old" class="w-full px-3 py-2 border rounded-lg mb-3" placeholder="Mật khẩu cũ">
-            <input type="password" id="cp-new" class="w-full px-3 py-2 border rounded-lg mb-3" placeholder="Mật khẩu mới (>6 ký tự)">
-            <input type="password" id="cp-confirm" class="w-full px-3 py-2 border rounded-lg mb-3" placeholder="Xác nhận mật khẩu mới">
-            <button onclick="handleChangePassword()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700">Đổi mật khẩu</button>
+    <div id="change-pass-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 border-t-4 border-blue-600 relative">
+            <button onclick="document.getElementById('change-pass-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 rounded-full p-1"><i class="ph-bold ph-x text-xl"></i></button>
+            <div class="flex justify-center mb-4"><i class="ph-fill ph-shield-check text-5xl text-blue-600"></i></div>
+            <h3 class="text-xl font-bold text-slate-800 mb-6 text-center">Đổi Mật Khẩu</h3>
+            <input type="password" id="cp-old" class="w-full px-4 py-3 border border-slate-300 rounded-xl mb-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Mật khẩu hiện tại">
+            <input type="password" id="cp-new" class="w-full px-4 py-3 border border-slate-300 rounded-xl mb-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Mật khẩu mới (Tối thiểu 6 ký tự)">
+            <input type="password" id="cp-confirm" class="w-full px-4 py-3 border border-slate-300 rounded-xl mb-6 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Xác nhận lại mật khẩu mới">
+            <button onclick="handleChangePassword()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition">Cập Nhật Mật Khẩu</button>
         </div>
     </div>
 
+    <!-- ================= SCRIPTS ================= -->
     <script>
         const currentUserId = localStorage.getItem("ehs_user_id");
         const currentUserName = localStorage.getItem("ehs_user_name");
 
+        // ĐIỀU KHIỂN SIDEBAR (MOBILE & DESKTOP)
+        function toggleSidebar(autoCloseOnMobile = false) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            // Nếu gọi autoClose trên máy tính (màn hình rộng) thì bỏ qua
+            if (autoCloseOnMobile && window.innerWidth >= 768) return;
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // ĐIỀU KHIỂN GẬP/MỞ MENU ACCORDION (TRONG SIDEBAR)
+        function toggleMenu(menuId, iconId) {
+            const menu = document.getElementById(menuId);
+            const icon = document.getElementById(iconId);
+            if (menu.style.maxHeight === '0px' || menu.style.maxHeight === '') {
+                menu.style.maxHeight = menu.scrollHeight + 'px';
+                icon.classList.add('rotate-180');
+            } else {
+                menu.style.maxHeight = '0px';
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        // KHỞI TẠO TÌNH TRẠNG MENU KHI LOAD TRANG
+        window.onload = function() {
+            // Mở sẵn tất cả các menu
+            [1, 2, 3, 4].forEach(num => {
+                const menu = document.getElementById(`menu-${num}`);
+                const icon = document.getElementById(`icon-${num}`);
+                if (menu) {
+                    menu.style.maxHeight = menu.scrollHeight + 'px';
+                    icon.classList.add('rotate-180');
+                }
+            });
+        }
+
+        // KIỂM TRA ĐĂNG NHẬP
         function checkLoginStatus() {
-            const profileSection = document.getElementById("user-profile-section");
+            const profileSection = document.getElementById("user-profile-section-top");
+            const sidebarFooter = document.getElementById("sidebar-user-footer");
+            
             if (currentUserId) {
                 const displayName = currentUserName ? currentUserName : currentUserId;
+                
+                // Nút trên Header
                 profileSection.innerHTML = `
-                    <div class="flex items-center bg-blue-50 px-4 py-2 rounded-full border border-blue-200 shadow-sm">
-                        <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shadow-inner mr-3"><i class="ph-fill ph-user"></i></div>
-                        <div class="mr-3 pr-4 border-r border-blue-200">
-                            <p class="text-sm font-bold text-blue-800 uppercase">${displayName}</p>
-                            <p class="text-[11px] text-blue-600 font-medium uppercase tracking-wider">Mã NV: ${currentUserId}</p>
+                    <div class="flex items-center bg-white px-2 py-1.5 rounded-full border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('change-pass-modal').classList.remove('hidden')">
+                        <div class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-inner mr-2"><i class="ph-fill ph-user"></i></div>
+                        <div class="mr-2 pr-3 border-r border-slate-200 hidden sm:block">
+                            <p class="text-[13px] font-bold text-slate-800 leading-tight">${displayName}</p>
+                            <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Mã NV: ${currentUserId}</p>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="document.getElementById('change-pass-modal').classList.remove('hidden')" class="text-blue-600 hover:text-blue-800 hover:bg-blue-100 p-2 rounded-full transition" title="Đổi mật khẩu"><i class="ph-bold ph-key text-xl"></i></button>
-                            <button onclick="handleLogout()" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition" title="Đăng xuất"><i class="ph-bold ph-sign-out text-xl"></i></button>
+                        <div class="flex items-center gap-1 pl-1">
+                            <button onclick="event.stopPropagation(); handleLogout()" class="text-slate-400 hover:text-red-500 p-1.5 rounded-full transition bg-slate-100 hover:bg-red-50" title="Đăng xuất"><i class="ph-bold ph-power text-lg"></i></button>
                         </div>
+                    </div>
+                `;
+
+                // Footer của Sidebar
+                sidebarFooter.innerHTML = `
+                    <div class="flex items-center justify-between bg-slate-100 p-3 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <div class="bg-white text-blue-600 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-sm border border-slate-200"><i class="ph-fill ph-user"></i></div>
+                            <div class="overflow-hidden">
+                                <p class="text-sm font-bold text-slate-800 truncate">${displayName}</p>
+                                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate">Mã NV: ${currentUserId}</p>
+                            </div>
+                        </div>
+                        <button onclick="handleLogout()" class="text-slate-400 hover:text-red-500 p-2 rounded-full transition bg-white shadow-sm border border-slate-200 flex-shrink-0" title="Đăng xuất">
+                            <i class="ph-bold ph-sign-out text-lg"></i>
+                        </button>
                     </div>
                 `;
             }
@@ -342,28 +429,13 @@
 
         checkLoginStatus();
 
-        // HIỆU ỨNG GẬP MỞ (ACCORDION)
-        window.toggleAccordion = function(id, btn) {
-            const content = document.getElementById(id);
-            const icon = btn.querySelector('.acc-icon');
-            
-            if (content.style.gridTemplateRows === '1fr') {
-                content.style.gridTemplateRows = '0fr';
-                icon.classList.remove('rotate-180');
-            } else {
-                content.style.gridTemplateRows = '1fr';
-                icon.classList.add('rotate-180');
-            }
-        };
-
         // ---------------- THUẬT TOÁN MA TRẬN ĐÀO TẠO CÁ NHÂN (LMS) ----------------
         
-        // Danh mục tấc cả các khóa học hiện có trên hệ thống
         const ALL_COURSES = {
             "chung": { id: "data_ehs_chung", title: "Đào tạo EHS Chung", desc: "Bắt buộc cho mọi nhân viên", icon: "ph-shield-check", color: "blue" },
             "dien": { id: "data_an_toan_dien", title: "An Toàn Điện Cơ Bản", desc: "Quy trình LOTO & Cách điện", icon: "ph-lightning", color: "amber" },
             "pccc": { id: "data_pccc", title: "An Toàn PCCC Sơ Cấp", desc: "Kỹ năng chữa cháy & thoát nạn", icon: "ph-fire-extinguisher", color: "red" },
-            "hoa_chat": { id: "data_hoa_chat", title: "An Toàn Hóa Chất", desc: "Ứng phó sự cố rò rỉ hóa chất", icon: "ph-flask", color: "purple" }
+            "hoa_chat": { id: "data_hoa_chat", title: "An Toàn Hóa Chất", desc: "Ứng phó rò rỉ hóa chất", icon: "ph-flask", color: "purple" }
         };
 
         window.openPersonalizedCourseModal = async function() {
@@ -373,17 +445,23 @@
                 return;
             }
 
-            document.getElementById('course-modal').classList.remove('hidden');
-            document.getElementById('course-modal').classList.add('flex');
+            const modal = document.getElementById('course-modal');
+            const content = document.getElementById('course-modal-content');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Animation pop in
+            setTimeout(() => content.classList.remove('scale-95'), 10);
+            
             document.getElementById('course-loader').classList.remove('hidden');
             document.getElementById('student-name').innerText = currentUserName || currentUserId;
             document.getElementById('dynamic-courses').innerHTML = '';
             
             try {
-                // Ép kiểu và xóa khoảng trắng để query chuẩn xác hơn (Tránh lỗi gõ dư dấu cách)
+                // Tiền xử lý ID: Cắt bỏ khoảng trắng và chuyển chữ hoa
                 const searchId = String(currentUserId).trim().toUpperCase();
 
-                // 1. Dùng Mã NV lấy Nhóm ATLĐ từ danh sách nhân sự Nội bộ do Admin up lên
+                // 1. Phân loại Nhóm ATLĐ
                 let myGroup = "Chưa xác định";
                 const qUser = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", searchId));
                 const snapUser = await window.getDocs(qUser);
@@ -391,61 +469,56 @@
                 if (!snapUser.empty) {
                     myGroup = snapUser.docs[0].data().nhom_atld || "Chưa xác định";
                 }
-                document.getElementById('student-group').innerText = myGroup;
+                
+                let groupDisplay = myGroup;
+                if (myGroup.includes("Nhóm 3")) groupDisplay = `<span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">${myGroup}</span>`;
+                else groupDisplay = `<span class="text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">${myGroup}</span>`;
+                
+                document.getElementById('student-group').innerHTML = groupDisplay;
 
-                // 2. Lấy Lịch sử thi để xem đã Đậu môn nào (Đạt >= 80% số điểm)
+                // 2. Lấy Lịch sử thi (Pass = >=80%)
                 let passedCourses = []; 
                 const qTest = window.query(window.collection(window.db, "ket_qua_kiem_tra"), window.where("nhan_vien_id", "==", searchId));
                 const snapTest = await window.getDocs(qTest);
                 
                 snapTest.forEach(doc => {
                     const d = doc.data();
-                    if (d.diem_so >= (d.tong_cau * 0.8)) {
-                        passedCourses.push(d.ten_khoa_hoc); 
-                    }
+                    if (d.diem_so >= (d.tong_cau * 0.8)) passedCourses.push(d.ten_khoa_hoc); 
                 });
 
-                // 3. Xây dựng Ma Trận Môn Học bắt buộc dựa theo Nhóm
-                let requiredKeys = ["chung"]; // Mặc định ai cũng phải học EHS Chung
-                
-                if (myGroup.includes("Nhóm 3")) {
-                    requiredKeys.push("dien", "pccc", "hoa_chat"); // Nhóm 3 phải học thêm điện, PCCC và hóa chất
-                } else if (myGroup.includes("Nhóm 1") || myGroup.includes("Nhóm 2")) {
-                    requiredKeys.push("pccc"); // Quản lý cần học PCCC
-                }
+                // 3. Xây dựng Ma Trận Môn Học
+                let requiredKeys = ["chung"]; 
+                if (myGroup.includes("Nhóm 3")) requiredKeys.push("dien", "pccc", "hoa_chat"); 
+                else if (myGroup.includes("Nhóm 1") || myGroup.includes("Nhóm 2")) requiredKeys.push("pccc");
 
-                // 4. Vẽ giao diện danh sách môn học
+                // 4. Vẽ giao diện môn học
                 const container = document.getElementById('dynamic-courses');
                 container.innerHTML = '';
 
                 requiredKeys.forEach(key => {
                     const course = ALL_COURSES[key];
-                    // Kiểm tra xem tên khóa học có nằm trong mảng những môn đã đậu không
                     const isPassed = passedCourses.some(passedName => passedName && passedName.includes(course.title));
 
-                    // Thay đổi màu sắc dựa trên trạng thái (Đậu / Chưa Đậu)
-                    const statusClass = isPassed 
-                        ? "bg-emerald-50 border-emerald-200" 
-                        : "bg-white border-slate-200 hover:border-indigo-400 hover:shadow-md";
+                    const statusClass = isPassed ? "bg-emerald-50/50 border-emerald-200" : "bg-white border-slate-200 shadow-sm";
                     
                     const badgeHtml = isPassed
                         ? `<span class="inline-flex items-center gap-1 bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border border-emerald-200 shadow-sm"><i class="ph-bold ph-check-circle text-sm"></i> Đã hoàn thành</span>`
                         : `<span class="inline-flex items-center gap-1 bg-rose-50 text-rose-600 px-2.5 py-1 rounded-md text-[10px] font-black tracking-widest uppercase border border-rose-100 animate-pulse"><i class="ph-bold ph-warning-circle text-sm"></i> Bắt buộc học</span>`;
                     
                     const btnHtml = isPassed
-                        ? `<a href="bai_giang.html?id=${course.id}" class="mt-4 w-full bg-white text-emerald-700 border-2 border-emerald-500 font-bold py-2 rounded-lg hover:bg-emerald-50 transition text-center text-sm block">Xem lại bài giảng</a>`
-                        : `<a href="bai_giang.html?id=${course.id}" class="mt-4 w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm text-center text-sm block flex items-center justify-center gap-2"><i class="ph-bold ph-play-circle text-lg"></i> Học & Thi Ngay</a>`;
+                        ? `<a href="bai_giang.html?id=${course.id}" class="mt-4 w-full bg-white text-emerald-700 border-2 border-emerald-500 font-bold py-2 rounded-xl hover:bg-emerald-50 transition text-center text-sm block">Xem lại bài giảng</a>`
+                        : `<a href="bai_giang.html?id=${course.id}" class="mt-4 w-full bg-indigo-600 text-white font-bold py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-md text-center text-sm block flex items-center justify-center gap-2"><i class="ph-bold ph-play-circle text-lg"></i> Học & Thi Ngay</a>`;
 
                     container.innerHTML += `
-                        <div class="${statusClass} p-5 rounded-xl border transition-all duration-300 relative">
+                        <div class="${statusClass} p-5 rounded-2xl border transition-all duration-300 relative">
                             <div class="absolute top-4 right-4">${badgeHtml}</div>
                             <div class="flex items-start gap-4">
-                                <div class="w-12 h-12 rounded-lg bg-${course.color}-100 text-${course.color}-600 flex items-center justify-center flex-shrink-0">
+                                <div class="w-12 h-12 rounded-xl bg-${course.color}-100 text-${course.color}-600 flex items-center justify-center flex-shrink-0 border border-${course.color}-200">
                                     <i class="ph-fill ${course.icon} text-2xl"></i>
                                 </div>
                                 <div class="pt-1">
-                                    <h4 class="font-bold text-slate-800 text-base pr-20">${course.title}</h4>
-                                    <p class="text-xs text-slate-500 font-medium mt-0.5">${course.desc}</p>
+                                    <h4 class="font-bold text-slate-800 text-base pr-24 leading-tight">${course.title}</h4>
+                                    <p class="text-xs text-slate-500 font-medium mt-1">${course.desc}</p>
                                 </div>
                             </div>
                             ${btnHtml}
@@ -459,17 +532,21 @@
                 console.error(error);
                 document.getElementById('course-loader').innerHTML = `
                     <i class="ph-fill ph-warning-circle text-4xl text-red-500 mb-3"></i>
-                    <p class="text-sm font-bold text-red-600 text-center px-6">Lỗi tải dữ liệu học tập: Vui lòng kiểm tra lại quyền truy cập Firebase.</p>
+                    <p class="text-sm font-bold text-red-600 text-center px-6">Lỗi tải dữ liệu: Kiểm tra lại Database Rules.</p>
                 `;
             }
         };
 
         window.closeCourseModal = function() {
-            document.getElementById('course-modal').classList.add('hidden');
-            document.getElementById('course-modal').classList.remove('flex');
+            const content = document.getElementById('course-modal-content');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                document.getElementById('course-modal').classList.add('hidden');
+                document.getElementById('course-modal').classList.remove('flex');
+            }, 150); // Khớp với animation duration
         }
 
-        // CÁC HÀM CŨ GIỮ NGUYÊN
+        // CÁC HÀM CŨ
         function openReportModal() {
             document.getElementById('report-modal').classList.remove('hidden');
             document.getElementById('report-password').value = '';
@@ -481,8 +558,8 @@
 
         function closeReportModal() { document.getElementById('report-modal').classList.add('hidden'); }
         
-        function loadDataFromGitHub() { /* Tính năng gọi API JSON bên ngoài */ }
-        async function handleChangePassword() { /* Xử lý đổi pass nếu cần */ }
+        function loadDataFromGitHub() { /* Logic JSON */ }
+        async function handleChangePassword() { /* Logic Pass */ }
     </script>
 </body>
 </html>
