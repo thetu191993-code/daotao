@@ -17,7 +17,7 @@
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -350,6 +350,27 @@
             else if (result === "Nhóm 5") groupInput.className = "w-full border border-teal-300 px-3 py-2.5 rounded-lg bg-teal-50 text-teal-700 font-bold shadow-inner";
             else groupInput.className = "w-full border border-slate-300 px-3 py-2.5 rounded-lg bg-slate-200 text-slate-600 font-bold shadow-inner";
         };
+
+        function checkExpiry(dateString) {
+            if (!dateString) return { status: 'danger', html: '<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold whitespace-nowrap">Chưa có Thẻ</span>' };
+            
+            const expDate = new Date(dateString);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const diffTime = expDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            const formattedDate = expDate.toLocaleDateString('vi-VN');
+
+            if (diffDays < 0) {
+                return { status: 'danger', html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold whitespace-nowrap"><i class="ph-bold ph-warning-circle"></i> Quá hạn (${formattedDate})</span>` };
+            } else if (diffDays <= 30) {
+                return { status: 'warning', html: `<span class="bg-amber-50 text-amber-600 border border-amber-200 px-2 py-1 rounded text-[11px] font-bold whitespace-nowrap"><i class="ph-bold ph-clock"></i> Sắp hết (${formattedDate})</span>` };
+            } else {
+                return { status: 'success', html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Còn hạn (${formattedDate})</span>` };
+            }
+        }
 
         // ==========================================
         // KHẮC PHỤC LỖI HIỂN THỊ DỮ LIỆU ĐA CHIỀU (MULTI-COLUMN & NO-ORDERBY)
