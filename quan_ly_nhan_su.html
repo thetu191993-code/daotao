@@ -194,11 +194,23 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[11px] font-bold text-blue-700 uppercase mb-1">Bộ Phận / Phòng Ban</label>
-                            <input type="text" id="emp-dept" oninput="window.autoClassify()" class="w-full border border-blue-300 px-3 py-2 rounded-lg font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white" placeholder="VD: Sản xuất Can, Điện-Utility-EHS, Kỹ thuật...">
+                            <select id="emp-dept" onchange="window.updatePositionDropdown(); window.autoClassify()" class="w-full border border-blue-300 px-3 py-2 rounded-lg font-medium text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white cursor-pointer">
+                                <option value="">-- Chọn Bộ Phận --</option>
+                                <option value="Sản xuất - Can">Sản xuất - Can</option>
+                                <option value="Sản xuất - End">Sản xuất - End</option>
+                                <option value="QC">QC</option>
+                                <option value="Điện - Utility - EHS">Điện - Utility - EHS</option>
+                                <option value="Kỹ thuật">Kỹ thuật</option>
+                                <option value="Kho - Logistic - PPIC">Kho - Logistic - PPIC</option>
+                                <option value="Văn phòng">Văn phòng (Nhân sự, Tài chính, Bán hàng...)</option>
+                                <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-blue-700 uppercase mb-1">Vị Trí Công Việc Thực Tế</label>
-                            <input type="text" id="emp-role" oninput="window.autoClassify()" class="w-full border border-blue-300 px-3 py-2 rounded-lg font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white" placeholder="VD: Cupper, Washer, Bảo trì điện, Trưởng phòng...">
+                            <select id="emp-role" onchange="window.autoClassify()" class="w-full border border-blue-300 px-3 py-2 rounded-lg font-bold text-slate-800 outline-none focus:ring-2 focus:ring-blue-500 shadow-sm bg-white cursor-pointer">
+                                <option value="">-- Vui lòng chọn Bộ Phận trước --</option>
+                            </select>
                         </div>
                     </div>
 
@@ -263,6 +275,49 @@
     <script>
         let rawData = [];
         let globalUserTests = {}; // Cache điểm thi
+
+        // ==========================================
+        // CẬP NHẬT DANH SÁCH VỊ TRÍ THEO BỘ PHẬN
+        // ==========================================
+        window.updatePositionDropdown = function(selectedValue = "") {
+            const dept = document.getElementById('emp-dept').value;
+            const roleSelect = document.getElementById('emp-role');
+            
+            roleSelect.innerHTML = '<option value="">-- Chọn Vị trí --</option>';
+            
+            let options = [];
+            
+            if (dept === "Sản xuất - Can") {
+                options = ["Trưởng ca", "Teamleader Sản xuất", "Cupper", "Body maker", "Washer", "Decorator", "LSM", "Necker", "Palletizer", "Scrap baler"];
+            } else if (dept === "Sản xuất - End") {
+                options = ["Trưởng ca", "Teamleader Sản xuất", "Shell press", "Conversion", "Liner", "Palletizer"];
+            } else if (dept === "QC") {
+                options = ["Quản lý QC", "Trưởng ca QC", "Nhân viên QC"];
+            } else if (dept === "Điện - Utility - EHS") {
+                options = ["Trưởng phòng Điện - Utility - EHS", "Bảo trì điện", "Utility", "EHS", "Vệ sinh (Cleaning)"];
+            } else if (dept === "Kỹ thuật") {
+                options = ["Trưởng phòng Kỹ thuật", "Kỹ thuật", "Workshop"];
+            } else if (dept === "Kho - Logistic - PPIC") {
+                options = ["Quản lý Kho", "Tài xế xe nâng", "Nhân viên Kho", "Phụ kho"];
+            } else if (dept === "Văn phòng") {
+                options = ["Trưởng phòng", "Nhân viên", "Y tế"];
+            } else if (dept === "Ban Giám Đốc") {
+                options = ["Giám đốc", "Phó Giám đốc"];
+            }
+
+            if (options.length === 0) {
+                roleSelect.innerHTML = '<option value="">-- Vui lòng chọn Bộ Phận trước --</option>';
+            } else {
+                options.forEach(opt => {
+                    roleSelect.innerHTML += `<option value="${opt}">${opt}</option>`;
+                });
+            }
+
+            // Phục hồi lại giá trị cũ nếu đang edit
+            if (selectedValue) {
+                roleSelect.value = selectedValue;
+            }
+        };
 
         // ==========================================
         // HỆ CHUYÊN GIA: PHÂN LOẠI NHÓM ATLĐ (V2.0)
@@ -663,7 +718,9 @@
             document.getElementById('emp-dob').value = d.ngay_sinh || ''; 
             document.getElementById('emp-gender').value = d.gioi_tinh || '';
             document.getElementById('emp-dept').value = d.bo_phan || '';
-            document.getElementById('emp-role').value = d.vi_tri || '';
+            
+            // Render lại list Vị trí rồi gán giá trị
+            window.updatePositionDropdown(d.vi_tri || '');
             
             if (d.vai_tro_phu) {
                 document.getElementById('emp-pccc').value = d.vai_tro_phu.pccc || "";
