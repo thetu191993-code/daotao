@@ -177,18 +177,20 @@
             try {
                 const relevantDocs = searchKnowledgeBase(queryText);
                 
-                // LỚP BẢO VỆ 1: NGĂN CHẶN AI BỊA ĐẶT
-                let systemInstruction = "Bạn là Chuyên gia Pháp chế EHS. NGUYÊN TẮC TỐI THƯỢNG: Chỉ được phép trả lời dựa trên [DỮ LIỆU CUNG CẤP]. Nếu thông tin không có trong dữ liệu này, tuyệt đối không được tự bịa ra, phải trả lời: 'Hệ thống dữ liệu nội bộ chưa có thông tin này, vui lòng liên hệ Admin EHS để cập nhật'. Trả lời ngắn gọn, nếu rõ Điều, Luật.";
+                // LỚP BẢO VỆ 1: NGĂN CHẶN AI BỊA ĐẶT + THÔNG MINH HƠN VỚI TỪ KHÓA
+                let systemInstruction = `Bạn là Trợ lý AI Pháp chế EHS. 
+                LỆNH 1: BẮT BUỘC chỉ sử dụng thông tin trong [DỮ LIỆU CUNG CẤP] để trả lời.
+                LỆNH 2: Người dùng (công nhân) có thể gõ câu hỏi hoặc chỉ gõ một TỪ KHÓA vắn tắt (VD: "PCCC", "Nặng nhọc độc hại"). Kể cả khi họ chỉ gõ từ khóa, nhiệm vụ của bạn là lấy [DỮ LIỆU CUNG CẤP] ra, diễn giải và tóm tắt lại cho họ hiểu. Tuyệt đối KHÔNG ĐƯỢC từ chối trả lời nếu [DỮ LIỆU CUNG CẤP] có chứa nội dung.
+                LỆNH 3: CHỈ KHI [DỮ LIỆU CUNG CẤP] ghi là "(Trống...)", bạn mới được phép trả lời chính xác câu này: "Hệ thống dữ liệu nội bộ chưa có thông tin này, vui lòng liên hệ Admin EHS để cập nhật." Không được tự bịa ra luật.`;
                 
-                let finalPrompt = `Câu hỏi: "${queryText}"\n\n`;
+                let finalPrompt = `Câu hỏi/Từ khóa của người dùng: "${queryText}"\n\n`;
                 let contextHTML = "";
 
                 if (relevantDocs.length > 0) {
-                    finalPrompt += `[DỮ LIỆU CUNG CẤP TỪ HỆ THỐNG]:\n`;
+                    finalPrompt += `[DỮ LIỆU CUNG CẤP TỪ HỆ THỐNG NỘI BỘ]:\n`;
                     relevantDocs.forEach(doc => {
-                        finalPrompt += `- Luật: ${doc.luat}\n- Nghị định: ${doc.nghi_dinh}\n- Thông tư: ${doc.thong_tu}\n- Quy định: ${doc.noi_dung}\n\n`;
+                        finalPrompt += `- Luật: ${doc.luat}\n- Nghị định: ${doc.nghi_dinh}\n- Thông tư: ${doc.thong_tu}\n- Nội dung quy định: ${doc.noi_dung}\n\n`;
                         
-                        // LỚP BẢO VỆ 3: NÚT ĐỐI CHIẾU LINK GỐC
                         let linkGocBtn = "";
                         if (doc.link_goc && doc.link_goc.trim() !== "") {
                             linkGocBtn = `<a href="${doc.link_goc}" target="_blank" class="mt-2 inline-flex items-center gap-1 bg-white hover:bg-slate-100 border border-slate-300 text-indigo-700 px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm transition"><i class="ph-bold ph-link"></i> Xem văn bản gốc</a>`;
@@ -200,19 +202,21 @@
                                 <div class="flex flex-wrap gap-1 mt-2">
                                     <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded border border-blue-200 font-medium">${doc.luat || "Chưa cập nhật"}</span>
                                     <i class="ph-bold ph-arrow-right text-slate-400 mt-1"></i>
-                                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded border border-emerald-200 font-medium">${doc.nghi_dinh || "Chưa cập nhật"}</span>
+                                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded border border-emerald-200 font-medium">${doc.nghi_dinh || doc.thong_tu || "Chưa cập nhật"}</span>
                                 </div>
                                 ${linkGocBtn}
                             </div>
                         `;
                     });
                 } else {
-                    finalPrompt += `[DỮ LIỆU CUNG CẤP]: (Trống. Không tìm thấy trong Google Sheets Sổ tay Pháp lý)`;
+                    finalPrompt += `[DỮ LIỆU CUNG CẤP]: (Trống. Không tìm thấy thông tin nào khớp với từ khóa trong Google Sheets)`;
                 }
 
-                // ANH TƯ NHỚ DÁN API KEY GOOGLE GEMINI CỦA ANH VÀO ĐÂY:
+                // 1. DÁN API KEY GOOGLE GEMINI BẮT ĐẦU BẰNG CHỮ AIza... VÀO GIỮA 2 DẤU NGOẶC KÉP BÊN DƯỚI:
                 const apiKey = "AIzaSyCKvxqvL8zXjw50A2d7mq2Y1gopWmQbllQ"; 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                // 2. Sử dụng mô hình Gemini 1.5 Flash mới nhất, siêu nhanh
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                 
                 const payload = {
                     contents: [{ parts: [{ text: finalPrompt }] }],
@@ -228,7 +232,13 @@
                 const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 document.getElementById('typing-indicator').classList.add('hidden');
-                appendMessage('ai', aiResponseText, contextHTML);
+                
+                // Sửa lỗi UI: Nếu AI báo không có thông tin thì KHÔNG HIỆN hộp Căn cứ pháp lý
+                if (aiResponseText.includes("chưa có thông tin này") || relevantDocs.length === 0) {
+                    appendMessage('ai', aiResponseText, "");
+                } else {
+                    appendMessage('ai', aiResponseText, contextHTML);
+                }
 
             } catch (error) {
                 console.error(error);
