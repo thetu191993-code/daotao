@@ -111,6 +111,12 @@
             <select id="filter-status" onchange="window.filterTable()" class="border border-slate-300 rounded-xl px-4 py-3 font-bold text-slate-700 outline-none bg-slate-50 focus:border-blue-500">
                 <option value="all">Tất cả trạng thái</option>
                 <option value="nguy-hiem">Cần Đào tạo / Khám gấp</option>
+                <option value="Nhóm 1">Chỉ hiện Nhóm 1</option>
+                <option value="Nhóm 2">Chỉ hiện Nhóm 2</option>
+                <option value="Nhóm 3">Chỉ hiện Nhóm 3</option>
+                <option value="Nhóm 4">Chỉ hiện Nhóm 4</option>
+                <option value="Nhóm 5">Chỉ hiện Nhóm 5</option>
+                <option value="Nhóm 6">Chỉ hiện Nhóm 6 (ATVSV)</option>
             </select>
         </div>
 
@@ -142,6 +148,9 @@
                 <tbody id="data-body" class="text-sm divide-y divide-slate-100"></tbody>
             </table>
         </div>
+        
+        <!-- THÊM THANH PHÂN TRANG Ở ĐÂY -->
+        <div id="pagination-container" class="flex flex-col md:flex-row justify-between items-center mt-4 px-2 gap-4"></div>
     </div>
 
     <!-- MODAL THÊM/SỬA NHÂN SỰ -->
@@ -312,6 +321,11 @@
     <script>
         let rawData = [];
         let globalUserTests = {}; 
+        
+        // THÊM BIẾN QUẢN LÝ PHÂN TRANG (MỚI)
+        let currentPage = 1;
+        const itemsPerPage = 50; 
+        let currentFilteredData = [];
 
         window.openModal = function() {
             document.getElementById('emp-doc-id').value = '';
@@ -352,7 +366,7 @@
             roleSelect.innerHTML = '<option value="">-- Chọn Vị trí --</option>';
             let options = [];
             
-            if (dept === "Sản xuất") {
+             if (dept === "Sản xuất") {
                 options = [
                     "Giám đốc bộ phận", "Quản đốc dây chuyền", "Giám sát", "Trưởng nhóm", "Nhân viên", 
                     "Vận hành (Cupper; Body maker; Necker; Palletizer; Shell Press; Conversion)", 
@@ -471,26 +485,36 @@
                     return timeB - timeA;
                 });
 
-                renderTable(rawData);
+                // CẬP NHẬT GỌI HÀM PHÂN TRANG (MỚI)
+                currentFilteredData = rawData;
+                currentPage = 1;
+                renderTable();
             } catch(e) {
                 console.error("Lỗi CSDL:", e);
                 tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-red-500 font-bold">Lỗi CSDL: ${e.message}</td></tr>`;
             }
         };
 
-        function renderTable(dataArray) {
+        // CẬP NHẬT HÀM RENDER ĐỂ HIỂN THỊ THEO TRANG VÀ FIX LỖI NGÀY THÁNG
+        function renderTable() {
             const tbody = document.getElementById('data-body');
             tbody.innerHTML = '';
             
-            if (dataArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-slate-500 font-medium">Chưa có dữ liệu nhân sự trong sổ quản lý.</td></tr>`;
+            if (currentFilteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="text-center p-8 text-slate-500 font-medium">Chưa có dữ liệu nhân sự phù hợp.</td></tr>`;
+                document.getElementById('pagination-container').innerHTML = '';
                 return;
             }
 
-            let stt = 1;
+            // Tính toán dữ liệu hiển thị cho trang hiện tại
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = currentFilteredData.slice(startIndex, endIndex);
+
+            let stt = startIndex + 1;
             let htmlStr = "";
 
-            dataArray.forEach(d => {
+            pageData.forEach(d => {
                 const atld = checkExpiry(d.han_atld);
                 const health = checkExpiry(d.han_suc_khoe);
                 
@@ -529,7 +553,15 @@
 
                 const isDanger = (atld.status === 'danger' && !hasPassedAny) || health.status === 'danger' || atld.status === 'warning';
                 const rowClass = isDanger ? "bg-rose-50/50" : "bg-white";
-                const dobText = d.ngay_sinh ? new Date(d.ngay_sinh).toLocaleDateString('vi-VN') : '-';
+                
+                // SỬA LỖI INVALID DATE BẰNG CÁCH KIỂM TRA ĐỊNH DẠNG (MỚI)
+                let dobText = '-';
+                if (d.ngay_sinh && String(d.ngay_sinh).trim() !== "") {
+                    const dateObj = new Date(d.ngay_sinh);
+                    if (!isNaN(dateObj)) {
+                        dobText = dateObj.toLocaleDateString('vi-VN');
+                    }
+                }
 
                 let groupHtml = d.nhom_atld;
                 if (d.nhom_atld && String(d.nhom_atld).includes("Nhóm 3")) {
@@ -568,18 +600,76 @@
             });
             
             tbody.innerHTML = htmlStr;
+            renderPagination();
         }
 
+        // HÀM CHUYỂN TRANG (MỚI)
+        window.changePage = function(page) {
+            currentPage = page;
+            renderTable();
+        };
+
+        // HÀM VẼ NÚT PHÂN TRANG (MỚI)
+        function renderPagination() {
+            const totalPages = Math.ceil(currentFilteredData.length / itemsPerPage);
+            const container = document.getElementById('pagination-container');
+            
+            if (totalPages <= 1) {
+                container.innerHTML = `
+                    <div class="text-sm font-medium text-slate-500">Hiển thị toàn bộ ${currentFilteredData.length} nhân sự</div>
+                    <div></div>
+                `;
+                return;
+            }
+
+            let btns = '';
+            
+            // Nút Lùi
+            if (currentPage > 1) {
+                btns += `<button onclick="window.changePage(${currentPage - 1})" class="px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-200 transition"><i class="ph-bold ph-caret-left"></i> Trước</button>`;
+            }
+
+            // Hiển thị tối đa 5 trang gần nhất để không bị dài
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+            
+            if (startPage > 1) btns += `<span class="px-2 text-slate-400">...</span>`;
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i === currentPage) {
+                    btns += `<button class="px-3.5 py-1.5 bg-blue-600 text-white rounded-lg font-bold shadow-sm">${i}</button>`;
+                } else {
+                    btns += `<button onclick="window.changePage(${i})" class="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-blue-50 hover:text-blue-600 text-slate-600 rounded-lg font-bold transition">${i}</button>`;
+                }
+            }
+
+            if (endPage < totalPages) btns += `<span class="px-2 text-slate-400">...</span>`;
+
+            // Nút Tiến
+            if (currentPage < totalPages) {
+                btns += `<button onclick="window.changePage(${currentPage + 1})" class="px-3 py-1.5 bg-slate-100 border border-slate-200 text-slate-600 rounded-lg font-bold hover:bg-slate-200 transition">Sau <i class="ph-bold ph-caret-right"></i></button>`;
+            }
+
+            const startCount = (currentPage - 1) * itemsPerPage + 1;
+            const endCount = Math.min(currentPage * itemsPerPage, currentFilteredData.length);
+
+            container.innerHTML = `
+                <div class="text-sm font-medium text-slate-500">Đang xem <b class="text-slate-800">${startCount} - ${endCount}</b> trong tổng <b class="text-blue-600">${currentFilteredData.length}</b> nhân sự</div>
+                <div class="flex items-center gap-1.5">${btns}</div>
+            `;
+        }
+
+        // CẬP NHẬT HÀM LỌC ĐỂ TƯƠNG THÍCH PHÂN TRANG VÀ LỌC NHÓM (MỚI)
         window.filterTable = function() {
             const key = document.getElementById('search-box').value.toLowerCase();
-            const filterDanger = document.getElementById('filter-status').value === 'nguy-hiem';
+            const filterVal = document.getElementById('filter-status').value;
             
-            const filtered = rawData.filter(d => {
+            currentFilteredData = rawData.filter(d => {
                 const textSearch = (d.ho_ten || "") + " " + (d.ma_nv || "") + " " + (d.bo_phan || "") + " " + (d.vi_tri || "");
                 const matchText = textSearch.toLowerCase().includes(key);
                 if (!matchText) return false;
                 
-                if (filterDanger) {
+                if (filterVal === 'nguy-hiem') {
                     let hasPassedAny = false;
                     if (d.lich_su_thi_moi_nhat) {
                         hasPassedAny = Object.values(d.lich_su_thi_moi_nhat).some(test => test.diem_so >= (test.tong_cau * 0.8));
@@ -587,10 +677,17 @@
                     const atld = checkExpiry(d.han_atld).status;
                     const health = checkExpiry(d.han_suc_khoe).status;
                     return (atld === 'danger' && !hasPassedAny) || health === 'danger' || atld === 'warning';
+                } else if (filterVal !== 'all') {
+                    // Logic Lọc theo Nhóm 1, 2, 3, 4, 5, 6
+                    if (!d.nhom_atld || !String(d.nhom_atld).includes(filterVal)) return false;
                 }
+                
                 return true;
             });
-            renderTable(filtered);
+            
+            // Trả về trang 1 sau khi lọc
+            currentPage = 1; 
+            renderTable();
         };
 
         window.editData = function(id) {
