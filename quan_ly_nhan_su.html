@@ -91,6 +91,9 @@
                 <button onclick="window.exportPDF()" class="bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 flex items-center gap-2 shadow-sm transition">
                     <i class="ph-bold ph-file-pdf text-lg"></i> Xuất PDF
                 </button>
+                <button onclick="window.cleanupDuplicates(event)" class="bg-amber-500 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-amber-600 flex items-center gap-2 shadow-sm transition" title="Tự động dò và xóa các nhân sự bị lưu trùng 2-3 lần">
+                    <i class="ph-bold ph-broom text-lg"></i> Dọn trùng lặp
+                </button>
                 <button onclick="window.syncUsers(event)" class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-indigo-700 flex items-center gap-2 shadow-sm transition" title="Kéo danh sách từ những người đã tạo tài khoản">
                     <i class="ph-bold ph-cloud-arrow-down text-lg"></i> Đồng bộ User
                 </button>
@@ -764,7 +767,61 @@
             } catch(e) { alert("Lỗi: " + e.message); } finally { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> Lưu Hồ Sơ'; }
         };
 
-        // --- HÀM XỬ LÝ ĐỌC EXCEL ĐÃ ĐƯỢC CHỈNH SỬA ---
+        // --- THUẬT TOÁN TỰ ĐỘNG DỌN RÁC (TRÙNG LẶP) ---
+        window.cleanupDuplicates = async function(event) {
+            const btn = event.currentTarget;
+            const ogText = btn.innerHTML;
+            if(!confirm("Hệ thống sẽ quét toàn bộ dữ liệu, tự động xóa các nhân sự bị trùng Mã NV (chỉ giữ lại bản cập nhật mới nhất). Bạn có chắc chắn không?")) return;
+
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang dọn dẹp...';
+            btn.disabled = true;
+
+            try {
+                // Tải tất cả dữ liệu
+                const snap = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
+                let allRecords = [];
+                snap.forEach(doc => { allRecords.push({ id: doc.id, ...doc.data() }); });
+
+                // Sắp xếp theo thời gian mới nhất lên đầu
+                allRecords.sort((a, b) => {
+                    let timeA = a.thoi_gian_cap_nhat || a.thoi_gian_tao ? (a.thoi_gian_cap_nhat || a.thoi_gian_tao).toDate?.().getTime() || new Date(a.thoi_gian_cap_nhat || a.thoi_gian_tao).getTime() : 0;
+                    let timeB = b.thoi_gian_cap_nhat || b.thoi_gian_tao ? (b.thoi_gian_cap_nhat || b.thoi_gian_tao).toDate?.().getTime() || new Date(b.thoi_gian_cap_nhat || b.thoi_gian_tao).getTime() : 0;
+                    return timeB - timeA;
+                });
+
+                const seenIds = new Set();
+                let deletedCount = 0;
+
+                // Quét từng nhân sự
+                for (const record of allRecords) {
+                    const maNV = record.ma_nv ? String(record.ma_nv).trim().toUpperCase() : null;
+                    if (maNV) {
+                        if (seenIds.has(maNV)) {
+                            // Đã thấy Mã NV này rồi (nghĩa là bản này cũ hơn) -> Xóa
+                            await window.deleteDoc(window.doc(window.db, "nhan_su_noi_bo", record.id));
+                            deletedCount++;
+                        } else {
+                            // Mới thấy lần đầu (đây là bản mới nhất) -> Giữ lại và đánh dấu
+                            seenIds.add(maNV);
+                        }
+                    }
+                }
+
+                if (deletedCount > 0) {
+                    window.showToast(`Đã dọn dẹp sạch sẽ ${deletedCount} hồ sơ trùng lặp!`);
+                    window.loadData();
+                } else {
+                    alert("Dữ liệu của bạn rất sạch, không phát hiện trùng lặp nào!");
+                }
+            } catch(e) {
+                alert("Lỗi dọn dẹp: " + e.message);
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        };
+
+        // --- HÀM XỬ LÝ ĐỌC EXCEL (ĐÃ NÂNG CẤP CHỐNG TRÙNG LẶP UPSERT) ---
         window.handleExcelUpload = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -787,12 +844,20 @@
                 btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang nạp...';
                 progContainer.classList.remove('hidden');
 
-                let successCount = 0; let totalItems = json.length;
+                // 1. Tải bản đồ nhân sự hiện tại trên máy chủ về để đối chiếu
+                const currentStaffSnap = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
+                const existingStaffMap = {};
+                currentStaffSnap.forEach(doc => {
+                    const d = doc.data();
+                    if(d.ma_nv) existingStaffMap[String(d.ma_nv).trim().toUpperCase()] = doc.id;
+                });
 
+                let successCount = 0; let updatedCount = 0; let totalItems = json.length;
+
+                // 2. Bắt đầu vòng lặp xử lý Excel
                 for (let i = 0; i < totalItems; i++) {
                     const row = json[i];
                     
-                    // ĐÃ SỬA: Thêm bắt trường hợp có dấu (*) và khoảng trắng thừa
                     const maNV = row['Mã NV (*)'] || row['Mã NV'] || row['Ma NV (*)'] || row['Ma NV'] || row['ID'] || '';
                     const hoTen = row['Họ Tên (*)'] || row['Họ Tên'] || row['Ho Ten (*)'] || row['Ho Ten'] || row['Họ và Tên'] || '';
                     
@@ -805,15 +870,14 @@
                     
                     if (!maNV || !hoTen) continue; 
 
+                    const cleanMaNV = String(maNV).trim().toUpperCase();
                     const nhom_atld = getAutoGroupFromRole(boPhan, viTri);
                     let ngay_sinh_format = ngaySinh ? formatExcelDate(ngaySinh) : '';
                     let han_atld = row['Hạn ATLĐ'] ? formatExcelDate(row['Hạn ATLĐ']) : '';
                     let han_suc_khoe = row['Hạn Khám SK'] ? formatExcelDate(row['Hạn Khám SK']) : '';
 
-                    let vaiTroPhu = { pccc: "", atvsv: false };
-
                     const docData = { 
-                        ma_nv: String(maNV).trim().toUpperCase(), 
+                        ma_nv: cleanMaNV, 
                         ho_ten: String(hoTen).trim(), 
                         gioi_tinh: String(gioiTinh).trim(), 
                         ngay_sinh: ngay_sinh_format, 
@@ -822,16 +886,25 @@
                         bo_phan: String(boPhan).trim(),
                         vi_tri: String(viTri).trim(), 
                         nhom_atld: nhom_atld, 
-                        vai_tro_phu: vaiTroPhu,
                         han_atld: han_atld, 
                         han_suc_khoe: han_suc_khoe, 
-                        thoi_gian_tao: new Date(), 
                         thoi_gian_cap_nhat: new Date() 
                     };
                     
                     try { 
-                        await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), docData); 
-                        successCount++; 
+                        // THUẬT TOÁN UPSERT: Kiểm tra trùng lặp
+                        if (existingStaffMap[cleanMaNV]) {
+                            // Nếu đã có -> Tiến hành Cập Nhật (Update)
+                            await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", existingStaffMap[cleanMaNV]), docData); 
+                            updatedCount++;
+                        } else {
+                            // Nếu chưa có -> Tiến hành Thêm Mới (Insert)
+                            docData.vai_tro_phu = { pccc: "", atvsv: false };
+                            docData.thoi_gian_tao = new Date();
+                            const newDocRef = await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), docData); 
+                            existingStaffMap[cleanMaNV] = newDocRef.id; // Cập nhật lại bản đồ bộ nhớ tạm
+                            successCount++; 
+                        }
                     } catch(err) { console.error(err); }
 
                     let percent = Math.round(((i + 1) / totalItems) * 100);
@@ -840,7 +913,9 @@
 
                 btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-file-xls text-lg"></i> Nhập từ Excel';
                 progContainer.classList.add('hidden'); event.target.value = ''; 
-                alert(`Đã nạp thành công: ${successCount} nhân sự!`); window.loadData();
+                
+                alert(`Đã hoàn tất!\n- Thêm mới: ${successCount} hồ sơ\n- Cập nhật thông tin: ${updatedCount} hồ sơ`); 
+                window.loadData();
             };
             reader.readAsArrayBuffer(file);
         };
