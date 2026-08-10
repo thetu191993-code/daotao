@@ -119,7 +119,7 @@
             <p id="progress-text" class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-800">0/500</p>
         </div>
 
-        <!-- TABLE BÁO CÁO (CHUẨN 13 CỘT) -->
+        <!-- TABLE BÁO CÁO -->
         <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[1500px]">
                 <thead>
@@ -280,7 +280,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Thẻ/Chứng nhận ATLĐ (Nhà Nước Cấp)</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Thẻ/Chứng nhận ATLĐ</label>
                         <input type="date" id="emp-date-atld" class="w-full border border-slate-300 px-3 py-2 rounded-lg outline-none focus:border-blue-500">
                     </div>
                     <div>
@@ -345,7 +345,6 @@
             setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         };
 
-        // HÀM CẬP NHẬT DROPDOWN VỊ TRÍ THEO BỘ PHẬN ĐÃ CHỌN
         window.updatePositionDropdown = function(selectedValue = "") {
             const dept = document.getElementById('emp-dept').value;
             const roleSelect = document.getElementById('emp-role');
@@ -355,17 +354,17 @@
             
             if (dept === "Sản xuất") {
                 options = [
-                    "Quản đốc dây chuyền", "Giám sát", "Trưởng nhóm", "Nhân viên", 
+                    "Giám đốc bộ phận", "Quản đốc dây chuyền", "Giám sát", "Trưởng nhóm", "Nhân viên", 
                     "Vận hành (Cupper; Body maker; Necker; Palletizer; Shell Press; Conversion)", 
                     "Vận hành (Washer; Decorator; LSM; Liner)"
                 ];
             }
-            else if (dept === "QC") options = ["Giám đốc bộ phận", "Giám sát", "Trưởng nhóm", "Nhân viên"];
-            else if (dept === "HR") options = ["Giám đốc bộ phận", "Giám sát", "Trưởng nhóm", "Nhân viên"];
+            else if (dept === "QC") options = ["Giám đốc bộ phận", "Quản đốc dây chuyền", "Giám sát", "Trưởng nhóm", "Nhân viên"];
+            else if (dept === "HR") options = ["Giám đốc bộ phận", "Quản đốc dây chuyền", "Giám sát", "Trưởng nhóm", "Nhân viên"];
             else if (dept === "Kế toán-Mua hàng") options = ["Giám đốc bộ phận", "Giám sát", "Trưởng nhóm", "Nhân viên"];
-            else if (dept === "Kỹ thuật") options = ["Giám đốc bộ phận", "Giám sát", "Trưởng nhóm", "Kỹ thuật", "Workshop - Hàn/Cắt"];
-            else if (dept === "Điện-Utility-EHS") options = ["Giám đốc bộ phận", "EHS", "Điện", "Utility", "Vệ sinh"];
-            else if (dept === "Kho-Logistic-PPIC") options = ["Giám đốc bộ phận", "Giám sát", "Trưởng nhóm", "Nhân viên", "Xe nâng"];
+            else if (dept === "Kỹ thuật") options = ["Giám đốc bộ phận", "Quản đốc dây chuyền", "Giám sát", "Trưởng nhóm", "Kỹ thuật", "Workshop - Hàn/Cắt"];
+            else if (dept === "Điện-Utility-EHS") options = ["Giám đốc bộ phận", "Quản đốc dây chuyền", "Giám sát", "EHS", "Điện", "Utility", "Vệ sinh"];
+            else if (dept === "Kho-Logistic-PPIC") options = ["Giám đốc bộ phận", "Quản đốc dây chuyền", "Giám sát", "Trưởng nhóm", "Nhân viên", "Xe nâng"];
             else if (dept === "BOD") options = ["Tổng Giám đốc", "Giám đốc điều hành", "Giám đốc nhà máy"];
 
             if (options.length === 0) {
@@ -376,26 +375,21 @@
             if (selectedValue) roleSelect.value = selectedValue;
         };
 
-        // HỆ CHUYÊN GIA - MA TRẬN PHÂN LOẠI
         function getAutoGroupFromRole(deptStr, posStr) {
             const p = (posStr || "").toLowerCase();
             const d = (deptStr || "").toLowerCase();
 
             if (!p && !d) return "Chưa phân loại";
 
-            // Nhóm 1
             if (p.includes("tổng giám đốc") || p.includes("giám đốc điều hành") || p.includes("giám đốc nhà máy") || p.includes("giám đốc bộ phận")) return "Nhóm 1";
-            // Nhóm 2
             if (p.includes("ehs") || p.includes("quản đốc dây chuyền")) return "Nhóm 2";
-            // Nhóm 3
             if (p.includes("cupper") || p.includes("body maker") || p.includes("necker") || p.includes("palletizer") || p.includes("shell press") || p.includes("conversion")) return "Nhóm 3 - An toàn vận hành";
             if (p.includes("washer") || p.includes("decorator") || p.includes("lsm") || p.includes("liner")) return "Nhóm 3 - An toàn hóa chất";
             if (p.includes("hàn/cắt")) return "Nhóm 3 - An toàn hàn cắt";
             if (p.includes("utility")) return "Nhóm 3 - An toàn thiết bị áp lực";
             if (p.includes("điện")) return "Nhóm 3 - An toàn điện";
             if (p.includes("xe nâng")) return "Nhóm 3 - An toàn thiết bị nâng";
-            if (p.includes("kỹ thuật")) return "Nhóm 3 - An toàn vận hành"; // Mặc định Kỹ thuật chung vào Nhóm 3 máy móc
-            // Nhóm 4
+            if (p.includes("kỹ thuật")) return "Nhóm 3 - An toàn vận hành"; 
             if (p.includes("giám sát") || p.includes("trưởng nhóm") || p.includes("nhân viên") || p.includes("vệ sinh")) return "Nhóm 4";
 
             return "Chưa phân loại"; 
@@ -613,12 +607,9 @@
             const deptSelect = document.getElementById('emp-dept');
             deptSelect.value = d.bo_phan || '';
             
-            // Cập nhật List Vị trí trước, sau đó gán giá trị
             window.updatePositionDropdown();
-            // Đợi một tích tắc để DOM update xong danh sách Option thì gán Value
             setTimeout(() => {
                 const roleSelect = document.getElementById('emp-role');
-                // Nếu vị trí trong data cũ không có trong dropdown mới thì tạo option ảo cho nó hiển thị
                 let optExists = Array.from(roleSelect.options).some(opt => opt.value === d.vi_tri);
                 if(d.vi_tri && !optExists) {
                     roleSelect.innerHTML += `<option value="${d.vi_tri}">${d.vi_tri}</option>`;
@@ -676,6 +667,7 @@
             } catch(e) { alert("Lỗi: " + e.message); } finally { btn.disabled = false; btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> Lưu Hồ Sơ'; }
         };
 
+        // --- HÀM XỬ LÝ ĐỌC EXCEL ĐÃ ĐƯỢC CHỈNH SỬA ---
         window.handleExcelUpload = function(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -702,11 +694,13 @@
 
                 for (let i = 0; i < totalItems; i++) {
                     const row = json[i];
-                    const maNV = row['Mã NV'] || row['Ma NV'] || row['ID'] || '';
-                    const hoTen = row['Họ Tên'] || row['Ho Ten'] || row['Họ và Tên'] || '';
+                    
+                    // ĐÃ SỬA: Thêm bắt trường hợp có dấu (*) và khoảng trắng thừa
+                    const maNV = row['Mã NV (*)'] || row['Mã NV'] || row['Ma NV (*)'] || row['Ma NV'] || row['ID'] || '';
+                    const hoTen = row['Họ Tên (*)'] || row['Họ Tên'] || row['Ho Ten (*)'] || row['Ho Ten'] || row['Họ và Tên'] || '';
+                    
                     const gioiTinh = row['Giới tính'] || row['Gioi tinh'] || row['Giới Tính'] || '';
                     const ngaySinh = row['Ngày sinh'] || row['Ngay sinh'] || row['Ngày Sinh'] || '';
-                    
                     const boPhan = row['Bộ phận'] || row['Bộ Phận'] || row['Phòng ban'] || '';
                     const viTri = row['Vị trí'] || row['Vị trí công việc'] || row['Công việc'] || '';
                     const nhaMay = row['Nhà máy'] || row['Nhà Máy'] || '';
@@ -723,13 +717,13 @@
 
                     const docData = { 
                         ma_nv: String(maNV).trim().toUpperCase(), 
-                        ho_ten: hoTen, 
-                        gioi_tinh: gioiTinh, 
+                        ho_ten: String(hoTen).trim(), 
+                        gioi_tinh: String(gioiTinh).trim(), 
                         ngay_sinh: ngay_sinh_format, 
-                        nha_may: nhaMay,
-                        ca_lam_viec: caLamViec,
-                        bo_phan: boPhan,
-                        vi_tri: viTri, 
+                        nha_may: String(nhaMay).trim(),
+                        ca_lam_viec: String(caLamViec).trim(),
+                        bo_phan: String(boPhan).trim(),
+                        vi_tri: String(viTri).trim(), 
                         nhom_atld: nhom_atld, 
                         vai_tro_phu: vaiTroPhu,
                         han_atld: han_atld, 
