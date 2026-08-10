@@ -92,11 +92,9 @@
             download: true,
             header: true,
             complete: function(results) {
-                // Lọc ra các dòng hợp lệ (có chứa nội dung luật)
                 knowledgeBase = results.data.filter(row => row.noi_dung && row.noi_dung.trim() !== "");
                 console.log("Đã nạp kho luật từ Google Sheets:", knowledgeBase.length, "điều");
                 
-                // Mở khóa cho phép chat
                 const inputArea = document.getElementById('user-input');
                 const btnSend = document.getElementById('btn-send');
                 inputArea.placeholder = `Đã nạp xong ${knowledgeBase.length} điều luật! Nhập câu hỏi...`;
@@ -146,16 +144,10 @@
         }
 
         function searchKnowledgeBase(queryText) {
-            // Cắt từ khóa từ câu hỏi người dùng
             const keywords = queryText.toLowerCase().split(/[\s,?\.]+/).filter(w => w.length > 2);
             let scoredResults = knowledgeBase.map(doc => {
                 let score = 0;
-                // Gom dữ liệu Google Sheets lại để quét
-                const chuDe = doc.chu_de || "";
-                const tuKhoa = doc.tu_khoa || "";
-                const noiDung = doc.noi_dung || "";
-                const docText = (chuDe + " " + tuKhoa + " " + noiDung).toLowerCase();
-                
+                const docText = ((doc.chu_de || "") + " " + (doc.tu_khoa || "") + " " + (doc.noi_dung || "")).toLowerCase();
                 keywords.forEach(kw => { if (docText.includes(kw)) score++; });
                 return { doc, score };
             });
@@ -177,7 +169,6 @@
             try {
                 const relevantDocs = searchKnowledgeBase(queryText);
                 
-                // LỚP BẢO VỆ 1: NGĂN CHẶN AI BỊA ĐẶT + THÔNG MINH HƠN VỚI TỪ KHÓA
                 let systemInstruction = `Bạn là Trợ lý AI Pháp chế EHS. 
                 LỆNH 1: BẮT BUỘC chỉ sử dụng thông tin trong [DỮ LIỆU CUNG CẤP] để trả lời.
                 LỆNH 2: Người dùng (công nhân) có thể gõ câu hỏi hoặc chỉ gõ một TỪ KHÓA vắn tắt (VD: "PCCC", "Nặng nhọc độc hại"). Kể cả khi họ chỉ gõ từ khóa, nhiệm vụ của bạn là lấy [DỮ LIỆU CUNG CẤP] ra, diễn giải và tóm tắt lại cho họ hiểu. Tuyệt đối KHÔNG ĐƯỢC từ chối trả lời nếu [DỮ LIỆU CUNG CẤP] có chứa nội dung.
@@ -215,13 +206,12 @@
                 // 1. DÁN API KEY GOOGLE GEMINI BẮT ĐẦU BẰNG CHỮ AIza... VÀO GIỮA 2 DẤU NGOẶC KÉP BÊN DƯỚI:
                 const apiKey = "AIzaSyCKvxqvL8zXjw50A2d7mq2Y1gopWmQbllQ"; 
                 
-                // 2. Sử dụng mô hình Gemini 1.5 Flash mới nhất, siêu nhanh
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                // 2. Sử dụng mô hình Gemini thế hệ mới nhất để sửa lỗi 404 (Không tìm thấy Model)
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
                 
                 const payload = {
                     contents: [{ parts: [{ text: finalPrompt }] }],
                     systemInstruction: { parts: [{ text: systemInstruction }] },
-                    // Khóa nhiệt độ về 0.1 để AI nói chuyện khô khan, chuẩn chỉnh như Luật sư
                     generationConfig: { temperature: 0.1 }
                 };
 
@@ -233,7 +223,6 @@
 
                 document.getElementById('typing-indicator').classList.add('hidden');
                 
-                // Sửa lỗi UI: Nếu AI báo không có thông tin thì KHÔNG HIỆN hộp Căn cứ pháp lý
                 if (aiResponseText.includes("chưa có thông tin này") || relevantDocs.length === 0) {
                     appendMessage('ai', aiResponseText, "");
                 } else {
@@ -243,7 +232,7 @@
             } catch (error) {
                 console.error(error);
                 document.getElementById('typing-indicator').classList.add('hidden');
-                appendMessage('ai', `*Xin lỗi, hệ thống AI đang gặp sự cố. Vui lòng kiểm tra lại kết nối mạng hoặc API Key.*`);
+                appendMessage('ai', `*Xin lỗi, hệ thống AI đang gặp sự cố. Lỗi chi tiết: ${error.message}*`);
             } finally {
                 document.getElementById('btn-send').disabled = false;
             }
