@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trợ lý AI Pháp chế EHS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Tích hợp thư viện PapaParse để đọc Google Sheets CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 2px; }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .ai-response-content p { margin-bottom: 0.5rem; }
+        .ai-response-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
+        .ai-response-content strong { color: #1e40af; }
+    </style>
+</head>
+<body class="bg-slate-50 h-screen flex flex-col font-sans text-slate-800">
+
+    <header class="bg-indigo-900 text-white p-4 shadow-md shrink-0 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition">
+                <i class="ph-bold ph-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="font-bold text-xl leading-tight flex items-center gap-2">
+                    <i class="ph-fill ph-scales"></i> AI Pháp chế EHS
+                </h1>
+                <p class="text-indigo-200 text-xs tracking-wider">Hệ thống Tra cứu Luật tự động qua Google Sheets</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Cảnh báo miễn trừ trách nhiệm pháp lý -->
+    <div class="bg-amber-50 border-b border-amber-200 p-2 text-center text-xs text-amber-700 font-medium shrink-0 flex items-center justify-center gap-2">
+        <i class="ph-fill ph-warning-circle text-base"></i> 
+        <span>AI chỉ tra cứu trong phạm vi Google Sheets của Phòng EHS. Vui lòng luôn đối chiếu bằng nút "Xem văn bản gốc" đính kèm.</span>
+    </div>
+
+    <main class="flex-1 w-full max-w-5xl mx-auto p-4 flex flex-col gap-4 overflow-hidden relative">
+        <div id="chat-container" class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+            
+            <div class="flex gap-4">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200">
+                    <i class="ph-fill ph-robot text-2xl"></i>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%]">
+                    <p class="font-bold text-indigo-800 mb-2">Xin chào! Tôi là Trợ lý AI Pháp chế EHS.</p>
+                    <p class="text-sm text-slate-600 mb-3">Tôi đã được kết nối trực tiếp với Sổ tay Pháp luật Google Sheets của công ty. Bạn cần hỏi gì?</p>
+                    <div class="flex flex-col gap-2">
+                        <button onclick="fillPrompt('Quy định về thời gian lưu trữ chất thải nguy hại tối đa là bao lâu?')" class="text-left bg-white p-2 text-sm rounded border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 transition">👉 Quy định về thời gian lưu trữ chất thải nguy hại?</button>
+                        <button onclick="fillPrompt('Thẻ huấn luyện PCCC có thời hạn mấy năm?')" class="text-left bg-white p-2 text-sm rounded border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 transition">👉 Thẻ huấn luyện PCCC có thời hạn mấy năm?</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="typing-indicator" class="hidden absolute bottom-24 left-8 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-md flex items-center gap-2 z-10">
+            <span class="text-xs font-bold text-slate-500">AI đang phân tích Google Sheets...</span>
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-end gap-2 shrink-0">
+            <textarea id="user-input" class="w-full max-h-32 min-h-[50px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:bg-white transition custom-scrollbar resize-none text-sm disabled:opacity-50" placeholder="Đang kết nối dữ liệu..." onkeydown="handleEnter(event)" disabled></textarea>
+            <button id="btn-send" onclick="processQuery()" class="bg-indigo-600 text-white p-3 md:px-6 md:py-3 rounded-xl hover:bg-indigo-700 transition font-bold flex items-center gap-2 h-[50px] disabled:opacity-50" disabled>
+                <span class="hidden md:inline">Gửi</span>
+                <i class="ph-bold ph-paper-plane-right text-xl"></i>
+            </button>
+        </div>
+    </main>
+
+    <script>
+        let knowledgeBase = [];
+        
+        // ==============================================================================
+        // ANH TƯ DÁN ĐƯỜNG LINK GOOGLE SHEETS (ĐÃ CÔNG BỐ CSV) CỦA ANH VÀO DÒNG BÊN DƯỚI:
+        // ==============================================================================
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT1TkhvI164U1l7Xb2NqM5-Q4fJj4-8kO9Q4H_6V9S7lX6F4S3uR6g/pub?output=csv'; 
+
+        // Tự động tải dữ liệu từ Google Sheets khi mở trang
+        Papa.parse(GOOGLE_SHEET_CSV_URL, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                // Lọc ra các dòng hợp lệ (có chứa nội dung luật)
+                knowledgeBase = results.data.filter(row => row.noi_dung && row.noi_dung.trim() !== "");
+                console.log("Đã nạp kho luật từ Google Sheets:", knowledgeBase.length, "điều");
+                
+                // Mở khóa cho phép chat
+                const inputArea = document.getElementById('user-input');
+                const btnSend = document.getElementById('btn-send');
+                inputArea.placeholder = `Đã nạp xong ${knowledgeBase.length} điều luật! Nhập câu hỏi...`;
+                inputArea.disabled = false;
+                btnSend.disabled = false;
+            },
+            error: function(err) {
+                console.error("Lỗi nạp luật từ Google Sheets:", err);
+                document.getElementById('user-input').placeholder = "Lỗi kết nối Google Sheets. Vui lòng kiểm tra link.";
+            }
+        });
+
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+
+        function fillPrompt(text) {
+            userInput.value = text;
+            userInput.focus();
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processQuery(); }
+        }
+
+        function appendMessage(sender, text, contextHTML = "") {
+            const div = document.createElement('div');
+            
+            if (sender === 'user') {
+                div.className = "flex gap-4 flex-row-reverse mb-2";
+                div.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 text-white shadow-sm"><i class="ph-fill ph-user text-xl"></i></div>
+                    <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-4 max-w-[85%] shadow-sm"><p class="text-sm leading-relaxed">${text}</p></div>
+                `;
+            } else {
+                div.className = "flex gap-4 mb-2";
+                const parsedText = marked.parse(text); 
+                div.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200"><i class="ph-fill ph-robot text-2xl"></i></div>
+                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm w-full">
+                        <div class="ai-response-content text-sm text-slate-700 leading-relaxed">${parsedText}</div>
+                        ${contextHTML}
+                    </div>
+                `;
+            }
+            chatContainer.appendChild(div);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function searchKnowledgeBase(queryText) {
+            // Cắt từ khóa từ câu hỏi người dùng
+            const keywords = queryText.toLowerCase().split(/[\s,?\.]+/).filter(w => w.length > 2);
+            let scoredResults = knowledgeBase.map(doc => {
+                let score = 0;
+                // Gom dữ liệu Google Sheets lại để quét
+                const chuDe = doc.chu_de || "";
+                const tuKhoa = doc.tu_khoa || "";
+                const noiDung = doc.noi_dung || "";
+                const docText = (chuDe + " " + tuKhoa + " " + noiDung).toLowerCase();
+                
+                keywords.forEach(kw => { if (docText.includes(kw)) score++; });
+                return { doc, score };
+            });
+            scoredResults.sort((a, b) => b.score - a.score);
+            return scoredResults.filter(res => res.score > 0).slice(0, 2).map(res => res.doc);
+        }
+
+        async function processQuery() {
+            const queryText = userInput.value.trim();
+            if (!queryText) return;
+
+            appendMessage('user', queryText);
+            userInput.value = '';
+            userInput.style.height = 'auto';
+
+            document.getElementById('typing-indicator').classList.remove('hidden');
+            document.getElementById('btn-send').disabled = true;
+
+            try {
+                const relevantDocs = searchKnowledgeBase(queryText);
+                
+                // LỚP BẢO VỆ 1: NGĂN CHẶN AI BỊA ĐẶT
+                let systemInstruction = "Bạn là Chuyên gia Pháp chế EHS. NGUYÊN TẮC TỐI THƯỢNG: Chỉ được phép trả lời dựa trên [DỮ LIỆU CUNG CẤP]. Nếu thông tin không có trong dữ liệu này, tuyệt đối không được tự bịa ra, phải trả lời: 'Hệ thống dữ liệu nội bộ chưa có thông tin này, vui lòng liên hệ Admin EHS để cập nhật'. Trả lời ngắn gọn, nếu rõ Điều, Luật.";
+                
+                let finalPrompt = `Câu hỏi: "${queryText}"\n\n`;
+                let contextHTML = "";
+
+                if (relevantDocs.length > 0) {
+                    finalPrompt += `[DỮ LIỆU CUNG CẤP TỪ HỆ THỐNG]:\n`;
+                    relevantDocs.forEach(doc => {
+                        finalPrompt += `- Luật: ${doc.luat}\n- Nghị định: ${doc.nghi_dinh}\n- Thông tư: ${doc.thong_tu}\n- Quy định: ${doc.noi_dung}\n\n`;
+                        
+                        // LỚP BẢO VỆ 3: NÚT ĐỐI CHIẾU LINK GỐC
+                        let linkGocBtn = "";
+                        if (doc.link_goc && doc.link_goc.trim() !== "") {
+                            linkGocBtn = `<a href="${doc.link_goc}" target="_blank" class="mt-2 inline-flex items-center gap-1 bg-white hover:bg-slate-100 border border-slate-300 text-indigo-700 px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm transition"><i class="ph-bold ph-link"></i> Xem văn bản gốc</a>`;
+                        }
+
+                        contextHTML += `
+                            <div class="mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs">
+                                <p class="font-bold text-indigo-800 mb-1 flex items-center gap-1"><i class="ph-bold ph-scales"></i> Căn cứ pháp lý (Trích từ Google Sheets):</p>
+                                <div class="flex flex-wrap gap-1 mt-2">
+                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded border border-blue-200 font-medium">${doc.luat || "Chưa cập nhật"}</span>
+                                    <i class="ph-bold ph-arrow-right text-slate-400 mt-1"></i>
+                                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded border border-emerald-200 font-medium">${doc.nghi_dinh || "Chưa cập nhật"}</span>
+                                </div>
+                                ${linkGocBtn}
+                            </div>
+                        `;
+                    });
+                } else {
+                    finalPrompt += `[DỮ LIỆU CUNG CẤP]: (Trống. Không tìm thấy trong Google Sheets Sổ tay Pháp lý)`;
+                }
+
+                // ANH TƯ NHỚ DÁN API KEY GOOGLE GEMINI CỦA ANH VÀO ĐÂY:
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    contents: [{ parts: [{ text: finalPrompt }] }],
+                    systemInstruction: { parts: [{ text: systemInstruction }] },
+                    // Khóa nhiệt độ về 0.1 để AI nói chuyện khô khan, chuẩn chỉnh như Luật sư
+                    generationConfig: { temperature: 0.1 }
+                };
+
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) throw new Error(`Lỗi kết nối API Google: ${response.status}`);
+                
+                const result = await response.json();
+                const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                document.getElementById('typing-indicator').classList.add('hidden');
+                appendMessage('ai', aiResponseText, contextHTML);
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('typing-indicator').classList.add('hidden');
+                appendMessage('ai', `*Xin lỗi, hệ thống AI đang gặp sự cố. Vui lòng kiểm tra lại kết nối mạng hoặc API Key.*`);
+            } finally {
+                document.getElementById('btn-send').disabled = false;
+            }
+        }
+
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+</body>
+</html>
