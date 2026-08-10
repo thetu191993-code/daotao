@@ -206,8 +206,8 @@
                 // 1. DÁN API KEY GOOGLE GEMINI BẮT ĐẦU BẰNG CHỮ AIza... VÀO GIỮA 2 DẤU NGOẶC KÉP BÊN DƯỚI:
                 const apiKey = "AIzaSyCKvxqvL8zXjw50A2d7mq2Y1gopWmQbllQ"; 
                 
-                // 2. Sử dụng mô hình Gemini thế hệ mới nhất để sửa lỗi 404 (Không tìm thấy Model)
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+                // 2. Chuyển về mô hình ổn định nhất 1.5 Flash để tránh lỗi 403 / 404
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                 
                 const payload = {
                     contents: [{ parts: [{ text: finalPrompt }] }],
@@ -216,7 +216,7 @@
                 };
 
                 const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) throw new Error(`Lỗi kết nối API Google: ${response.status}`);
+                if (!response.ok) throw new Error(`Lỗi kết nối API Google: ${response.status} (Vui lòng kiểm tra lại cấu hình chặn tên miền của API Key)`);
                 
                 const result = await response.json();
                 const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -232,7 +232,7 @@
             } catch (error) {
                 console.error(error);
                 document.getElementById('typing-indicator').classList.add('hidden');
-                appendMessage('ai', `*Xin lỗi, hệ thống AI đang gặp sự cố. Lỗi chi tiết: ${error.message}*`);
+                appendMessage('ai', `*Xin lỗi, hệ thống AI đang gặp sự cố. Chi tiết: ${error.message}*`);
             } finally {
                 document.getElementById('btn-send').disabled = false;
             }
