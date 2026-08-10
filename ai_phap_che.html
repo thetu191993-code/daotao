@@ -3,22 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ lý AI Pháp chế EHS</title>
+    <title>Trợ lý AI Pháp chế EHS - Bản Bảo Mật</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- Tích hợp thư viện PapaParse để đọc Google Sheets CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .typing-indicator span { display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 2px; }
+        
+        .typing-indicator span { 
+            display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; 
+            border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 2px; 
+        }
         .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
         .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
         .ai-response-content p { margin-bottom: 0.5rem; }
         .ai-response-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
         .ai-response-content strong { color: #1e40af; }
@@ -26,7 +29,7 @@
 </head>
 <body class="bg-slate-50 h-screen flex flex-col font-sans text-slate-800">
 
-    <header class="bg-indigo-900 text-white p-4 shadow-md shrink-0 flex items-center justify-between">
+    <header class="bg-indigo-900 text-white p-4 shadow-md shrink-0 flex items-center justify-between z-10">
         <div class="flex items-center gap-3">
             <a href="index.html" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition">
                 <i class="ph-bold ph-arrow-left text-xl"></i>
@@ -35,30 +38,31 @@
                 <h1 class="font-bold text-xl leading-tight flex items-center gap-2">
                     <i class="ph-fill ph-scales"></i> AI Pháp chế EHS
                 </h1>
-                <p class="text-indigo-200 text-xs tracking-wider">Hệ thống Tra cứu Luật tự động qua Google Sheets</p>
+                <p class="text-indigo-200 text-xs tracking-wider font-medium flex items-center gap-1">
+                    <i class="ph-fill ph-shield-check text-emerald-400"></i> Server Backend Secured
+                </p>
             </div>
         </div>
     </header>
 
-    <!-- Cảnh báo miễn trừ trách nhiệm pháp lý -->
     <div class="bg-amber-50 border-b border-amber-200 p-2 text-center text-xs text-amber-700 font-medium shrink-0 flex items-center justify-center gap-2">
         <i class="ph-fill ph-warning-circle text-base"></i> 
-        <span>AI chỉ tra cứu trong phạm vi Google Sheets của Phòng EHS. Vui lòng luôn đối chiếu bằng nút "Xem văn bản gốc" đính kèm.</span>
+        <span>AI chỉ tra cứu trong phạm vi Google Sheets của Phòng EHS. Vui lòng luôn đối chiếu bằng nút "Xem văn bản gốc".</span>
     </div>
 
     <main class="flex-1 w-full max-w-5xl mx-auto p-4 flex flex-col gap-4 overflow-hidden relative">
         <div id="chat-container" class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
             
             <div class="flex gap-4">
-                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200 shadow-sm">
                     <i class="ph-fill ph-robot text-2xl"></i>
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%]">
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm">
                     <p class="font-bold text-indigo-800 mb-2">Xin chào! Tôi là Trợ lý AI Pháp chế EHS.</p>
-                    <p class="text-sm text-slate-600 mb-3">Tôi đã được kết nối trực tiếp với Sổ tay Pháp luật Google Sheets của công ty. Bạn cần hỏi gì?</p>
+                    <p class="text-sm text-slate-600 mb-3">Tôi đã được kết nối với Sổ tay Pháp luật Google Sheets của công ty qua máy chủ bảo mật. Bạn cần hỏi gì?</p>
                     <div class="flex flex-col gap-2">
-                        <button onclick="fillPrompt('Quy định về thời gian lưu trữ chất thải nguy hại tối đa là bao lâu?')" class="text-left bg-white p-2 text-sm rounded border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 transition">👉 Quy định về thời gian lưu trữ chất thải nguy hại?</button>
-                        <button onclick="fillPrompt('Thẻ huấn luyện PCCC có thời hạn mấy năm?')" class="text-left bg-white p-2 text-sm rounded border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 transition">👉 Thẻ huấn luyện PCCC có thời hạn mấy năm?</button>
+                        <button onclick="fillPrompt('Quy định về thời gian lưu trữ chất thải nguy hại tối đa là bao lâu?')" class="text-left bg-white p-2.5 text-sm rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 shadow-sm transition font-medium">👉 Quy định về thời gian lưu trữ chất thải nguy hại?</button>
+                        <button onclick="fillPrompt('Thời hạn thẻ huấn luyện PCCC')" class="text-left bg-white p-2.5 text-sm rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 shadow-sm transition font-medium">👉 Thẻ huấn luyện PCCC có thời hạn mấy năm?</button>
                     </div>
                 </div>
             </div>
@@ -66,13 +70,13 @@
         </div>
 
         <div id="typing-indicator" class="hidden absolute bottom-24 left-8 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-md flex items-center gap-2 z-10">
-            <span class="text-xs font-bold text-slate-500">AI đang phân tích Google Sheets...</span>
+            <span class="text-xs font-bold text-slate-500">Hệ thống đang kết nối và phân tích...</span>
             <div class="typing-indicator"><span></span><span></span><span></span></div>
         </div>
 
         <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-end gap-2 shrink-0">
-            <textarea id="user-input" class="w-full max-h-32 min-h-[50px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:bg-white transition custom-scrollbar resize-none text-sm disabled:opacity-50" placeholder="Đang kết nối dữ liệu..." onkeydown="handleEnter(event)" disabled></textarea>
-            <button id="btn-send" onclick="processQuery()" class="bg-indigo-600 text-white p-3 md:px-6 md:py-3 rounded-xl hover:bg-indigo-700 transition font-bold flex items-center gap-2 h-[50px] disabled:opacity-50" disabled>
+            <textarea id="user-input" class="w-full max-h-32 min-h-[50px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:bg-white transition custom-scrollbar resize-none text-sm disabled:opacity-50 font-medium" placeholder="Đang nạp dữ liệu..." onkeydown="handleEnter(event)" disabled></textarea>
+            <button id="btn-send" onclick="processQuery()" class="bg-indigo-600 text-white p-3 md:px-6 md:py-3 rounded-xl hover:bg-indigo-700 transition shadow-md font-bold flex items-center gap-2 h-[50px] disabled:opacity-50" disabled>
                 <span class="hidden md:inline">Gửi</span>
                 <i class="ph-bold ph-paper-plane-right text-xl"></i>
             </button>
@@ -82,12 +86,14 @@
     <script>
         let knowledgeBase = [];
         
-        // ==============================================================================
-        // ANH TƯ DÁN ĐƯỜNG LINK GOOGLE SHEETS (ĐÃ CÔNG BỐ CSV) CỦA ANH VÀO DÒNG BÊN DƯỚI:
-        // ==============================================================================
+        // =========================================================================
+        // BƯỚC QUAN TRỌNG: DÁN CÁI ĐƯỜNG LINK APPS SCRIPT ANH VỪA COPY VÀO BÊN DƯỚI
+        // =========================================================================
+        const SECURITY_GATE_URL = "https://script.google.com/macros/s/AKfycbxlA80JevfwaoFQ5-9v-Xi3vXMFNBRRQZN7augp0O1JCCxWKeGY8Rzu4X9OATq00aoM/exec"; 
+        
+        // Link Google Sheets của nhà máy
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTe-A3J9zQ7HwuZMjS4SKy_nQmIrh95Powvq-3idXsyBwPrh44q1lsEsZVRTCG8hJHkN8xSUatlZWH4/pub?output=csv'; 
 
-        // Tự động tải dữ liệu từ Google Sheets khi mở trang
         Papa.parse(GOOGLE_SHEET_CSV_URL, {
             download: true,
             header: true,
@@ -126,13 +132,13 @@
                 div.className = "flex gap-4 flex-row-reverse mb-2";
                 div.innerHTML = `
                     <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 text-white shadow-sm"><i class="ph-fill ph-user text-xl"></i></div>
-                    <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-4 max-w-[85%] shadow-sm"><p class="text-sm leading-relaxed">${text}</p></div>
+                    <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-4 max-w-[85%] shadow-sm"><p class="text-sm leading-relaxed font-medium">${text}</p></div>
                 `;
             } else {
                 div.className = "flex gap-4 mb-2";
                 const parsedText = marked.parse(text); 
                 div.innerHTML = `
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200"><i class="ph-fill ph-robot text-2xl"></i></div>
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200 shadow-sm"><i class="ph-fill ph-robot text-2xl"></i></div>
                     <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm w-full">
                         <div class="ai-response-content text-sm text-slate-700 leading-relaxed">${parsedText}</div>
                         ${contextHTML}
@@ -167,14 +173,19 @@
             document.getElementById('btn-send').disabled = true;
 
             try {
+                // Kiểm tra xem đã dán link Apps Script chưa
+                if(SECURITY_GATE_URL === "DÁN_LINK_APPS_SCRIPT_CỦA_ANH_VÀO_ĐÂY" || SECURITY_GATE_URL.trim() === "") {
+                    throw new Error("Anh Tư ơi, anh chưa dán đường link Cổng an ninh Apps Script vào biến SECURITY_GATE_URL trong mã HTML. Vui lòng cập nhật để AI hoạt động nhé!");
+                }
+
                 const relevantDocs = searchKnowledgeBase(queryText);
                 
                 let systemInstruction = `Bạn là Trợ lý AI Pháp chế EHS. 
-                LỆNH 1: BẮT BUỘC chỉ sử dụng thông tin trong [DỮ LIỆU CUNG CẤP] để trả lời.
-                LỆNH 2: Người dùng (công nhân) có thể gõ câu hỏi hoặc chỉ gõ một TỪ KHÓA vắn tắt (VD: "PCCC", "Nặng nhọc độc hại"). Kể cả khi họ chỉ gõ từ khóa, nhiệm vụ của bạn là lấy [DỮ LIỆU CUNG CẤP] ra, diễn giải và tóm tắt lại cho họ hiểu. Tuyệt đối KHÔNG ĐƯỢC từ chối trả lời nếu [DỮ LIỆU CUNG CẤP] có chứa nội dung.
-                LỆNH 3: CHỈ KHI [DỮ LIỆU CUNG CẤP] ghi là "(Trống...)", bạn mới được phép trả lời chính xác câu này: "Hệ thống dữ liệu nội bộ chưa có thông tin này, vui lòng liên hệ Admin EHS để cập nhật." Không được tự bịa ra luật.`;
+                LỆNH 1: BẮT BUỘC CHỈ SỬ DỤNG thông tin trong [DỮ LIỆU CUNG CẤP] để trả lời.
+                LỆNH 2: NGƯỜI DÙNG CÓ THỂ CHỈ NHẬP TỪ KHÓA CỘC LỐC. Kể cả khi họ nhập cộc lốc, NẾU CÓ [DỮ LIỆU CUNG CẤP], BẠN PHẢI LẤY DỮ LIỆU ĐÓ RA DIỄN GIẢI CHỨ KHÔNG ĐƯỢC TỪ CHỐI TRẢ LỜI. Tổng hợp ngắn gọn, dễ hiểu.
+                LỆNH 3: CHỈ KHI [DỮ LIỆU CUNG CẤP] ghi là "(Trống...)", bạn mới được phép trả lời: "Hệ thống dữ liệu nội bộ chưa có thông tin này, vui lòng liên hệ Admin EHS để cập nhật." Không được tự bịa ra luật.`;
                 
-                let finalPrompt = `Câu hỏi/Từ khóa của người dùng: "${queryText}"\n\n`;
+                let finalPrompt = `Câu hỏi/Từ khóa: "${queryText}"\n\n`;
                 let contextHTML = "";
 
                 if (relevantDocs.length > 0) {
@@ -189,8 +200,8 @@
 
                         contextHTML += `
                             <div class="mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs">
-                                <p class="font-bold text-indigo-800 mb-1 flex items-center gap-1"><i class="ph-bold ph-scales"></i> Căn cứ pháp lý (Trích từ Google Sheets):</p>
-                                <div class="flex flex-wrap gap-1 mt-2">
+                                <p class="font-bold text-indigo-800 mb-1 flex items-center gap-1"><i class="ph-bold ph-scales"></i> Căn cứ pháp lý nội bộ:</p>
+                                <div class="flex flex-wrap gap-1 mt-2 mb-1">
                                     <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded border border-blue-200 font-medium">${doc.luat || "Chưa cập nhật"}</span>
                                     <i class="ph-bold ph-arrow-right text-slate-400 mt-1"></i>
                                     <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded border border-emerald-200 font-medium">${doc.nghi_dinh || doc.thong_tu || "Chưa cập nhật"}</span>
@@ -200,26 +211,38 @@
                         `;
                     });
                 } else {
-                    finalPrompt += `[DỮ LIỆU CUNG CẤP]: (Trống. Không tìm thấy thông tin nào khớp với từ khóa trong Google Sheets)`;
+                    finalPrompt += `[DỮ LIỆU CUNG CẤP]: (Trống. Không tìm thấy thông tin nào khớp)`;
                 }
-
-                // 1. DÁN API KEY GOOGLE GEMINI BẮT ĐẦU BẰNG CHỮ AIza... VÀO GIỮA 2 DẤU NGOẶC KÉP BÊN DƯỚI:
-                const apiKey = "AQ.Ab8RN6LElnJOQmrIYdhHgtMD5x9sOo336Ao_q5rhnhT1QAkZwA"; 
                 
-                // 2. Chuyển về mô hình ổn định nhất 1.5 Flash để tránh lỗi 403 / 404
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                
+                // Gói payload đúng chuẩn của Gemini để đẩy sang Apps Script
                 const payload = {
                     contents: [{ parts: [{ text: finalPrompt }] }],
                     systemInstruction: { parts: [{ text: systemInstruction }] },
                     generationConfig: { temperature: 0.1 }
                 };
 
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (!response.ok) throw new Error(`Lỗi kết nối API Google: ${response.status} (Vui lòng kiểm tra lại cấu hình chặn tên miền của API Key)`);
+                // Đẩy sang Máy chủ bảo mật Apps Script
+                // Dùng text/plain để vượt tường lửa CORS trên trình duyệt
+                const response = await fetch(SECURITY_GATE_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(payload) 
+                });
                 
+                if (!response.ok) {
+                    throw new Error(`Máy chủ Apps Script báo lỗi. Trạng thái: ${response.status}`);
+                }
+                
+                // Lấy kết quả từ máy chủ trả về
                 const result = await response.json();
-                const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                // Đọc text từ kết quả
+                let aiResponseText = "Lỗi đọc dữ liệu từ máy chủ. Vui lòng kiểm tra lại.";
+                if(result.candidates && result.candidates[0] && result.candidates[0].content) {
+                     aiResponseText = result.candidates[0].content.parts[0].text;
+                } else if(result.error) {
+                     aiResponseText = `Máy chủ AI báo lỗi: ${result.error.message}`;
+                }
 
                 document.getElementById('typing-indicator').classList.add('hidden');
                 
@@ -230,14 +253,20 @@
                 }
 
             } catch (error) {
-                console.error(error);
+                console.error("Chi tiết lỗi hệ thống:", error);
                 document.getElementById('typing-indicator').classList.add('hidden');
-                appendMessage('ai', `*Xin lỗi, hệ thống AI đang gặp sự cố. Chi tiết: ${error.message}*`);
+                appendMessage('ai', `
+                    <span class="text-red-600 font-bold"><i class="ph-fill ph-warning-circle text-lg"></i> Sự cố kết nối máy chủ:</span><br>
+                    <div class="mt-2 bg-red-50 p-3 rounded-lg border border-red-200 text-xs text-red-800 font-mono">
+                        ${error.message}
+                    </div>
+                `);
             } finally {
                 document.getElementById('btn-send').disabled = false;
             }
         }
 
+        // Tự động kéo dãn ô nhập
         userInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
