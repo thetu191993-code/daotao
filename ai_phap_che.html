@@ -29,6 +29,7 @@
 </head>
 <body class="bg-slate-50 h-screen flex flex-col font-sans text-slate-800">
 
+    <!-- Header -->
     <header class="bg-indigo-900 text-white p-4 shadow-md shrink-0 flex items-center justify-between z-10">
         <div class="flex items-center gap-3">
             <a href="index.html" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition">
@@ -50,6 +51,7 @@
         <span>AI chỉ tra cứu trong phạm vi Google Sheets của Phòng EHS. Vui lòng luôn đối chiếu bằng nút "Xem văn bản gốc".</span>
     </div>
 
+    <!-- Main Chat Window -->
     <main class="flex-1 w-full max-w-5xl mx-auto p-4 flex flex-col gap-4 overflow-hidden relative">
         <div id="chat-container" class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
             
@@ -87,11 +89,11 @@
         let knowledgeBase = [];
         
         // =========================================================================
-        // BƯỚC QUAN TRỌNG: DÁN CÁI ĐƯỜNG LINK APPS SCRIPT ANH VỪA COPY VÀO BÊN DƯỚI
+        // ĐƯỜNG LINK CỔNG AN NINH GOOGLE APPS SCRIPT CỦA ANH
         // =========================================================================
         const SECURITY_GATE_URL = "https://script.google.com/macros/s/AKfycbyRsMk3ZpxBa7OiOTK9HJ-hX78BQene1qPMR08JS3BOoySmhNQ4oIb6EQWKYgquPx4Q/exec"; 
         
-        // Link Google Sheets của nhà máy
+        // Link CSV Google Sheets Pháp luật EHS
         const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTe-A3J9zQ7HwuZMjS4SKy_nQmIrh95Powvq-3idXsyBwPrh44q1lsEsZVRTCG8hJHkN8xSUatlZWH4/pub?output=csv'; 
 
         Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -125,7 +127,7 @@
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processQuery(); }
         }
 
-        function appendMessage(sender, text, contextHTML = "") {
+        function appendMessage(sender, text, contextHTML = "", isError = false) {
             const div = document.createElement('div');
             
             if (sender === 'user') {
@@ -136,7 +138,7 @@
                 `;
             } else {
                 div.className = "flex gap-4 mb-2";
-                const parsedText = marked.parse(text); 
+                const parsedText = isError ? text : marked.parse(text); 
                 div.innerHTML = `
                     <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200 shadow-sm"><i class="ph-fill ph-robot text-2xl"></i></div>
                     <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm w-full">
@@ -173,11 +175,6 @@
             document.getElementById('btn-send').disabled = true;
 
             try {
-                // Kiểm tra xem đã dán link Apps Script chưa
-                if(SECURITY_GATE_URL === "DÁN_LINK_APPS_SCRIPT_CỦA_ANH_VÀO_ĐÂY" || SECURITY_GATE_URL.trim() === "") {
-                    throw new Error("Anh Tư ơi, anh chưa dán đường link Cổng an ninh Apps Script vào biến SECURITY_GATE_URL trong mã HTML. Vui lòng cập nhật để AI hoạt động nhé!");
-                }
-
                 const relevantDocs = searchKnowledgeBase(queryText);
                 
                 let systemInstruction = `Bạn là Trợ lý AI Pháp chế EHS. 
@@ -214,15 +211,12 @@
                     finalPrompt += `[DỮ LIỆU CUNG CẤP]: (Trống. Không tìm thấy thông tin nào khớp)`;
                 }
                 
-                // Gói payload đúng chuẩn của Gemini để đẩy sang Apps Script
                 const payload = {
                     contents: [{ parts: [{ text: finalPrompt }] }],
                     systemInstruction: { parts: [{ text: systemInstruction }] },
                     generationConfig: { temperature: 0.1 }
                 };
 
-                // Đẩy sang Máy chủ bảo mật Apps Script
-                // Dùng text/plain để vượt tường lửa CORS trên trình duyệt
                 const response = await fetch(SECURITY_GATE_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -230,18 +224,22 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`Máy chủ Apps Script báo lỗi. Trạng thái: ${response.status}`);
+                    throw new Error(`Máy chủ báo lỗi HTTP ${response.status}. Vui lòng kiểm tra lại quyền truy cập Apps Script.`);
                 }
                 
-                // Lấy kết quả từ máy chủ trả về
                 const result = await response.json();
                 
-                // Đọc text từ kết quả
-                let aiResponseText = "Lỗi đọc dữ liệu từ máy chủ. Vui lòng kiểm tra lại.";
-                if(result.candidates && result.candidates[0] && result.candidates[0].content) {
+                let aiResponseText = "";
+                if (result.candidates && result.candidates[0] && result.candidates[0].content) {
                      aiResponseText = result.candidates[0].content.parts[0].text;
-                } else if(result.error) {
+                } else if (result.error) {
                      aiResponseText = `Máy chủ AI báo lỗi: ${result.error.message}`;
+                     appendMessage('ai', `<span class="text-rose-600 font-bold"><i class="ph-bold ph-warning-circle"></i> ${aiResponseText}</span>`, contextHTML, true);
+                     document.getElementById('typing-indicator').classList.add('hidden');
+                     document.getElementById('btn-send').disabled = false;
+                     return;
+                } else {
+                     aiResponseText = "Không nhận được phản hồi từ AI. Vui lòng thử lại.";
                 }
 
                 document.getElementById('typing-indicator').classList.add('hidden');
@@ -255,18 +253,18 @@
             } catch (error) {
                 console.error("Chi tiết lỗi hệ thống:", error);
                 document.getElementById('typing-indicator').classList.add('hidden');
-                appendMessage('ai', `
-                    <span class="text-red-600 font-bold"><i class="ph-fill ph-warning-circle text-lg"></i> Sự cố kết nối máy chủ:</span><br>
-                    <div class="mt-2 bg-red-50 p-3 rounded-lg border border-red-200 text-xs text-red-800 font-mono">
-                        ${error.message}
+                const errHTML = `
+                    <div class="bg-red-50 p-3 rounded-xl border border-red-200 text-xs text-red-800">
+                        <p class="font-bold flex items-center gap-1 mb-1"><i class="ph-bold ph-warning-circle text-base text-red-600"></i> Sự cố kết nối máy chủ:</p>
+                        <p class="font-mono">${error.message}</p>
                     </div>
-                `);
+                `;
+                appendMessage('ai', errHTML, "", true);
             } finally {
                 document.getElementById('btn-send').disabled = false;
             }
         }
 
-        // Tự động kéo dãn ô nhập
         userInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
