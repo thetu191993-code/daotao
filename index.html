@@ -45,15 +45,15 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 
-    <!-- KẾT NỐI FIREBASE -->
+    <!-- KẾT NỐI FIREBASE CHUẨN XÁC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Cấu hình Firebase đã điền API Key chuẩn xác
+        // ĐÃ SỬA LẠI CHÍNH XÁC KÝ TỰ BỊ SAI TRONG API KEY THEO ẢNH CHỤP CỦA ANH
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlaMV0rlNQYugFiw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlaMV0rlNQYugFjw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -88,7 +88,7 @@
                 document.getElementById('report-list-view').classList.add('flex');
                 document.getElementById('modal-icon').className = "ph-fill ph-folder-open text-teal-600 text-2xl";
             } catch (error) {
-                errorMsg.innerText = error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' ? (translations[currentLang].cp_error || "Sai mật khẩu!") : "Lỗi: " + error.message;
+                errorMsg.innerText = error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' ? (translations[currentLang]?.cp_error || "Sai mật khẩu!") : "Lỗi: " + error.message;
                 errorMsg.classList.remove('hidden');
             } finally {
                 btn.innerHTML = ogText; btn.disabled = false;
@@ -349,7 +349,7 @@
 
             <div id="report-list-view" class="p-5 flex-col gap-3 hidden h-80 overflow-y-auto custom-scrollbar">
                 
-                <!-- ĐÃ NẠP ĐỦ 6 ĐƯỜNG LINK VÀO ĐÂY CHO ANH -->
+                <!-- Báo cáo Tháng 01 -->
                 <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm mb-3">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -358,6 +358,7 @@
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
 
+                <!-- Báo cáo Tháng 02 -->
                 <a href="bao_cao/Thang_02.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm mb-3">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -366,6 +367,7 @@
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
 
+                <!-- Báo cáo Tháng 03 -->
                 <a href="bao_cao/Thang_03.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm mb-3">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -374,6 +376,7 @@
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
 
+                <!-- Báo cáo Tháng 04 -->
                 <a href="bao_cao/Thang_04.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm mb-3">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -382,6 +385,7 @@
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
 
+                <!-- Báo cáo Tháng 05 -->
                 <a href="bao_cao/Thang_05.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm mb-3">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -390,6 +394,7 @@
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
 
+                <!-- Báo cáo Tháng 06 -->
                 <a href="bao_cao/Thang_06.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm mb-3">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
