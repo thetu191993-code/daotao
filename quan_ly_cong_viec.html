@@ -29,14 +29,14 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 
-    <!-- FIREBASE INITIALIZATION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc, updateDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // MÃ KHÓA CHUẨN CỦA ANH
+        // ANH TƯ NHỚ DÁN API KEY CỦA ANH VÀO ĐÂY NHÉ (Đuôi ...Fjw2uA)
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlaMV0rlNQYugFjw2uA",
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlaMV0rlNQYugFjw2uA", 
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -45,15 +45,18 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
         window.db = getFirestore(app);
-        window.collection = collection; window.query = query; window.where = where; 
-        window.getDocs = getDocs; window.addDoc = addDoc; window.updateDoc = updateDoc; 
-        window.doc = doc; window.orderBy = orderBy;
+        window.signInAnonymously = signInAnonymously;
+        window.collection = collection; 
+        window.getDocs = getDocs; 
+        window.addDoc = addDoc; 
+        window.updateDoc = updateDoc; 
+        window.doc = doc;
     </script>
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
-    <!-- HEADER -->
     <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
         <div class="flex items-center gap-4">
             <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
@@ -61,115 +64,131 @@
             </a>
             <div>
                 <h1 class="font-black text-xl leading-tight text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                    <i class="ph-fill ph-kanban"></i> <span data-i18n="title">Task Manager</span>
+                    <i class="ph-fill ph-kanban"></i> <span>Quản Lý Tiến Độ</span>
                 </h1>
             </div>
         </div>
 
         <div class="flex items-center gap-3">
-            <button onclick="changeLanguage('vi')" class="text-xs font-bold px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">VI</button>
-            <button onclick="changeLanguage('en')" class="text-xs font-bold px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">EN</button>
-            <button onclick="changeLanguage('zh')" class="text-xs font-bold px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800">中文</button>
-            <div class="w-px h-5 bg-slate-300 dark:bg-slate-700 mx-1"></div>
             <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                 <i id="theme-icon" class="ph-bold ph-moon"></i>
             </button>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 relative">
-        <div class="max-w-6xl mx-auto space-y-6">
+    <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
+        <div class="max-w-7xl mx-auto space-y-6">
             
-            <!-- TOOLBAR -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border">
-                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full sm:w-auto">
-                    <button onclick="switchTab('my-tasks')" id="tab-my-tasks" class="flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition" data-i18n="my_tasks">Việc của tôi</button>
-                    <button onclick="switchTab('assigned-tasks')" id="tab-assigned" class="flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tasks_i_assigned">Việc tôi giao</button>
+            <!-- TÌM KIẾM & BỘ LỌC -->
+            <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="md:col-span-2 relative">
+                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-box" onkeyup="renderTasks()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:border-blue-500" placeholder="Tìm tên công việc, người nhận, người giao...">
                 </div>
-                
-                <button onclick="openTaskModal()" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2">
-                    <i class="ph-bold ph-plus"></i> <span data-i18n="create_task">Giao việc mới</span>
-                </button>
+                <div>
+                    <select id="filter-category" onchange="renderTasks()" class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-semibold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                        <option value="all">Tất cả mảng công việc</option>
+                        <option value="EHS Chung">Mảng EHS Chung</option>
+                        <option value="PCCC">Mảng PCCC</option>
+                        <option value="ATVSV">Mạng lưới ATVSV</option>
+                        <option value="Khác">Mảng Khác</option>
+                    </select>
+                </div>
+                <div>
+                    <button onclick="openTaskModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-plus"></i> Tạo Công Việc
+                    </button>
+                </div>
             </div>
 
-            <!-- LOADING -->
+            <!-- TAB ĐIỀU HƯỚNG -->
+            <div class="flex flex-wrap bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
+                <button onclick="switchTab('my-tasks')" id="tab-my-tasks" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition">Việc tôi phải làm</button>
+                <button onclick="switchTab('assigned-tasks')" id="tab-assigned" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition">Việc tôi đã giao</button>
+                <button onclick="switchTab('all-tasks')" id="tab-all" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition flex items-center gap-1"><i class="ph-fill ph-crown"></i> Góc Lãnh Đạo</button>
+            </div>
+
             <div id="loader" class="flex flex-col items-center justify-center py-20 text-blue-500">
                 <i class="ph-bold ph-spinner animate-spin text-4xl mb-4"></i>
-                <p class="font-bold text-slate-500 dark:text-dark-muted" data-i18n="loading">Đang tải dữ liệu...</p>
+                <p class="font-bold text-slate-500 dark:text-dark-muted">Đang tải dữ liệu và xác thực an toàn...</p>
             </div>
 
-            <!-- TASK GRID -->
-            <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden">
                 <!-- Tasks will be injected here -->
             </div>
             
-            <!-- EMPTY STATE -->
             <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
                 <i class="ph-fill ph-clipboard-text text-6xl mb-4 opacity-50"></i>
-                <p class="font-bold text-lg" data-i18n="no_tasks">Chưa có công việc nào.</p>
+                <p class="font-bold text-lg">Chưa có công việc nào trong mục này.</p>
             </div>
 
         </div>
     </main>
 
-    <!-- MODAL TẠO CÔNG VIỆC MỚI -->
-    <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
-        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+    <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
                 <h2 class="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
-                    <i class="ph-fill ph-clipboard-text text-blue-600"></i> <span data-i18n="create_task_title">Giao Việc & Kế Hoạch</span>
+                    <i class="ph-fill ph-clipboard-text text-blue-600"></i> Lập Kế Hoạch & Giao Việc
                 </h2>
                 <button onclick="closeTaskModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="task_name">Tên công việc</label>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Tên công việc / Dự án</label>
                     <input type="text" id="task-title" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-3 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="VD: Lập danh sách hóa chất nhà máy 1">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="assign_to">Giao cho (Người nhận)</label>
-                        <select id="task-assignee" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-3 font-semibold text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500">
-                            <option value="">-- Đang tải danh sách nhân sự... --</option>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Phân loại Mảng</label>
+                        <select id="task-category" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-3 font-semibold text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500">
+                            <option value="EHS Chung">EHS Chung</option>
+                            <option value="PCCC">PCCC</option>
+                            <option value="ATVSV">ATVSV</option>
+                            <option value="Khác">Khác</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="due_date">Hạn chót (Deadline)</label>
-                        <input type="date" id="task-deadline" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-3 font-bold text-slate-800 dark:text-white outline-none focus:border-red-500">
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giao cho ai?</label>
+                        <select id="task-assignee" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-3 font-semibold text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 text-sm">
+                            <option value="">-- Đang tải... --</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Deadline (Hạn chót)</label>
+                        <input type="date" id="task-deadline" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3 py-3 font-bold text-slate-800 dark:text-white outline-none focus:border-red-500 text-sm">
                     </div>
                 </div>
 
-                <!-- AI ASSISTANT SECTION -->
+                <!-- AI ASSISTANT -->
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-xl relative">
                     <div class="flex justify-between items-center mb-2">
                         <label class="block text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase flex items-center gap-1">
-                            <i class="ph-fill ph-robot"></i> <span data-i18n="ai_plan">AI Lập Kế Hoạch & Nội dung</span>
+                            <i class="ph-fill ph-robot"></i> Kế hoạch chi tiết (AI Hỗ trợ)
                         </label>
                         <button onclick="generateAIPlan()" id="btn-ai" class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-700 transition flex items-center gap-1">
-                            <i class="ph-bold ph-magic-wand"></i> <span data-i18n="ai_generate">Tự động phân tích</span>
+                            <i class="ph-bold ph-magic-wand"></i> AI Phân tách việc
                         </button>
                     </div>
-                    <textarea id="task-desc" class="w-full border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-slate-900 rounded-xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-indigo-500 min-h-[150px] custom-scrollbar" placeholder="Bạn có thể tự nhập các bước thực hiện vào đây, HOẶC gõ Tên công việc ở trên và bấm nút 'Tự động phân tích' để Trợ lý AI EHS giúp bạn chia nhỏ công việc thành các bước chuyên nghiệp..."></textarea>
+                    <textarea id="task-desc" class="w-full border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-slate-900 rounded-xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-indigo-500 min-h-[120px] custom-scrollbar" placeholder="Tự nhập kế hoạch HOẶC gõ Tên công việc ở trên và bấm 'AI Phân tách việc' để xé nhỏ dự án thành các bước..."></textarea>
                 </div>
             </div>
 
-            <div class="p-5 border-t border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
-                <button onclick="closeTaskModal()" class="px-6 py-2.5 font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition" data-i18n="cancel">Hủy</button>
+            <div class="p-5 border-t border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="closeTaskModal()" class="px-6 py-2.5 font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition">Hủy</button>
                 <button id="btn-save-task" onclick="saveTask()" class="bg-blue-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-paper-plane-tilt text-lg"></i> <span data-i18n="save">Giao việc</span>
+                    <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Phát Hành Kế Hoạch
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL CẬP NHẬT / ĐÁNH GIÁ CÔNG VIỆC -->
-    <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex flex-col items-center justify-center p-4">
+    <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                <h2 class="text-lg font-black text-slate-800 dark:text-white" data-i18n="update_task">Cập nhật Tiến độ</h2>
+                <h2 class="text-lg font-black text-slate-800 dark:text-white">Cập nhật Tiến độ</h2>
                 <button onclick="closeUpdateModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
@@ -183,92 +202,65 @@
 
                 <div id="progress-section">
                     <label class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase" data-i18n="progress">Tiến độ hoàn thành (%)</span>
-                        <span id="prog-val" class="font-black text-xl text-blue-600">0%</span>
+                        <span class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase">Tiến độ hoàn thành (%)</span>
+                        <span id="prog-val" class="font-black text-2xl text-blue-600">0%</span>
                     </label>
                     <input type="range" id="task-progress" min="0" max="100" value="0" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="document.getElementById('prog-val').innerText = this.value + '%'">
                 </div>
 
                 <div id="eval-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <label class="block text-xs font-bold text-emerald-600 uppercase mb-2" data-i18n="evaluation">Đánh giá & Nghiệm thu (Dành cho Quản lý)</label>
-                    <textarea id="task-eval" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-emerald-500" placeholder="Nhận xét mức độ hoàn thành công việc của nhân viên..." rows="3"></textarea>
+                    <label class="block text-xs font-bold text-emerald-600 uppercase mb-2">Đánh giá Lãnh Đạo (Nghiệm thu)</label>
+                    <textarea id="task-eval" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-3 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-emerald-500" placeholder="Nhận xét mức độ hoàn thành công việc của nhân sự..." rows="3"></textarea>
                     
-                    <label class="flex items-center gap-2 mt-3 cursor-pointer">
+                    <label class="flex items-center gap-2 mt-3 cursor-pointer p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
                         <input type="checkbox" id="task-done" class="w-5 h-5 text-emerald-600 rounded">
-                        <span class="font-bold text-slate-700 dark:text-slate-200">Đóng công việc (Hoàn thành 100%)</span>
+                        <span class="font-bold text-emerald-700 dark:text-emerald-400 text-sm">Nghiệm thu Đóng việc (Hoàn thành 100%)</span>
                     </label>
                 </div>
             </div>
 
-            <div class="p-5 border-t border-slate-200 dark:border-dark-border flex justify-end gap-3">
-                <button id="btn-update-task" onclick="saveUpdate()" class="w-full bg-blue-600 text-white py-3 font-bold rounded-xl shadow-md hover:bg-blue-700 transition" data-i18n="save_update">Cập nhật ngay</button>
+            <div class="p-5 border-t border-slate-200 dark:border-dark-border flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
+                <button id="btn-update-task" onclick="saveUpdate()" class="w-full bg-blue-600 text-white py-3 font-bold rounded-xl shadow-md hover:bg-blue-700 transition">Cập nhật ngay</button>
             </div>
         </div>
     </div>
 
     <script>
-        const translations = {
-            "vi": {
-                title: "Kế Hoạch & Công Việc", my_tasks: "Việc của tôi", tasks_i_assigned: "Việc tôi giao",
-                create_task: "Giao việc mới", loading: "Đang tải dữ liệu...", no_tasks: "Chưa có công việc nào.",
-                create_task_title: "Giao Việc & Kế Hoạch", task_name: "Tên công việc", assign_to: "Giao cho",
-                due_date: "Hạn chót", ai_plan: "AI Lập Kế Hoạch", ai_generate: "Tự động phân tích",
-                cancel: "Hủy", save: "Giao việc", update_task: "Cập nhật Tiến độ", progress: "Tiến độ hoàn thành (%)",
-                evaluation: "Đánh giá & Nghiệm thu", save_update: "Cập nhật ngay"
-            },
-            "en": {
-                title: "Task & Planning", my_tasks: "My Tasks", tasks_i_assigned: "Assigned by me",
-                create_task: "New Task", loading: "Loading data...", no_tasks: "No tasks found.",
-                create_task_title: "Create Task", task_name: "Task Name", assign_to: "Assign To",
-                due_date: "Due Date", ai_plan: "AI Planning", ai_generate: "Auto Analyze",
-                cancel: "Cancel", save: "Assign Task", update_task: "Update Progress", progress: "Completion Progress (%)",
-                evaluation: "Evaluation & Sign-off", save_update: "Update Now"
-            },
-            "zh": {
-                title: "任务与计划", my_tasks: "我的任务", tasks_i_assigned: "我分配的",
-                create_task: "新任务", loading: "加载数据中...", no_tasks: "未找到任务。",
-                create_task_title: "创建任务", task_name: "任务名称", assign_to: "分配给",
-                due_date: "截止日期", ai_plan: "AI 计划", ai_generate: "自动分析",
-                cancel: "取消", save: "分配任务", update_task: "更新进度", progress: "完成进度 (%)",
-                evaluation: "评估与验收", save_update: "立即更新"
-            }
-        };
-
-        let currentLang = localStorage.getItem('ehs_lang') || 'vi';
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
-        
         const currentUserId = localStorage.getItem("ehs_user_id");
         const currentUserName = localStorage.getItem("ehs_user_name");
-        let currentTab = 'my-tasks'; // 'my-tasks' or 'assigned-tasks'
-
-        // LINK GOOGLE APPS SCRIPT CHO AI GEMINI (Vui lòng thay bằng link của anh)
+        
+        let currentTab = 'my-tasks'; // my-tasks, assigned-tasks, all-tasks
+        let rawTasksData = []; // Lưu toàn bộ data kéo về để JavaScript lọc
+        
         const AI_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_THIS_IS_YOUR_DEPLOYED_URL_HERE/exec"; 
 
-        function init() {
+        async function init() {
             if (!currentUserId) {
                 alert("Bạn chưa đăng nhập!");
                 window.location.href = "login.html";
                 return;
             }
             applyTheme();
-            changeLanguage(currentLang);
-            loadUsersDropdown();
-            loadTasks();
-        }
-
-        function changeLanguage(lang) {
-            currentLang = lang; localStorage.setItem('ehs_lang', lang);
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang][key]) {
-                    if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = translations[lang][key];
-                    else el.innerText = translations[lang][key];
-                }
-            });
+            
+            // XỬ LÝ LỖI KHÔNG TẢI ĐƯỢC DỮ LIỆU: BẮT BUỘC AUTH TRƯỚC KHI GỌI FIRESTORE
+            try {
+                await window.signInAnonymously(window.auth);
+                const user = window.auth.currentUser;
+                if (!user) throw new Error("Chưa xác thực được với hệ thống");
+                
+                await loadUsersDropdown();
+                await fetchAllTasks(); // Kéo hết về 1 lần
+            } catch (error) {
+                console.error("Lỗi khởi tạo:", error);
+                document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold">Lỗi truy cập máy chủ: ${error.message}</p>`;
+            }
         }
 
         function toggleDarkMode() {
-            isDarkMode = !isDarkMode; localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light'); applyTheme();
+            isDarkMode = !isDarkMode; 
+            localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light'); 
+            applyTheme();
         }
 
         function applyTheme() {
@@ -280,24 +272,32 @@
             currentTab = tab;
             const btnMy = document.getElementById('tab-my-tasks');
             const btnAssigned = document.getElementById('tab-assigned');
-            const activeClass = "flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition";
-            const inactiveClass = "flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition";
+            const btnAll = document.getElementById('tab-all');
             
-            if(tab === 'my-tasks') { btnMy.className = activeClass; btnAssigned.className = inactiveClass; } 
-            else { btnAssigned.className = activeClass; btnMy.className = inactiveClass; }
+            const activeClass = "px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition";
+            const inactiveClass = "px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition";
             
-            loadTasks();
+            btnMy.className = (tab === 'my-tasks') ? activeClass : inactiveClass;
+            btnAssigned.className = (tab === 'assigned-tasks') ? activeClass : inactiveClass;
+            btnAll.className = (tab === 'all-tasks') ? activeClass + " flex items-center gap-1" : inactiveClass + " flex items-center gap-1";
+            
+            renderTasks();
         }
 
         async function loadUsersDropdown() {
             const select = document.getElementById('task-assignee');
             try {
+                // Lấy toàn bộ nhân sự
                 const snap = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
-                select.innerHTML = '<option value="">-- Chọn nhân sự --</option>';
+                select.innerHTML = '<option value="">-- Chọn nhân sự (Bấm để gõ tìm) --</option>';
+                
+                // Tự động thêm chính mình lên đầu tiên (Tự giao việc)
+                select.innerHTML += `<option value="${currentUserId}|${currentUserName}" class="font-bold text-blue-600">[TỰ GIAO] ${currentUserName} (${currentUserId})</option>`;
+                
                 snap.forEach(doc => {
                     const data = doc.data();
-                    if(data.ma_nv && data.ho_ten) {
-                        select.innerHTML += `<option value="${data.ma_nv}|${data.ho_ten}">${data.ho_ten} (${data.ma_nv}) - ${data.bo_phan}</option>`;
+                    if(data.ma_nv && data.ho_ten && data.ma_nv !== currentUserId) {
+                        select.innerHTML += `<option value="${data.ma_nv}|${data.ho_ten}">${data.ho_ten} (${data.ma_nv}) - ${data.bo_phan || ''}</option>`;
                     }
                 });
             } catch (e) {
@@ -305,86 +305,131 @@
             }
         }
 
-        async function loadTasks() {
+        // TẢI TOÀN BỘ DATA 1 LẦN VÀ LƯU VÀO BIẾN (Chống lỗi Rule Firebase)
+        async function fetchAllTasks() {
             const grid = document.getElementById('task-grid');
             const loader = document.getElementById('loader');
             const empty = document.getElementById('empty-state');
             
-            grid.innerHTML = ''; grid.classList.add('hidden'); empty.classList.add('hidden'); loader.classList.remove('hidden');
+            grid.classList.add('hidden'); empty.classList.add('hidden'); loader.classList.remove('hidden');
 
             try {
-                let q;
-                if (currentTab === 'my-tasks') {
-                    q = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
-                } else {
-                    q = window.query(window.collection(window.db, "ehs_tasks"), window.where("assigner_id", "==", currentUserId));
-                }
+                // Rule: Kéo hết data với collection(), không dùng query/where/orderBy
+                const snap = await window.getDocs(window.collection(window.db, "ehs_tasks"));
+                rawTasksData = [];
+                snap.forEach(doc => rawTasksData.push({id: doc.id, ...doc.data()}));
                 
-                const snap = await window.getDocs(q);
-                let tasks = [];
-                snap.forEach(doc => tasks.push({id: doc.id, ...doc.data()}));
-                
-                // Sort mới nhất lên đầu
-                tasks.sort((a,b) => b.created_at - a.created_at);
-
-                if(tasks.length === 0) { empty.classList.remove('hidden'); loader.classList.add('hidden'); return; }
-
-                tasks.forEach(t => {
-                    // Xử lý Hạn chót & Trạng thái
-                    const today = new Date(); today.setHours(0,0,0,0);
-                    const deadline = new Date(t.due_date);
-                    const isOverdue = deadline < today && t.status !== 'Done';
-                    
-                    let statusHtml = '';
-                    if (t.status === 'Done') statusHtml = `<span class="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-check-circle"></i> Hoàn thành</span>`;
-                    else if (isOverdue) statusHtml = `<span class="bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-warning-circle"></i> Quá hạn</span>`;
-                    else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> Đang làm</span>`;
-                    else statusHtml = `<span class="bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> Mới giao</span>`;
-
-                    const dateStr = deadline.toLocaleDateString('vi-VN');
-                    const parsedDesc = marked.parse(t.description || "");
-
-                    const card = document.createElement('div');
-                    card.className = `bg-white dark:bg-dark-card border ${isOverdue && t.status !== 'Done' ? 'border-red-300 dark:border-red-800/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'border-slate-200 dark:border-dark-border shadow-sm'} p-5 rounded-2xl flex flex-col`;
-                    card.innerHTML = `
-                        <div class="flex justify-between items-start mb-3">
-                            ${statusHtml}
-                            <span class="text-xs font-mono font-bold ${isOverdue && t.status !== 'Done' ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-dark-muted'}"><i class="ph-fill ph-calendar-blank"></i> ${dateStr}</span>
-                        </div>
-                        <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2 leading-tight">${t.title}</h3>
-                        <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex-1">
-                            <p class="mb-1"><i class="ph-fill ph-user-circle"></i> Giao cho: <b class="text-slate-700 dark:text-slate-200">${t.assignee_name}</b></p>
-                            <p><i class="ph-fill ph-user-focus"></i> Người giao: <b class="text-slate-700 dark:text-slate-200">${t.assigner_name}</b></p>
-                        </div>
-                        
-                        <div class="mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 text-[13px] text-slate-600 dark:text-slate-300 max-h-32 overflow-y-auto custom-scrollbar prose dark:prose-invert prose-sm">
-                            ${parsedDesc}
-                        </div>
-
-                        <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-[10px] font-bold text-slate-500 dark:text-dark-muted uppercase">Tiến độ</span>
-                                <span class="text-xs font-black text-blue-600 dark:text-blue-400">${t.progress}%</span>
-                            </div>
-                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-4">
-                                <div class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: ${t.progress}%"></div>
-                            </div>
-                            
-                            <button onclick="openUpdateModal('${t.id}', '${t.title}', '${t.due_date}', ${t.progress}, '${t.status}', '${t.assigner_id}')" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-xl text-sm transition border border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800">
-                                Cập nhật / Đánh giá
-                            </button>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-
-                loader.classList.add('hidden');
-                grid.classList.remove('hidden');
-
+                renderTasks();
             } catch (e) {
                 console.error(e);
-                loader.innerHTML = `<p class="text-red-500 font-bold">Lỗi tải dữ liệu!</p>`;
+                loader.innerHTML = `<p class="text-red-500 font-bold"><i class="ph-bold ph-warning-circle text-2xl"></i> Lỗi máy chủ: ${e.message}</p>`;
             }
+        }
+
+        // LỌC VÀ HIỂN THỊ BẰNG JAVASCRIPT
+        function renderTasks() {
+            const grid = document.getElementById('task-grid');
+            const loader = document.getElementById('loader');
+            const empty = document.getElementById('empty-state');
+            
+            grid.innerHTML = '';
+            
+            const keyword = document.getElementById('search-box').value.toLowerCase();
+            const filterCat = document.getElementById('filter-category').value;
+
+            // 1. Lọc theo Tab, Keyword và Category
+            let filteredTasks = rawTasksData.filter(t => {
+                // Lọc Tab
+                let tabMatch = false;
+                if (currentTab === 'my-tasks' && t.assignee_id === currentUserId) tabMatch = true;
+                if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId) tabMatch = true;
+                if (currentTab === 'all-tasks') tabMatch = true; // Góc Lãnh đạo nhìn hết
+                if (!tabMatch) return false;
+
+                // Lọc Category (Mảng)
+                if (filterCat !== 'all' && t.category !== filterCat) return false;
+
+                // Lọc Search
+                const textSearch = ((t.title||"") + " " + (t.assignee_name||"") + " " + (t.assigner_name||"")).toLowerCase();
+                if (keyword && !textSearch.includes(keyword)) return false;
+
+                return true;
+            });
+
+            // 2. Sắp xếp Mới nhất lên đầu (Xử lý Timestamp Firebase)
+            filteredTasks.sort((a,b) => {
+                let timeA = a.created_at ? (a.created_at.toDate ? a.created_at.toDate().getTime() : a.created_at) : 0;
+                let timeB = b.created_at ? (b.created_at.toDate ? b.created_at.toDate().getTime() : b.created_at) : 0;
+                return timeB - timeA;
+            });
+
+            if(filteredTasks.length === 0) { 
+                empty.classList.remove('hidden'); grid.classList.add('hidden'); loader.classList.add('hidden'); 
+                return; 
+            }
+
+            filteredTasks.forEach(t => {
+                const today = new Date(); today.setHours(0,0,0,0);
+                const deadline = new Date(t.due_date);
+                const isOverdue = deadline < today && t.status !== 'Done';
+                
+                let statusHtml = '';
+                if (t.status === 'Done') statusHtml = `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-check-circle"></i> Đã đóng</span>`;
+                else if (isOverdue) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-warning-circle"></i> Quá hạn</span>`;
+                else if (t.status === 'Review') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> Chờ nghiệm thu</span>`;
+                else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> Đang làm</span>`;
+                else statusHtml = `<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> Mới giao</span>`;
+
+                // Badge mảng công việc
+                let catColor = "bg-slate-100 text-slate-600";
+                if(t.category === 'PCCC') catColor = "bg-orange-100 text-orange-700";
+                if(t.category === 'ATVSV') catColor = "bg-teal-100 text-teal-700";
+                let catBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border border-current ${catColor} whitespace-nowrap">${t.category || 'Khác'}</span>`;
+
+                const dateStr = deadline.toLocaleDateString('vi-VN');
+                const parsedDesc = marked.parse(t.description || "");
+                const isSelfAssigned = (t.assignee_id === t.assigner_id);
+
+                const card = document.createElement('div');
+                card.className = `bg-white dark:bg-dark-card border ${isOverdue && t.status !== 'Done' ? 'border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'border-slate-200 dark:border-dark-border shadow-sm'} p-5 rounded-2xl flex flex-col`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex gap-2">${statusHtml} ${catBadge}</div>
+                        <span class="text-xs font-mono font-bold ${isOverdue && t.status !== 'Done' ? 'text-red-600' : 'text-slate-500'}"><i class="ph-fill ph-calendar-blank"></i> ${dateStr}</span>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2 leading-tight">${t.title}</h3>
+                    <div class="text-xs text-slate-500 dark:text-slate-400 mb-4 flex-1">
+                        ${isSelfAssigned ? 
+                            `<p class="text-indigo-600 dark:text-indigo-400 font-bold mb-1"><i class="ph-fill ph-user-circle"></i> Công việc tự lên kế hoạch</p>` :
+                            `<p class="mb-1"><i class="ph-fill ph-user-circle"></i> Nhận: <b class="text-slate-700 dark:text-slate-200">${t.assignee_name}</b></p>
+                             <p><i class="ph-fill ph-user-focus"></i> Giao: <b class="text-slate-700 dark:text-slate-200">${t.assigner_name}</b></p>`
+                        }
+                    </div>
+                    
+                    <div class="mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 text-[13px] text-slate-600 dark:text-slate-300 max-h-32 overflow-y-auto custom-scrollbar prose dark:prose-invert prose-sm">
+                        ${parsedDesc}
+                    </div>
+
+                    <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">Tiến độ</span>
+                            <span class="text-xs font-black text-blue-600 dark:text-blue-400">${t.progress}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-4">
+                            <div class="bg-blue-600 dark:bg-blue-500 h-1.5 rounded-full transition-all duration-500" style="width: ${t.progress}%"></div>
+                        </div>
+                        
+                        <button onclick="openUpdateModal('${t.id}', '${t.title}', '${t.due_date}', ${t.progress}, '${t.status}', '${t.assigner_id}')" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-xl text-sm transition border border-slate-200 dark:border-slate-700">
+                            Cập nhật / Đánh giá
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            loader.classList.add('hidden');
+            empty.classList.add('hidden');
+            grid.classList.remove('hidden');
         }
 
         function openTaskModal() { document.getElementById('task-modal').classList.remove('hidden'); }
@@ -397,16 +442,11 @@
             const btn = document.getElementById('btn-ai');
             const desc = document.getElementById('task-desc');
             const ogText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang phân tích...'; btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang suy nghĩ...'; btn.disabled = true;
             
             try {
-                // Tận dụng Prompt để ép AI trả về Markdown list
                 const prompt = `Tôi là quản lý EHS. Tôi muốn giao nhiệm vụ: "${title}". Hãy chia nhỏ công việc này thành 3-5 bước thực hiện cốt lõi, ngắn gọn, dễ hiểu để nhân viên thực hiện. Trình bày dưới dạng danh sách gạch đầu dòng (Markdown).`;
-                
-                const payload = {
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { temperature: 0.2 }
-                };
+                const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2 } };
 
                 const res = await fetch(AI_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
                 if (!res.ok) throw new Error("Lỗi gọi Server AI");
@@ -415,10 +455,10 @@
                 if (result.candidates && result.candidates[0].content) {
                     desc.value = result.candidates[0].content.parts[0].text;
                 } else {
-                    desc.value = "AI không thể xử lý. Vui lòng tự nhập kế hoạch.";
+                    desc.value = "AI đang bận. Bạn vui lòng tự nhập kế hoạch vào đây nhé.";
                 }
             } catch (e) {
-                alert("Lỗi AI: " + e.message + "\nVui lòng tự gõ nội dung công việc.");
+                alert("Lỗi kết nối AI Apps Script. Vui lòng tự gõ nội dung.");
             } finally {
                 btn.innerHTML = ogText; btn.disabled = false;
             }
@@ -429,32 +469,42 @@
             const assigneeRaw = document.getElementById('task-assignee').value;
             const deadline = document.getElementById('task-deadline').value;
             const desc = document.getElementById('task-desc').value.trim();
+            const cat = document.getElementById('task-category').value;
 
             if(!title || !assigneeRaw || !deadline) return alert("Vui lòng điền đủ Tên, Người nhận và Deadline!");
 
             const [assignee_id, assignee_name] = assigneeRaw.split('|');
             const btn = document.getElementById('btn-save-task');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang giao...'; btn.disabled = true;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải lên...'; btn.disabled = true;
 
             try {
-                await window.addDoc(window.collection(window.db, "ehs_tasks"), {
-                    title: title, description: desc, due_date: deadline,
+                const newTask = {
+                    title: title, description: desc, due_date: deadline, category: cat,
                     assigner_id: currentUserId, assigner_name: currentUserName,
                     assignee_id: assignee_id, assignee_name: assignee_name,
                     progress: 0, status: 'To Do', evaluation: '',
-                    created_at: Date.now()
-                });
+                    created_at: new Date()
+                };
+                
+                await window.addDoc(window.collection(window.db, "ehs_tasks"), newTask);
                 closeTaskModal();
-                alert("Đã giao việc thành công!");
+                alert("Đã phát hành kế hoạch/công việc thành công!");
+                
+                // Reset form
                 document.getElementById('task-title').value = ''; document.getElementById('task-desc').value = '';
-                switchTab('assigned-tasks'); // Chuyển sang tab Việc tôi giao để xem
+                document.getElementById('task-assignee').value = ''; document.getElementById('task-deadline').value = '';
+                
+                // Reload data
+                switchTab((assignee_id === currentUserId) ? 'my-tasks' : 'assigned-tasks');
+                await fetchAllTasks(); 
+                
             } catch (e) {
                 alert("Lỗi lưu DB: " + e.message);
-                btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt"></i> Giao việc'; btn.disabled = false;
+            } finally {
+                btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt text-lg"></i> Phát Hành Kế Hoạch'; btn.disabled = false;
             }
         }
 
-        // BIẾN LƯU TẠM DỮ LIỆU ĐỂ UPDATE
         let upTaskId = "";
         let upTaskAssigner = "";
 
@@ -471,7 +521,6 @@
             const evalSec = document.getElementById('eval-section');
             const doneCheck = document.getElementById('task-done');
             
-            // Nếu là quản lý thì hiện khu vực Đánh giá nghiệm thu
             if (isManager) {
                 evalSec.classList.remove('hidden');
                 doneCheck.checked = (status === 'Done');
@@ -500,7 +549,7 @@
                 else if (updateData.status === 'Done' && !isDone) { updateData.status = 'In Progress'; }
             } else {
                 if (newProg > 0 && newProg < 100) updateData.status = 'In Progress';
-                if (newProg === 100) updateData.status = 'Review'; // Chờ quản lý đóng
+                if (newProg === 100) updateData.status = 'Review'; // Trình ký
             }
 
             const btn = document.getElementById('btn-update-task');
@@ -508,7 +557,8 @@
 
             try {
                 await window.updateDoc(window.doc(window.db, "ehs_tasks", upTaskId), updateData);
-                closeUpdateModal(); loadTasks();
+                closeUpdateModal(); 
+                await fetchAllTasks(); // Tải lại để cập nhật
             } catch(e) {
                 alert("Lỗi cập nhật: " + e.message); btn.disabled = false; btn.innerHTML = 'Cập nhật ngay';
             }
@@ -518,18 +568,3 @@
     </script>
 </body>
 </html>
-```
-
-### 💡 Hướng dẫn cấu hình phần "AI Lập Kế Hoạch":
-Trong code trên, ở dòng **205**, có biến `AI_SCRIPT_URL`. Anh hãy copy đường link **Google Apps Script** (Cổng an ninh AI) mà hôm trước anh đã tạo thành công và dán vào đó nhé. Trợ lý AI sẽ tự động phân tích công việc thay anh!
-
-### 🔗 Gắn nút truy cập vào Trang Chủ (`index.html`):
-Cuối cùng, để mọi người vào được tính năng này, anh mở file `index.html` của anh, tìm đến đoạn **Nhóm 2: Quản trị & Báo cáo** (khoảng dòng 70), và chèn thêm 1 dòng code Menu này vào:
-
-```html
-<a href="quan_ly_cong_viec.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
-    <i class="ph-fill ph-kanban text-lg text-blue-500"></i> Quản lý Công việc & Tiến độ
-</a>
-```
-
-Hệ thống quản trị ERP của anh giờ đây đã có thêm một cánh tay đắc lực cực kỳ chuyên nghiệp. Anh chạy thử và tận hưởng cảm giác AI tự phân tách công việc nhé!
