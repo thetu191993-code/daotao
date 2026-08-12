@@ -4,14 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EHS System - Bảng Điều Khiển</title>
+    
+    <!-- KHÔI PHỤC FONT CHỮ CHUẨN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
-        // Cấu hình Tailwind cho Dark Mode
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         dark: { bg: '#0f172a', card: '#1e293b', border: '#334155', muted: '#94a3b8' }
                     }
@@ -26,7 +32,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
@@ -104,6 +109,22 @@
             </a>
             <a href="quan_ly_hoa_chat.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
                 <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> Quản lý Hóa Chất
+            </a>
+
+            <!-- KHÔI PHỤC LẠI NHÓM 4 ĐÃ BỊ MẤT -->
+            <div class="pt-4 pb-1 px-3">
+                <p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">
+                    <i class="ph-fill ph-hard-hat"></i> Nhóm 4: Quản trị Nhà thầu
+                </p>
+            </div>
+            <a href="quan_ly_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
+                <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> Hồ sơ Nhà thầu
+            </a>
+            <a href="cong_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
+                <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> Cổng Khai báo
+            </a>
+            <a href="bao_ve.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
+                <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> Trạm Gác An Ninh
             </a>
         </div>
 
@@ -205,7 +226,7 @@
         </div>
     </main>
 
-    <!-- REPORT MODAL -->
+    <!-- REPORT MODAL (ĐÃ FIX LẠI GIAO DIỆN Ô NHẬP PASS VÀ FONT MONO) -->
     <div id="report-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative">
             
@@ -221,7 +242,9 @@
                 <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2" data-i18n="modal_report_title">Kho Báo Cáo EHS</h3>
                 <p class="text-slate-500 dark:text-dark-muted text-sm mb-6" data-i18n="modal_report_desc">Tài liệu nội bộ. Vui lòng nhập mật khẩu quản lý để truy cập.</p>
                 
-                <input type="password" id="report-password" class="w-full px-4 py-3.5 border-2 border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg dark:text-white rounded-xl text-center tracking-[0.4em] font-mono text-xl focus:border-teal-500 focus:bg-white outline-none transition mb-3">
+                <!-- FIX LỖI Ô NHẬP PASS TẠI ĐÂY: Thêm type="password", tracking-[0.5em] để tạo khoảng cách dấu chấm -->
+                <input type="password" id="report-password" class="w-full px-4 py-4 border-2 border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-dark-bg dark:text-white rounded-xl text-center tracking-[0.5em] font-mono text-2xl focus:border-teal-500 focus:bg-white outline-none transition mb-4">
+                
                 <p id="password-error" class="text-red-500 text-sm font-bold mb-4 hidden"></p>
                 
                 <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl hover:bg-teal-700 shadow-md transition flex items-center justify-center gap-2">
@@ -229,9 +252,8 @@
                 </button>
             </div>
 
-            <!-- Giao diện Danh sách File (Sau khi nhập pass đúng) -->
+            <!-- Giao diện Danh sách File -->
             <div id="report-list-view" class="p-5 flex flex-col gap-3 hidden h-[400px] overflow-y-auto custom-scrollbar">
-                
                 <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -239,7 +261,6 @@
                     </div>
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
-
                 <a href="bao_cao/Thang_02.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -247,7 +268,6 @@
                     </div>
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
-
                 <a href="bao_cao/Thang_03.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -255,7 +275,6 @@
                     </div>
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
-
                 <a href="bao_cao/Thang_04.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -263,7 +282,6 @@
                     </div>
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
-
                 <a href="bao_cao/Thang_05.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -271,7 +289,6 @@
                     </div>
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
-
                 <a href="bao_cao/Thang_06.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
@@ -279,7 +296,6 @@
                     </div>
                     <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
                 </a>
-
             </div>
         </div>
     </div>
@@ -321,7 +337,6 @@
     <!-- MODAL TRUNG TÂM CÁ NHÂN (USER PROFILE) -->
     <div id="user-profile-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[105] hidden items-center justify-center p-4 transition-opacity">
         <div class="bg-slate-50 dark:bg-dark-bg rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh] border border-slate-200 dark:border-dark-border">
-            <!-- Header Modal -->
             <div class="p-5 border-b border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card relative flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center shadow-inner">
@@ -343,7 +358,6 @@
             </div>
 
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-                <!-- Cột Menu Trái -->
                 <div class="w-full md:w-1/3 border-r border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card p-4 space-y-2 shrink-0">
                     <button onclick="switchProfileTab('info')" id="tab-btn-info" class="w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center gap-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
                         <i class="ph-fill ph-user-circle text-xl"></i> Hồ sơ nhân sự
@@ -356,102 +370,49 @@
                     </button>
                 </div>
 
-                <!-- Cột Nội Dung Phải -->
                 <div class="w-full md:w-2/3 p-6 overflow-y-auto custom-scrollbar relative">
-                    
                     <div id="profile-loader" class="absolute inset-0 bg-slate-50 dark:bg-dark-bg z-10 flex flex-col items-center justify-center hidden">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-500 mb-3"></i>
                         <p class="font-bold text-slate-500 dark:text-dark-muted">Đang tải dữ liệu...</p>
                     </div>
 
-                    <!-- TAB 1: THÔNG TIN HỒ SƠ -->
                     <div id="tab-content-info" class="space-y-4">
                         <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-3 rounded-xl text-amber-800 dark:text-amber-400 text-xs font-medium flex gap-2">
                             <i class="ph-fill ph-info text-lg shrink-0"></i>
                             <p>Vui lòng cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo (Theo Vị trí/Ca làm việc). Mã NV dùng để đăng nhập nên không thể tự thay đổi.</p>
                         </div>
-                        
                         <input type="hidden" id="up-doc-id">
-                        
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Mã NV (MSSV)</label>
-                                <input type="text" id="up-id" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded-lg font-mono font-bold cursor-not-allowed" readonly>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Họ và Tên</label>
-                                <input type="text" id="up-name" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg font-bold outline-none focus:border-blue-500">
-                            </div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Mã NV (MSSV)</label><input type="text" id="up-id" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded-lg font-mono font-bold cursor-not-allowed" readonly></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Họ và Tên</label><input type="text" id="up-name" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg font-bold outline-none focus:border-blue-500"></div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ngày sinh</label>
-                                <input type="date" id="up-dob" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giới tính</label>
-                                <select id="up-gender" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500">
-                                    <option value="">-- Chọn --</option>
-                                    <option value="Nam">Nam</option>
-                                    <option value="Nữ">Nữ</option>
-                                </select>
-                            </div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ngày sinh</label><input type="date" id="up-dob" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giới tính</label><select id="up-gender" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="">-- Chọn --</option><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
                         </div>
-
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Nhà Máy</label>
-                                <select id="up-plant" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500">
-                                    <option value="">-- Chọn --</option>
-                                    <option value="Nhà máy Can">Nhà máy Can</option>
-                                    <option value="Nhà máy End">Nhà máy End</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ca Làm Việc</label>
-                                <select id="up-shift" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500">
-                                    <option value="Chưa xác định">-- Chọn Ca --</option>
-                                    <option value="Ca A">Ca A</option>
-                                    <option value="Ca B">Ca B</option>
-                                    <option value="Ca C">Ca C</option>
-                                    <option value="Ca D">Ca D</option>
-                                    <option value="Hành Chánh">Hành Chánh</option>
-                                </select>
-                            </div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Nhà Máy</label><select id="up-plant" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="">-- Chọn --</option><option value="Nhà máy Can">Nhà máy Can</option><option value="Nhà máy End">Nhà máy End</option></select></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ca Làm Việc</label><select id="up-shift" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="Chưa xác định">-- Chọn Ca --</option><option value="Ca A">Ca A</option><option value="Ca B">Ca B</option><option value="Ca C">Ca C</option><option value="Ca D">Ca D</option><option value="Hành Chánh">Hành Chánh</option></select></div>
                         </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Bộ Phận / Vị trí</label>
-                            <input type="text" id="up-dept-pos" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="VD: Sản xuất - Vận hành máy Washer...">
-                        </div>
-
-                        <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full mt-4 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2">
-                            <i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ
-                        </button>
+                        <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Bộ Phận / Vị trí</label><input type="text" id="up-dept-pos" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="VD: Sản xuất - Vận hành máy Washer..."></div>
+                        <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full mt-4 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2"><i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ</button>
                     </div>
 
-                    <!-- TAB 2: THÔNG BÁO & NHIỆM VỤ -->
                     <div id="tab-content-task" class="hidden space-y-4">
                         <h4 class="font-black text-slate-800 dark:text-white text-lg border-b border-slate-200 dark:border-dark-border pb-2 mb-4">Nhiệm vụ cần thực hiện</h4>
-                        
-                        <div id="task-container" class="space-y-3">
-                            <!-- Các thẻ nhiệm vụ sẽ được JS sinh ra ở đây -->
-                        </div>
+                        <div id="task-container" class="space-y-3"></div>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // CHÌA KHÓA FIREBASE CHUẨN XÁC ĐÃ SỬA CHỮ "j"
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      const firebaseConfig = {
+       const firebaseConfig = {
           apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
           authDomain: "ehs-training-app.firebaseapp.com",
           projectId: "ehs-training-app",
@@ -471,7 +432,6 @@
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
 
-        // Xử lý xác thực Kho Báo Cáo EHS
         document.getElementById('btn-report-login').addEventListener('click', async () => {
             const inputPass = document.getElementById('report-password').value;
             const btn = document.getElementById('btn-report-login');
@@ -589,7 +549,6 @@
             });
         }
 
-        // Dark Mode Logic
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
         
         function applyTheme() {
@@ -657,8 +616,6 @@
             window.location.reload();
         }
 
-        // --- MODULE USER HUB MỚI (TÍCH HỢP TỪ YÊU CẦU CỦA USER) ---
-
         window.switchProfileTab = function(tabId) {
             const btnInfo = document.getElementById('tab-btn-info');
             const btnTask = document.getElementById('tab-btn-task');
@@ -679,7 +636,6 @@
 
         window.openUserProfileModal = async function() {
             if (!currentUserId) return;
-            
             const modal = document.getElementById('user-profile-modal');
             const loader = document.getElementById('profile-loader');
             modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -693,7 +649,6 @@
                 const searchId = String(currentUserId).trim().toUpperCase();
                 const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", searchId));
                 const snap = await window.getDocs(q);
-                
                 let userData = null;
 
                 if (!snap.empty) {
@@ -711,10 +666,7 @@
                 } else {
                     document.getElementById('up-doc-id').value = "";
                 }
-
-                // Gọi render Tasks
                 window.renderUserTasks(userData);
-
             } catch (error) {
                 console.error("Lỗi lấy hồ sơ:", error);
             } finally {
@@ -777,7 +729,6 @@
             container.innerHTML = '';
             let hasTask = false;
 
-            // Mặc định nhắc nhở Đào tạo
             container.innerHTML += `
                 <div class="p-4 border border-indigo-200 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-between shadow-sm">
                     <div class="flex items-center gap-3">
@@ -841,7 +792,6 @@
             else badge.classList.add('hidden');
         };
 
-        // --- ĐỔI MẬT KHẨU LOGIC ---
         window.handleChangePassword = async function() {
             const oldPass = document.getElementById('cp-old').value;
             const newPass = document.getElementById('cp-new').value;
@@ -878,7 +828,6 @@
             }
         };
 
-        // --- COURSE MODAL LOGIC ---
         window.openCourseModal = function() {
             if (!currentUserId) {
                 alert("Bạn chưa đăng nhập! Vui lòng đăng nhập hệ thống.");
@@ -933,11 +882,9 @@
             document.getElementById('report-modal').classList.remove('flex');
         }
 
-        // Initialize setup
         applyTheme();
         changeLanguage(currentLang);
         checkLoginStatus();
-
     </script>
 </body>
 </html>
