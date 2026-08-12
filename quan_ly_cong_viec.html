@@ -207,22 +207,22 @@
         </div>
     </div>
 
-    <!-- TÍCH HỢP TOÀN BỘ LOGIC VÀO MODULE ĐỂ ĐẢM BẢO FIREBASE KHỞI TẠO XONG MỚI CHẠY -->
+    <!-- TÍCH HỢP TOÀN BỘ LOGIC VÀO MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CẤU HÌNH API FIREBASE CHUẨN XÁC
+        // ANH HÃY DÁN API KEY MỚI NHẤT CỦA ANH VÀO DÒNG BÊN DƯỚI NHÉ (THAY THẾ CHỖ BỊ LỖI CŨ)
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFjw2uA", 
-            authDomain: "ehs-training-app.firebaseapp.com",
-            projectId: "ehs-training-app",
-            storageBucket: "ehs-training-app.firebasestorage.app",
-            messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+          authDomain: "ehs-training-app.firebaseapp.com",
+          projectId: "ehs-training-app",
+          storageBucket: "ehs-training-app.firebasestorage.app",
+          messagingSenderId: "354083430003",
+          appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+          measurementId: "G-74ETHWTJCW"
         };
-
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
