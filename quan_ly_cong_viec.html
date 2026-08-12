@@ -28,33 +28,6 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         body { font-family: 'Inter', sans-serif; }
     </style>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // THÊM onAuthStateChanged VÀO ĐÂY ĐỂ TRÁNH LỖI ĐỨNG MÀN HÌNH
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // ANH TƯ NHỚ DÁN API KEY CỦA ANH VÀO ĐÂY NHÉ (Đuôi ...Fjw2uA)
-        const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFjw2uA", 
-            authDomain: "ehs-training-app.firebaseapp.com",
-            projectId: "ehs-training-app",
-            storageBucket: "ehs-training-app.firebasestorage.app",
-            messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app);
-        window.db = getFirestore(app);
-        window.onAuthStateChanged = onAuthStateChanged;
-        window.collection = collection; 
-        window.getDocs = getDocs; 
-        window.addDoc = addDoc; 
-        window.updateDoc = updateDoc; 
-        window.doc = doc;
-    </script>
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
@@ -63,6 +36,7 @@
         <span id="toast-message">Thành công!</span>
     </div>
 
+    <!-- HEADER -->
     <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
         <div class="flex items-center gap-4">
             <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
@@ -74,10 +48,9 @@
                 </h1>
             </div>
         </div>
-
         <div class="flex items-center gap-3">
             <div class="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg hidden sm:block" id="header-user-name">Đang tải...</div>
-            <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+            <button onclick="window.toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition">
                 <i id="theme-icon" class="ph-bold ph-moon"></i>
             </button>
         </div>
@@ -90,10 +63,10 @@
             <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-2 relative">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-box" onkeyup="renderTasks()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:border-blue-500" placeholder="Tìm tên công việc, người nhận, người giao...">
+                    <input type="text" id="search-box" onkeyup="window.renderTasks()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:border-blue-500 font-medium" placeholder="Tìm tên công việc, người nhận, người giao...">
                 </div>
                 <div>
-                    <select id="filter-category" onchange="renderTasks()" class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-semibold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                    <select id="filter-category" onchange="window.renderTasks()" class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300 appearance-none">
                         <option value="all">Tất cả mảng công việc</option>
                         <option value="EHS Chung">Mảng EHS Chung</option>
                         <option value="PCCC">Mảng PCCC</option>
@@ -102,7 +75,7 @@
                     </select>
                 </div>
                 <div>
-                    <button onclick="openTaskModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2">
+                    <button onclick="window.openTaskModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2">
                         <i class="ph-bold ph-plus"></i> Tạo Công Việc
                     </button>
                 </div>
@@ -110,14 +83,14 @@
 
             <!-- TAB ĐIỀU HƯỚNG TỰ THEO DÕI TIẾN ĐỘ -->
             <div class="flex flex-wrap bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
-                <button onclick="switchTab('my-tasks')" id="tab-my-tasks" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition">Việc tôi phải làm</button>
-                <button onclick="switchTab('assigned-tasks')" id="tab-assigned" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition">Việc tôi đã giao</button>
-                <button onclick="switchTab('all-tasks')" id="tab-all" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition flex items-center gap-1"><i class="ph-fill ph-crown"></i> Góc Lãnh Đạo</button>
+                <button onclick="window.switchTab('my-tasks')" id="tab-my-tasks" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition">Việc tôi phải làm</button>
+                <button onclick="window.switchTab('assigned-tasks')" id="tab-assigned" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition">Việc tôi đã giao</button>
+                <button onclick="window.switchTab('all-tasks')" id="tab-all" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition flex items-center gap-1"><i class="ph-fill ph-crown"></i> Góc Lãnh Đạo</button>
             </div>
 
             <div id="loader" class="flex flex-col items-center justify-center py-20 text-blue-500">
                 <i class="ph-bold ph-spinner animate-spin text-4xl mb-4"></i>
-                <p class="font-bold text-slate-500 dark:text-dark-muted" id="loader-text">Đang kết nối hệ thống và tải dữ liệu...</p>
+                <p class="font-bold text-slate-500 dark:text-dark-muted" id="loader-text">Đang kết nối hệ thống và xác thực người dùng...</p>
             </div>
 
             <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden">
@@ -132,13 +105,14 @@
         </div>
     </main>
 
+    <!-- MODAL GIAO VIỆC & LẬP KẾ HOẠCH -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
                 <h2 class="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
                     <i class="ph-fill ph-clipboard-text text-blue-600"></i> Lập Kế Hoạch & Giao Việc
                 </h2>
-                <button onclick="closeTaskModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+                <button onclick="window.closeTaskModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
@@ -159,7 +133,7 @@
                     </div>
                     <div class="sm:col-span-1">
                         <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giao cho ai?</label>
-                        <select id="task-assignee" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-3 font-semibold text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500 text-sm">
+                        <select id="task-assignee" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-3 font-bold text-blue-700 dark:text-blue-400 outline-none focus:border-blue-500 text-sm">
                             <option value="">-- Đang tải... --</option>
                         </select>
                     </div>
@@ -175,7 +149,7 @@
                         <label class="block text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase flex items-center gap-1">
                             <i class="ph-fill ph-robot"></i> Kế hoạch chi tiết (AI Hỗ trợ)
                         </label>
-                        <button onclick="generateAIPlan()" id="btn-ai" class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-700 transition flex items-center gap-1">
+                        <button onclick="window.generateAIPlan()" id="btn-ai" class="bg-indigo-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-700 transition flex items-center gap-1">
                             <i class="ph-bold ph-magic-wand"></i> AI Phân tách việc
                         </button>
                     </div>
@@ -184,19 +158,20 @@
             </div>
 
             <div class="p-5 border-t border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="closeTaskModal()" class="px-6 py-2.5 font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition">Hủy</button>
-                <button id="btn-save-task" onclick="saveTask()" class="bg-blue-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
+                <button onclick="window.closeTaskModal()" class="px-6 py-2.5 font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition">Hủy</button>
+                <button id="btn-save-task" onclick="window.saveTask()" class="bg-blue-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
                     <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Phát Hành Kế Hoạch
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL CẬP NHẬT TIẾN ĐỘ -->
     <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <h2 class="text-lg font-black text-slate-800 dark:text-white">Cập nhật Tiến độ</h2>
-                <button onclick="closeUpdateModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+                <button onclick="window.closeUpdateModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
             <div class="p-6 space-y-5">
@@ -227,20 +202,41 @@
             </div>
 
             <div class="p-5 border-t border-slate-200 dark:border-dark-border flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
-                <button id="btn-update-task" onclick="saveUpdate()" class="w-full bg-blue-600 text-white py-3 font-bold rounded-xl shadow-md hover:bg-blue-700 transition">Lưu Cập Nhật</button>
+                <button id="btn-update-task" onclick="window.saveUpdate()" class="w-full bg-blue-600 text-white py-3 font-bold rounded-xl shadow-md hover:bg-blue-700 transition">Lưu Cập Nhật Tiến Độ</button>
             </div>
         </div>
     </div>
 
-    <script>
+    <!-- TÍCH HỢP TOÀN BỘ LOGIC VÀO MODULE ĐỂ ĐẢM BẢO FIREBASE KHỞI TẠO XONG MỚI CHẠY -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // CẤU HÌNH API FIREBASE CHUẨN XÁC
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFjw2uA", 
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // BIẾN TOÀN CỤC CỦA TRANG
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
-        const currentUserId = localStorage.getItem("ehs_user_id");
-        const currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
-        
+        let currentUserId = localStorage.getItem("ehs_user_id");
+        let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
         let currentTab = 'my-tasks'; 
-        let rawTasksData = []; 
-        
-        // HÀM HIỂN THỊ THÔNG BÁO TOAST THAY CHO ALERT
+        let rawTasksData = [];
+        let upTaskId = "";
+        let upTaskAssigner = "";
+
+        // HÀM HIỂN THỊ THÔNG BÁO TOAST
         function showToast(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -258,44 +254,22 @@
             setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         }
 
-        function init() {
-            if (!currentUserId) {
-                alert("Bạn chưa đăng nhập!");
-                window.location.href = "login.html";
-                return;
-            }
-            applyTheme();
-            document.getElementById('header-user-name').innerText = currentUserName;
-            
-            // XỬ LÝ CHUẨN: Lắng nghe phiên đăng nhập THẬT từ Firebase
-            window.onAuthStateChanged(window.auth, async (user) => {
-                if (user) {
-                    try {
-                        document.getElementById('loader-text').innerText = "Đang kéo dữ liệu nhân sự và công việc...";
-                        await loadUsersDropdown();
-                        await fetchAllTasks();
-                    } catch (error) {
-                        console.error("Lỗi tải dữ liệu:", error);
-                        document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold text-center">Lỗi tải dữ liệu: ${error.message}</p>`;
-                    }
-                } else {
-                    document.getElementById('loader').innerHTML = `<div class="text-center"><i class="ph-fill ph-lock-key text-5xl text-red-500 mb-4"></i><p class="font-bold text-slate-700">Phiên đăng nhập đã hết hạn.</p><a href="login.html" class="inline-block mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">Về trang Đăng nhập</a></div>`;
-                }
-            });
-        }
-
-        function toggleDarkMode() {
+        // ==========================================
+        // GẮN CÁC HÀM GIAO DIỆN VÀO WINDOW ĐỂ HTML GỌI ĐƯỢC
+        // ==========================================
+        
+        window.toggleDarkMode = function() {
             isDarkMode = !isDarkMode; 
             localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light'); 
             applyTheme();
-        }
+        };
 
         function applyTheme() {
             if (isDarkMode) { document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = "ph-fill ph-sun text-amber-400"; } 
             else { document.documentElement.classList.remove('dark'); document.getElementById('theme-icon').className = "ph-bold ph-moon text-slate-600"; }
         }
 
-        function switchTab(tab) {
+        window.switchTab = function(tab) {
             currentTab = tab;
             const btnMy = document.getElementById('tab-my-tasks');
             const btnAssigned = document.getElementById('tab-assigned');
@@ -308,18 +282,53 @@
             btnAssigned.className = (tab === 'assigned-tasks') ? activeClass : inactiveClass;
             btnAll.className = (tab === 'all-tasks') ? activeClass + " flex items-center gap-1" : inactiveClass + " flex items-center gap-1";
             
-            renderTasks();
-        }
+            window.renderTasks();
+        };
+
+        window.openTaskModal = function() { document.getElementById('task-modal').classList.remove('hidden'); };
+        window.closeTaskModal = function() { document.getElementById('task-modal').classList.add('hidden'); };
+
+        window.openUpdateModal = function(id, title, date, progress, status, assignerId) {
+            upTaskId = id; upTaskAssigner = assignerId;
+            document.getElementById('up-task-id').value = id;
+            document.getElementById('disp-title').innerText = title;
+            document.getElementById('disp-deadline').innerText = new Date(date).toLocaleDateString('vi-VN');
+            
+            const progInput = document.getElementById('task-progress');
+            progInput.value = progress; 
+            document.getElementById('prog-val').innerText = progress + '%';
+            
+            const isManager = (currentUserId === assignerId);
+            const evalSec = document.getElementById('eval-section');
+            const doneCheck = document.getElementById('task-done');
+            
+            if (isManager) {
+                evalSec.classList.remove('hidden');
+                doneCheck.checked = (status === 'Done');
+            } else {
+                evalSec.classList.add('hidden');
+            }
+
+            document.getElementById('update-modal').classList.remove('hidden');
+            const btnUpdate = document.getElementById('btn-update-task');
+            btnUpdate.innerHTML = 'Lưu Cập Nhật Tiến Độ';
+            btnUpdate.disabled = false;
+        };
+
+        window.closeUpdateModal = function() { document.getElementById('update-modal').classList.add('hidden'); };
+
+        // ==========================================
+        // CÁC HÀM KẾT NỐI DATABASE VÀ XỬ LÝ LOGIC
+        // ==========================================
 
         async function loadUsersDropdown() {
             const select = document.getElementById('task-assignee');
             try {
-                // Kéo danh sách nhân sự nội bộ để gán việc
-                const snap = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
-                select.innerHTML = '<option value="">-- Chọn nhân sự (Bấm để gõ tìm) --</option>';
+                const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
+                select.innerHTML = '<option value="">-- Chọn nhân sự (Gõ để tìm) --</option>';
                 
-                // TỰ GIAO VIỆC CHO BẢN THÂN
-                select.innerHTML += `<option value="${currentUserId}|${currentUserName}" class="font-bold text-blue-600">[TỰ GIAO] Việc cá nhân của tôi</option>`;
+                // Tự giao việc cho bản thân lên đầu tiên
+                select.innerHTML += `<option value="${currentUserId}|${currentUserName}" class="font-black text-blue-700 bg-blue-50">🌟 [TỰ GIAO] Việc cá nhân của tôi</option>`;
                 
                 snap.forEach(doc => {
                     const data = doc.data();
@@ -333,7 +342,6 @@
             }
         }
 
-        // TẢI DATA BẰNG LỆNH COLLECTION ĐƠN GIẢN (CHỐNG LỖI FIREBASE RULE)
         async function fetchAllTasks() {
             const grid = document.getElementById('task-grid');
             const loader = document.getElementById('loader');
@@ -342,18 +350,17 @@
             grid.classList.add('hidden'); empty.classList.add('hidden'); loader.classList.remove('hidden');
 
             try {
-                const snap = await window.getDocs(window.collection(window.db, "ehs_tasks"));
+                const snap = await getDocs(collection(db, "ehs_tasks"));
                 rawTasksData = [];
                 snap.forEach(doc => rawTasksData.push({id: doc.id, ...doc.data()}));
-                renderTasks();
+                window.renderTasks();
             } catch (e) {
-                console.error(e);
-                loader.innerHTML = `<div class="text-center text-red-500 font-bold"><i class="ph-bold ph-warning-circle text-4xl mb-2"></i><br>Lỗi máy chủ: ${e.message}</div>`;
+                console.error("Lỗi fetchAllTasks:", e);
+                loader.innerHTML = `<div class="text-center text-red-500 font-bold"><i class="ph-bold ph-warning-circle text-4xl mb-2"></i><br>Lỗi máy chủ: Không thể đọc CSDL EHS_Tasks.<br>${e.message}</div>`;
             }
         }
 
-        // LỌC VÀ VẼ GIAO DIỆN BẰNG JAVASCRIPT
-        function renderTasks() {
+        window.renderTasks = function() {
             const grid = document.getElementById('task-grid');
             const loader = document.getElementById('loader');
             const empty = document.getElementById('empty-state');
@@ -433,15 +440,15 @@
 
                     <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-[10px] font-bold text-slate-500 uppercase">Mức độ hoàn thành</span>
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">Tiến độ hoàn thành</span>
                             <span class="text-xs font-black text-blue-600 dark:text-blue-400">${t.progress}%</span>
                         </div>
                         <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4 overflow-hidden">
                             <div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: ${t.progress}%"></div>
                         </div>
                         
-                        <button onclick="openUpdateModal('${t.id}', '${t.title}', '${t.due_date}', ${t.progress}, '${t.status}', '${t.assigner_id}')" class="w-full bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold py-2.5 rounded-xl text-sm transition border-2 border-blue-100 dark:border-slate-700 flex justify-center items-center gap-2">
-                            <i class="ph-bold ph-pencil-simple"></i> Tự báo cáo / Đánh giá
+                        <button onclick="window.openUpdateModal('${t.id}', '${t.title.replace(/'/g, "\\'")}', '${t.due_date}', ${t.progress}, '${t.status}', '${t.assigner_id}')" class="w-full bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold py-2.5 rounded-xl text-sm transition border-2 border-blue-100 dark:border-slate-700 flex justify-center items-center gap-2">
+                            <i class="ph-bold ph-pencil-simple"></i> Báo cáo & Đánh giá
                         </button>
                     </div>
                 `;
@@ -451,12 +458,9 @@
             loader.classList.add('hidden');
             empty.classList.add('hidden');
             grid.classList.remove('hidden');
-        }
+        };
 
-        function openTaskModal() { document.getElementById('task-modal').classList.remove('hidden'); }
-        function closeTaskModal() { document.getElementById('task-modal').classList.add('hidden'); }
-
-        async function generateAIPlan() {
+        window.generateAIPlan = async function() {
             const title = document.getElementById('task-title').value.trim();
             if(!title) return showToast("Vui lòng gõ Tên công việc trước khi gọi AI!", "error");
             
@@ -470,8 +474,8 @@
                 const prompt = `Tôi là quản lý EHS. Tôi muốn giao nhiệm vụ hoặc thực hiện kế hoạch: "${title}". Hãy xé nhỏ công việc này thành 3-5 bước thực hiện cốt lõi, ngắn gọn, dễ hiểu để nhân viên thực hiện theo thứ tự. Trình bày dưới dạng danh sách gạch đầu dòng (Markdown).`;
                 const payload = { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 0.2 } };
 
-                // GỌI TRỰC TIẾP API GEMINI (Với API Key rỗng theo chuẩn Canvas)
-                const apiKey = "";
+                // GỌI TRỰC TIẾP API GEMINI MÀ KHÔNG QUA APPS SCRIPT
+                const apiKey = ""; // API KEY được Canvas bơm vào tự động
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
                 const response = await fetch(apiUrl, {
@@ -495,9 +499,9 @@
             } finally {
                 btn.innerHTML = ogText; btn.disabled = false;
             }
-        }
+        };
 
-        async function saveTask() {
+        window.saveTask = async function() {
             const title = document.getElementById('task-title').value.trim();
             const assigneeRaw = document.getElementById('task-assignee').value;
             const deadline = document.getElementById('task-deadline').value;
@@ -519,8 +523,8 @@
                     created_at: new Date()
                 };
                 
-                await window.addDoc(window.collection(window.db, "ehs_tasks"), newTask);
-                closeTaskModal();
+                await addDoc(collection(db, "ehs_tasks"), newTask);
+                window.closeTaskModal();
                 showToast("Đã phát hành kế hoạch thành công!");
                 
                 // Reset form
@@ -528,7 +532,7 @@
                 document.getElementById('task-assignee').value = ''; document.getElementById('task-deadline').value = '';
                 
                 // Chuyển tab và load lại
-                switchTab((assignee_id === currentUserId) ? 'my-tasks' : 'assigned-tasks');
+                window.switchTab((assignee_id === currentUserId) ? 'my-tasks' : 'assigned-tasks');
                 await fetchAllTasks(); 
                 
             } catch (e) {
@@ -536,41 +540,9 @@
             } finally {
                 btn.innerHTML = '<i class="ph-bold ph-paper-plane-tilt text-lg"></i> Phát Hành Kế Hoạch'; btn.disabled = false;
             }
-        }
+        };
 
-        let upTaskId = "";
-        let upTaskAssigner = "";
-
-        function openUpdateModal(id, title, date, progress, status, assignerId) {
-            upTaskId = id; upTaskAssigner = assignerId;
-            document.getElementById('up-task-id').value = id;
-            document.getElementById('disp-title').innerText = title;
-            document.getElementById('disp-deadline').innerText = new Date(date).toLocaleDateString('vi-VN');
-            
-            const progInput = document.getElementById('task-progress');
-            progInput.value = progress; 
-            document.getElementById('prog-val').innerText = progress + '%';
-            
-            const isManager = (currentUserId === assignerId);
-            const evalSec = document.getElementById('eval-section');
-            const doneCheck = document.getElementById('task-done');
-            
-            if (isManager) {
-                evalSec.classList.remove('hidden');
-                doneCheck.checked = (status === 'Done');
-            } else {
-                evalSec.classList.add('hidden');
-            }
-
-            document.getElementById('update-modal').classList.remove('hidden');
-            const btnUpdate = document.getElementById('btn-update-task');
-            btnUpdate.innerHTML = 'Lưu Cập Nhật Tiến Độ';
-            btnUpdate.disabled = false;
-        }
-
-        function closeUpdateModal() { document.getElementById('update-modal').classList.add('hidden'); }
-
-        async function saveUpdate() {
+        window.saveUpdate = async function() {
             const newProg = parseInt(document.getElementById('task-progress').value);
             const isManager = (currentUserId === upTaskAssigner);
             
@@ -592,17 +564,48 @@
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu...'; btn.disabled = true;
 
             try {
-                await window.updateDoc(window.doc(window.db, "ehs_tasks", upTaskId), updateData);
-                closeUpdateModal(); 
+                await updateDoc(doc(db, "ehs_tasks", upTaskId), updateData);
+                window.closeUpdateModal(); 
                 showToast("Cập nhật tiến độ thành công!");
                 await fetchAllTasks(); 
             } catch(e) {
                 showToast("Lỗi cập nhật: " + e.message, "error"); 
                 btn.disabled = false; btn.innerHTML = 'Thử lại';
             }
-        }
+        };
 
-        window.onload = init;
+        // ==========================================
+        // CƠ CHẾ BẢO MẬT: BẮT SÓNG ĐĂNG NHẬP FIREBASE
+        // ==========================================
+        applyTheme();
+        
+        if (!currentUserId) {
+            alert("Bạn chưa đăng nhập hệ thống!");
+            window.location.href = "login.html";
+        } else {
+            document.getElementById('header-user-name').innerText = currentUserName;
+            
+            // LẮNG NGHE ĐÚNG TRẠNG THÁI (TRÁNH LỖI RACE CONDITION)
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        document.getElementById('loader-text').innerText = "Đã xác thực. Đang kéo dữ liệu công việc...";
+                        await loadUsersDropdown();
+                        await fetchAllTasks();
+                    } catch (error) {
+                        document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold text-center">Lỗi tải dữ liệu: ${error.message}</p>`;
+                    }
+                } else {
+                    document.getElementById('loader').innerHTML = `
+                        <div class="text-center text-red-500">
+                            <i class="ph-fill ph-lock-key text-6xl mb-4"></i>
+                            <p class="font-bold text-lg mb-2">Phiên đăng nhập đã bị từ chối.</p>
+                            <p class="text-sm text-slate-500 mb-6">Bạn cần đăng nhập chính thức bằng hệ thống để sử dụng tính năng này.</p>
+                            <a href="login.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-md transition">Quay về trang Đăng nhập</a>
+                        </div>`;
+                }
+            });
+        }
     </script>
 </body>
 </html>
