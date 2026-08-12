@@ -1,0 +1,36 @@
+{
+"ten_khoa_hoc": "An toàn Cô lập năng lượng (LOTO)",
+"file_bai_giang": "bai_giang_loto.pdf",
+"cau_hoi": [
+{
+"question": "Quy trình LOTO (Lockout/Tagout) được thực hiện nhằm mục đích gì?",
+"options": [
+"A. Để khóa máy lại không cho người khác sử dụng",
+"B. Ngăn chặn việc giải phóng năng lượng bất ngờ gây tai nạn khi đang bảo trì, sửa chữa",
+"C. Để đánh dấu thiết bị đã bị hỏng",
+"D. Để tiết kiệm điện năng"
+],
+"correctAnswer": 1
+},
+{
+"question": "Sau khi đã ngắt nguồn điện và móc ổ khóa (Lockout) vào tủ điện, bước tiếp theo BẮT BUỘC là gì?",
+"options": [
+"A. Bắt tay vào sửa chữa ngay",
+"B. Gọi điện báo cáo cho quản lý",
+"C. Phải dùng bút thử điện/đồng hồ đo để kiểm tra (Test) xem điện đã thực sự bị ngắt chưa",
+"D. Gắn thẻ tên (Tagout)"
+],
+"correctAnswer": 2
+},
+{
+"question": "Khi có 3 người cùng tham gia sửa chữa một cỗ máy, cần sử dụng bao nhiêu ổ khóa LOTO?",
+"options": [
+"A. Chỉ cần 1 ổ khóa do người nhóm trưởng khóa là đủ",
+"B. 3 người phải móc 3 ổ khóa cá nhân riêng biệt vào ngàm khóa chung",
+"C. Không cần khóa, chỉ cần gắn biển cảnh báo",
+"D. Dùng chung 1 ổ khóa và giao chìa cho người đứng gác"
+],
+"correctAnswer": 1
+}
+]
+}
