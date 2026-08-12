@@ -1,0 +1,36 @@
+{
+"ten_khoa_hoc": "Đào tạo Tiêu chuẩn 5S Nơi làm việc",
+"file_bai_giang": "bai_giang_5s.pdf",
+"cau_hoi": [
+{
+"question": "Chữ S đầu tiên trong tiêu chuẩn 5S (Sàng lọc - Seiri) có nghĩa là gì?",
+"options": [
+"A. Lau chùi sạch sẽ mọi thứ",
+"B. Loại bỏ những vật dụng không cần thiết ra khỏi nơi làm việc",
+"C. Sắp xếp mọi thứ ngăn nắp",
+"D. Luôn giữ thái độ sẵn sàng"
+],
+"correctAnswer": 1
+},
+{
+"question": "Sắp xếp (Seiton) yêu cầu nguyên tắc nào sau đây?",
+"options": [
+"A. Mỗi vật dụng có một vị trí quy định và được đặt đúng vị trí đó",
+"B. Giấu đồ đạc vào tủ để trông gọn gàng",
+"C. Để đồ đạc ở nơi dễ lấy nhất, không cần cố định",
+"D. Vứt bỏ những đồ không dùng đến"
+],
+"correctAnswer": 0
+},
+{
+"question": "Lợi ích lớn nhất của việc thực hiện tốt 5S đối với EHS là gì?",
+"options": [
+"A. Giúp nhà máy trông đẹp hơn khi có khách tham quan",
+"B. Loại bỏ các chướng ngại vật gây vấp ngã, cháy nổ, phát hiện sớm rò rỉ",
+"C. Giảm bớt số lượng nhân viên vệ sinh",
+"D. Tăng lương cho người lao động"
+],
+"correctAnswer": 1
+}
+]
+}
