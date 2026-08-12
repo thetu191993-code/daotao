@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script>
-        // CHỐT CHẶN ĐĂNG NHẬP: Kiểm tra xem đã có mã NV trong máy chưa
+        // Kiểm tra xem đã có mã NV trong máy chưa
         if (!localStorage.getItem("ehs_user_id")) {
             alert("Bạn chưa đăng nhập! Vui lòng đăng nhập hệ thống để xem bài giảng.");
             window.location.href = "login.html";
@@ -28,7 +28,6 @@
     </div>
 
     <div class="flex-grow max-w-5xl w-full mx-auto p-4 flex flex-col gap-6 my-4">
-        <!-- Khung báo lỗi -->
         <div id="error-box" class="hidden bg-red-50 border border-red-200 p-4 rounded-xl text-red-800">
             <i class="ph-fill ph-warning-circle mr-1"></i> <strong>Lỗi:</strong> <span id="error-message"></span>
         </div>
@@ -48,15 +47,14 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        // Nếu không có id trên URL, mặc định dùng 'data_ehs_chung'
         const courseId = urlParams.get('id') || 'data_ehs_chung';
         
-        // Link tuyệt đối trỏ về file JSON
-        const jsonPath = `https://thetu191993-code.github.io/daotao/${courseId}.json`;
+        // SỬ DỤNG ĐƯỜNG DẪN TƯƠNG ĐỐI VÀ CHỐNG LƯU ĐỆM (CACHE BUSTING)
+        const jsonPath = `${courseId}.json?t=${new Date().getTime()}`;
 
         fetch(jsonPath)
             .then(response => {
-                if (!response.ok) throw new Error("Không tìm thấy file: " + jsonPath);
+                if (!response.ok) throw new Error("Không tìm thấy dữ liệu khóa học. Vui lòng kiểm tra lại file JSON trên GitHub.");
                 return response.json();
             })
             .then(data => {
