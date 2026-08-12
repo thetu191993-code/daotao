@@ -236,7 +236,7 @@
         
         const AI_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_THIS_IS_YOUR_DEPLOYED_URL_HERE/exec"; 
 
-        async function init() {
+        function init() {
             if (!currentUserId) {
                 alert("Bạn chưa đăng nhập!");
                 window.location.href = "login.html";
@@ -244,18 +244,21 @@
             }
             applyTheme();
             
-            // XỬ LÝ LỖI KHÔNG TẢI ĐƯỢC DỮ LIỆU: BẮT BUỘC AUTH TRƯỚC KHI GỌI FIRESTORE
-            try {
-                await window.signInAnonymously(window.auth);
-                const user = window.auth.currentUser;
-                if (!user) throw new Error("Chưa xác thực được với hệ thống");
-                
-                await loadUsersDropdown();
-                await fetchAllTasks(); // Kéo hết về 1 lần
-            } catch (error) {
-                console.error("Lỗi khởi tạo:", error);
-                document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold">Lỗi truy cập máy chủ: ${error.message}</p>`;
-            }
+            // XỬ LÝ CHUẨN: Lắng nghe phiên đăng nhập THẬT từ Firebase (đã tạo lúc login)
+            window.onAuthStateChanged(window.auth, async (user) => {
+                if (user) {
+                    try {
+                        await loadUsersDropdown();
+                        await fetchAllTasks();
+                    } catch (error) {
+                        console.error("Lỗi tải dữ liệu:", error);
+                        document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold">Lỗi tải dữ liệu: ${error.message}</p>`;
+                    }
+                } else {
+                    // Nếu mất session Firebase, yêu cầu đăng nhập lại
+                    document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold flex flex-col items-center"><i class="ph-fill ph-lock-key text-4xl mb-2"></i> Phiên đăng nhập đã hết hạn hoặc bạn chưa xác thực đúng cách. Vui lòng <a href="login.html" class="underline text-blue-600 mt-2 bg-blue-50 px-4 py-2 rounded-lg">Quay lại trang Đăng nhập</a></p>`;
+                }
+            });
         }
 
         function toggleDarkMode() {
