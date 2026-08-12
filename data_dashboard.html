@@ -3,79 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EHS Data Dashboard & Training</title>
+    <title>Kho Tài Liệu & Dữ Liệu EHS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
 
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-6xl mx-auto">
+        
+        <!-- Nút Trở về -->
+        <div class="mb-6">
+            <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium transition bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
+                <i class="ph-bold ph-arrow-left"></i> Về Bảng Điều Khiển
+            </a>
+        </div>
+
         <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-2xl font-bold text-blue-700 mb-2 flex items-center">
-                <i class="ph-fill ph-database text-3xl mr-2"></i>
-                Hệ thống Dự toán Hóa chất EHS
-            </h2>
-            <p class="text-slate-500 mb-8">Nền tảng quản lý rủi ro môi trường và tối ưu hóa tài nguyên nước.</p>
             
-            <!-- Khu vực các nút công cụ -->
-            <div class="flex flex-col sm:flex-row flex-wrap gap-4 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                <!-- Nút gọi dữ liệu JSON -->
-                <button onclick="loadDataFromGitHub()" class="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                    <i class="ph-bold ph-arrows-clockwise"></i> Đồng bộ Dữ liệu
-                </button>
-
-                <div class="hidden sm:block w-px bg-slate-300 mx-2"></div> <!-- Đường kẻ chia -->
-
-                <!-- Nút Tải Tài liệu 1 -->
-                <a href="Tai_lieu_daotao_EHS.pdf" target="_blank" class="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
-                    <i class="ph-bold ph-file-pdf"></i> Tài liệu Đào tạo
-                </a>
-
-                <!-- Nút Tải Tài liệu 2 (Mẫu bổ sung) -->
-                <a href="#" class="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto opacity-70 cursor-not-allowed">
-                    <i class="ph-bold ph-book-open"></i> Sổ tay Vận hành
-                </a>
-
-                <!-- Nút Tải Tài liệu 3 (Mẫu bổ sung) -->
-                <a href="#" class="bg-cyan-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-cyan-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto opacity-70 cursor-not-allowed">
-                    <i class="ph-bold ph-warning-circle"></i> Quy trình Sự cố
-                </a>
+            <!-- HEADER TỔNG -->
+            <div class="border-b border-slate-100 pb-6 mb-8">
+                <h2 class="text-3xl font-bold text-blue-800 mb-2 flex items-center">
+                    <i class="ph-fill ph-books text-4xl mr-3 text-blue-600"></i>
+                    Kho Tài Liệu & Dữ Liệu EHS
+                </h2>
+                <p class="text-slate-500 text-lg">Trung tâm lưu trữ bài giảng, quy trình vận hành và đồng bộ dữ liệu quan trắc tự động.</p>
             </div>
 
-            <!-- Khu vực lỗi (nếu có) -->
-            <div id="errorMessage" class="hidden bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100 flex items-start gap-2">
-                <i class="ph-fill ph-warning-circle text-xl"></i>
-                <div>
-                    <p class="font-semibold">Không thể tải dữ liệu!</p>
-                    <p class="text-sm mt-1">Vui lòng kiểm tra lại file data_ehs.json trên GitHub đã đúng định dạng chưa.</p>
+            <!-- ========================================== -->
+            <!-- PHẦN 1: KHO BÀI GIẢNG & SỔ TAY -->
+            <!-- ========================================== -->
+            <div class="mb-10 border-b border-slate-100 pb-10">
+                <h3 class="text-xl font-bold text-slate-800 mb-5 flex items-center gap-2">
+                    <i class="ph-bold ph-graduation-cap text-indigo-600 text-2xl"></i> Bài Giảng & Sổ Tay Đào Tạo
+                </h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    
+                    <!-- Tài liệu EHS Chung -->
+                    <a href="Tai_lieu_daotao_EHS.pdf" target="_blank" class="flex items-start gap-4 p-4 rounded-xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-300 transition group">
+                        <div class="w-12 h-12 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+                            <i class="ph-fill ph-file-pdf text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 group-hover:text-indigo-700 transition">Đào tạo EHS Cơ Bản</h4>
+                            <p class="text-xs text-slate-500 mt-1">Tài liệu đào tạo hội nhập nội quy EHS toàn nhà máy.</p>
+                        </div>
+                    </a>
+
+                    <!-- Tài liệu 5S -->
+                    <a href="bai_giang_5s.pdf" target="_blank" class="flex items-start gap-4 p-4 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-300 transition group">
+                        <div class="w-12 h-12 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+                            <i class="ph-fill ph-file-pdf text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 group-hover:text-emerald-700 transition">Tiêu chuẩn 5S</h4>
+                            <p class="text-xs text-slate-500 mt-1">Sàng lọc, Sắp xếp, Sạch sẽ, Săn sóc, Sẵn sàng.</p>
+                        </div>
+                    </a>
+
+                    <!-- Tài liệu LOTO -->
+                    <a href="bai_giang_loto.pdf" target="_blank" class="flex items-start gap-4 p-4 rounded-xl border border-rose-100 bg-rose-50/50 hover:bg-rose-50 hover:border-rose-300 transition group">
+                        <div class="w-12 h-12 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
+                            <i class="ph-fill ph-file-pdf text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-800 group-hover:text-rose-700 transition">An toàn LOTO</h4>
+                            <p class="text-xs text-slate-500 mt-1">Quy trình cô lập năng lượng Lockout/Tagout.</p>
+                        </div>
+                    </a>
+
+                    <!-- Sổ tay Vận hành (Chưa có file) -->
+                    <button class="flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed text-left">
+                        <div class="w-12 h-12 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-book-bookmark text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-700">Sổ tay Vận hành</h4>
+                            <p class="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-wider">Chưa cập nhật file</p>
+                        </div>
+                    </button>
+
+                    <!-- Quy trình sự cố (Chưa có file) -->
+                    <button class="flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed text-left">
+                        <div class="w-12 h-12 rounded-lg bg-slate-200 text-slate-500 flex items-center justify-center shrink-0">
+                            <i class="ph-fill ph-warning-circle text-2xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-slate-700">Quy trình Sự cố</h4>
+                            <p class="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-wider">Chưa cập nhật file</p>
+                        </div>
+                    </button>
+
                 </div>
             </div>
 
-            <!-- Bảng hiển thị dữ liệu -->
-            <div class="overflow-x-auto rounded-lg border border-slate-200 hidden" id="dataTableContainer">
-                <table class="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                        <tr class="bg-slate-100 text-slate-600 text-sm uppercase">
-                            <th class="p-4 border-b font-semibold">Ngày</th>
-                            <th class="p-4 border-b font-semibold">Lưu lượng (m3)</th>
-                            <th class="p-4 border-b font-semibold">COD Đầu ra (mg/L)</th>
-                            <th class="p-4 border-b font-semibold">Fluoride Đầu ra (mg/L)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dataBody" class="text-sm">
-                        <!-- Dữ liệu sẽ được JS chèn vào đây -->
-                    </tbody>
-                </table>
+            <!-- ========================================== -->
+            <!-- PHẦN 2: DỮ LIỆU QUAN TRẮC & HÓA CHẤT -->
+            <!-- ========================================== -->
+            <div>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4">
+                    <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i class="ph-bold ph-chart-line-up text-teal-600 text-2xl"></i> Dữ Liệu Quan Trắc & Dự Toán Hóa Chất
+                    </h3>
+                    
+                    <button onclick="loadDataFromGitHub()" class="bg-teal-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto">
+                        <i class="ph-bold ph-cloud-arrow-down text-lg"></i> Đồng bộ JSON
+                    </button>
+                </div>
+
+                <!-- Khu vực lỗi (nếu có) -->
+                <div id="errorMessage" class="hidden bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-100 flex items-start gap-2">
+                    <i class="ph-fill ph-warning-circle text-xl"></i>
+                    <div>
+                        <p class="font-semibold">Không thể tải dữ liệu!</p>
+                        <p class="text-sm mt-1">Vui lòng kiểm tra lại file data_ehs.json trên GitHub đã đúng định dạng chưa.</p>
+                    </div>
+                </div>
+
+                <!-- Trạng thái Loading -->
+                <div id="loadingStatus" class="text-teal-600 font-medium flex items-center gap-2 hidden p-4 bg-teal-50 rounded-lg border border-teal-100 mb-6">
+                    <i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang kết nối máy chủ GitHub...
+                </div>
+
+                <!-- Bảng hiển thị dữ liệu -->
+                <div class="overflow-x-auto rounded-xl border border-slate-200 hidden shadow-sm" id="dataTableContainer">
+                    <table class="w-full text-left border-collapse min-w-[600px]">
+                        <thead>
+                            <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
+                                <th class="p-4 border-b font-semibold">Ngày ghi nhận</th>
+                                <th class="p-4 border-b font-semibold text-center">Lưu lượng (m3)</th>
+                                <th class="p-4 border-b font-semibold text-center">COD Đầu ra (mg/L)</th>
+                                <th class="p-4 border-b font-semibold text-center">Fluoride Đầu ra (mg/L)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataBody" class="text-sm divide-y divide-slate-100">
+                            <!-- Dữ liệu sẽ được JS chèn vào đây -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            
-            <div id="loadingStatus" class="text-blue-600 font-medium flex items-center gap-2 hidden">
-                <i class="ph-bold ph-spinner animate-spin"></i> Đang tải dữ liệu từ GitHub...
-            </div>
+
         </div>
     </div>
 
+    <!-- Kịch bản tải dữ liệu Bảng -->
     <script>
-        // Đường link API lấy dữ liệu tĩnh
         const GITHUB_DATA_URL = 'data_ehs.json';
 
         function loadDataFromGitHub() {
@@ -84,7 +156,6 @@
             const status = document.getElementById('loadingStatus');
             const errorBox = document.getElementById('errorMessage');
             
-            // Hiển thị trạng thái đang tải, ẩn lỗi và bảng cũ
             status.classList.remove('hidden');
             errorBox.classList.add('hidden');
             tableContainer.classList.add('hidden');
@@ -92,27 +163,19 @@
 
             fetch(GITHUB_DATA_URL, { cache: "no-store" })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
+                    if (!response.ok) throw new Error('Network response was not ok');
                     return response.json();
                 })
                 .then(data => {
-                    // Render dữ liệu ra bảng
                     data.forEach(row => {
                         const tr = document.createElement('tr');
-                        tr.className = "border-b hover:bg-slate-50 transition-colors";
+                        tr.className = "hover:bg-slate-50 transition-colors";
                         
-                        const date = row.date || 'N/A';
-                        const flow = row.flow || '0';
-                        const cod = row.cod || '0';
-                        const fluoride = row.fluoride || '0';
-
                         tr.innerHTML = `
-                            <td class="p-4 font-medium text-slate-700">${date}</td>
-                            <td class="p-4 text-blue-600 font-semibold">${flow}</td>
-                            <td class="p-4">${cod}</td>
-                            <td class="p-4">${fluoride}</td>
+                            <td class="p-4 font-bold text-slate-700">${row.date || 'N/A'}</td>
+                            <td class="p-4 text-center text-teal-700 font-bold bg-teal-50/30">${row.flow || '0'}</td>
+                            <td class="p-4 text-center font-medium">${row.cod || '0'}</td>
+                            <td class="p-4 text-center font-medium">${row.fluoride || '0'}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -121,7 +184,7 @@
                     tableContainer.classList.remove('hidden');
                 })
                 .catch(error => {
-                    console.error('Error fetching data:', error);
+                    console.error('Lỗi tải dữ liệu JSON:', error);
                     status.classList.add('hidden');
                     errorBox.classList.remove('hidden');
                 });
