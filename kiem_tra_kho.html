@@ -20,13 +20,13 @@
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA", // Đã dùng mã API mới nhất của anh
-            authDomain: "ehs-training-app.firebaseapp.com",
-            projectId: "ehs-training-app",
-            storageBucket: "ehs-training-app.firebasestorage.app",
-            messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-            measurementId: "G-74ETHWTJCW"
+          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+          authDomain: "ehs-training-app.firebaseapp.com",
+          projectId: "ehs-training-app",
+          storageBucket: "ehs-training-app.firebasestorage.app",
+          messagingSenderId: "354083430003",
+          appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+          measurementId: "G-74ETHWTJCW"
         };
         const app = initializeApp(firebaseConfig);
         window.db = getFirestore(app);
@@ -85,7 +85,7 @@
         // Hiển thị tên người kiểm tra
         document.getElementById('inspector-name').innerText = localStorage.getItem("ehs_user_name") || localStorage.getItem("ehs_user_id");
 
-        const JSON_URL = 'https://thetu191993-code.github.io/daotao/checklist_kho_hoa_chat.json';
+        const JSON_URL = 'checklist_kho_hoa_chat.json?t=' + new Date().getTime();
         let checklistData = [];
 
         fetch(JSON_URL, { cache: "no-store" })
