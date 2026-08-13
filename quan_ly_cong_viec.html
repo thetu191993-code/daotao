@@ -244,8 +244,7 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // XÓA BỎ DÒNG KHAI BÁO GEMINI_API_KEY HỚ HÊNH ĐI
-        // VÀ THAY BẰNG ĐƯỜNG LINK BẢO MẬT APPS SCRIPT ANH VỪA TẠO
+        // 1. DÁN ĐƯỜNG LINK APPS SCRIPT ĐỂ CHẠY AI LẬP KẾ HOẠCH
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby71jJw1-4FiMqgWlruRSgac36L2NeqbeHd5fhZZ05lSUNPJnyvUMpYVMNe0IqhSm6X/exec";
 
         const firebaseConfig = {
@@ -267,11 +266,15 @@
         let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
         let userDept = localStorage.getItem("ehs_user_dept") || "";
         
-        // KIỂM TRA QUYỀN LÃNH ĐẠO (Dựa vào chức danh trong bộ phận)
-        let isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó/i.test(userDept.toLowerCase());
+        // KIỂM TRA QUYỀN LÃNH ĐẠO CHUNG (Có hiện nút Góc Lãnh Đạo hay không)
+        let isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
+        
+        // KIỂM TRA QUYỀN TOÀN CỤC (Thấy hết toàn nhà máy hay chỉ thấy bộ phận mình)
+        let isGlobalLeader = /ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
 
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
+        let globalUserDeptMap = {}; // Bản đồ lưu trữ bộ phận của từng nhân viên
         let upTaskId = "";
         let upTaskAssigner = "";
 
@@ -415,8 +418,16 @@
                 const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
                 let html = `<li onclick="window.selectAssignee('${currentUserId}', '${currentUserName}')" class="assignee-item p-3 mb-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg cursor-pointer transition font-black text-blue-700 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">🌟 [TỰ GIAO] Việc cá nhân của tôi</li>`;
                 
+                globalUserDeptMap = {}; // Làm mới bản đồ
+                
                 snap.forEach(doc => {
                     const data = doc.data();
+                    
+                    // Ghi nhớ bộ phận của nhân viên này vào bản đồ
+                    if(data.ma_nv) {
+                        globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
+                    }
+
                     if(data.ma_nv && data.ho_ten && data.ma_nv !== currentUserId) {
                         html += `<li onclick="window.selectAssignee('${data.ma_nv}', '${data.ho_ten.replace(/'/g, "\\'")}')" class="assignee-item p-2 mb-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer transition text-sm border-b border-slate-50 dark:border-slate-800">
                             <div class="font-bold text-slate-800 dark:text-slate-200">${data.ho_ten} (${data.ma_nv})</div>
@@ -466,8 +477,23 @@
                 if (currentTab === 'my-tasks' && t.assignee_id === currentUserId) tabMatch = true;
                 // 2. VIỆC TÔI ĐÃ GIAO: Tôi là Assigner (Và bỏ qua việc tự giao cho mình để khỏi trùng lặp)
                 if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId && t.assignee_id !== currentUserId) tabMatch = true;
-                // 3. GÓC LÃNH ĐẠO: Hiện tất cả công việc trong xưởng
-                if (currentTab === 'all-tasks' && isLeader) tabMatch = true; 
+                
+                // 3. GÓC LÃNH ĐẠO: Thuật toán lọc theo phân quyền
+                if (currentTab === 'all-tasks' && isLeader) {
+                    if (isGlobalLeader) {
+                        // Lãnh đạo EHS/PCCC/ATVSV -> Thấy tất cả
+                        tabMatch = true; 
+                    } else {
+                        // Lãnh đạo Bộ phận -> Chỉ thấy việc của lính thuộc phòng mình
+                        let myMainDept = userDept.split('-')[0].trim().toLowerCase(); // Lấy chữ gốc (VD: "Sản xuất - Vận hành" -> "sản xuất")
+                        let taskAssigneeDept = globalUserDeptMap[t.assignee_id] || "";
+                        let theirMainDept = taskAssigneeDept.split('-')[0].trim().toLowerCase();
+                        
+                        if (myMainDept && theirMainDept && myMainDept === theirMainDept) {
+                            tabMatch = true;
+                        }
+                    }
+                }
                 
                 if (!tabMatch) return false;
 
