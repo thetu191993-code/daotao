@@ -94,6 +94,11 @@
                 <p class="font-bold text-slate-500 dark:text-dark-muted" id="loader-text">Đang kết nối hệ thống và xác thực người dùng...</p>
             </div>
 
+            <!-- BẢNG TIẾN ĐỘ NHÂN VIÊN (DÀNH CHO LÃNH ĐẠO) -->
+            <div id="leaderboard-container" class="hidden mb-6 bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border">
+                <!-- Nội dung bảng xếp hạng sẽ được JS nạp vào đây -->
+            </div>
+
             <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden">
                 <!-- Thẻ công việc sẽ được JS vẽ vào đây -->
             </div>
@@ -206,21 +211,28 @@
                     <p class="text-xs text-slate-500 dark:text-slate-400"><i class="ph-fill ph-calendar"></i> Deadline: <span id="disp-deadline" class="font-mono font-bold text-red-500">...</span></p>
                 </div>
 
-                <!-- Khu vực dành cho người thực hiện: Kéo tiến độ -->
-                <div id="progress-section" class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-100 dark:border-slate-700 shadow-sm">
-                    <label class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase">Tự báo cáo Tiến độ hoàn thành (%)</span>
-                        <span id="prog-val" class="font-black text-3xl text-blue-600">0%</span>
-                    </label>
-                    <input type="range" id="task-progress" min="0" max="100" value="0" class="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="document.getElementById('prog-val').innerText = this.value + '%'">
+                <!-- CẢI TIẾN: KÉO SLIDER CHO TỪNG BƯỚC CÔNG VIỆC -->
+                <div id="checklist-progress-section" class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-100 dark:border-slate-700 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-2">
+                        <span class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase">Cập nhật tiến độ từng bước</span>
+                        <div class="text-right">
+                            <span class="text-[10px] font-bold text-slate-400 block uppercase">Tổng tiến độ</span>
+                            <span id="prog-val" class="font-black text-3xl text-blue-600">0%</span>
+                        </div>
+                    </div>
+                    <div id="modal-checklist-container" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                        <!-- Các Slider từng bước sẽ được nạp bằng JS vào đây -->
+                    </div>
+                    <input type="hidden" id="task-progress" value="0">
                 </div>
 
                 <!-- KHU VỰC DÀNH CHO LÃNH ĐẠO / NGƯỜI GIAO VIỆC -->
                 <div id="eval-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-amber-600 uppercase mb-2"><i class="ph-fill ph-chat-centered-text"></i> Đánh giá & Yêu cầu cải tiến (Dành cho Lãnh đạo)</label>
-                        <textarea id="task-eval" class="w-full border border-amber-300 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/10 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-200 outline-none focus:border-amber-500" placeholder="Lãnh đạo nhập nhận xét hoặc yêu cầu nhân viên làm lại điểm nào..." rows="3"></textarea>
-                    </div>
+                <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden">
+                    <!-- Thẻ công việc sẽ được JS vẽ vào đây -->
+                </div>
                     
                     <label class="flex items-center gap-3 cursor-pointer p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl transition hover:bg-emerald-100">
                         <input type="checkbox" id="task-done" class="w-6 h-6 text-emerald-600 rounded">
@@ -333,6 +345,24 @@
         window.openTaskModal = function() { document.getElementById('task-modal').classList.remove('hidden'); };
         window.closeTaskModal = function() { document.getElementById('task-modal').classList.add('hidden'); };
 
+        window.updateStepProg = function(el) {
+            const idx = el.getAttribute('data-idx');
+            const val = el.value;
+            document.getElementById(`step-val-${idx}`).innerText = val + '%';
+            
+            // Đổi màu thanh kéo khi đạt 100%
+            if(val === "100") {
+                el.classList.add('accent-emerald-500');
+                el.classList.remove('accent-blue-600');
+                document.getElementById(`step-title-${idx}`).classList.add('line-through', 'text-emerald-600');
+            } else {
+                el.classList.add('accent-blue-600');
+                el.classList.remove('accent-emerald-500');
+                document.getElementById(`step-title-${idx}`).classList.remove('line-through', 'text-emerald-600');
+            }
+            window.recalcProgress();
+        };
+
         window.addPlanStep = function(text = "") {
             const wrapper = document.getElementById('plan-steps-wrapper');
             const div = document.createElement('div');
@@ -377,36 +407,86 @@
             });
         };
 
-        window.openUpdateModal = function(id, title, date, progress, status, assignerId, improvementReq) {
-            upTaskId = id; upTaskAssigner = assignerId;
-            document.getElementById('up-task-id').value = id;
-            document.getElementById('disp-title').innerText = title;
-            document.getElementById('disp-deadline').innerText = new Date(date).toLocaleDateString('vi-VN');
+        window.openUpdateModal = function(taskId) {
+            const t = rawTasksData.find(x => x.id === taskId);
+            if(!t) return;
+
+            upTaskId = t.id; 
+            upTaskAssigner = t.assigner_id;
             
-            const progInput = document.getElementById('task-progress');
-            progInput.value = progress; 
-            document.getElementById('prog-val').innerText = progress + '%';
+            document.getElementById('up-task-id').value = t.id;
+            document.getElementById('disp-title').innerText = t.title;
+            document.getElementById('disp-deadline').innerText = new Date(t.due_date).toLocaleDateString('vi-VN');
             
-            const isManagerOrLeader = (currentUserId === assignerId || isLeader);
+            // XỬ LÝ THANH KÉO (SLIDER) CHO TỪNG BƯỚC ĐỘNG
+            const container = document.getElementById('modal-checklist-container');
+            container.innerHTML = '';
+            let steps = t.plan_steps || [];
+
+            if (steps.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-500 italic">Công việc này không có chi tiết từng bước. Hãy cập nhật tiến độ ở thanh tổng.</p>';
+            } else {
+                steps.forEach((step, idx) => {
+                    // Hỗ trợ cả data cũ (string), data checkbox (done) và data mới (progress)
+                    let text = typeof step === 'string' ? step : step.text;
+                    let stepProg = 0;
+                    if (typeof step === 'object') {
+                        if (step.progress !== undefined) stepProg = step.progress;
+                        else if (step.done) stepProg = 100;
+                    }
+
+                    let isDoneClass = stepProg === 100 ? 'line-through text-emerald-600' : 'text-slate-700 dark:text-slate-200';
+                    let accentClass = stepProg === 100 ? 'accent-emerald-500' : 'accent-blue-600';
+
+                    container.innerHTML += `
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div class="flex justify-between items-start mb-2 gap-2">
+                                <span id="step-title-${idx}" class="text-sm font-bold ${isDoneClass} transition-colors">${text}</span>
+                                <span id="step-val-${idx}" class="text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded shrink-0">${stepProg}%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="${stepProg}" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer modal-step-slider ${accentClass}" data-idx="${idx}" oninput="window.updateStepProg(this)">
+                        </div>
+                    `;
+                });
+            }
+
+            window.recalcProgress();
+            
+            const isManagerOrLeader = (currentUserId === t.assigner_id || isLeader);
             const evalSec = document.getElementById('eval-section');
             const evalInput = document.getElementById('task-eval');
             const doneCheck = document.getElementById('task-done');
             
-            evalInput.value = improvementReq || "";
+            evalInput.value = t.evaluation || "";
             
-            if (isManagerOrLeader) {
-                evalSec.classList.remove('hidden');
-                doneCheck.checked = (status === 'Done');
-                document.getElementById('update-modal-title').innerHTML = '<i class="ph-fill ph-crown text-amber-500"></i> Góc Lãnh Đạo Đánh Giá';
-            } else {
+            // CẢI TIẾN QUYỀN HIỂN THỊ
+            if (currentTab === 'my-tasks') {
+                // Nếu đang tự báo cáo tiến độ -> Ẩn hoàn toàn khung Lãnh đạo
                 evalSec.classList.add('hidden');
-                document.getElementById('update-modal-title').innerText = 'Cập nhật Tiến độ của bạn';
+                document.getElementById('update-modal-title').innerText = 'Báo cáo Tiến độ từng bước';
+            } else {
+                // Nếu đang ở góc Lãnh đạo hoặc Xem việc đã giao -> Hiện khung nhận xét
+                evalSec.classList.remove('hidden');
+                doneCheck.checked = (t.status === 'Done');
+                document.getElementById('update-modal-title').innerHTML = '<i class="ph-fill ph-crown text-amber-500"></i> Góc Lãnh Đạo Đánh Giá';
             }
 
             document.getElementById('update-modal').classList.remove('hidden');
             const btnUpdate = document.getElementById('btn-update-task');
             btnUpdate.innerHTML = 'Lưu Cập Nhật Tiến Độ';
             btnUpdate.disabled = false;
+        };
+
+        window.recalcProgress = function() {
+            const sliders = document.querySelectorAll('.modal-step-slider');
+            let prog = 0;
+            if(sliders.length > 0) {
+                let total = 0;
+                sliders.forEach(s => { total += parseInt(s.value); });
+                prog = Math.round(total / sliders.length);
+            }
+            document.getElementById('task-progress').value = prog;
+            document.getElementById('prog-val').innerText = prog + '%';
         };
 
         window.closeUpdateModal = function() { document.getElementById('update-modal').classList.add('hidden'); };
@@ -464,6 +544,7 @@
             const grid = document.getElementById('task-grid');
             const loader = document.getElementById('loader');
             const empty = document.getElementById('empty-state');
+            const leaderboardContainer = document.getElementById('leaderboard-container');
             
             grid.innerHTML = '';
             
@@ -511,6 +592,56 @@
                 return timeB - timeA; // Mới nhất lên đầu
             });
 
+            // VẼ BẢNG XẾP HẠNG TIẾN ĐỘ (LEADERBOARD) DÀNH CHO LÃNH ĐẠO
+            if (currentTab === 'all-tasks' && isLeader && filteredTasks.length > 0) {
+                let userStats = {};
+                filteredTasks.forEach(t => {
+                    let assignee = t.assignee_name || 'Không xác định';
+                    if (!userStats[assignee]) {
+                        userStats[assignee] = { total: 0, completed: 0, totalProg: 0 };
+                    }
+                    userStats[assignee].total++;
+                    userStats[assignee].totalProg += parseInt(t.progress || 0);
+                    if (t.status === 'Done') userStats[assignee].completed++;
+                });
+
+                let statsHtml = `
+                    <h3 class="font-black text-lg text-slate-800 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <i class="ph-fill ph-chart-bar text-amber-500"></i> Bảng Thống Kê Tiến Độ Nhân Viên
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                `;
+
+                // Sắp xếp theo tỷ lệ hoàn thành trung bình
+                let sortedStats = Object.keys(userStats).map(name => {
+                    return { name: name, ...userStats[name], avg: Math.round(userStats[name].totalProg / userStats[name].total) };
+                }).sort((a, b) => b.avg - a.avg);
+
+                sortedStats.forEach(stat => {
+                    let colorClass = stat.avg === 100 ? 'bg-emerald-500' : (stat.avg >= 50 ? 'bg-blue-500' : 'bg-amber-500');
+                    statsHtml += `
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate pr-2">${stat.name}</span>
+                                <span class="text-xs font-black ${stat.avg === 100 ? 'text-emerald-600' : 'text-blue-600'}">${stat.avg}%</span>
+                            </div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-2 overflow-hidden">
+                                <div class="${colorClass} h-1.5 rounded-full" style="width: ${stat.avg}%"></div>
+                            </div>
+                            <div class="flex justify-between text-[10px] font-semibold text-slate-500">
+                                <span>Tổng việc: ${stat.total}</span>
+                                <span class="text-emerald-600">Đã xong: ${stat.completed}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                statsHtml += `</div>`;
+                leaderboardContainer.innerHTML = statsHtml;
+                leaderboardContainer.classList.remove('hidden');
+            } else {
+                leaderboardContainer.classList.add('hidden');
+            }
+
             if(filteredTasks.length === 0) { 
                 empty.classList.remove('hidden'); grid.classList.add('hidden'); loader.classList.add('hidden'); 
                 return; 
@@ -536,16 +667,30 @@
                 const dateStr = deadline.toLocaleDateString('vi-VN');
                 const isSelfAssigned = (t.assignee_id === t.assigner_id);
 
-                // Render Dynamic Steps thay vì markdown cũ
+                // CẢI TIẾN: HIỂN THỊ PHẦN TRĂM CỦA TỪNG BƯỚC TRÊN THẺ
                 let stepsHtml = '';
                 if (t.plan_steps && Array.isArray(t.plan_steps) && t.plan_steps.length > 0) {
-                    stepsHtml = '<ul class="space-y-1.5 mt-2">';
+                    stepsHtml = '<ul class="space-y-2 mt-2">';
                     t.plan_steps.forEach((step, idx) => {
-                        stepsHtml += `<li class="flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 p-1.5 rounded border border-slate-100 dark:border-slate-700"><i class="ph-bold ph-check text-emerald-500 mt-0.5 shrink-0"></i> <span>${step}</span></li>`;
+                        let text = typeof step === 'string' ? step : step.text;
+                        let stepProg = typeof step === 'object' && step.progress !== undefined ? step.progress : (step.done ? 100 : 0);
+                        
+                        let isDone = stepProg === 100;
+                        let icon = isDone ? '<i class="ph-bold ph-check-circle text-emerald-500 shrink-0 text-base"></i>' : '<i class="ph-bold ph-circle text-slate-300 shrink-0 text-base"></i>';
+                        let textClass = isDone ? 'line-through text-slate-400 font-medium' : 'text-slate-700 dark:text-slate-300 font-medium';
+                        let progColor = isDone ? 'bg-emerald-500' : 'bg-blue-400';
+                        
+                        stepsHtml += `
+                            <li class="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                <div class="flex items-start gap-1.5 text-xs mb-1">${icon} <span class="${textClass}">${text}</span></div>
+                                <div class="flex items-center gap-2 pl-5">
+                                    <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1 overflow-hidden"><div class="${progColor} h-1 rounded-full" style="width: ${stepProg}%"></div></div>
+                                    <span class="text-[9px] font-bold text-slate-400 w-6 text-right">${stepProg}%</span>
+                                </div>
+                            </li>`;
                     });
                     stepsHtml += '</ul>';
                 } else if (t.description) {
-                    // Fallback cho data cũ
                     stepsHtml = `<div class="text-[13px] text-slate-600 dark:text-slate-300 mt-2">${marked.parse(t.description)}</div>`;
                 }
 
@@ -591,7 +736,7 @@
                             <div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: ${t.progress}%"></div>
                         </div>
                         
-                        <button onclick="window.openUpdateModal('${t.id}', '${t.title.replace(/'/g, "\\'")}', '${t.due_date}', ${t.progress}, '${t.status}', '${t.assigner_id}', '${(t.evaluation || '').replace(/'/g, "\\'")}')" class="w-full bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold py-2.5 rounded-xl text-sm transition border-2 border-blue-100 dark:border-slate-700 flex justify-center items-center gap-2">
+                        <button onclick="window.openUpdateModal('${t.id}')" class="w-full bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold py-2.5 rounded-xl text-sm transition border-2 border-blue-100 dark:border-slate-700 flex justify-center items-center gap-2">
                             <i class="ph-bold ph-pencil-simple"></i> Cập Nhật Tiến Độ
                         </button>
                     </div>
@@ -654,9 +799,11 @@
             const deadline = document.getElementById('task-deadline').value;
             const cat = document.getElementById('task-category').value;
 
-            // Gom dữ liệu từ các thẻ input của Dynamic Steps
+            // LƯU CẤU TRÚC MỚI: Tiến độ mặc định là 0 cho mỗi bước
             const stepInputs = document.querySelectorAll('.step-input');
-            const planStepsArray = Array.from(stepInputs).map(inp => inp.value.trim()).filter(v => v !== '');
+            const planStepsArray = Array.from(stepInputs).map(inp => {
+                return { text: inp.value.trim(), progress: 0 };
+            }).filter(v => v.text !== '');
 
             if(!title || !assigneeRaw || !deadline) return showToast("Vui lòng điền đủ Tên, Người nhận và Hạn chót!", "error");
             if(planStepsArray.length === 0) return showToast("Kế hoạch phải có ít nhất 1 bước thực hiện!", "error");
@@ -704,9 +851,26 @@
             const newProg = parseInt(document.getElementById('task-progress').value);
             const isManagerOrLeader = (currentUserId === upTaskAssigner || isLeader);
             
-            let updateData = { progress: newProg };
+            // Xây dựng lại mảng plan_steps dựa trên các Slider người dùng vừa kéo
+            const t = rawTasksData.find(x => x.id === upTaskId);
+            const sliders = document.querySelectorAll('.modal-step-slider');
+            let updatedSteps = [];
             
-            // Nếu Lãnh đạo/Người giao cập nhật (ở Tab Góc Lãnh Đạo hoặc Việc đã giao)
+            if (t && t.plan_steps) {
+                sliders.forEach(s => {
+                    let idx = s.getAttribute('data-idx');
+                    let stepData = t.plan_steps[idx];
+                    let text = typeof stepData === 'string' ? stepData : stepData.text;
+                    updatedSteps.push({ text: text, progress: parseInt(s.value) });
+                });
+            }
+
+            let updateData = { 
+                progress: newProg,
+                plan_steps: updatedSteps.length > 0 ? updatedSteps : t.plan_steps 
+            };
+            
+            // Nếu Lãnh đạo/Người giao cập nhật
             if (isManagerOrLeader && (currentTab === 'all-tasks' || currentTab === 'assigned-tasks')) {
                 const evalText = document.getElementById('task-eval').value.trim();
                 const isDone = document.getElementById('task-done').checked;
