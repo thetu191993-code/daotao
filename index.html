@@ -788,81 +788,177 @@
             }
         };
 
-        window.renderUserTasks = function(userData) {
-            const container = document.getElementById('task-container');
-            const badge = document.getElementById('task-badge');
-            const mBadge = document.getElementById('mobile-task-badge');
-            container.innerHTML = '';
-            let hasTask = false;
+       window.renderUserTasks = async function(userData) {
+                const container = document.getElementById('task-container');
+                const badge = document.getElementById('task-badge');
+                const mBadge = document.getElementById('mobile-task-badge');
+                
+                container.innerHTML = '<div class="text-center py-6"><i class="ph-bold ph-spinner animate-spin text-2xl text-blue-500 mb-2"></i><p class="text-sm text-slate-500 font-medium">Đang đồng bộ dữ liệu công việc...</p></div>';
+                
+                let hasTask = false;
+                let staticHtml = '';
 
-            container.innerHTML += `
-                <div class="p-4 border border-indigo-200 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-between shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center shrink-0">
-                            <i class="ph-fill ph-student text-xl"></i>
+                staticHtml += `
+                    <div class="p-4 border border-indigo-200 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-between shadow-sm transition hover:shadow-md">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center shrink-0">
+                                <i class="ph-fill ph-student text-xl"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Học tập & Đánh giá an toàn</h5>
+                                <p class="text-[11px] text-slate-500 dark:text-dark-muted font-medium mt-0.5">Kiểm tra lộ trình khóa học EHS dành riêng cho bạn</p>
+                            </div>
                         </div>
-                        <div>
-                            <h5 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Học tập & Đánh giá an toàn</h5>
-                            <p class="text-[11px] text-slate-500 dark:text-dark-muted font-medium">Kiểm tra lộ trình khóa học dành riêng cho bạn</p>
-                        </div>
+                        <button onclick="closeUserProfileModal(); window.openCourseModal();" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-700 text-xs font-bold transition shadow-sm whitespace-nowrap hidden sm:block">Xem</button>
                     </div>
-                    <button onclick="closeUserProfileModal(); window.openCourseModal();" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-700 text-xs font-bold transition shadow-sm whitespace-nowrap hidden sm:block">Xem</button>
-                </div>
-            `;
+                `;
 
-            if (userData && userData.vai_tro_phu) {
-                if (userData.vai_tro_phu.pccc) {
-                    hasTask = true;
-                    container.innerHTML += `
-                        <div class="p-4 border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 rounded-xl shadow-sm relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 bg-red-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45">${userData.vai_tro_phu.pccc}</div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center shrink-0 border border-red-200 dark:border-red-700">
-                                    <i class="ph-fill ph-fire-extinguisher text-xl"></i>
-                                </div>
-                                <div>
-                                    <h5 class="font-bold text-red-800 dark:text-red-300 text-sm">Kiểm tra PCCC định kỳ</h5>
-                                    <p class="text-xs text-red-600 dark:text-red-400 font-medium mt-0.5 mb-3">Nhiệm vụ tuần: Vui lòng đi kiểm tra tình trạng bình chữa cháy/tủ vách tường tại khu vực làm việc.</p>
-                                    <a href="kiem_tra_pccc.html" class="inline-flex items-center gap-1.5 bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-700 transition shadow-md">
-                                        <i class="ph-bold ph-clipboard-text"></i> Thực hiện Checklist
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (userData.vai_tro_phu.atvsv === true) {
-                    hasTask = true;
-                    container.innerHTML += `
-                        <div class="p-4 border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl shadow-sm relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 bg-emerald-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45">ATVSV</div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-700">
-                                    <i class="ph-fill ph-first-aid text-xl"></i>
-                                </div>
-                                <div>
-                                    <h5 class="font-bold text-emerald-800 dark:text-emerald-300 text-sm">Đánh giá An toàn Hiện trường (5S)</h5>
-                                    <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 mb-3">Nhiệm vụ ATVSV: Tuần tra, phát hiện và báo cáo các hành vi, điều kiện mất an toàn tại line.</p>
-                                    <a href="kiem_tra_tong_the.html" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition shadow-md">
-                                        <i class="ph-bold ph-check-square-offset"></i> Đánh giá ngay
-                                    </a>
+                if (userData && userData.vai_tro_phu) {
+                    if (userData.vai_tro_phu.pccc) {
+                        hasTask = true;
+                        staticHtml += `
+                            <div class="p-4 border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-900/20 rounded-xl shadow-sm relative overflow-hidden mt-3">
+                                <div class="absolute -right-4 -top-4 bg-rose-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45 shadow-sm">${userData.vai_tro_phu.pccc}</div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-rose-100 dark:bg-rose-800 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-700">
+                                        <i class="ph-fill ph-fire-extinguisher text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-rose-800 dark:text-rose-300 text-sm">Kiểm tra PCCC định kỳ</h5>
+                                        <p class="text-xs text-rose-600 dark:text-rose-400 font-medium mt-0.5 mb-3">Nhiệm vụ tuần: Vui lòng đi kiểm tra tình trạng bình chữa cháy/tủ vách tường tại khu vực làm việc.</p>
+                                        <a href="kiem_tra_pccc.html" class="inline-flex items-center gap-1.5 bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-rose-700 transition shadow-md">
+                                            <i class="ph-bold ph-clipboard-text"></i> Thực hiện Checklist
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    }
+
+                    if (userData.vai_tro_phu.atvsv === true) {
+                        hasTask = true;
+                        staticHtml += `
+                            <div class="p-4 border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl shadow-sm relative overflow-hidden mt-3">
+                                <div class="absolute -right-4 -top-4 bg-emerald-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45 shadow-sm">ATVSV</div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-700">
+                                        <i class="ph-fill ph-first-aid text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-emerald-800 dark:text-emerald-300 text-sm">Đánh giá An toàn Hiện trường (5S)</h5>
+                                        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 mb-3">Nhiệm vụ ATVSV: Tuần tra, phát hiện và báo cáo các hành vi, điều kiện mất an toàn tại line.</p>
+                                        <a href="kiem_tra_tong_the.html" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition shadow-md">
+                                            <i class="ph-bold ph-check-square-offset"></i> Đánh giá ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
                 }
-            }
 
-            if (hasTask) {
-                badge.classList.remove('hidden');
-                mBadge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-                mBadge.classList.add('hidden');
-            }
-        };
+                let dynamicHtml = '';
+                try {
+                    if (currentUserId) {
+                        const q = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
+                        const snap = await window.getDocs(q);
+                        
+                        let overdueTasks = [];
+                        let dueSoonTasks = [];
+                        let normalTasks = [];
 
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const threeDaysLater = new Date(today);
+                        threeDaysLater.setDate(today.getDate() + 3);
+
+                        snap.forEach(doc => {
+                            const task = { id: doc.id, ...doc.data() };
+                            if (task.status === 'Done') return; // Bỏ qua việc đã làm xong
+
+                            const deadline = new Date(task.due_date);
+                            deadline.setHours(0,0,0,0);
+
+                            if (deadline < today) overdueTasks.push(task);
+                            else if (deadline <= threeDaysLater) dueSoonTasks.push(task);
+                            else normalTasks.push(task);
+                        });
+
+                        // Sắp xếp theo hạn chót gần nhất
+                        const sortByDate = (a, b) => new Date(a.due_date) - new Date(b.due_date);
+                        overdueTasks.sort(sortByDate);
+                        dueSoonTasks.sort(sortByDate);
+                        normalTasks.sort(sortByDate);
+
+                        if (overdueTasks.length > 0 || dueSoonTasks.length > 0 || normalTasks.length > 0) {
+                            hasTask = true;
+                            dynamicHtml += `<h5 class="font-black text-slate-800 dark:text-white text-md mt-6 mb-3 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2"><i class="ph-fill ph-kanban text-blue-500"></i> Công việc & Dự án đang phụ trách</h5>`;
+
+                            const renderTaskCard = (task, type) => {
+                                let bgClass, iconClass, icon, deadlineLabel;
+                                const deadlineStr = new Date(task.due_date).toLocaleDateString('vi-VN');
+                                
+                                if (type === 'overdue') {
+                                    bgClass = 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50';
+                                    iconClass = 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700';
+                                    icon = 'ph-warning-circle animate-pulse';
+                                    deadlineLabel = `<span class="text-red-600 font-bold">Quá hạn (${deadlineStr})</span>`;
+                                } else if (type === 'soon') {
+                                    bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50';
+                                    iconClass = 'bg-amber-100 dark:bg-amber-800 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700';
+                                    icon = 'ph-clock';
+                                    deadlineLabel = `<span class="text-amber-600 font-bold">Sắp hết hạn (${deadlineStr})</span>`;
+                                } else {
+                                    bgClass = 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700';
+                                    iconClass = 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
+                                    icon = 'ph-clipboard-text';
+                                    deadlineLabel = `<span class="text-slate-500 font-medium">Hạn chót: ${deadlineStr}</span>`;
+                                }
+
+                                return `
+                                    <div class="p-3 border rounded-xl flex items-start gap-3 shadow-sm ${bgClass} mt-3">
+                                        <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${iconClass}">
+                                            <i class="ph-fill ${icon} text-lg"></i>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <h6 class="font-bold text-slate-800 dark:text-white text-sm truncate" title="${task.title}">${task.title}</h6>
+                                            <div class="flex justify-between items-center mt-1">
+                                                <p class="text-[11px]">${deadlineLabel}</p>
+                                                <p class="text-[11px] font-bold ${task.progress > 0 ? 'text-blue-600' : 'text-slate-400'}">Tiến độ: ${task.progress}%</p>
+                                            </div>
+                                        </div>
+                                        <a href="quan_ly_cong_viec.html" class="shrink-0 text-blue-600 hover:text-blue-800 bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-blue-100 dark:border-slate-600 shadow-sm transition mt-1" title="Cập nhật tiến độ">
+                                            <i class="ph-bold ph-arrow-up-right text-base"></i>
+                                        </a>
+                                    </div>
+                                `;
+                            };
+
+                            overdueTasks.forEach(t => dynamicHtml += renderTaskCard(t, 'overdue'));
+                            dueSoonTasks.forEach(t => dynamicHtml += renderTaskCard(t, 'soon'));
+                            normalTasks.forEach(t => dynamicHtml += renderTaskCard(t, 'normal'));
+                        }
+                    }
+                } catch (error) {
+                    console.error("Lỗi đồng bộ công việc:", error);
+                    dynamicHtml = `<p class="text-xs text-red-500 italic mt-2">Không thể đồng bộ công việc EHS lúc này.</p>`;
+                }
+
+                container.innerHTML = staticHtml + dynamicHtml;
+
+                if (hasTask) {
+                    badge.classList.remove('hidden');
+                    if (mBadge) mBadge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                    if (mBadge) mBadge.classList.add('hidden');
+                    // Nếu hoàn toàn không có task tĩnh lẫn động
+                    if (container.innerHTML.trim() === '') {
+                         container.innerHTML = `<div class="text-center py-6 text-slate-400"><i class="ph-fill ph-check-circle text-4xl mb-2"></i><p class="text-sm font-medium">Bạn không có nhiệm vụ nào tồn đọng.</p></div>`;
+                    }
+                }
+            };
+        
         window.handleChangePassword = async function() {
             const oldPass = document.getElementById('cp-old').value;
             const newPass = document.getElementById('cp-new').value;
