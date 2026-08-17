@@ -223,6 +223,17 @@
                     <input type="hidden" id="task-progress" value="0">
                 </div>
 
+                <!-- KHU VỰC DÀNH CHO NHÂN VIÊN TỰ THEO DÕI MUỐN TRÌNH SẾP (MỚI) -->
+                <div id="request-review-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <label class="flex items-center gap-3 cursor-pointer p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl transition hover:bg-purple-100">
+                        <input type="checkbox" id="task-request-review" class="w-6 h-6 text-purple-600 rounded">
+                        <div>
+                            <span class="font-black text-purple-700 dark:text-purple-400 text-base block">Trình Lãnh Đạo Xem Xét</span>
+                            <span class="text-xs text-purple-600/70 font-medium">Bật công tắc này để công khai việc lên Góc Lãnh Đạo để sếp đánh giá.</span>
+                        </div>
+                    </label>
+                </div>
+
                 <!-- KHU VỰC DÀNH CHO LÃNH ĐẠO / NGƯỜI GIAO VIỆC -->
                 <div id="eval-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
                     <div>
@@ -269,16 +280,24 @@
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
         let currentUserId = localStorage.getItem("ehs_user_id");
         let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
+        let userDept = localStorage.getItem("ehs_user_dept") || "";
         
-        let userDept = ""; // Sẽ lấy từ CSDL
-        let isLeader = false; // Sẽ lấy từ CSDL
-        let isGlobalLeader = false; // EHS hoặc Admin
+        // KIỂM TRA QUYỀN LÃNH ĐẠO CHUNG
+        let isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
         
+        // KIỂM TRA QUYỀN TOÀN CỤC
+        let isGlobalLeader = /ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
+
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
         let globalUserDeptMap = {}; 
         let upTaskId = "";
         let upTaskAssigner = "";
+
+        if(isLeader) {
+            document.getElementById('tab-all').classList.remove('hidden');
+            document.getElementById('tab-all').classList.add('flex');
+        }
 
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
@@ -433,17 +452,26 @@
 
             window.recalcProgress();
             
-            const isManagerOrLeader = (currentUserId === t.assigner_id || isLeader);
+            const isSelfAssigned = (t.assignee_id === t.assigner_id);
             const evalSec = document.getElementById('eval-section');
+            const reqReviewSec = document.getElementById('request-review-section');
+            const reqReviewCheck = document.getElementById('task-request-review');
             const evalInput = document.getElementById('task-eval');
             const doneCheck = document.getElementById('task-done');
             
             if (evalInput) evalInput.value = t.evaluation || "";
+            reqReviewSec.classList.add('hidden'); // Reset
             
-            // XỬ LÝ QUYỀN HIỂN THỊ
+            // XỬ LÝ QUYỀN HIỂN THỊ DỰA TRÊN TAB
             if (currentTab === 'my-tasks') {
                 evalSec.classList.add('hidden');
                 document.getElementById('update-modal-title').innerText = 'Báo cáo Tiến độ từng bước';
+                
+                // Hiển thị nút Trình Sếp nếu là việc Tự Theo Dõi
+                if (isSelfAssigned) {
+                    reqReviewSec.classList.remove('hidden');
+                    reqReviewCheck.checked = !!t.is_review_requested;
+                }
             } else {
                 evalSec.classList.remove('hidden');
                 if (doneCheck) doneCheck.checked = (t.status === 'Done');
@@ -483,18 +511,6 @@
                     const data = doc.data();
                     if(data.ma_nv) {
                         globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
-                        
-                        // XÁC ĐỊNH QUYỀN LÃNH ĐẠO CỦA NGƯỜI ĐANG ĐĂNG NHẬP
-                        if (String(data.ma_nv).toUpperCase() === String(currentUserId).toUpperCase()) {
-                            let bp = (data.bo_phan || "").toLowerCase();
-                            let vt = (data.vi_tri || "").toLowerCase();
-                            let pccc = (data.vai_tro_phu && data.vai_tro_phu.pccc) ? data.vai_tro_phu.pccc.toLowerCase() : "";
-                            let atvsv = (data.vai_tro_phu && data.vai_tro_phu.atvsv) ? true : false;
-
-                            isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó/i.test(vt) || /ehs|admin/i.test(bp) || /trưởng|đội phó/i.test(pccc) || atvsv;
-                            isGlobalLeader = /ehs|admin/i.test(bp);
-                            userDept = data.bo_phan || ""; 
-                        }
                     }
 
                     if(data.ma_nv && data.ho_ten && data.ma_nv !== currentUserId) {
@@ -505,16 +521,6 @@
                     }
                 });
                 ul.innerHTML = html;
-                
-                // Mở Tab Góc Lãnh Đạo nếu có quyền
-                if(isLeader) {
-                    document.getElementById('tab-all').classList.remove('hidden');
-                    document.getElementById('tab-all').classList.add('flex');
-                } else {
-                    document.getElementById('tab-all').classList.add('hidden');
-                    document.getElementById('tab-all').classList.remove('flex');
-                }
-                
             } catch (e) {
                 ul.innerHTML = '<li class="p-2 text-red-500 font-bold">Lỗi tải danh sách từ Firebase</li>';
                 console.error("Lỗi dropdown: ", e);
@@ -557,22 +563,21 @@
                 if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId && t.assignee_id !== currentUserId) tabMatch = true;
                 
                 if (currentTab === 'all-tasks' && isLeader) {
-                    // KHÓA CHẶN 1: Bỏ qua (ẩn đi) các công việc tự theo dõi của người khác
+                    // KHÓA CHẶN 1: Bỏ qua việc tự theo dõi TRỪ KHI nhân viên đã ấn "Trình sếp"
                     const isSelfAssigned = (t.assignee_id === t.assigner_id);
-                    if (isSelfAssigned && t.assignee_id !== currentUserId) {
+                    if (isSelfAssigned && !t.is_review_requested) {
                         return false; 
                     }
 
                     // KHÓA CHẶN 2: Lọc theo bộ phận
                     if (isGlobalLeader) {
-                        tabMatch = true; // EHS/Admin được xem hết các task
+                        tabMatch = true; 
                     } else {
                         let myMainDept = userDept.split('-')[0].trim().toLowerCase();
                         let taskAssigneeDept = globalUserDeptMap[t.assignee_id] || "";
                         let theirMainDept = taskAssigneeDept.split('-')[0].trim().toLowerCase();
                         
-                        // Trưởng bộ phận nào CHỈ được xem task của người thuộc bộ phận đó
-                        if (myMainDept !== "" && theirMainDept !== "" && myMainDept === theirMainDept) {
+                        if (myMainDept && theirMainDept && myMainDept === theirMainDept) {
                             tabMatch = true;
                         }
                     }
@@ -655,7 +660,8 @@
                 let statusHtml = '';
                 if (t.status === 'Done') statusHtml = `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-check-circle"></i> Hoàn thành</span>`;
                 else if (isOverdue) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase animate-pulse"><i class="ph-bold ph-warning-circle"></i> Quá hạn</span>`;
-                else if (t.status === 'Review') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> Chờ nghiệm thu</span>`;
+                else if (t.is_review_requested && t.status !== 'Done') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-paper-plane-tilt"></i> Chờ sếp duyệt</span>`;
+                else if (t.status === 'Review') statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> Chờ nghiệm thu</span>`;
                 else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> Đang làm</span>`;
                 else statusHtml = `<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> Mới giao</span>`;
 
@@ -702,6 +708,19 @@
                         </div>
                     `;
                 }
+                
+                // HIỆN THỊ NGUỒN GỐC TASK
+                let sourceTaskHtml = '';
+                if (isSelfAssigned) {
+                    if (t.is_review_requested) {
+                        sourceTaskHtml = `<div class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-purple-100 dark:border-purple-800"><i class="ph-fill ph-paper-plane-tilt"></i> Đã trình Lãnh đạo xem xét</div>`;
+                    } else {
+                        sourceTaskHtml = `<div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-indigo-100 dark:border-indigo-800"><i class="ph-fill ph-user-circle"></i> Công việc tự theo dõi</div>`;
+                    }
+                } else {
+                    sourceTaskHtml = `<div class="space-y-1"><p><i class="ph-fill ph-user-circle text-blue-500"></i> Nhận: <b class="text-slate-700 dark:text-slate-200">${t.assignee_name}</b></p>
+                             <p><i class="ph-fill ph-user-focus text-amber-500"></i> Giao: <b class="text-slate-700 dark:text-slate-200">${t.assigner_name}</b></p></div>`;
+                }
 
                 const card = document.createElement('div');
                 card.className = `bg-white dark:bg-dark-card border ${isOverdue && t.status !== 'Done' ? 'border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'border-slate-200 dark:border-dark-border shadow-sm hover:shadow-md'} p-5 rounded-2xl flex flex-col transition-all`;
@@ -712,11 +731,7 @@
                     </div>
                     <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2 leading-tight">${t.title}</h3>
                     <div class="text-[13px] text-slate-500 dark:text-slate-400 mb-3 shrink-0">
-                        ${isSelfAssigned ? 
-                            `<div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-indigo-100 dark:border-indigo-800"><i class="ph-fill ph-user-circle"></i> Công việc tự theo dõi</div>` :
-                            `<div class="space-y-1"><p><i class="ph-fill ph-user-circle text-blue-500"></i> Nhận: <b class="text-slate-700 dark:text-slate-200">${t.assignee_name}</b></p>
-                             <p><i class="ph-fill ph-user-focus text-amber-500"></i> Giao: <b class="text-slate-700 dark:text-slate-200">${t.assigner_name}</b></p></div>`
-                        }
+                        ${sourceTaskHtml}
                     </div>
                     
                     <div class="mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex-1 overflow-y-auto custom-scrollbar max-h-40">
@@ -774,6 +789,7 @@
                     assigner_id: currentUserId, assigner_name: currentUserName,
                     assignee_id: assignee_id, assignee_name: assignee_name,
                     progress: 0, status: 'To Do', evaluation: '',
+                    is_review_requested: false,
                     created_at: new Date()
                 };
                 
@@ -838,7 +854,16 @@
                 else if (t.status === 'Done' && !isDone) { updateData.status = 'In Progress'; }
             } else {
                 if (newProg > 0 && newProg < 100) updateData.status = 'In Progress';
-                if (newProg === 100) updateData.status = 'Review'; 
+                if (newProg === 100 && !t.is_review_requested) updateData.status = 'Review'; 
+                
+                const isSelfAssigned = (t.assignee_id === t.assigner_id);
+                if (isSelfAssigned) {
+                    const reqReviewCheck = document.getElementById('task-request-review');
+                    if (reqReviewCheck) {
+                        updateData.is_review_requested = reqReviewCheck.checked;
+                        if (reqReviewCheck.checked) updateData.status = 'Review';
+                    }
+                }
             }
 
             const btn = document.getElementById('btn-update-task');
@@ -864,9 +889,7 @@
                 try {
                     document.getElementById('header-user-name').innerText = currentUserName;
                     document.getElementById('loader-text').innerText = "Đã xác thực. Đang nạp danh sách công việc...";
-                    // Gọi hàm Load Users trước để lấy cấu hình Quyền cho tài khoản này
                     await loadUsersDropdown();
-                    // Đã có cấu hình quyền, giờ mới Fetch Task ra
                     await fetchAllTasks();
                 } catch (error) {
                     document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold text-center">Lỗi tải dữ liệu: ${error.message}</p>`;
