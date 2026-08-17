@@ -56,30 +56,10 @@
             <div class="border-b border-slate-100 pb-6 mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
                     <h2 class="text-2xl sm:text-3xl font-bold text-blue-800 mb-2 flex items-center">
-                        <i class="ph-fill ph-books text-4xl mr-3 text-blue-600"></i>
-                        Kho Tài Liệu & Dữ Liệu EHS
+                        <i class="ph-fill ph-chart-line-up text-4xl mr-3 text-blue-600"></i>
+                        Trung Tâm Dữ Liệu Quan Trắc
                     </h2>
-                    <p class="text-slate-500 text-sm sm:text-base">Lưu trữ tài liệu và theo dõi biến động chất lượng Nước thải & Khí thải.</p>
-                </div>
-            </div>
-
-            <div class="mb-12 border-b border-slate-100 pb-10">
-                <h3 class="text-xl font-bold text-slate-800 mb-5 flex items-center gap-2">
-                    <i class="ph-bold ph-graduation-cap text-indigo-600 text-2xl"></i> Bài Giảng & Sổ Tay Đào Tạo
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <a href="Tai_lieu_daotao_EHS.pdf" target="_blank" class="flex items-start gap-3 p-4 rounded-2xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-300 transition group shadow-sm">
-                        <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition"><i class="ph-fill ph-file-pdf text-2xl"></i></div>
-                        <div><h4 class="font-bold text-slate-800 text-sm group-hover:text-indigo-700">Đào tạo EHS Cơ Bản</h4><p class="text-[11px] text-slate-500 mt-1">Hội nhập nội quy toàn nhà máy.</p></div>
-                    </a>
-                    <a href="bai_giang_5s.pdf" target="_blank" class="flex items-start gap-3 p-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-300 transition group shadow-sm">
-                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition"><i class="ph-fill ph-file-pdf text-2xl"></i></div>
-                        <div><h4 class="font-bold text-slate-800 text-sm group-hover:text-emerald-700">Tiêu chuẩn 5S</h4><p class="text-[11px] text-slate-500 mt-1">Sàng lọc, Sắp xếp, Sạch sẽ...</p></div>
-                    </a>
-                    <a href="bai_giang_loto.pdf" target="_blank" class="flex items-start gap-3 p-4 rounded-2xl border border-rose-100 bg-rose-50/50 hover:bg-rose-50 hover:border-rose-300 transition group shadow-sm">
-                        <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition"><i class="ph-fill ph-file-pdf text-2xl"></i></div>
-                        <div><h4 class="font-bold text-slate-800 text-sm group-hover:text-rose-700">An toàn LOTO</h4><p class="text-[11px] text-slate-500 mt-1">Quy trình cô lập năng lượng.</p></div>
-                    </a>
+                    <p class="text-slate-500 text-sm sm:text-base">Theo dõi và giám sát biến động chất lượng Nước thải & Khí thải tự động.</p>
                 </div>
             </div>
 
@@ -615,7 +595,7 @@
                 raw.sort((a, b) => new Date(a.ngay_lay_mau) - new Date(b.ngay_lay_mau));
 
                 const tbody = document.getElementById('waterBody'); tbody.innerHTML = '';
-                const labels = [], dCod = [], dBod = [], dColor = [], dFlorua = [], dColi = [];
+                const labels = [], dCod = [], dBod = [], dTss = [], dTongN = [], dFlorua = [], dColor = [], dColi = [];
 
                 [...raw].reverse().forEach((d, i) => {
                     let codCls = d.cod >= 90 ? "text-red-600 font-black" : "font-bold text-rose-700";
@@ -649,33 +629,58 @@
 
                 raw.forEach(d => {
                     labels.push(new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN'));
-                    dCod.push(d.cod); dBod.push(d.bod); dColor.push(d.color); dFlorua.push(d.florua); dColi.push(d.coliform);
+                    dCod.push(d.cod); dBod.push(d.bod); dTss.push(d.tss); dTongN.push(d.tong_n); 
+                    dFlorua.push(d.florua); dColor.push(d.color); dColi.push(d.coliform);
                 });
 
-                const ctx = document.getElementById('waterChart').getContext('2d');
-                if(waterChartInstance) waterChartInstance.destroy();
+                // --- VẼ BIỂU ĐỒ 1: NỒNG ĐỘ (mg/L) ---
+                const ctxConc = document.getElementById('waterChartConc').getContext('2d');
+                if(waterChartConcInstance) waterChartConcInstance.destroy();
                 
-                waterChartInstance = new Chart(ctx, {
+                waterChartConcInstance = new Chart(ctxConc, {
                     type: 'line',
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'COD (mg/L)', data: dCod, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 3, fill: true, tension: 0.3, yAxisID: 'y' },
-                            { label: 'BOD5 (mg/L)', data: dBod, borderColor: '#f59e0b', borderWidth: 2, borderDash: [5,5], tension: 0.3, yAxisID: 'y' },
-                            { label: 'Độ màu (Pt-Co)', data: dColor, borderColor: '#a855f7', borderWidth: 2, tension: 0.3, hidden: true, yAxisID: 'y' },
-                            { label: 'Florua (mg/L)', data: dFlorua, borderColor: '#f97316', borderWidth: 2, tension: 0.3, yAxisID: 'y' },
-                            { label: 'Coliform (MPN)', data: dColi, borderColor: '#10b981', type: 'bar', backgroundColor: 'rgba(16, 185, 129, 0.3)', yAxisID: 'y1' }
+                            { label: 'COD', data: dCod, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.1)', borderWidth: 3, fill: true, tension: 0.3 },
+                            { label: 'BOD5', data: dBod, borderColor: '#d97706', borderWidth: 2, tension: 0.3 },
+                            { label: 'TSS', data: dTss, borderColor: '#475569', borderWidth: 2, borderDash: [5,5], tension: 0.3 },
+                            { label: 'Tổng N', data: dTongN, borderColor: '#2563eb', borderWidth: 2, tension: 0.3, hidden: true },
+                            { label: 'Florua', data: dFlorua, borderColor: '#059669', borderWidth: 2, tension: 0.3, hidden: true }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
+                        scales: { y: { beginAtZero: true, title: {display: true, text: 'mg/L', font: {size: 10}} } }
+                    }
+                });
+
+                // --- VẼ BIỂU ĐỒ 2: ĐẶC THÙ (Coliform & Độ Màu) ---
+                const ctxSpec = document.getElementById('waterChartSpec').getContext('2d');
+                if(waterChartSpecInstance) waterChartSpecInstance.destroy();
+
+                waterChartSpecInstance = new Chart(ctxSpec, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Coliform (MPN)', data: dColi, type: 'bar', backgroundColor: 'rgba(16, 185, 129, 0.5)', borderColor: '#10b981', borderWidth: 1, yAxisID: 'yColi', maxBarThickness: 50 },
+                            { label: 'Độ màu (Pt-Co)', data: dColor, type: 'line', borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 3, tension: 0.3, yAxisID: 'yColor' }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
                         scales: {
-                            y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Nồng độ (mg/L) / Độ màu'} },
-                            y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'Coliform (MPN/100mL)'}, grid: {drawOnChartArea: false} }
+                            yColor: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Độ Màu (Pt-Co)', font: {size: 10}}, beginAtZero: true },
+                            yColi: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'Coliform (MPN/100mL)', font: {size: 10}}, grid: {drawOnChartArea: false}, beginAtZero: true }
                         }
                     }
                 });
+
             } catch(e) { console.log(e); } finally { document.getElementById('water-chart-loader').classList.add('hidden'); }
         }
 
