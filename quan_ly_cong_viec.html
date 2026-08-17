@@ -246,6 +246,7 @@
         </div>
     </div>
 
+    <!-- TÍCH HỢP TOÀN BỘ LOGIC VÀO MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -253,13 +254,13 @@
 
         // Firebase Config đã chốt chuẩn
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
-            authDomain: "ehs-training-app.firebaseapp.com",
-            projectId: "ehs-training-app",
-            storageBucket: "ehs-training-app.firebasestorage.app",
-            messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-            measurementId: "G-74ETHWTJCW"
+          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+          authDomain: "ehs-training-app.firebaseapp.com",
+          projectId: "ehs-training-app",
+          storageBucket: "ehs-training-app.firebasestorage.app",
+          messagingSenderId: "354083430003",
+          appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+          measurementId: "G-74ETHWTJCW"
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -269,18 +270,17 @@
         let currentUserId = localStorage.getItem("ehs_user_id");
         let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
         
-        // Chuyển isLeader và isGlobalLeader thành biến có thể thay đổi được (để tính toán động)
-        let isLeader = false;
-        let isGlobalLeader = false;
-        let userDept = ""; // Sẽ được nạp trực tiếp từ Database thay vì lấy từ LocalStorage tĩnh
-
+        let userDept = ""; // Sẽ lấy từ CSDL
+        let isLeader = false; // Sẽ lấy từ CSDL
+        let isGlobalLeader = false; // EHS hoặc Admin
+        
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
         let globalUserDeptMap = {}; 
         let upTaskId = "";
         let upTaskAssigner = "";
 
-        function showToast(message, type = "success") {
+        window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
             toast.className = "fixed top-5 right-5 z-[100] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
@@ -484,22 +484,15 @@
                     if(data.ma_nv) {
                         globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
                         
-                        // ĐIỂM SỬA CHỮA CỐT LÕI NẰM Ở ĐÂY:
-                        // Ngay lúc tải danh sách, ta tìm đúng Mã NV của người đang đăng nhập
-                        // Sau đó lấy chính xác Vị Trí, Bộ phận và Vai trò của họ từ Database để xét duyệt quyền.
+                        // XÁC ĐỊNH QUYỀN LÃNH ĐẠO CỦA NGƯỜI ĐANG ĐĂNG NHẬP
                         if (String(data.ma_nv).toUpperCase() === String(currentUserId).toUpperCase()) {
                             let bp = (data.bo_phan || "").toLowerCase();
                             let vt = (data.vi_tri || "").toLowerCase();
                             let pccc = (data.vai_tro_phu && data.vai_tro_phu.pccc) ? data.vai_tro_phu.pccc.toLowerCase() : "";
                             let atvsv = (data.vai_tro_phu && data.vai_tro_phu.atvsv) ? true : false;
 
-                            // Trở thành Lãnh đạo nếu VỊ TRÍ có chữ Giám đốc/Trưởng/Giám sát... HOẶC Bộ phận là EHS/Admin
                             isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó/i.test(vt) || /ehs|admin/i.test(bp) || /trưởng|đội phó/i.test(pccc) || atvsv;
-                            
-                            // Trở thành Lãnh đạo toàn cục (Thấy toàn bộ nhà máy) nếu là người của EHS/Admin
-                            isGlobalLeader = /ehs|admin/i.test(bp) || atvsv || /trưởng|đội phó/i.test(pccc);
-                            
-                            // Cập nhật lại bộ phận để thuật toán Lọc chạy chuẩn xác
+                            isGlobalLeader = /ehs|admin/i.test(bp);
                             userDept = data.bo_phan || ""; 
                         }
                     }
@@ -511,13 +504,15 @@
                         </li>`;
                     }
                 });
-                
                 ul.innerHTML = html;
                 
-                // Mở khóa nút "Góc Lãnh Đạo" nếu thuật toán vừa phát hiện user này có quyền
+                // Mở Tab Góc Lãnh Đạo nếu có quyền
                 if(isLeader) {
                     document.getElementById('tab-all').classList.remove('hidden');
                     document.getElementById('tab-all').classList.add('flex');
+                } else {
+                    document.getElementById('tab-all').classList.add('hidden');
+                    document.getElementById('tab-all').classList.remove('flex');
                 }
                 
             } catch (e) {
@@ -562,14 +557,22 @@
                 if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId && t.assignee_id !== currentUserId) tabMatch = true;
                 
                 if (currentTab === 'all-tasks' && isLeader) {
+                    // KHÓA CHẶN 1: Bỏ qua (ẩn đi) các công việc tự theo dõi của người khác
+                    const isSelfAssigned = (t.assignee_id === t.assigner_id);
+                    if (isSelfAssigned && t.assignee_id !== currentUserId) {
+                        return false; 
+                    }
+
+                    // KHÓA CHẶN 2: Lọc theo bộ phận
                     if (isGlobalLeader) {
-                        tabMatch = true; 
+                        tabMatch = true; // EHS/Admin được xem hết các task
                     } else {
                         let myMainDept = userDept.split('-')[0].trim().toLowerCase();
                         let taskAssigneeDept = globalUserDeptMap[t.assignee_id] || "";
                         let theirMainDept = taskAssigneeDept.split('-')[0].trim().toLowerCase();
                         
-                        if (myMainDept && theirMainDept && myMainDept === theirMainDept) {
+                        // Trưởng bộ phận nào CHỈ được xem task của người thuộc bộ phận đó
+                        if (myMainDept !== "" && theirMainDept !== "" && myMainDept === theirMainDept) {
                             tabMatch = true;
                         }
                     }
@@ -861,7 +864,9 @@
                 try {
                     document.getElementById('header-user-name').innerText = currentUserName;
                     document.getElementById('loader-text').innerText = "Đã xác thực. Đang nạp danh sách công việc...";
+                    // Gọi hàm Load Users trước để lấy cấu hình Quyền cho tài khoản này
                     await loadUsersDropdown();
+                    // Đã có cấu hình quyền, giờ mới Fetch Task ra
                     await fetchAllTasks();
                 } catch (error) {
                     document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold text-center">Lỗi tải dữ liệu: ${error.message}</p>`;
