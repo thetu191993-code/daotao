@@ -13,12 +13,13 @@
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA", 
-            authDomain: "ehs-training-app.firebaseapp.com",
-            projectId: "ehs-training-app",
-            storageBucket: "ehs-training-app.firebasestorage.app",
-            messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+          authDomain: "ehs-training-app.firebaseapp.com",
+          projectId: "ehs-training-app",
+          storageBucket: "ehs-training-app.firebasestorage.app",
+          messagingSenderId: "354083430003",
+          appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+          measurementId: "G-74ETHWTJCW"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -134,7 +135,6 @@
         </div>
 
         <div id="tab-nhan-su" class="tab-content hidden">
-            <!-- THANH TÌM KIẾM -->
             <div class="mb-4 relative max-w-md">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i>
@@ -163,15 +163,16 @@
         </div>
 
         <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
-            <table class="w-full text-left border-collapse min-w-[900px]">
+            <table class="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-semibold w-12 text-center">STT</th>
                         <th class="p-4 font-semibold">Tên Nhà Thầu</th>
                         <th class="p-4 font-semibold">Tên Máy / Thiết Bị</th>
-                        <th class="p-4 font-semibold">Biển số / Mã máy</th>
-                        <th class="p-4 font-semibold text-center">Ngày KĐ Gần Nhất</th>
-                        <th class="p-4 font-semibold text-center">Ngày Hết Hạn KĐ</th>
+                        <th class="p-4 font-semibold">Biển số</th>
+                        <th class="p-4 font-semibold">Người Vận Hành</th>
+                        <th class="p-4 font-semibold text-center">Hạn KĐ</th>
+                        <th class="p-4 font-semibold text-center">Hồ Sơ (Ảnh)</th>
                         <th class="p-4 font-semibold text-center">Thao tác</th>
                     </tr>
                 </thead>
@@ -235,7 +236,6 @@
         </div>
     </div>
 
-    <!-- Modal Nhân Sự -->
     <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -270,33 +270,60 @@
         </div>
     </div>
 
-    <!-- Modal Máy móc -->
     <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
-                <h3 class="text-lg font-bold text-slate-800" id="machine-modal-title">Thêm Thiết Bị Mới</h3>
+                <h3 class="text-lg font-bold text-slate-800" id="machine-modal-title">Thêm Thiết Bị Cẩu/Nâng</h3>
                 <button onclick="closeModal('machine-modal')" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
-            <div class="p-6 space-y-4">
+            <div class="p-6 space-y-4 overflow-y-auto">
                 <input type="hidden" id="mac-doc-id">
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="mac-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên Máy <span class="text-red-500">*</span></label><input type="text" id="mac-ten-may" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Biển Số</label><input type="text" id="mac-bien-so" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="mac-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên Máy <span class="text-red-500">*</span></label><input type="text" id="mac-ten-may" class="w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="VD: Xe Cẩu 10 tấn"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Biển Số / Mã Số</label><input type="text" id="mac-bien-so" class="w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="VD: 61H-123.45"></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày KĐ Gần Nhất</label><input type="date" id="mac-ngay-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Kiểm Định <span class="text-red-500">*</span></label><input type="date" id="mac-han-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Kiểm Định <span class="text-red-500">*</span></label><input type="date" id="mac-han-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-red-500"></div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph-bold ph-image text-blue-500"></i> Ảnh Giấy Kiểm Định (Để làm bằng chứng)</label>
+                        <input type="file" id="mac-file-kiemdinh" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                </div>
+
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-100 space-y-4">
+                    <div><label class="block text-xs font-bold text-amber-800 uppercase mb-1">Tài xế / Người vận hành thiết bị này</label><input type="text" id="mac-operator" class="w-full px-4 py-2 border border-amber-300 rounded-lg" placeholder="Họ tên người vận hành..."></div>
+                    <div>
+                        <label class="block text-xs font-bold text-amber-800 uppercase mb-1"><i class="ph-bold ph-image text-amber-600"></i> Ảnh Chứng Chỉ Hành Nghề Tài Xế</label>
+                        <input type="file" id="mac-file-chungchi" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                    </div>
                 </div>
             </div>
             <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
                 <button onclick="closeModal('machine-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
-                <button id="btn-save-machine" onclick="saveMachine()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700">Lưu</button>
+                <button id="btn-save-machine" onclick="saveMachineData()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700">Lưu</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Đào tạo -->
+    <div id="qr-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8">
+            <h3 class="text-xl font-bold text-slate-800 mb-1">Mã QR An Ninh</h3>
+            <p class="text-sm text-slate-500 mb-6" id="qr-machine-name">Tên máy móc</p>
+            
+            <div class="bg-white p-4 rounded-xl border-2 border-dashed border-slate-300 inline-block mb-6">
+                <img id="qr-image" src="" alt="QR Code" class="w-48 h-48 object-contain">
+            </div>
+            
+            <p class="text-xs text-slate-400 mb-6">In mã này và dán lên kính xe. Bảo vệ sẽ quét để kiểm tra Giấy kiểm định & Chứng chỉ tài xế.</p>
+            
+            <button onclick="closeQRModal()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition shadow-md">Đóng</button>
+        </div>
+    </div>
+
     <div id="training-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -371,6 +398,7 @@
 
         window.closeModal = function(modalId) { document.getElementById(modalId).classList.add('hidden'); }
         window.closeConfirmModal = function() { document.getElementById('confirm-modal').classList.add('hidden'); }
+        window.closeQRModal = function() { document.getElementById('qr-modal').classList.add('hidden'); }
         
         window.deleteDocItem = async function(collectionName, id, itemName, reloadFunc) {
             document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn XÓA: <b>${itemName}</b>?`;
@@ -416,7 +444,7 @@
             } else if (currentTab === 'may-moc') {
                 document.getElementById('machine-modal-title').innerText = 'Thêm Thiết Bị Mới';
                 document.getElementById('mac-doc-id').value = '';
-                ['cong-ty', 'ten-may', 'bien-so', 'ngay-kd', 'han-kd'].forEach(id => document.getElementById(`mac-${id}`).value = '');
+                ['cong-ty', 'ten-may', 'bien-so', 'ngay-kd', 'han-kd', 'operator', 'file-kiemdinh', 'file-chungchi'].forEach(id => document.getElementById(`mac-${id}`).value = '');
                 document.getElementById('machine-modal').classList.remove('hidden');
             } else if (currentTab === 'dao-tao') {
                 document.getElementById('training-modal-title').innerText = 'Lưu Hồ Sơ Đào Tạo';
@@ -522,6 +550,35 @@
             await saveDataToFirebase("nha_thau_nhan_su", document.getElementById('wk-doc-id').value, data, "btn-save-worker", "worker-modal", window.loadWorkerData);
         }
 
+        window.uploadFileToImgBB = async (inputId) => {
+            const fileInput = document.getElementById(inputId);
+            if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append("image", file);
+
+            // BƯỚC QUAN TRỌNG: Dán API Key ImgBB miễn phí của anh vào đây!
+            const IMGBB_API_KEY = "6193096d9989e38412da2d277a2a6b9c";
+
+            try {
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: "POST",
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    return result.data.url; // Lấy link ảnh trực tiếp
+                } else {
+                    throw new Error("Lỗi tải ảnh lên ImgBB");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Không thể tải ảnh lên. Vui lòng đảm bảo đúng file JPG/PNG và có mạng Internet.");
+                return null;
+            }
+        };
+
         window.loadMachineData = async function() {
             const tbody = document.getElementById('machine-results-body');
             document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-may-moc').classList.add('hidden'); tbody.innerHTML = '';
@@ -529,21 +586,97 @@
             let stt = 1;
             snap.forEach(doc => {
                 const d = doc.data();
-                tbody.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-4 text-center">${stt++}</td><td class="p-4 font-bold text-slate-700">${d.cong_ty}</td><td class="p-4 font-bold text-amber-700">${d.ten_may}</td><td class="p-4">${d.bien_so||''}</td><td class="p-4 text-center">${formatSimpleDate(d.ngay_kiem_dinh)}</td><td class="p-4 text-center">${formatDateAndStatus(d.han_kiem_dinh).html}</td><td class="p-4 text-center"><button onclick="editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}')" class="text-blue-600 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button><button onclick="deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',window.loadMachineData)" class="text-red-500 p-1"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
+                
+                // Xử lý link ảnh bằng chứng
+                let fileLinks = '';
+                if(d.file_kiem_dinh) fileLinks += `<a href="${d.file_kiem_dinh}" target="_blank" class="text-blue-600 hover:underline text-[11px] block font-bold mb-1"><i class="ph-bold ph-link"></i> Xem Giấy KĐ</a>`;
+                if(d.file_chung_chi) fileLinks += `<a href="${d.file_chung_chi}" target="_blank" class="text-amber-600 hover:underline text-[11px] block font-bold"><i class="ph-bold ph-link"></i> Xem C.Chỉ Tài xế</a>`;
+                if(!fileLinks) fileLinks = '<span class="text-slate-400 text-xs">Chưa có ảnh</span>';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 text-center">${stt++}</td>
+                        <td class="p-4 font-bold text-slate-700">${d.cong_ty}</td>
+                        <td class="p-4 font-bold text-amber-700">${d.ten_may}</td>
+                        <td class="p-4">${d.bien_so||''}</td>
+                        <td class="p-4 font-bold text-indigo-700">${d.nguoi_van_hanh || '<span class="font-normal text-slate-400">N/A</span>'}</td>
+                        <td class="p-4 text-center">${formatDateAndStatus(d.han_kiem_dinh).html}</td>
+                        <td class="p-4 text-center">${fileLinks}</td>
+                        <td class="p-4 text-center whitespace-nowrap">
+                            <button onclick="showMachineQR('${doc.id}', '${d.ten_may}')" class="text-indigo-600 hover:text-indigo-800 p-1" title="Mã QR Ra Vào Cổng"><i class="ph-bold ph-qr-code text-xl"></i></button>
+                            <button onclick="editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}','${d.nguoi_van_hanh||''}')" class="text-blue-600 p-1 ml-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',window.loadMachineData)" class="text-red-500 p-1 ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
+                        </td>
+                    </tr>`;
             });
             document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-may-moc').classList.remove('hidden');
         }
 
-        window.editMachine = function(id, cty, ten, bs, ng, han) {
-            document.getElementById('mac-doc-id').value = id; document.getElementById('mac-cong-ty').value = cty; document.getElementById('mac-ten-may').value = ten;
-            document.getElementById('mac-bien-so').value = bs; document.getElementById('mac-ngay-kd').value = ng; document.getElementById('mac-han-kd').value = han;
+        window.editMachine = function(id, cty, ten, bs, ng, han, operator) {
+            document.getElementById('mac-doc-id').value = id; 
+            document.getElementById('mac-cong-ty').value = cty; 
+            document.getElementById('mac-ten-may').value = ten;
+            document.getElementById('mac-bien-so').value = bs; 
+            document.getElementById('mac-ngay-kd').value = ng; 
+            document.getElementById('mac-han-kd').value = han;
+            document.getElementById('mac-operator').value = operator;
+            document.getElementById('mac-file-kiemdinh').value = ''; // Browser security prevents auto-fill file
+            document.getElementById('mac-file-chungchi').value = ''; 
             document.getElementById('machine-modal').classList.remove('hidden');
         }
 
-        window.saveMachine = async function() {
-            const data = { cong_ty: document.getElementById('mac-cong-ty').value, ten_may: document.getElementById('mac-ten-may').value, bien_so: document.getElementById('mac-bien-so').value, ngay_kiem_dinh: document.getElementById('mac-ngay-kd').value, han_kiem_dinh: document.getElementById('mac-han-kd').value, thoi_gian_cap_nhat: new Date() };
-            if (!data.cong_ty || !data.ten_may || !data.han_kiem_dinh) return showToast("Nhập đủ Cty, Tên máy và Hạn KĐ!", "error");
-            await saveDataToFirebase("nha_thau_may_moc", document.getElementById('mac-doc-id').value, data, "btn-save-machine", "machine-modal", window.loadMachineData);
+        window.saveMachineData = async function() {
+            const cty = document.getElementById('mac-cong-ty').value.trim();
+            const ten = document.getElementById('mac-ten-may').value.trim();
+            const han = document.getElementById('mac-han-kd').value;
+            if (!cty || !ten || !han) return showToast("Nhập đủ Cty, Tên máy và Hạn KĐ!", "error");
+
+            const btn = document.getElementById('btn-save-machine');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải file lên...'; btn.disabled = true;
+
+            try {
+                // Tải ảnh lên trước
+                let linkKiemDinh = await window.uploadFileToImgBB('mac-file-kiemdinh');
+                let linkChungChi = await window.uploadFileToImgBB('mac-file-chungchi');
+
+                const data = { 
+                    cong_ty: cty, 
+                    ten_may: ten, 
+                    bien_so: document.getElementById('mac-bien-so').value.trim(), 
+                    ngay_kiem_dinh: document.getElementById('mac-ngay-kd').value, 
+                    han_kiem_dinh: han,
+                    nguoi_van_hanh: document.getElementById('mac-operator').value.trim(),
+                    thoi_gian_cap_nhat: new Date() 
+                };
+
+                // Chỉ ghi đè nếu có ảnh mới
+                if (linkKiemDinh) data.file_kiem_dinh = linkKiemDinh;
+                if (linkChungChi) data.file_chung_chi = linkChungChi;
+
+                const docId = document.getElementById('mac-doc-id').value;
+                if (docId) { 
+                    await window.updateDoc(window.doc(window.db, "nha_thau_may_moc", docId), data); 
+                    showToast("Cập nhật thành công!"); 
+                } else { 
+                    data.thoi_gian_tao = new Date(); 
+                    await window.addDoc(window.collection(window.db, "nha_thau_may_moc"), data); 
+                    showToast("Thêm mới thành công!"); 
+                }
+                window.closeModal('machine-modal'); 
+                window.loadMachineData();
+            } catch (error) {
+                showToast("Lỗi: " + error.message, "error");
+            } finally {
+                btn.innerHTML = 'Lưu'; btn.disabled = false;
+            }
+        }
+
+        window.showMachineQR = function(id, name) {
+            document.getElementById('qr-machine-name').innerText = name;
+            // Dùng API miễn phí để tạo QR code trỏ về chuỗi định dạng an ninh
+            const qrData = encodeURIComponent(`MACHINE:${id}`);
+            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${qrData}`;
+            document.getElementById('qr-modal').classList.remove('hidden');
         }
 
         window.loadTrainingData = async function() {
@@ -564,7 +697,6 @@
             await saveDataToFirebase("nha_thau_dao_tao", document.getElementById('tr-doc-id').value, data, "btn-save-training", "training-modal", window.loadTrainingData);
         }
 
-        // THUẬT TOÁN ĐA LƯỢT (MULTI-SESSION) HOÀN CHỈNH
         window.loadChamCongData = async function() {
             const tbody = document.getElementById('cham-cong-results-body');
             document.getElementById('loading-msg').classList.remove('hidden');
@@ -598,10 +730,8 @@
 
                 let allSessionsToRender = [];
 
-                // Xử lý từng người để bóc tách thành các "Lượt" (Session)
                 for (let key in personSessions) {
                     let events = personSessions[key];
-                    // Chắc chắn sắp xếp theo thời gian tăng dần
                     events.sort((a, b) => a.thoi_gian.toDate().getTime() - b.thoi_gian.toDate().getTime());
 
                     let currentSession = null;
@@ -610,45 +740,31 @@
                         let timeStr = ev.thoi_gian.toDate().toLocaleTimeString('vi-VN');
                         if (ev.trang_thai === 'VÀO') {
                             if (currentSession) {
-                                // Quẹt VÀO nhưng chưa quẹt RA lần trước -> Đóng luôn lượt trước
                                 allSessionsToRender.push(currentSession); 
                             }
-                            // Mở lượt mới
                             currentSession = {
-                                cong_ty: ev.cong_ty,
-                                ho_ten: ev.ho_ten,
-                                nha_may: ev.nha_may || "Chưa xác định",
-                                gio_vao: timeStr,
-                                gio_ra: null,
-                                timestamp: ev.thoi_gian.toDate().getTime()
+                                cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: ev.nha_may || "Chưa xác định",
+                                gio_vao: timeStr, gio_ra: null, timestamp: ev.thoi_gian.toDate().getTime()
                             };
                         } else if (ev.trang_thai === 'RA') {
                             if (currentSession) {
-                                // Quẹt RA bình thường
                                 currentSession.gio_ra = timeStr;
                                 allSessionsToRender.push(currentSession);
                                 currentSession = null;
                             } else {
-                                // Quẹt RA nhưng không có lượt VÀO nào đang mở (Lỗi thao tác)
                                 allSessionsToRender.push({
-                                    cong_ty: ev.cong_ty,
-                                    ho_ten: ev.ho_ten,
-                                    nha_may: ev.nha_may || "Chưa xác định",
-                                    gio_vao: null,
-                                    gio_ra: timeStr,
-                                    timestamp: ev.thoi_gian.toDate().getTime()
+                                    cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: ev.nha_may || "Chưa xác định",
+                                    gio_vao: null, gio_ra: timeStr, timestamp: ev.thoi_gian.toDate().getTime()
                                 });
                             }
                         }
                     });
                     
-                    // Nếu cuối ngày vẫn còn 1 lượt đang mở (đang trong xưởng)
                     if (currentSession) {
                         allSessionsToRender.push(currentSession); 
                     }
                 }
 
-                // Sắp xếp lại bảng để các sự kiện mới nhất lên trên đầu
                 allSessionsToRender.sort((a,b) => b.timestamp - a.timestamp);
 
                 let totalIn = 0; let totalOut = 0; let totalInside = 0;
@@ -659,7 +775,6 @@
                     let timeInDisplay = session.gio_vao || '<span class="text-slate-300">-</span>';
                     let timeOutDisplay = session.gio_ra || '<span class="text-slate-300">-</span>';
 
-                    // Thống kê dựa trên các Lượt
                     if (session.gio_vao) totalIn++;
                     if (session.gio_ra) totalOut++;
 
