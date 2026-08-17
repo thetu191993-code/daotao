@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Tài Liệu EHS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-slate-50 p-2 md:p-8 font-sans text-slate-800 pb-24">
+    <div class="max-w-[1200px] mx-auto">
+        
+        <!-- Nút Về Trang Chủ -->
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium transition bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-sm">
+                <i class="ph-bold ph-arrow-left text-lg"></i> Về Bảng Điều Khiển
+            </a>
+        </div>
+
+        <div class="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+            <!-- HEADER TỔNG -->
+            <div class="border-b border-slate-100 pb-6 mb-8">
+                <h2 class="text-2xl sm:text-3xl font-bold text-blue-800 mb-2 flex items-center">
+                    <i class="ph-fill ph-books text-4xl mr-3 text-blue-600"></i>
+                    Kho Tài Liệu EHS
+                </h2>
+                <p class="text-slate-500 text-sm sm:text-base">Trung tâm lưu trữ bài giảng, quy trình và sổ tay hướng dẫn vận hành an toàn.</p>
+            </div>
+
+            <!-- PHẦN 1: BÀI GIẢNG -->
+            <div class="mb-12 border-b border-slate-100 pb-10">
+                <h3 class="text-xl font-bold text-slate-800 mb-5 flex items-center gap-2">
+                    <i class="ph-bold ph-graduation-cap text-indigo-600 text-2xl"></i> Bài Giảng & Sổ Tay Đào Tạo
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <a href="Tai_lieu_daotao_EHS.pdf" target="_blank" class="flex items-start gap-3 p-4 rounded-2xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-50 hover:border-indigo-300 transition group shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition"><i class="ph-fill ph-file-pdf text-2xl"></i></div>
+                        <div><h4 class="font-bold text-slate-800 text-sm group-hover:text-indigo-700">Đào tạo EHS Cơ Bản</h4><p class="text-[11px] text-slate-500 mt-1">Hội nhập nội quy toàn nhà máy.</p></div>
+                    </a>
+                    <a href="bai_giang_5s.pdf" target="_blank" class="flex items-start gap-3 p-4 rounded-2xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-50 hover:border-emerald-300 transition group shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition"><i class="ph-fill ph-file-pdf text-2xl"></i></div>
+                        <div><h4 class="font-bold text-slate-800 text-sm group-hover:text-emerald-700">Tiêu chuẩn 5S</h4><p class="text-[11px] text-slate-500 mt-1">Sàng lọc, Sắp xếp, Sạch sẽ...</p></div>
+                    </a>
+                    <a href="bai_giang_loto.pdf" target="_blank" class="flex items-start gap-3 p-4 rounded-2xl border border-rose-100 bg-rose-50/50 hover:bg-rose-50 hover:border-rose-300 transition group shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 group-hover:scale-110 transition"><i class="ph-fill ph-file-pdf text-2xl"></i></div>
+                        <div><h4 class="font-bold text-slate-800 text-sm group-hover:text-rose-700">An toàn LOTO</h4><p class="text-[11px] text-slate-500 mt-1">Quy trình cô lập năng lượng.</p></div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- PHẦN 2: SỔ TAY QUY TRÌNH -->
+            <div>
+                <h3 class="text-xl font-bold text-slate-800 mb-5 flex items-center gap-2">
+                    <i class="ph-bold ph-book-bookmark text-teal-600 text-2xl"></i> Sổ Tay & Quy Trình
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <button class="flex items-start gap-3 p-4 rounded-2xl border border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed text-left shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-slate-200 text-slate-500 flex items-center justify-center shrink-0"><i class="ph-fill ph-notebook text-2xl"></i></div>
+                        <div><h4 class="font-bold text-slate-700 text-sm">Sổ tay Vận hành</h4><p class="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-wider">Chưa cập nhật file</p></div>
+                    </button>
+                    <button class="flex items-start gap-3 p-4 rounded-2xl border border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed text-left shadow-sm">
+                        <div class="w-12 h-12 rounded-xl bg-slate-200 text-slate-500 flex items-center justify-center shrink-0"><i class="ph-fill ph-warning-circle text-2xl"></i></div>
+                        <div><h4 class="font-bold text-slate-700 text-sm">Quy trình Sự cố</h4><p class="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-wider">Chưa cập nhật file</p></div>
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>
