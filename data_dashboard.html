@@ -665,7 +665,13 @@
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
                         plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
-                        scales: { y: { beginAtZero: true, title: {display: true, text: 'mg/L', font: {size: 10}} } }
+                        scales: { 
+                            y: { 
+                                beginAtZero: true, 
+                                suggestedMax: 100, // Cố định mức trần 100 để biểu đồ không bị ép lùn khi có 1 điểm
+                                title: {display: true, text: 'mg/L', font: {size: 10}} 
+                            } 
+                        }
                     }
                 });
 
@@ -678,7 +684,8 @@
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'Coliform (MPN)', data: dColi, type: 'bar', backgroundColor: 'rgba(16, 185, 129, 0.5)', borderColor: '#10b981', borderWidth: 1, yAxisID: 'yColi', maxBarThickness: 50 },
+                            // Fix lỗi: Dùng barThickness cố định 40px để cột không bao giờ bị kéo giãn khổng lồ
+                            { label: 'Coliform (MPN)', data: dColi, type: 'bar', backgroundColor: 'rgba(16, 185, 129, 0.5)', borderColor: '#10b981', borderWidth: 1, yAxisID: 'yColi', barThickness: 40 },
                             { label: 'Độ màu (Pt-Co)', data: dColor, type: 'line', borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 3, tension: 0.3, yAxisID: 'yColor' }
                         ]
                     },
@@ -687,8 +694,17 @@
                         interaction: { mode: 'index', intersect: false },
                         plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
                         scales: {
-                            yColor: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Độ Màu (Pt-Co)', font: {size: 10}}, beginAtZero: true },
-                            yColi: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'Coliform (MPN/100mL)', font: {size: 10}}, grid: {drawOnChartArea: false}, beginAtZero: true }
+                            yColor: { 
+                                type: 'linear', display: true, position: 'left', 
+                                title: {display: true, text: 'Độ Màu (Pt-Co)', font: {size: 10}}, 
+                                beginAtZero: true, suggestedMax: 100 // Trần quy chuẩn Độ màu
+                            },
+                            yColi: { 
+                                type: 'linear', display: true, position: 'right', 
+                                title: {display: true, text: 'Coliform (MPN/100mL)', font: {size: 10}}, 
+                                grid: {drawOnChartArea: false}, 
+                                beginAtZero: true, suggestedMax: 5000 // Trần quy chuẩn Coliform
+                            }
                         }
                     }
                 });
