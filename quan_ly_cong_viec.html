@@ -170,7 +170,6 @@
                         <label class="block text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase flex items-center gap-1">
                             <i class="ph-fill ph-list-numbers"></i> Kế hoạch chi tiết theo từng bước
                         </label>
-                        <!-- Nút AI đã được gỡ bỏ để tối ưu hiệu suất và tránh phụ thuộc API -->
                     </div>
                     
                     <div id="plan-steps-wrapper" class="space-y-2">
@@ -224,11 +223,10 @@
                     <input type="hidden" id="task-progress" value="0">
                 </div>
 
-                <!-- KHU VỰC DÀNH CHO LÃNH ĐẠO / NGƯỜI GIAO VIỆC (Đã sửa lỗi textarea) -->
+                <!-- KHU VỰC DÀNH CHO LÃNH ĐẠO / NGƯỜI GIAO VIỆC -->
                 <div id="eval-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-amber-600 uppercase mb-2"><i class="ph-fill ph-chat-centered-text"></i> Đánh giá & Yêu cầu cải tiến (Dành cho Lãnh đạo)</label>
-                        <!-- Ô textarea này đã được phục hồi để lãnh đạo gõ chữ -->
                         <textarea id="task-eval" class="w-full border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-900/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500 custom-scrollbar resize-none dark:text-slate-200" rows="3" placeholder="Lãnh đạo nhập nhận xét hoặc yêu cầu nhân viên làm lại điểm nào..."></textarea>
                     </div>
                     
@@ -248,7 +246,6 @@
         </div>
     </div>
 
-    <!-- TÍCH HỢP TOÀN BỘ LOGIC VÀO MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -256,13 +253,13 @@
 
         // Firebase Config đã chốt chuẩn
         const firebaseConfig = {
-          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
-          authDomain: "ehs-training-app.firebaseapp.com",
-          projectId: "ehs-training-app",
-          storageBucket: "ehs-training-app.firebasestorage.app",
-          messagingSenderId: "354083430003",
-          appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-          measurementId: "G-74ETHWTJCW"
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -271,24 +268,17 @@
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
         let currentUserId = localStorage.getItem("ehs_user_id");
         let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
-        let userDept = localStorage.getItem("ehs_user_dept") || "";
         
-        // KIỂM TRA QUYỀN LÃNH ĐẠO CHUNG
-        let isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
-        
-        // KIỂM TRA QUYỀN TOÀN CỤC
-        let isGlobalLeader = /ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
+        // Chuyển isLeader và isGlobalLeader thành biến có thể thay đổi được (để tính toán động)
+        let isLeader = false;
+        let isGlobalLeader = false;
+        let userDept = ""; // Sẽ được nạp trực tiếp từ Database thay vì lấy từ LocalStorage tĩnh
 
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
         let globalUserDeptMap = {}; 
         let upTaskId = "";
         let upTaskAssigner = "";
-
-        if(isLeader) {
-            document.getElementById('tab-all').classList.remove('hidden');
-            document.getElementById('tab-all').classList.add('flex');
-        }
 
         function showToast(message, type = "success") {
             const toast = document.getElementById('toast');
@@ -493,6 +483,25 @@
                     const data = doc.data();
                     if(data.ma_nv) {
                         globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
+                        
+                        // ĐIỂM SỬA CHỮA CỐT LÕI NẰM Ở ĐÂY:
+                        // Ngay lúc tải danh sách, ta tìm đúng Mã NV của người đang đăng nhập
+                        // Sau đó lấy chính xác Vị Trí, Bộ phận và Vai trò của họ từ Database để xét duyệt quyền.
+                        if (String(data.ma_nv).toUpperCase() === String(currentUserId).toUpperCase()) {
+                            let bp = (data.bo_phan || "").toLowerCase();
+                            let vt = (data.vi_tri || "").toLowerCase();
+                            let pccc = (data.vai_tro_phu && data.vai_tro_phu.pccc) ? data.vai_tro_phu.pccc.toLowerCase() : "";
+                            let atvsv = (data.vai_tro_phu && data.vai_tro_phu.atvsv) ? true : false;
+
+                            // Trở thành Lãnh đạo nếu VỊ TRÍ có chữ Giám đốc/Trưởng/Giám sát... HOẶC Bộ phận là EHS/Admin
+                            isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó/i.test(vt) || /ehs|admin/i.test(bp) || /trưởng|đội phó/i.test(pccc) || atvsv;
+                            
+                            // Trở thành Lãnh đạo toàn cục (Thấy toàn bộ nhà máy) nếu là người của EHS/Admin
+                            isGlobalLeader = /ehs|admin/i.test(bp) || atvsv || /trưởng|đội phó/i.test(pccc);
+                            
+                            // Cập nhật lại bộ phận để thuật toán Lọc chạy chuẩn xác
+                            userDept = data.bo_phan || ""; 
+                        }
                     }
 
                     if(data.ma_nv && data.ho_ten && data.ma_nv !== currentUserId) {
@@ -502,7 +511,15 @@
                         </li>`;
                     }
                 });
+                
                 ul.innerHTML = html;
+                
+                // Mở khóa nút "Góc Lãnh Đạo" nếu thuật toán vừa phát hiện user này có quyền
+                if(isLeader) {
+                    document.getElementById('tab-all').classList.remove('hidden');
+                    document.getElementById('tab-all').classList.add('flex');
+                }
+                
             } catch (e) {
                 ul.innerHTML = '<li class="p-2 text-red-500 font-bold">Lỗi tải danh sách từ Firebase</li>';
                 console.error("Lỗi dropdown: ", e);
