@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kho Tài Liệu & Dữ Liệu EHS</title>
+    <title>Trung Tâm Dữ Liệu Quan Trắc</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -80,7 +80,10 @@
                     <div id="daily-chart-loader" class="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center rounded-2xl">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-600 mb-2"></i>
                     </div>
-                    <canvas id="dailyChart" style="width: 100%; height: 350px;"></canvas>
+                    <!-- KHẮC PHỤC LỖI GIÃN BIỂU ĐỒ BẰNG CÁCH KHÓA CHIỀU CAO DIV (h-[350px]) -->
+                    <div class="relative w-full h-[350px]">
+                        <canvas id="dailyChart"></canvas>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar">
@@ -121,15 +124,21 @@
                     </div>
                     
                     <!-- Biểu đồ 1: Nồng độ -->
-                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                        <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2 text-center bg-slate-50 py-1 rounded-lg">Nhóm Chỉ Tiêu Nồng Độ (mg/L)</h4>
-                        <canvas id="waterChartConc" style="width: 100%; height: 300px;"></canvas>
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col">
+                        <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2 text-center bg-slate-50 py-1 rounded-lg shrink-0">Nhóm Chỉ Tiêu Nồng Độ (mg/L)</h4>
+                        <!-- KHẮC PHỤC LỖI GIÃN BIỂU ĐỒ BẰNG CÁCH KHÓA CHIỀU CAO DIV (h-[300px]) -->
+                        <div class="relative w-full h-[300px] grow">
+                            <canvas id="waterChartConc"></canvas>
+                        </div>
                     </div>
 
                     <!-- Biểu đồ 2: Vi sinh & Cảm quan -->
-                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                        <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2 text-center bg-slate-50 py-1 rounded-lg">Nhóm Vi Sinh (MPN) & Cảm Quan (Pt-Co)</h4>
-                        <canvas id="waterChartSpec" style="width: 100%; height: 300px;"></canvas>
+                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col">
+                        <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2 text-center bg-slate-50 py-1 rounded-lg shrink-0">Nhóm Vi Sinh (MPN) & Cảm Quan (Pt-Co)</h4>
+                        <!-- KHẮC PHỤC LỖI GIÃN BIỂU ĐỒ BẰNG CÁCH KHÓA CHIỀU CAO DIV (h-[300px]) -->
+                        <div class="relative w-full h-[300px] grow">
+                            <canvas id="waterChartSpec"></canvas>
+                        </div>
                     </div>
                 </div>
 
@@ -173,7 +182,10 @@
                     <div id="air-chart-loader" class="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center rounded-2xl">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-sky-600 mb-2"></i>
                     </div>
-                    <canvas id="airChart" style="width: 100%; height: 350px;"></canvas>
+                    <!-- KHẮC PHỤC LỖI GIÃN BIỂU ĐỒ BẰNG CÁCH KHÓA CHIỀU CAO DIV (h-[350px]) -->
+                    <div class="relative w-full h-[350px]">
+                        <canvas id="airChart"></canvas>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar">
@@ -518,15 +530,16 @@
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'COD (mg/L)', data: dCod, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true, tension: 0.3, yAxisID: 'y' },
-                            { label: 'Florua (mg/L)', data: dFlorua, borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, yAxisID: 'y' },
-                            { label: 'pH', data: dPh, borderColor: '#3b82f6', borderWidth: 2, borderDash: [5,5], tension: 0.3, yAxisID: 'y1' }
+                            { label: 'COD (mg/L)', data: dCod, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true, tension: 0.3, yAxisID: 'y', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'Florua (mg/L)', data: dFlorua, borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, yAxisID: 'y', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'pH', data: dPh, borderColor: '#3b82f6', borderWidth: 2, borderDash: [5,5], tension: 0.3, yAxisID: 'y1', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
                         scales: {
+                            x: { offset: true },
                             y: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Nồng độ (mg/L)'}, max: 120 },
                             y1: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'Thang pH'}, grid: {drawOnChartArea: false}, min: 0, max: 14 }
                         }
@@ -654,11 +667,11 @@
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'COD', data: dCod, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.1)', borderWidth: 3, fill: true, tension: 0.3 },
-                            { label: 'BOD5', data: dBod, borderColor: '#d97706', borderWidth: 2, tension: 0.3 },
-                            { label: 'TSS', data: dTss, borderColor: '#475569', borderWidth: 2, borderDash: [5,5], tension: 0.3 },
-                            { label: 'Tổng N', data: dTongN, borderColor: '#2563eb', borderWidth: 2, tension: 0.3, hidden: true },
-                            { label: 'Florua', data: dFlorua, borderColor: '#059669', borderWidth: 2, tension: 0.3, hidden: true }
+                            { label: 'COD', data: dCod, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'BOD5', data: dBod, borderColor: '#d97706', borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'TSS', data: dTss, borderColor: '#475569', borderWidth: 2, borderDash: [5,5], tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'Tổng N', data: dTongN, borderColor: '#2563eb', borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'Florua', data: dFlorua, borderColor: '#059669', borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
                         ]
                     },
                     options: {
@@ -666,9 +679,10 @@
                         interaction: { mode: 'index', intersect: false },
                         plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
                         scales: { 
+                            x: { offset: true }, // KHẮC PHỤC LỖI 1 ĐIỂM DỮ LIỆU
                             y: { 
                                 beginAtZero: true, 
-                                suggestedMax: 100, // Cố định mức trần 100 để biểu đồ không bị ép lùn khi có 1 điểm
+                                suggestedMax: 100,
                                 title: {display: true, text: 'mg/L', font: {size: 10}} 
                             } 
                         }
@@ -684,9 +698,9 @@
                     data: {
                         labels: labels,
                         datasets: [
-                            // Fix lỗi: Dùng barThickness cố định 40px để cột không bao giờ bị kéo giãn khổng lồ
+                            // KHÓA CHIỀU RỘNG CỘT (barThickness: 40)
                             { label: 'Coliform (MPN)', data: dColi, type: 'bar', backgroundColor: 'rgba(16, 185, 129, 0.5)', borderColor: '#10b981', borderWidth: 1, yAxisID: 'yColi', barThickness: 40 },
-                            { label: 'Độ màu (Pt-Co)', data: dColor, type: 'line', borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 3, tension: 0.3, yAxisID: 'yColor' }
+                            { label: 'Độ màu (Pt-Co)', data: dColor, type: 'line', borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 3, tension: 0.3, yAxisID: 'yColor', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
                         ]
                     },
                     options: {
@@ -694,16 +708,17 @@
                         interaction: { mode: 'index', intersect: false },
                         plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } },
                         scales: {
+                            x: { offset: true }, // KHẮC PHỤC LỖI 1 ĐIỂM DỮ LIỆU
                             yColor: { 
                                 type: 'linear', display: true, position: 'left', 
                                 title: {display: true, text: 'Độ Màu (Pt-Co)', font: {size: 10}}, 
-                                beginAtZero: true, suggestedMax: 100 // Trần quy chuẩn Độ màu
+                                beginAtZero: true, suggestedMax: 100 
                             },
                             yColi: { 
                                 type: 'linear', display: true, position: 'right', 
                                 title: {display: true, text: 'Coliform (MPN/100mL)', font: {size: 10}}, 
                                 grid: {drawOnChartArea: false}, 
-                                beginAtZero: true, suggestedMax: 5000 // Trần quy chuẩn Coliform
+                                beginAtZero: true, suggestedMax: 5000 
                             }
                         }
                     }
@@ -798,16 +813,19 @@
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'SO2 (mg/Nm3)', data: dSo2, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.1)', fill: true, borderWidth: 2, tension: 0.3 },
-                            { label: 'NOx (mg/Nm3)', data: dNox, borderColor: '#d97706', borderWidth: 2, tension: 0.3 },
-                            { label: 'CO (mg/Nm3)', data: dCo, borderColor: '#2563eb', borderWidth: 2, tension: 0.3 },
-                            { label: 'Bụi Tổng', data: dBui, borderColor: '#94a3b8', borderDash: [5,5], borderWidth: 2, tension: 0.3, hidden: true }
+                            { label: 'SO2 (mg/Nm3)', data: dSo2, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.1)', fill: true, borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'NOx (mg/Nm3)', data: dNox, borderColor: '#d97706', borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'CO (mg/Nm3)', data: dCo, borderColor: '#2563eb', borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
+                            { label: 'Bụi Tổng', data: dBui, borderColor: '#94a3b8', borderDash: [5,5], borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
                         ]
                     },
                     options: {
                         responsive: true, maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
-                        scales: { y: { beginAtZero: true, title: {display: true, text: 'Nồng độ (mg/Nm3)'} } }
+                        scales: { 
+                            x: { offset: true },
+                            y: { beginAtZero: true, title: {display: true, text: 'Nồng độ (mg/Nm3)'} } 
+                        }
                     }
                 });
             } catch(e) {} finally { document.getElementById('air-chart-loader').classList.add('hidden'); }
