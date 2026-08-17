@@ -17,12 +17,23 @@
 </head>
 <body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800 pb-20">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-[1400px] mx-auto">
         
-        <div class="mb-6">
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-medium transition bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-sm">
                 <i class="ph-bold ph-arrow-left"></i> Về Bảng Điều Khiển
             </a>
+            
+            <!-- BỘ LỌC NHÀ MÁY TOÀN CỤC -->
+            <div class="bg-white px-4 py-2 rounded-xl border border-blue-200 shadow-sm flex items-center gap-3">
+                <i class="ph-fill ph-factory text-blue-600 text-xl"></i>
+                <label class="font-bold text-sm text-slate-600">Đang xem báo cáo:</label>
+                <select id="global-plant-filter" onchange="reloadAllCharts()" class="border-none bg-blue-50 text-blue-700 font-black px-3 py-1 rounded-lg outline-none cursor-pointer">
+                    <option value="Tất cả">Tất cả Nhà Máy</option>
+                    <option value="Nhà máy Can">Nhà máy Can</option>
+                    <option value="Nhà máy End">Nhà máy End</option>
+                </select>
+            </div>
         </div>
 
         <div class="bg-white p-4 md:p-8 rounded-2xl shadow-sm border border-slate-200">
@@ -71,7 +82,7 @@
                         <i class="ph-fill ph-drop text-teal-600 text-2xl"></i> Giám Sát Chất Lượng Nước Thải (QCVN 40:2011)
                     </h3>
                     <button onclick="openWaterModal()" class="bg-teal-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-md w-full sm:w-auto">
-                        <i class="ph-bold ph-plus text-lg"></i> Thêm Kết Quả Nước Thải
+                        <i class="ph-bold ph-plus text-lg"></i> Nhập Kết Quả Nước Thải
                     </button>
                 </div>
 
@@ -80,16 +91,17 @@
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-teal-600 mb-2"></i>
                         <span class="text-sm font-bold text-slate-500">Đang tải dữ liệu Nước thải...</span>
                     </div>
-                    <!-- Biểu đồ Nước Thải Trục Kép -->
                     <canvas id="waterChart" style="width: 100%; height: 400px;"></canvas>
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm custom-scrollbar">
-                    <table class="w-full text-left border-collapse min-w-[1200px]">
+                    <table class="w-full text-left border-collapse min-w-[1400px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-12">STT</th>
-                                <th class="p-3 border-b border-slate-700">Ngày lấy mẫu</th>
+                                <th class="p-3 border-b border-slate-700">Nhà Máy</th>
+                                <th class="p-3 border-b border-slate-700">Vị trí lấy mẫu</th>
+                                <th class="p-3 border-b border-slate-700 text-center">Ngày lấy mẫu</th>
                                 <th class="p-3 border-b border-slate-700 text-center">pH<br><span class="text-[9px] text-slate-400">6-9</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-rose-300">COD<br><span class="text-[9px]">Max 90</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-amber-300">BOD5<br><span class="text-[9px]">Max 60</span></th>
@@ -114,7 +126,7 @@
                         <i class="ph-fill ph-wind text-sky-600 text-2xl"></i> Giám Sát Chất Lượng Khí Thải (QCVN 19:2009)
                     </h3>
                     <button onclick="openAirModal()" class="bg-sky-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-sky-700 transition flex items-center justify-center gap-2 shadow-md w-full sm:w-auto">
-                        <i class="ph-bold ph-plus text-lg"></i> Thêm Kết Quả Khí Thải
+                        <i class="ph-bold ph-plus text-lg"></i> Nhập Kết Quả Khí Thải
                     </button>
                 </div>
 
@@ -127,11 +139,13 @@
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm custom-scrollbar">
-                    <table class="w-full text-left border-collapse min-w-[800px]">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-12">STT</th>
-                                <th class="p-3 border-b border-slate-700">Ngày đo đạc</th>
+                                <th class="p-3 border-b border-slate-700">Nhà Máy</th>
+                                <th class="p-3 border-b border-slate-700">Vị trí đo đạc</th>
+                                <th class="p-3 border-b border-slate-700 text-center">Ngày đo đạc</th>
                                 <th class="p-3 border-b border-slate-700 text-center text-slate-300">Bụi Tổng<br><span class="text-[9px] text-slate-400">Giới hạn: 200</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-rose-300">SO2<br><span class="text-[9px]">Giới hạn: 500</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-amber-300">NOx<br><span class="text-[9px]">Giới hạn: 850</span></th>
@@ -148,19 +162,33 @@
     </div>
 
     <div id="water-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col">
             <div class="p-5 border-b border-slate-100 bg-teal-50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-teal-800 flex items-center gap-2"><i class="ph-fill ph-drop"></i> Nhập Kết Quả Nước Thải</h3>
+                <h3 class="text-lg font-bold text-teal-800 flex items-center gap-2"><i class="ph-fill ph-drop"></i> Nhập Kết Quả Nước Thải Mới</h3>
                 <button onclick="closeWaterModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[70vh] custom-scrollbar">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày lấy mẫu <span class="text-red-500">*</span></label>
-                    <input type="date" id="w-date" class="w-full border border-slate-300 px-4 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-slate-50 focus:bg-white">
+            <div class="p-6 space-y-4 overflow-y-auto max-h-[75vh] custom-scrollbar">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-100 pb-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nhà Máy <span class="text-red-500">*</span></label>
+                        <select id="w-plant" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-slate-50">
+                            <option value="Nhà máy Can">Nhà máy Can</option>
+                            <option value="Nhà máy End">Nhà máy End</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Vị trí lấy mẫu <span class="text-red-500">*</span></label>
+                        <input type="text" id="w-location" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-slate-50" placeholder="VD: NT1 Bể xả thải...">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày lấy mẫu <span class="text-red-500">*</span></label>
+                        <input type="date" id="w-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-slate-50">
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">pH (6-9)</label><input type="number" step="0.01" id="w-ph" class="w-full border px-2 py-1.5 rounded-lg outline-none font-mono text-center"></div>
                     <div class="bg-rose-50 p-2 rounded-xl border border-rose-200"><label class="block text-[10px] font-black text-rose-700 uppercase mb-1">COD (Max 90)</label><input type="number" step="0.1" id="w-cod" class="w-full border border-rose-300 px-2 py-1.5 rounded-lg outline-none text-rose-700 font-mono font-bold text-center"></div>
                     <div class="bg-amber-50 p-2 rounded-xl border border-amber-200"><label class="block text-[10px] font-black text-amber-700 uppercase mb-1">BOD5 (Max 60)</label><input type="number" step="0.1" id="w-bod" class="w-full border border-amber-300 px-2 py-1.5 rounded-lg outline-none text-amber-700 font-mono font-bold text-center"></div>
@@ -171,6 +199,7 @@
                     <div class="bg-purple-50 p-2 rounded-xl border border-purple-200"><label class="block text-[10px] font-black text-purple-700 uppercase mb-1">Tổng N (Max 40)</label><input type="number" step="0.1" id="w-tongn" class="w-full border border-purple-300 px-2 py-1.5 rounded-lg outline-none text-purple-700 font-mono font-bold text-center"></div>
                     <div class="bg-slate-50 p-2 rounded-xl border border-slate-200"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Dầu mỡ (Max 30)</label><input type="number" step="0.1" id="w-daumo" class="w-full border px-2 py-1.5 rounded-lg outline-none font-mono text-center"></div>
                 </div>
+                
                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
                     <label class="block text-xs font-black text-emerald-700 uppercase mb-1">Tổng Coliform (MPN/100mL - Max 5000)</label>
                     <input type="number" step="1" id="w-coliform" class="w-full border border-emerald-300 px-3 py-2.5 rounded-lg outline-none focus:border-emerald-500 font-mono text-center text-emerald-800 font-black text-lg">
@@ -180,23 +209,37 @@
             <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
                 <button onclick="closeWaterModal()" class="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition">Hủy</button>
                 <button id="btn-save-water" onclick="saveWaterData()" class="bg-teal-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-teal-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-floppy-disk"></i> Lưu Nước Thải
+                    <i class="ph-bold ph-floppy-disk"></i> Lưu Hệ Thống
                 </button>
             </div>
         </div>
     </div>
 
     <div id="air-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
             <div class="p-5 border-b border-slate-100 bg-sky-50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-sky-800 flex items-center gap-2"><i class="ph-fill ph-wind"></i> Nhập Kết Quả Khí Thải</h3>
+                <h3 class="text-lg font-bold text-sky-800 flex items-center gap-2"><i class="ph-fill ph-wind"></i> Nhập Kết Quả Khí Thải Mới</h3>
                 <button onclick="closeAirModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
             <div class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày đo đạc <span class="text-red-500">*</span></label>
-                    <input type="date" id="a-date" class="w-full border border-slate-300 px-4 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-100 pb-4">
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nhà Máy <span class="text-red-500">*</span></label>
+                        <select id="a-plant" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50">
+                            <option value="Nhà máy Can">Nhà máy Can</option>
+                            <option value="Nhà máy End">Nhà máy End</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Vị trí đo đạc <span class="text-red-500">*</span></label>
+                        <input type="text" id="a-location" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50" placeholder="VD: Ống khói lò hơi...">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày đo đạc <span class="text-red-500">*</span></label>
+                        <input type="date" id="a-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50">
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -222,7 +265,7 @@
             <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
                 <button onclick="closeAirModal()" class="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition">Hủy</button>
                 <button id="btn-save-air" onclick="saveAirData()" class="bg-sky-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-sky-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-floppy-disk"></i> Lưu Khí Thải
+                    <i class="ph-bold ph-floppy-disk"></i> Lưu Hệ Thống
                 </button>
             </div>
         </div>
@@ -234,7 +277,7 @@
 
         // Khóa API Firebase của anh Tư
         const firebaseConfig = {
-            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA", // Đã dùng mã đúng
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
@@ -247,18 +290,32 @@
         let waterChartInstance = null;
         let airChartInstance = null;
 
+        // Hàm gọi lại cả 2 biểu đồ khi người dùng đổi Nhà máy
+        window.reloadAllCharts = () => {
+            loadWaterData();
+            loadAirData();
+        }
+
         // ==========================================
         // MODULE NƯỚC THẢI
         // ==========================================
-        window.openWaterModal = () => { document.getElementById('w-date').value = new Date().toISOString().split('T')[0]; document.getElementById('water-modal').classList.remove('hidden'); };
+        window.openWaterModal = () => { 
+            document.getElementById('w-date').value = new Date().toISOString().split('T')[0]; 
+            document.getElementById('water-modal').classList.remove('hidden'); 
+        };
         window.closeWaterModal = () => document.getElementById('water-modal').classList.add('hidden');
 
         window.saveWaterData = async () => {
             const dateVal = document.getElementById('w-date').value;
-            if(!dateVal) return alert("Vui lòng nhập Ngày lấy mẫu!");
+            const plantVal = document.getElementById('w-plant').value;
+            const locVal = document.getElementById('w-location').value.trim();
+            
+            if(!dateVal || !locVal) return alert("Vui lòng nhập Ngày lấy mẫu và Vị trí lấy mẫu!");
 
             const data = {
                 ngay_lay_mau: dateVal,
+                nha_may: plantVal,
+                vi_tri: locVal,
                 pH: parseFloat(document.getElementById('w-ph').value) || 0,
                 cod: parseFloat(document.getElementById('w-cod').value) || 0,
                 bod: parseFloat(document.getElementById('w-bod').value) || 0,
@@ -277,8 +334,13 @@
 
             try {
                 await addDoc(collection(db, "quan_trac_nuoc_thai"), data);
-                closeWaterModal(); loadWaterData();
-            } catch(e) { alert("Lỗi: " + e.message); } finally { btn.innerHTML = 'Lưu Nước Thải'; btn.disabled = false; }
+                closeWaterModal(); 
+                loadWaterData();
+            } catch(e) { 
+                alert("Lỗi bảo mật Firebase: Cần thiết lập Rules để cho phép write. Chi tiết: " + e.message); 
+            } finally { 
+                btn.innerHTML = 'Lưu Hệ Thống'; btn.disabled = false; 
+            }
         };
 
         window.deleteWaterData = async (id) => {
@@ -289,9 +351,19 @@
 
         async function loadWaterData() {
             document.getElementById('water-chart-loader').classList.remove('hidden');
+            const selectedPlant = document.getElementById('global-plant-filter').value;
+            
             try {
                 const snap = await getDocs(collection(db, "quan_trac_nuoc_thai"));
-                let raw = []; snap.forEach(d => raw.push({ id: d.id, ...d.data() }));
+                let raw = []; 
+                snap.forEach(d => {
+                    const data = d.data();
+                    // Bộ lọc nhà máy
+                    if(selectedPlant === "Tất cả" || data.nha_may === selectedPlant) {
+                        raw.push({ id: d.id, ...data });
+                    }
+                });
+                
                 raw.sort((a, b) => new Date(a.ngay_lay_mau) - new Date(b.ngay_lay_mau));
 
                 const tbody = document.getElementById('waterBody'); tbody.innerHTML = '';
@@ -302,11 +374,14 @@
                     let bodCls = d.bod >= 60 ? "text-red-600 font-black" : "font-bold text-slate-700";
                     let tssCls = d.tss >= 80 ? "text-red-600 font-black" : "font-bold text-slate-700";
                     let coliCls = d.coliform >= 5000 ? "text-red-600 font-black" : "font-bold text-emerald-700";
+                    let plantBadge = d.nha_may === "Nhà máy Can" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800";
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 whitespace-nowrap">
                             <td class="p-3 text-center text-slate-500">${i+1}</td>
-                            <td class="p-3 font-bold text-slate-700">${new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN')}</td>
+                            <td class="p-3 font-bold"><span class="px-2 py-1 rounded text-[11px] ${plantBadge}">${d.nha_may || 'N/A'}</span></td>
+                            <td class="p-3 font-medium text-slate-600">${d.vi_tri || 'N/A'}</td>
+                            <td class="p-3 text-center font-bold text-slate-700">${new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN')}</td>
                             <td class="p-3 text-center">${d.pH || 0}</td>
                             <td class="p-3 text-center ${codCls} bg-rose-50/50">${d.cod || 0}</td>
                             <td class="p-3 text-center ${bodCls}">${d.bod || 0}</td>
@@ -339,7 +414,6 @@
                             { label: 'BOD5 (mg/L)', data: dBod, borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, yAxisID: 'y' },
                             { label: 'TSS (mg/L)', data: dTss, borderColor: '#3b82f6', borderWidth: 2, tension: 0.3, yAxisID: 'y' },
                             { label: 'Tổng N (mg/L)', data: dTongN, borderColor: '#a855f7', borderWidth: 2, borderDash: [5,5], tension: 0.3, hidden: true, yAxisID: 'y' },
-                            // TRỤC KÉP: Đưa Coliform sang cột bên phải
                             { label: 'Coliform (MPN)', data: dColi, borderColor: '#10b981', type: 'bar', backgroundColor: 'rgba(16, 185, 129, 0.3)', yAxisID: 'y1' }
                         ]
                     },
@@ -358,15 +432,23 @@
         // ==========================================
         // MODULE KHÍ THẢI
         // ==========================================
-        window.openAirModal = () => { document.getElementById('a-date').value = new Date().toISOString().split('T')[0]; document.getElementById('air-modal').classList.remove('hidden'); };
+        window.openAirModal = () => { 
+            document.getElementById('a-date').value = new Date().toISOString().split('T')[0]; 
+            document.getElementById('air-modal').classList.remove('hidden'); 
+        };
         window.closeAirModal = () => document.getElementById('air-modal').classList.add('hidden');
 
         window.saveAirData = async () => {
             const dateVal = document.getElementById('a-date').value;
-            if(!dateVal) return alert("Vui lòng nhập Ngày!");
+            const plantVal = document.getElementById('a-plant').value;
+            const locVal = document.getElementById('a-location').value.trim();
+
+            if(!dateVal || !locVal) return alert("Vui lòng nhập Ngày và Vị trí đo đạc!");
 
             const data = {
                 ngay_lay_mau: dateVal,
+                nha_may: plantVal,
+                vi_tri: locVal,
                 bui: parseFloat(document.getElementById('a-dust').value) || 0,
                 so2: parseFloat(document.getElementById('a-so2').value) || 0,
                 nox: parseFloat(document.getElementById('a-nox').value) || 0,
@@ -380,7 +462,7 @@
             try {
                 await addDoc(collection(db, "quan_trac_khi_thai"), data);
                 closeAirModal(); loadAirData();
-            } catch(e) { alert(e.message); } finally { btn.innerHTML = 'Lưu Khí Thải'; btn.disabled = false; }
+            } catch(e) { alert(e.message); } finally { btn.innerHTML = 'Lưu Hệ Thống'; btn.disabled = false; }
         };
 
         window.deleteAirData = async (id) => {
@@ -389,19 +471,31 @@
 
         async function loadAirData() {
             document.getElementById('air-chart-loader').classList.remove('hidden');
+            const selectedPlant = document.getElementById('global-plant-filter').value;
+
             try {
                 const snap = await getDocs(collection(db, "quan_trac_khi_thai"));
-                let raw = []; snap.forEach(d => raw.push({ id: d.id, ...d.data() }));
+                let raw = []; 
+                snap.forEach(d => {
+                    const data = d.data();
+                    if(selectedPlant === "Tất cả" || data.nha_may === selectedPlant) {
+                        raw.push({ id: d.id, ...data });
+                    }
+                });
                 raw.sort((a, b) => new Date(a.ngay_lay_mau) - new Date(b.ngay_lay_mau));
 
                 const tbody = document.getElementById('airBody'); tbody.innerHTML = '';
                 const labels = [], dBui = [], dSo2 = [], dNox = [], dCo = [];
 
                 [...raw].reverse().forEach((d, i) => {
+                    let plantBadge = d.nha_may === "Nhà máy Can" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800";
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 whitespace-nowrap">
                             <td class="p-3 text-center text-slate-500">${i+1}</td>
-                            <td class="p-3 font-bold text-slate-700">${new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN')}</td>
+                            <td class="p-3 font-bold"><span class="px-2 py-1 rounded text-[11px] ${plantBadge}">${d.nha_may || 'N/A'}</span></td>
+                            <td class="p-3 font-medium text-slate-600">${d.vi_tri || 'N/A'}</td>
+                            <td class="p-3 text-center font-bold text-slate-700">${new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN')}</td>
                             <td class="p-3 text-center text-slate-600">${d.bui || 0}</td>
                             <td class="p-3 text-center font-bold text-rose-600">${d.so2 || 0}</td>
                             <td class="p-3 text-center font-bold text-amber-600">${d.nox || 0}</td>
