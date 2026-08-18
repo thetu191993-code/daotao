@@ -83,20 +83,43 @@
     <script>
         document.getElementById('inspector-name').innerText = localStorage.getItem("ehs_user_name") || localStorage.getItem("ehs_user_id");
 
-        const JSON_URL = 'https://thetu191993-code.github.io/daotao/checklist_tong_the.json';
         let checklistData = [];
 
-        fetch(JSON_URL, { cache: "no-store" })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('form-title').innerText = data.ten_bien_ban;
-                document.getElementById('form-code').innerText = data.ma_form;
-                checklistData = data.danh_sach_kiem_tra;
-                renderChecklist();
-            })
-            .catch(err => {
-                document.getElementById('checklist-container').innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200">Lỗi tải dữ liệu JSON: ${err.message}</div>`;
-            });
+        // HÀM TẢI DỮ LIỆU CÓ TÍNH NĂNG VƯỢT TƯỜNG LỬA DỰ PHÒNG
+        async function loadChecklistData() {
+            // Link 1: Thử lấy trực tiếp từ host
+            const primaryUrl = 'checklist_tong_the.json?t=' + new Date().getTime();
+            // Link 2: Lấy thẳng từ kho lưu trữ gốc của GitHub (Không qua trung gian)
+            const fallbackUrl = 'https://raw.githubusercontent.com/thetu191993-code/daotao/main/checklist_tong_the.json';
+
+            try {
+                let response = await fetch(primaryUrl);
+                if (!response.ok) throw new Error("Mạng nội bộ chặn file JSON");
+                let data = await response.json();
+                processData(data);
+            } catch (err1) {
+                console.warn("Lỗi tải link chính, chuyển sang máy chủ dự phòng...", err1);
+                try {
+                    let response2 = await fetch(fallbackUrl);
+                    if (!response2.ok) throw new Error("Lỗi máy chủ dự phòng");
+                    let data2 = await response2.json();
+                    processData(data2);
+                } catch (err2) {
+                    document.getElementById('checklist-container').innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-200 font-bold">Lỗi tải dữ liệu: Trình duyệt hoặc Tường lửa đang chặn kết nối. Vui lòng kiểm tra lại mạng Internet.</div>`;
+                }
+            }
+        }
+
+        // HÀM XỬ LÝ VÀ VẼ BIỂU MẪU SAU KHI TẢI XONG
+        function processData(data) {
+            document.getElementById('form-title').innerText = data.ten_bien_ban;
+            document.getElementById('form-code').innerText = data.ma_form;
+            checklistData = data.danh_sach_kiem_tra;
+            renderChecklist();
+        }
+
+        // KÍCH HOẠT TẢI DỮ LIỆU
+        loadChecklistData();
 
         function renderChecklist() {
             const container = document.getElementById('checklist-container');
