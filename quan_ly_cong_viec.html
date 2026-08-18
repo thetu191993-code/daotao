@@ -36,6 +36,7 @@
         <span id="toast-message">Thành công!</span>
     </div>
 
+    <!-- HEADER -->
     <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
         <div class="flex items-center gap-4">
             <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
@@ -55,9 +56,11 @@
         </div>
     </header>
 
+    <!-- MAIN CONTENT -->
     <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
         <div class="max-w-7xl mx-auto space-y-6">
             
+            <!-- TÌM KIẾM & BỘ LỌC -->
             <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-2 relative">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -79,6 +82,7 @@
                 </div>
             </div>
 
+            <!-- TABS -->
             <div class="flex flex-wrap bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
                 <button onclick="window.switchTab('my-tasks')" id="tab-my-tasks" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition">Việc tôi phải làm</button>
                 <button onclick="window.switchTab('assigned-tasks')" id="tab-assigned" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition">Việc tôi đã giao</button>
@@ -90,6 +94,7 @@
                 <p class="font-bold text-slate-500 dark:text-dark-muted" id="loader-text">Đang kết nối hệ thống và xác thực người dùng...</p>
             </div>
 
+            <!-- BẢNG TIẾN ĐỘ NHÂN VIÊN (DÀNH CHO LÃNH ĐẠO) -->
             <div id="leaderboard-container" class="hidden mb-6 bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border">
                 <!-- Nội dung bảng xếp hạng sẽ được JS nạp vào đây -->
             </div>
@@ -106,6 +111,7 @@
         </div>
     </main>
 
+    <!-- MODAL GIAO VIỆC & LẬP KẾ HOẠCH -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
@@ -132,6 +138,7 @@
                         </select>
                     </div>
 
+                    <!-- DROPDOWN THÔNG MINH CHO NHÂN SỰ -->
                     <div class="sm:col-span-1">
                         <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giao cho ai?</label>
                         <div class="relative" id="assignee-wrapper">
@@ -183,6 +190,7 @@
         </div>
     </div>
 
+    <!-- MODAL CẬP NHẬT TIẾN ĐỘ & ĐÁNH GIÁ CỦA LÃNH ĐẠO -->
     <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -193,11 +201,13 @@
             <div class="p-6 overflow-y-auto custom-scrollbar space-y-5">
                 <input type="hidden" id="up-task-id">
                 
+                <!-- Hiển thị tóm tắt công việc -->
                 <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                     <h3 id="disp-title" class="font-bold text-lg text-slate-800 dark:text-white mb-1">...</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400"><i class="ph-fill ph-calendar"></i> Deadline: <span id="disp-deadline" class="font-mono font-bold text-red-500">...</span></p>
                 </div>
 
+                <!-- KÉO SLIDER CHO TỪNG BƯỚC CÔNG VIỆC -->
                 <div id="checklist-progress-section" class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-100 dark:border-slate-700 shadow-sm space-y-3">
                     <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-2">
                         <span class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase">Cập nhật tiến độ từng bước</span>
@@ -207,29 +217,45 @@
                         </div>
                     </div>
                     <div id="modal-checklist-container" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                        <!-- Các Slider từng bước sẽ được nạp bằng JS vào đây -->
                     </div>
                     <input type="hidden" id="task-progress" value="0">
                 </div>
 
+                <!-- KHU VỰC DÀNH CHO NHÂN VIÊN TỰ THEO DÕI MUỐN TRÌNH SẾP (CÓ BỘ LỌC TÌM KIẾM CẬP NHẬT) -->
                 <div id="request-review-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700">
                     <label class="flex items-start gap-3 cursor-pointer p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl transition hover:bg-purple-100 dark:hover:bg-purple-900/40">
-                        <input type="checkbox" id="task-request-review" class="w-6 h-6 text-purple-600 rounded mt-0.5" onchange="window.toggleReviewerSelect()">
+                        <input type="checkbox" id="task-request-review" class="w-6 h-6 text-purple-600 rounded mt-0.5 cursor-pointer" onchange="window.toggleReviewerSelect()">
                         <div class="flex-1">
-                            <span class="font-black text-purple-700 dark:text-purple-400 text-base block">Trình Lãnh Đạo Xem Xét <br><span class="text-sm font-semibold">(Submit for Review / 提交审核)</span></span>
-                            <span class="text-xs text-purple-600/70 font-medium block mt-1">Bật công tắc này để báo cáo việc hoàn thành lên Góc Lãnh Đạo.</span>
+                            <span class="font-black text-purple-700 dark:text-purple-400 text-base block">Trình Lãnh Đạo Xem Xét <br><span class="text-xs font-semibold">(Submit for Review / 提交审核)</span></span>
+                            <span class="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium block mt-1">Bật công tắc này để báo cáo việc hoàn thành lên Góc Lãnh Đạo.</span>
                             
-                            <!-- KHU VỰC CHỌN SẾP -->
-                            <div id="reviewer-select-container" class="mt-3 hidden">
+                            <!-- KHU VỰC CHỌN SẾP THÔNG MINH CÓ Ô TÌM KIẾM -->
+                            <div id="reviewer-select-container" class="mt-3 hidden" onclick="event.stopPropagation()">
                                 <label class="block text-[11px] font-bold text-purple-800 dark:text-purple-300 uppercase mb-1">Đích danh Sếp duyệt / Select Leader / 选择领导 <span class="text-red-500">*</span></label>
-                                <select id="task-reviewer" class="w-full border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm font-bold text-purple-900 dark:text-purple-100 outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
-                                    <option value="">-- Chọn Sếp đánh giá --</option>
-                                    <!-- JS sẽ nạp danh sách sếp vào đây -->
-                                </select>
+                                
+                                <div class="relative" id="reviewer-wrapper">
+                                    <input type="hidden" id="task-reviewer" value="">
+                                    <button type="button" onclick="window.toggleReviewerDropdown()" id="reviewer-display" class="w-full border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2.5 font-bold text-purple-900 dark:text-purple-100 outline-none flex justify-between items-center text-sm shadow-sm transition">
+                                        <span class="truncate" id="reviewer-display-text">-- Chọn Sếp đánh giá (Gõ tìm tên/mã NV) --</span>
+                                        <i class="ph-bold ph-caret-down shrink-0"></i>
+                                    </button>
+                                    
+                                    <div id="reviewer-menu" class="absolute z-[100] w-full mt-1 bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 rounded-xl shadow-xl hidden flex-col max-h-60 overflow-hidden">
+                                        <div class="p-2 border-b border-purple-100 dark:border-purple-700 shrink-0 bg-purple-50/50 dark:bg-slate-900/50">
+                                            <input type="text" id="reviewer-search" onkeyup="window.filterReviewerList()" class="w-full bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-purple-500 dark:text-white" placeholder="🔍 Gõ tên sếp, mã NV, chức danh...">
+                                        </div>
+                                        <ul id="reviewer-list" class="overflow-y-auto custom-scrollbar p-1">
+                                            <!-- JS sẽ nạp danh sách sếp đã lọc chuẩn vào đây -->
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </label>
                 </div>
 
+                <!-- KHU VỰC DÀNH CHO LÃNH ĐẠO / NGƯỜI GIAO VIỆC -->
                 <div id="eval-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-amber-600 uppercase mb-2"><i class="ph-fill ph-chat-centered-text"></i> Đánh giá & Yêu cầu cải tiến (Dành cho Lãnh đạo)</label>
@@ -275,7 +301,6 @@
         let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
         let userDept = localStorage.getItem("ehs_user_dept") || "";
         
-        // CÁC BIẾN QUYỀN LÃNH ĐẠO SẼ ĐƯỢC NẠP LẠI TỪ CSDL ĐỂ CHÍNH XÁC TUYỆT ĐỐI
         let isLeader = false;
         let isGlobalLeader = false;
 
@@ -371,11 +396,27 @@
             }
         };
 
+        window.toggleReviewerDropdown = function() {
+            const menu = document.getElementById('reviewer-menu');
+            menu.classList.toggle('hidden');
+            menu.classList.toggle('flex');
+            if(!menu.classList.contains('hidden')) {
+                document.getElementById('reviewer-search').focus();
+            }
+        };
+
         document.addEventListener('click', function(event) {
             const wrapper = document.getElementById('assignee-wrapper');
             const menu = document.getElementById('assignee-menu');
             if (wrapper && !wrapper.contains(event.target)) {
                 menu.classList.add('hidden');
+            }
+
+            const revWrapper = document.getElementById('reviewer-wrapper');
+            const revMenu = document.getElementById('reviewer-menu');
+            if (revWrapper && !revWrapper.contains(event.target)) {
+                revMenu.classList.add('hidden');
+                revMenu.classList.remove('flex');
             }
         });
 
@@ -385,9 +426,27 @@
             document.getElementById('assignee-menu').classList.add('hidden');
         };
 
+        window.selectReviewer = function(id, name, role) {
+            document.getElementById('task-reviewer').value = id + '|' + name;
+            document.getElementById('reviewer-display-text').innerText = `${name} (${role})`;
+            const menu = document.getElementById('reviewer-menu');
+            menu.classList.add('hidden');
+            menu.classList.remove('flex');
+        };
+
         window.filterAssignee = function() {
             const keyword = document.getElementById('assignee-search').value.toLowerCase();
             const items = document.querySelectorAll('.assignee-item');
+            items.forEach(item => {
+                const text = item.innerText.toLowerCase();
+                if (text.includes(keyword)) item.style.display = 'block';
+                else item.style.display = 'none';
+            });
+        };
+
+        window.filterReviewerList = function() {
+            const keyword = document.getElementById('reviewer-search').value.toLowerCase();
+            const items = document.querySelectorAll('.reviewer-item');
             items.forEach(item => {
                 const text = item.innerText.toLowerCase();
                 if (text.includes(keyword)) item.style.display = 'block';
@@ -404,13 +463,15 @@
 
         async function loadUsersDropdown() {
             const ul = document.getElementById('assignee-list');
-            const revSelect = document.getElementById('task-reviewer');
+            const revUl = document.getElementById('reviewer-list');
+            
             document.getElementById('assignee-display').innerHTML = `<span>-- Chọn nhân sự --</span> <i class="ph-bold ph-caret-down shrink-0"></i>`;
+            document.getElementById('reviewer-display-text').innerText = `-- Chọn Sếp đánh giá (Gõ tìm tên/mã NV) --`;
             
             try {
                 const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
                 let html = `<li onclick="window.selectAssignee('${currentUserId}', '${currentUserName}')" class="assignee-item p-3 mb-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg cursor-pointer transition font-black text-blue-700 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">🌟 [TỰ GIAO] Việc cá nhân của tôi</li>`;
-                let revHtml = `<option value="">-- Chọn Sếp đánh giá (Select Leader / 选择领导) --</option>`;
+                let revHtml = ``;
                 
                 globalUserDeptMap = {};
                 let currentUserRole = "";
@@ -422,7 +483,6 @@
                         globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
                     }
 
-                    // Tìm vị trí của chính người đang đăng nhập
                     if(data.ma_nv === currentUserId) {
                         currentUserRole = (data.vi_tri || "") + " " + (data.bo_phan || "");
                     }
@@ -435,19 +495,32 @@
                         </li>`;
                     }
                     
-                    // Nạp danh sách Lãnh Đạo cho dropdown Reviewer
-                    const roleStr = ((data.vi_tri || "") + " " + (data.bo_phan || "") + " " + (data.vai_tro_phu?.pccc || "")).toLowerCase();
-                    const isLeaderRole = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin/i.test(roleStr);
+                    // CHỈ LỌC CÁC CHỨC DANH LÃNH ĐẠO THỰC SỰ ĐỂ DUYỆT (Giám đốc, Quản đốc, Giám sát, Trưởng nhóm, EHS...)
+                    const roleTitle = (data.vi_tri || "").toLowerCase();
+                    const pcccRole = (data.vai_tro_phu?.pccc || "").toLowerCase();
+                    const deptTitle = (data.bo_phan || "").toLowerCase();
                     
-                    if (isLeaderRole && data.ma_nv !== currentUserId) {
-                        revHtml += `<option value="${data.ma_nv}|${data.ho_ten}">${data.ho_ten} - ${data.vi_tri || data.bo_phan}</option>`;
+                    const isStrictLeader = /giám đốc|quản đốc|giám sát|trưởng nhóm|trưởng phòng|đội trưởng|đội phó|ehs|admin/i.test(roleTitle) ||
+                                           /trưởng|phó/i.test(pcccRole) ||
+                                           /ehs|admin/i.test(deptTitle);
+                    
+                    if (isStrictLeader && data.ma_nv !== currentUserId && data.ma_nv && data.ho_ten) {
+                        const displayRole = data.vi_tri || data.bo_phan || 'Lãnh đạo';
+                        revHtml += `
+                            <li onclick="window.selectReviewer('${data.ma_nv}', '${data.ho_ten.replace(/'/g, "\\'")}', '${displayRole.replace(/'/g, "\\'")}')" class="reviewer-item p-2.5 mb-1 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg cursor-pointer transition text-sm border-b border-slate-100 dark:border-slate-700">
+                                <div class="font-black text-purple-900 dark:text-purple-200 flex items-center justify-between">
+                                    <span>${data.ho_ten}</span>
+                                    <span class="text-[10px] bg-purple-100 dark:bg-purple-900/80 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">${displayRole}</span>
+                                </div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Mã NV: ${data.ma_nv} - ${data.bo_phan || ''}</div>
+                            </li>
+                        `;
                     }
                 });
                 
                 ul.innerHTML = html;
-                revSelect.innerHTML = revHtml;
+                revUl.innerHTML = revHtml || `<li class="p-3 text-xs text-slate-400 italic text-center">Không tìm thấy sếp phù hợp</li>`;
                 
-                // Xác định lại quyền lãnh đạo thực sự của user đang đăng nhập từ CSDL
                 const myRoleStr = currentUserRole.toLowerCase();
                 isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin/i.test(myRoleStr);
                 isGlobalLeader = /ehs|admin/i.test(myRoleStr);
@@ -501,12 +574,10 @@
                 
                 if (currentTab === 'all-tasks' && isLeader) {
                     if (isSelfAssigned) {
-                        // Nếu là việc tự theo dõi, CHỈ HIỆN khi đã ấn Trình Sếp VÀ sếp đang đăng nhập chính là sếp được chọn (hoặc EHS/Admin)
                         if (t.is_review_requested && (t.reviewer_id === currentUserId || isGlobalLeader)) {
                             tabMatch = true;
                         }
                     } else {
-                        // Việc giao chéo bình thường -> Lọc cách ly theo bộ phận
                         if (isGlobalLeader) {
                             tabMatch = true; 
                         } else {
@@ -536,7 +607,6 @@
                 return timeB - timeA;
             });
 
-            // VẼ BẢNG XẾP HẠNG TIẾN ĐỘ (LEADERBOARD)
             if (currentTab === 'all-tasks' && isLeader && filteredTasks.length > 0) {
                 let userStats = {};
                 filteredTasks.forEach(t => {
@@ -750,7 +820,7 @@
             const doneCheck = document.getElementById('task-done');
             
             if (evalInput) evalInput.value = t.evaluation || "";
-            reqReviewSec.classList.add('hidden'); // Reset
+            reqReviewSec.classList.add('hidden');
             
             if (currentTab === 'my-tasks') {
                 evalSec.classList.add('hidden');
@@ -763,8 +833,10 @@
                     
                     if(t.reviewer_id) {
                         document.getElementById('task-reviewer').value = `${t.reviewer_id}|${t.reviewer_name}`;
+                        document.getElementById('reviewer-display-text').innerText = `${t.reviewer_name}`;
                     } else {
                         document.getElementById('task-reviewer').value = "";
+                        document.getElementById('reviewer-display-text').innerText = `-- Chọn Sếp đánh giá (Gõ tìm tên/mã NV) --`;
                     }
                 }
             } else {
