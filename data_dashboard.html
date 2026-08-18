@@ -39,22 +39,26 @@
     <div class="max-w-[1600px] mx-auto">
         
         <!-- THANH ĐIỀU HƯỚNG & LỌC DỮ LIỆU TỔNG -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 relative z-50">
             <!-- Trái: Về trang chủ & Ngôn ngữ -->
             <div class="flex items-center gap-4 w-full md:w-auto">
                 <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold transition bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shrink-0">
                     <i class="ph-bold ph-arrow-left text-lg"></i> <span data-i18n="back_home" class="hidden sm:inline">Về Bảng Điều Khiển</span>
                 </a>
                 
+                <!-- ĐÃ SỬA LỖI ĐA NGÔN NGỮ Ở ĐÂY: Thêm thẻ bọc ngoài có padding để chuột không bị trượt khỏi menu -->
                 <div class="relative group">
                     <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 bg-slate-100 px-3 py-2 rounded-xl hover:bg-slate-200 transition border border-slate-200">
                         <i class="ph-bold ph-translate"></i> <span id="current-lang-display">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs"></i>
                     </button>
-                    <div class="absolute left-0 mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
-                        <button onclick="changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">Tiếng Việt</button>
-                        <button onclick="changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 border-t border-slate-100">English</button>
-                        <button onclick="changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 border-t border-slate-100">中文</button>
-                        <button onclick="changeLanguage('es')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 border-t border-slate-100">Español</button>
+                    <!-- Thêm vùng đệm vô hình (pt-2) để tránh trượt hover -->
+                    <div class="absolute left-0 top-full pt-2 w-36 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                            <button onclick="changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">Tiếng Việt</button>
+                            <button onclick="changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 border-t border-slate-100">English</button>
+                            <button onclick="changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 border-t border-slate-100">中文</button>
+                            <button onclick="changeLanguage('es')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 border-t border-slate-100">Español</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -75,7 +79,7 @@
             </div>
         </div>
 
-        <div class="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-slate-200">
+        <div class="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-slate-200 relative z-10">
             
             <div class="border-b border-slate-100 pb-6 mb-8">
                 <h2 class="text-2xl sm:text-3xl font-bold text-blue-800 mb-2 flex items-center uppercase tracking-tight">
@@ -95,9 +99,6 @@
                         <p class="text-xs text-slate-500 font-medium" data-i18n="daily_desc">Dành cho bộ phận vận hành trạm đo đạc và điều chỉnh hóa chất thực tế.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-                        <button onclick="exportChartAsImage('dailyChart', 'Bieu_do_Hang_Ngay')" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200 text-sm">
-                            <i class="ph-bold ph-image"></i> <span data-i18n="btn_export_chart">Tải Ảnh Biểu Đồ</span>
-                        </button>
                         <button onclick="exportTableAsExcel('dailyBody', 'Du_Lieu_Hang_Ngay')" class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm">
                             <i class="ph-bold ph-file-csv"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
                         </button>
@@ -107,31 +108,59 @@
                     </div>
                 </div>
 
-                <div class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6 relative">
+                <!-- Bố cục 2 biểu đồ song song cho mảng Hằng Ngày -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6 relative">
                     <div id="daily-chart-loader" class="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center rounded-2xl">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-600 mb-2"></i>
                     </div>
-                    <div class="relative w-full h-[350px] bg-white rounded-xl">
-                        <canvas id="dailyChart"></canvas>
+                    
+                    <div class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-white py-1 px-3 rounded-lg shadow-sm border border-slate-100">Chỉ tiêu Hóa Lý (COD, pH, Flo)</h4>
+                            <button onclick="exportChartAsImage('dailyChart', 'Bieu_Do_Hoa_Ly_Hang_Ngay')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
+                        </div>
+                        <div class="relative w-full h-[300px] grow bg-white rounded-xl">
+                            <canvas id="dailyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-white py-1 px-3 rounded-lg shadow-sm border border-slate-100">Lưu lượng & Độ dẫn điện</h4>
+                            <button onclick="exportChartAsImage('dailyFlowChart', 'Bieu_Do_Luu_Luong')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
+                        </div>
+                        <div class="relative w-full h-[300px] grow bg-white rounded-xl">
+                            <canvas id="dailyFlowChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
-                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <table class="w-full text-left border-collapse min-w-[1400px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-12">STT</th>
-                                <th class="p-3 border-b border-slate-700 text-center" data-i18n="col_date">Ngày đo</th>
-                                <th class="p-3 border-b border-slate-700" data-i18n="col_operator">Người trực</th>
+                                <th class="p-3 border-b border-slate-700 text-center">Ngày đo</th>
+                                <th class="p-3 border-b border-slate-700 text-center text-emerald-300">Giờ Lấy Mẫu</th>
+                                <th class="p-3 border-b border-slate-700 text-center text-teal-300">Giờ Phân Tích</th>
+                                <th class="p-3 border-b border-slate-700">Người trực</th>
                                 <th class="p-3 border-b border-slate-700 text-center text-blue-300">pH<br><span class="text-[9px]">6-9</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-rose-300">COD<br><span class="text-[9px]">Max 90</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-amber-300">Florua<br><span class="text-[9px]">Max 15</span></th>
-                                <th class="p-3 border-b border-slate-700" data-i18n="col_note">Ghi chú</th>
-                                <th class="p-3 border-b border-slate-700 text-center" data-i18n="col_action">Thao tác</th>
+                                <th class="p-3 border-b border-slate-700 text-center text-purple-300">Độ dẫn điện<br><span class="text-[9px]">(mS/cm)</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center text-cyan-300">Lưu lượng<br><span class="text-[9px]">(m³/h)</span></th>
+                                <th class="p-3 border-b border-slate-700">Ghi chú</th>
+                                <th class="p-3 border-b border-slate-700 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="dailyBody" class="text-sm divide-y divide-slate-100"></tbody>
                     </table>
+                </div>
+                
+                <!-- Bảng chú giải thuật toán -->
+                <div class="mt-3 bg-red-50 border border-red-100 rounded-lg p-3 flex gap-2 items-start text-xs text-red-700">
+                    <i class="ph-fill ph-info text-lg shrink-0 mt-0.5"></i>
+                    <p><b>Thuật toán Cảnh báo (AI):</b> Nếu Độ dẫn điện $\ge$ 1.5 mS/cm <b>VÀ</b> Lưu lượng $\ge$ 25 m³/h, hệ thống sẽ cảnh báo tải lượng ô nhiễm cao, có nguy cơ làm COD vượt ngưỡng an toàn.</p>
                 </div>
             </div>
 
@@ -261,7 +290,7 @@
 
     <!-- MODAL NHẬP LIỆU: HẰNG NGÀY -->
     <div id="daily-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col">
             <div class="p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
                 <h3 id="daily-modal-title" class="text-lg font-bold text-blue-800 flex items-center gap-2"><i class="ph-fill ph-waves"></i> Thêm Kết Quả Hôm Nay</h3>
                 <button onclick="closeDailyModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
@@ -273,29 +302,41 @@
                     Đang nhập cho: Nhà máy Can
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-100 pb-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày trực <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày đo <span class="text-red-500">*</span></label>
                         <input type="date" id="d-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-blue-500 font-bold text-slate-700 bg-slate-50">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Người trực / Cán bộ nhập liệu <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giờ lấy mẫu <span class="text-red-500">*</span></label>
+                        <input type="time" id="d-time-sample" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-blue-500 font-bold text-emerald-700 bg-emerald-50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Người trực / Nhập liệu <span class="text-red-500">*</span></label>
                         <input type="text" id="d-operator" readonly class="w-full border border-slate-200 px-3 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold cursor-not-allowed">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200">
-                        <label class="block text-[11px] font-black text-blue-700 uppercase mb-1 text-center">pH (6-9)</label>
-                        <input type="number" step="0.01" id="d-ph" class="w-full border border-blue-300 px-3 py-2 rounded-lg outline-none text-blue-800 font-mono font-bold text-center focus:bg-white">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm">
+                        <label class="block text-[10px] font-black text-blue-700 uppercase mb-1 text-center">pH (6-9)</label>
+                        <input type="number" step="0.01" id="d-ph" class="w-full border border-blue-300 px-2 py-2 rounded-lg outline-none text-blue-800 font-mono font-bold text-center focus:bg-white">
                     </div>
-                    <div class="bg-rose-50 p-3 rounded-xl border border-rose-200">
-                        <label class="block text-[11px] font-black text-rose-700 uppercase mb-1 text-center">COD (Max 90)</label>
-                        <input type="number" step="0.1" id="d-cod" class="w-full border border-rose-300 px-3 py-2 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white">
+                    <div class="bg-rose-50 p-3 rounded-xl border border-rose-200 shadow-sm">
+                        <label class="block text-[10px] font-black text-rose-700 uppercase mb-1 text-center">COD (Max 90)</label>
+                        <input type="number" step="0.1" id="d-cod" class="w-full border border-rose-300 px-2 py-2 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white">
                     </div>
-                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
-                        <label class="block text-[11px] font-black text-amber-700 uppercase mb-1 text-center">Florua (Max 15)</label>
-                        <input type="number" step="0.01" id="d-florua" class="w-full border border-amber-300 px-3 py-2 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white">
+                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 shadow-sm">
+                        <label class="block text-[10px] font-black text-amber-700 uppercase mb-1 text-center">Florua (Max 15)</label>
+                        <input type="number" step="0.01" id="d-florua" class="w-full border border-amber-300 px-2 py-2 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white">
+                    </div>
+                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 shadow-sm">
+                        <label class="block text-[10px] font-black text-purple-700 uppercase mb-1 text-center">Độ dẫn điện (mS/cm)</label>
+                        <input type="number" step="0.01" id="d-ec" class="w-full border border-purple-300 px-2 py-2 rounded-lg outline-none text-purple-800 font-mono font-bold text-center focus:bg-white">
+                    </div>
+                    <div class="bg-cyan-50 p-3 rounded-xl border border-cyan-200 shadow-sm">
+                        <label class="block text-[10px] font-black text-cyan-700 uppercase mb-1 text-center">Lưu lượng (m³/h)</label>
+                        <input type="number" step="0.1" id="d-flow" class="w-full border border-cyan-300 px-2 py-2 rounded-lg outline-none text-cyan-800 font-mono font-bold text-center focus:bg-white">
                     </div>
                 </div>
 
@@ -438,6 +479,7 @@
         const db = getFirestore(app);
 
         let dailyChartInstance = null;
+        let dailyFlowChartInstance = null;
         let waterChartConcInstance = null;
         let waterChartSpecInstance = null;
         let airChartInstance = null;
@@ -480,7 +522,6 @@
             if(confirmAction) confirmAction();
         }
 
-        // TỰ ĐỘNG ĐỔI TÊN TIÊU ĐỀ THEO NHÀ MÁY
         window.updateDashboardTitle = () => {
             const selectedPlant = document.getElementById('global-plant-filter').value;
             document.getElementById('title-plant-name').innerText = selectedPlant;
@@ -501,11 +542,9 @@
             const canvas = document.getElementById(canvasId);
             if(!canvas) return showToast("Không tìm thấy biểu đồ", "error");
             
-            // Lấy thêm thông tin nhà máy và tháng để ghép vào tên file
             const plant = document.getElementById('global-plant-filter').value.replace(" ", "_");
             const month = document.getElementById('month-filter').value || "All";
             
-            // Vẽ nền trắng (vì ChartJS nền trong suốt mặc định sẽ bị đen khi lưu JPG/PNG)
             const exportCanvas = document.createElement("canvas");
             exportCanvas.width = canvas.width;
             exportCanvas.height = canvas.height;
@@ -530,27 +569,22 @@
             const plant = document.getElementById('global-plant-filter').value.replace(" ", "_");
             const month = document.getElementById('month-filter').value || "All";
             
-            // Lấy Header
             const theadTr = tbody.parentElement.querySelector('thead tr');
             let headers = [];
             theadTr.querySelectorAll('th').forEach(th => {
-                // Chỉ lấy text chính, bỏ qua span ghi chú nhỏ
                 let text = th.childNodes[0].nodeValue ? th.childNodes[0].nodeValue.trim() : th.innerText.trim();
                 headers.push('"' + text + '"');
             });
-            headers.pop(); // Bỏ cột "Thao tác" cuối cùng
+            headers.pop(); // Bỏ cột thao tác
 
             let csvRows = [headers.join(",")];
             
-            // Lấy dữ liệu từng dòng
             const rows = tbody.querySelectorAll("tr");
             for (let i = 0; i < rows.length; i++) {
-                // Bỏ qua dòng trống "Chưa có dữ liệu"
                 if(rows[i].innerText.includes("Chưa có dữ liệu")) continue;
-
                 let rowData = [];
                 let cols = rows[i].querySelectorAll("td");
-                for (let j = 0; j < cols.length - 1; j++) { // Bỏ cột thao tác
+                for (let j = 0; j < cols.length - 1; j++) {
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""').trim();
                     rowData.push('"' + data + '"');
                 }
@@ -575,17 +609,25 @@
         window.openDailyModal = () => { 
             document.getElementById('d-doc-id').value = '';
             document.getElementById('d-date').value = new Date().toISOString().split('T')[0]; 
-            document.getElementById('d-ph').value = ''; document.getElementById('d-cod').value = '';
-            document.getElementById('d-florua').value = ''; document.getElementById('d-note').value = '';
+            // Reset giờ lấy mẫu về mặc định hiện tại
+            document.getElementById('d-time-sample').value = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            
+            ['d-ph', 'd-cod', 'd-florua', 'd-ec', 'd-flow', 'd-note'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('d-operator').value = currentUser;
             document.getElementById('daily-modal-title').innerHTML = '<i class="ph-fill ph-waves"></i> Thêm Kết Quả Hôm Nay';
             document.getElementById('daily-modal').classList.remove('hidden'); 
         };
 
-        window.editDailyData = (id, date, ph, cod, florua, note, operator) => {
-            document.getElementById('d-doc-id').value = id; document.getElementById('d-date').value = date;
-            document.getElementById('d-ph').value = ph; document.getElementById('d-cod').value = cod;
-            document.getElementById('d-florua').value = florua; document.getElementById('d-note').value = note;
+        window.editDailyData = (id, date, timeSample, ph, cod, florua, ec, flow, note, operator) => {
+            document.getElementById('d-doc-id').value = id; 
+            document.getElementById('d-date').value = date;
+            document.getElementById('d-time-sample').value = timeSample || '';
+            document.getElementById('d-ph').value = ph; 
+            document.getElementById('d-cod').value = cod;
+            document.getElementById('d-florua').value = florua; 
+            document.getElementById('d-ec').value = ec || '';
+            document.getElementById('d-flow').value = flow || '';
+            document.getElementById('d-note').value = note;
             document.getElementById('d-operator').value = operator || currentUser;
             document.getElementById('daily-modal-title').innerHTML = '<i class="ph-fill ph-pencil-simple"></i> Cập Nhật Kết Quả';
             document.getElementById('daily-modal').classList.remove('hidden');
@@ -597,13 +639,18 @@
             const docId = document.getElementById('d-doc-id').value;
             const dateVal = document.getElementById('d-date').value;
             const plantVal = document.getElementById('global-plant-filter').value;
-            if(!dateVal) return showToast("Vui lòng nhập Ngày trực!", "error");
+            if(!dateVal) return showToast("Vui lòng nhập Ngày đo!", "error");
 
             const data = {
-                ngay_lay_mau: dateVal, nha_may: plantVal,
+                ngay_lay_mau: dateVal, 
+                nha_may: plantVal,
+                gio_lay_mau: document.getElementById('d-time-sample').value || '',
+                gio_phan_tich: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }), // Tự động lấy giờ hiện tại
                 pH: parseFloat(document.getElementById('d-ph').value) || 0,
                 cod: parseFloat(document.getElementById('d-cod').value) || 0,
                 florua: parseFloat(document.getElementById('d-florua').value) || 0,
+                do_dan_dien: parseFloat(document.getElementById('d-ec').value) || 0,
+                luu_luong: parseFloat(document.getElementById('d-flow').value) || 0,
                 ghi_chu: document.getElementById('d-note').value.trim() || "",
                 nguoi_truc: document.getElementById('d-operator').value,
                 thoi_gian_cap_nhat: new Date()
@@ -613,67 +660,99 @@
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
 
             try {
-                if (docId) { await updateDoc(doc(db, "quan_trac_hang_ngay", docId), data); showToast("Cập nhật kết quả thành công!"); } 
-                else { data.thoi_gian_nhap = new Date(); await addDoc(collection(db, "quan_trac_hang_ngay"), data); showToast("Thêm mới kết quả thành công!"); }
-                closeDailyModal(); loadDailyData();
-            } catch(e) { showToast("Lỗi bảo mật Firebase", "error"); } 
-            finally { btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Lưu Kết Quả'; btn.disabled = false; }
+                if (docId) { 
+                    await updateDoc(doc(db, "quan_trac_hang_ngay", docId), data); 
+                    showToast("Cập nhật kết quả thành công!"); 
+                } else { 
+                    data.thoi_gian_nhap = new Date(); 
+                    await addDoc(collection(db, "quan_trac_hang_ngay"), data); 
+                    showToast("Thêm mới kết quả thành công!"); 
+                }
+                closeDailyModal(); 
+                loadDailyData();
+            } catch(e) { 
+                showToast("Lỗi kết nối Firebase", "error"); 
+            } finally { 
+                btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Lưu Kết Quả'; btn.disabled = false; 
+            }
         };
 
         window.deleteDailyData = async (id) => {
-            showConfirm("Xóa bản ghi vận hành này?", async () => { await deleteDoc(doc(db, "quan_trac_hang_ngay", id)); showToast("Đã xóa bản ghi!"); loadDailyData(); });
+            showConfirm("Xóa bản ghi vận hành này?", async () => { 
+                await deleteDoc(doc(db, "quan_trac_hang_ngay", id)); 
+                showToast("Đã xóa bản ghi!"); 
+                loadDailyData(); 
+            });
         };
 
         async function loadDailyData() {
             document.getElementById('daily-chart-loader').classList.remove('hidden');
             const selectedPlant = document.getElementById('global-plant-filter').value;
-            const filterMonth = document.getElementById('month-filter').value; // Lấy bộ lọc tháng
+            const filterMonth = document.getElementById('month-filter').value; 
             
             try {
                 const snap = await getDocs(collection(db, "quan_trac_hang_ngay"));
                 let raw = []; 
                 snap.forEach(d => {
                     const data = d.data();
-                    // LỌC NHÀ MÁY
                     if(data.nha_may !== selectedPlant) return;
-                    
-                    // LỌC THÁNG
                     if (filterMonth) {
                         const recordDate = new Date(data.ngay_lay_mau);
                         const recordMonth = `${recordDate.getFullYear()}-${String(recordDate.getMonth() + 1).padStart(2, '0')}`;
                         if (recordMonth !== filterMonth) return;
                     }
-                    
                     raw.push({ id: d.id, ...data });
                 });
                 raw.sort((a, b) => new Date(a.ngay_lay_mau) - new Date(b.ngay_lay_mau));
 
                 const tbody = document.getElementById('dailyBody'); tbody.innerHTML = '';
-                const labels = [], dCod = [], dFlorua = [], dPh = [];
+                const labels = [], dCod = [], dFlorua = [], dPh = [], dEc = [], dFlow = [];
 
                 if(raw.length === 0) {
-                    let msg = filterMonth ? `Chưa có dữ liệu vận hành cho tháng ${filterMonth.split('-').reverse().join('/')}` : "Chưa có dữ liệu vận hành hằng ngày.";
-                    tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 font-bold text-slate-400">${msg}</td></tr>`;
+                    let msg = filterMonth ? `Chưa có dữ liệu vận hành cho tháng ${filterMonth.split('-').reverse().join('/')}` : `Chưa có dữ liệu vận hành cho ${selectedPlant}`;
+                    tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8 font-bold text-slate-400">${msg}</td></tr>`;
                 }
 
                 [...raw].reverse().forEach((d, i) => {
+                    // Thuật toán cảnh báo COD dựa trên Độ dẫn điện và Lưu lượng
+                    let codWarning = false;
+                    let ecVal = d.do_dan_dien || 0;
+                    let flowVal = d.luu_luong || 0;
+                    
+                    if (ecVal >= 1.5 && flowVal >= 25) {
+                        codWarning = true;
+                    }
+
+                    let codDisplay = d.cod || 0;
                     let codCls = d.cod >= 90 ? "text-red-600 font-black" : "font-bold text-rose-700";
+                    
+                    if (codWarning) {
+                        codDisplay = `${d.cod || 0} <i class="ph-fill ph-warning text-red-500 animate-pulse ml-1" title="Cảnh báo: Độ dẫn điện và Lưu lượng cao, rủi ro COD vượt!"></i>`;
+                        codCls += " bg-red-100 border border-red-200"; // Bôi đỏ ô
+                    }
+
                     let fCls = d.florua >= 15 ? "text-red-600 font-black" : "font-bold text-amber-700";
                     let phCls = (d.pH < 6 || d.pH > 9) && d.pH !== 0 ? "text-red-600 font-black" : "font-bold text-blue-700";
+                    
                     const safeNote = (d.ghi_chu || '').replace(/'/g, "\\'");
                     const safeOperator = (d.nguoi_truc || '').replace(/'/g, "\\'");
+                    const safeTimeSample = (d.gio_lay_mau || '').replace(/'/g, "\\'");
 
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 whitespace-nowrap">
+                        <tr class="hover:bg-slate-50 whitespace-nowrap transition">
                             <td class="p-3 text-center text-slate-500">${i+1}</td>
                             <td class="p-3 text-center font-bold text-slate-700">${new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN')}</td>
+                            <td class="p-3 text-center font-mono font-bold text-emerald-600 bg-emerald-50/50">${d.gio_lay_mau || '-'}</td>
+                            <td class="p-3 text-center font-mono font-bold text-teal-600 bg-teal-50/50">${d.gio_phan_tich || '-'}</td>
                             <td class="p-3 font-medium text-blue-700">${d.nguoi_truc || '-'}</td>
                             <td class="p-3 text-center ${phCls} bg-blue-50/30">${d.pH || 0}</td>
-                            <td class="p-3 text-center ${codCls} bg-rose-50/30">${d.cod || 0}</td>
+                            <td class="p-3 text-center ${codCls} bg-rose-50/30">${codDisplay}</td>
                             <td class="p-3 text-center ${fCls} bg-amber-50/30">${d.florua || 0}</td>
+                            <td class="p-3 text-center font-bold text-purple-700 bg-purple-50/30">${d.do_dan_dien || 0}</td>
+                            <td class="p-3 text-center font-bold text-cyan-700 bg-cyan-50/30">${d.luu_luong || 0}</td>
                             <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${d.ghi_chu}">${d.ghi_chu || '-'}</td>
                             <td class="p-3 text-center whitespace-nowrap">
-                                <button onclick="editDailyData('${d.id}', '${d.ngay_lay_mau}', ${d.pH}, ${d.cod}, ${d.florua}, '${safeNote}', '${safeOperator}')" class="text-blue-500 hover:text-blue-700 transition p-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                                <button onclick="editDailyData('${d.id}', '${d.ngay_lay_mau}', '${safeTimeSample}', ${d.pH}, ${d.cod}, ${d.florua}, ${d.do_dan_dien||0}, ${d.luu_luong||0}, '${safeNote}', '${safeOperator}')" class="text-blue-500 hover:text-blue-700 transition p-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
                                 <button onclick="deleteDailyData('${d.id}')" class="text-slate-300 hover:text-red-500 transition p-1 ml-2" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                             </td>
                         </tr>
@@ -683,8 +762,10 @@
                 raw.forEach(d => {
                     labels.push(new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN'));
                     dCod.push(d.cod); dFlorua.push(d.florua); dPh.push(d.pH);
+                    dEc.push(d.do_dan_dien || 0); dFlow.push(d.luu_luong || 0);
                 });
 
+                // VẼ BIỂU ĐỒ 1: HÓA LÝ (COD, pH, Flo)
                 const ctx = document.getElementById('dailyChart').getContext('2d');
                 if(dailyChartInstance) dailyChartInstance.destroy();
                 dailyChartInstance = new Chart(ctx, {
@@ -707,6 +788,30 @@
                         }
                     }
                 });
+
+                // VẼ BIỂU ĐỒ 2: LƯU LƯỢNG & ĐỘ DẪN ĐIỆN
+                const ctxFlow = document.getElementById('dailyFlowChart').getContext('2d');
+                if(dailyFlowChartInstance) dailyFlowChartInstance.destroy();
+                dailyFlowChartInstance = new Chart(ctxFlow, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Lưu lượng (m³/h)', data: dFlow, type: 'bar', backgroundColor: 'rgba(6, 182, 212, 0.4)', borderColor: '#06b6d4', borderWidth: 1, yAxisID: 'yFlow', barThickness: 20 },
+                            { label: 'Độ dẫn điện (mS/cm)', data: dEc, type: 'line', borderColor: '#a855f7', backgroundColor: '#a855f7', borderWidth: 3, tension: 0.3, yAxisID: 'yEc', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            x: { offset: true },
+                            yFlow: { type: 'linear', display: true, position: 'left', title: {display: true, text: 'Lưu lượng (m³/h)'}, beginAtZero: true },
+                            yEc: { type: 'linear', display: true, position: 'right', title: {display: true, text: 'Độ dẫn điện (mS/cm)'}, grid: {drawOnChartArea: false}, beginAtZero: true, suggestedMax: 5 }
+                        }
+                    }
+                });
+
             } catch(e) { console.log(e); } finally { document.getElementById('daily-chart-loader').classList.add('hidden'); }
         }
 
