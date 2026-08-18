@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Công Việc & Tiến Độ EHS</title>
+    <title>Quản Lý Công Việc & Tiến Độ</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -69,7 +69,9 @@
                 <div>
                     <select id="filter-category" onchange="window.renderTasks()" class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300 appearance-none">
                         <option value="all">Tất cả mảng công việc</option>
-                        <option value="EHS Chung">Mảng EHS Chung</option>
+                        <option value="An toàn">An toàn</option>
+                        <option value="Môi trường">Môi trường</option>
+                        <option value="Sức khỏe">Sức khỏe</option>
                         <option value="PCCC">Mảng PCCC</option>
                         <option value="ATVSV">Mạng lưới ATVSV</option>
                         <option value="Khác">Mảng Khác</option>
@@ -131,7 +133,9 @@
                     <div class="sm:col-span-1">
                         <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Phân loại Mảng</label>
                         <select id="task-category" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-3 font-semibold text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500">
-                            <option value="EHS Chung">EHS Chung</option>
+                            <option value="An toàn">An toàn</option>
+                            <option value="Môi trường">Môi trường</option>
+                            <option value="Sức khỏe">Sức khỏe</option>
                             <option value="PCCC">PCCC</option>
                             <option value="ATVSV">ATVSV</option>
                             <option value="Khác">Khác</option>
