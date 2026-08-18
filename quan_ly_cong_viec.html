@@ -36,7 +36,6 @@
         <span id="toast-message">Thành công!</span>
     </div>
 
-    <!-- HEADER -->
     <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
         <div class="flex items-center gap-4">
             <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
@@ -56,11 +55,9 @@
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
     <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
         <div class="max-w-7xl mx-auto space-y-6">
             
-            <!-- TÌM KIẾM & BỘ LỌC -->
             <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="md:col-span-2 relative">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
@@ -82,7 +79,6 @@
                 </div>
             </div>
 
-            <!-- TABS -->
             <div class="flex flex-wrap bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
                 <button onclick="window.switchTab('my-tasks')" id="tab-my-tasks" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition">Việc tôi phải làm</button>
                 <button onclick="window.switchTab('assigned-tasks')" id="tab-assigned" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition">Việc tôi đã giao</button>
@@ -94,7 +90,6 @@
                 <p class="font-bold text-slate-500 dark:text-dark-muted" id="loader-text">Đang kết nối hệ thống và xác thực người dùng...</p>
             </div>
 
-            <!-- BẢNG TIẾN ĐỘ NHÂN VIÊN (DÀNH CHO LÃNH ĐẠO) -->
             <div id="leaderboard-container" class="hidden mb-6 bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border">
                 <!-- Nội dung bảng xếp hạng sẽ được JS nạp vào đây -->
             </div>
@@ -111,7 +106,6 @@
         </div>
     </main>
 
-    <!-- MODAL GIAO VIỆC & LẬP KẾ HOẠCH -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
@@ -138,7 +132,6 @@
                         </select>
                     </div>
 
-                    <!-- DROPDOWN THÔNG MINH CHO NHÂN SỰ -->
                     <div class="sm:col-span-1">
                         <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giao cho ai?</label>
                         <div class="relative" id="assignee-wrapper">
@@ -164,7 +157,6 @@
                     </div>
                 </div>
 
-                <!-- KẾ HOẠCH CHI TIẾT DẠNG DÒNG (DYNAMIC STEPS) -->
                 <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-xl relative">
                     <div class="flex justify-between items-center mb-3">
                         <label class="block text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase flex items-center gap-1">
@@ -191,7 +183,6 @@
         </div>
     </div>
 
-    <!-- MODAL CẬP NHẬT TIẾN ĐỘ & ĐÁNH GIÁ CỦA LÃNH ĐẠO -->
     <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -202,13 +193,11 @@
             <div class="p-6 overflow-y-auto custom-scrollbar space-y-5">
                 <input type="hidden" id="up-task-id">
                 
-                <!-- Hiển thị tóm tắt công việc -->
                 <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                     <h3 id="disp-title" class="font-bold text-lg text-slate-800 dark:text-white mb-1">...</h3>
                     <p class="text-xs text-slate-500 dark:text-slate-400"><i class="ph-fill ph-calendar"></i> Deadline: <span id="disp-deadline" class="font-mono font-bold text-red-500">...</span></p>
                 </div>
 
-                <!-- KÉO SLIDER CHO TỪNG BƯỚC CÔNG VIỆC -->
                 <div id="checklist-progress-section" class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-100 dark:border-slate-700 shadow-sm space-y-3">
                     <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-2">
                         <span class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase">Cập nhật tiến độ từng bước</span>
@@ -218,23 +207,29 @@
                         </div>
                     </div>
                     <div id="modal-checklist-container" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
-                        <!-- Các Slider từng bước sẽ được nạp bằng JS vào đây -->
                     </div>
                     <input type="hidden" id="task-progress" value="0">
                 </div>
 
-                <!-- KHU VỰC DÀNH CHO NHÂN VIÊN TỰ THEO DÕI MUỐN TRÌNH SẾP (MỚI) -->
                 <div id="request-review-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <label class="flex items-center gap-3 cursor-pointer p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl transition hover:bg-purple-100">
-                        <input type="checkbox" id="task-request-review" class="w-6 h-6 text-purple-600 rounded">
-                        <div>
-                            <span class="font-black text-purple-700 dark:text-purple-400 text-base block">Trình Lãnh Đạo Xem Xét</span>
-                            <span class="text-xs text-purple-600/70 font-medium">Bật công tắc này để công khai việc lên Góc Lãnh Đạo để sếp đánh giá.</span>
+                    <label class="flex items-start gap-3 cursor-pointer p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl transition hover:bg-purple-100 dark:hover:bg-purple-900/40">
+                        <input type="checkbox" id="task-request-review" class="w-6 h-6 text-purple-600 rounded mt-0.5" onchange="window.toggleReviewerSelect()">
+                        <div class="flex-1">
+                            <span class="font-black text-purple-700 dark:text-purple-400 text-base block">Trình Lãnh Đạo Xem Xét <br><span class="text-sm font-semibold">(Submit for Review / 提交审核)</span></span>
+                            <span class="text-xs text-purple-600/70 font-medium block mt-1">Bật công tắc này để báo cáo việc hoàn thành lên Góc Lãnh Đạo.</span>
+                            
+                            <!-- KHU VỰC CHỌN SẾP -->
+                            <div id="reviewer-select-container" class="mt-3 hidden">
+                                <label class="block text-[11px] font-bold text-purple-800 dark:text-purple-300 uppercase mb-1">Đích danh Sếp duyệt / Select Leader / 选择领导 <span class="text-red-500">*</span></label>
+                                <select id="task-reviewer" class="w-full border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm font-bold text-purple-900 dark:text-purple-100 outline-none focus:ring-2 focus:ring-purple-500 cursor-pointer">
+                                    <option value="">-- Chọn Sếp đánh giá --</option>
+                                    <!-- JS sẽ nạp danh sách sếp vào đây -->
+                                </select>
+                            </div>
                         </div>
                     </label>
                 </div>
 
-                <!-- KHU VỰC DÀNH CHO LÃNH ĐẠO / NGƯỜI GIAO VIỆC -->
                 <div id="eval-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-amber-600 uppercase mb-2"><i class="ph-fill ph-chat-centered-text"></i> Đánh giá & Yêu cầu cải tiến (Dành cho Lãnh đạo)</label>
@@ -257,13 +252,11 @@
         </div>
     </div>
 
-    <!-- TÍCH HỢP TOÀN BỘ LOGIC VÀO MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Config đã chốt chuẩn
         const firebaseConfig = {
           apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
           authDomain: "ehs-training-app.firebaseapp.com",
@@ -282,22 +275,15 @@
         let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
         let userDept = localStorage.getItem("ehs_user_dept") || "";
         
-        // KIỂM TRA QUYỀN LÃNH ĐẠO CHUNG
-        let isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
-        
-        // KIỂM TRA QUYỀN TOÀN CỤC
-        let isGlobalLeader = /ehs|admin|pccc|atvsv/i.test(userDept.toLowerCase());
+        // CÁC BIẾN QUYỀN LÃNH ĐẠO SẼ ĐƯỢC NẠP LẠI TỪ CSDL ĐỂ CHÍNH XÁC TUYỆT ĐỐI
+        let isLeader = false;
+        let isGlobalLeader = false;
 
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
         let globalUserDeptMap = {}; 
         let upTaskId = "";
         let upTaskAssigner = "";
-
-        if(isLeader) {
-            document.getElementById('tab-all').classList.remove('hidden');
-            document.getElementById('tab-all').classList.add('flex');
-        }
 
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
@@ -409,118 +395,68 @@
             });
         };
 
-        window.openUpdateModal = function(taskId) {
-            const t = rawTasksData.find(x => x.id === taskId);
-            if(!t) return;
-
-            upTaskId = t.id; 
-            upTaskAssigner = t.assigner_id;
-            
-            document.getElementById('up-task-id').value = t.id;
-            document.getElementById('disp-title').innerText = t.title;
-            document.getElementById('disp-deadline').innerText = new Date(t.due_date).toLocaleDateString('vi-VN');
-            
-            const container = document.getElementById('modal-checklist-container');
-            container.innerHTML = '';
-            let steps = t.plan_steps || [];
-
-            if (steps.length === 0) {
-                container.innerHTML = '<p class="text-sm text-slate-500 italic">Công việc này không có chi tiết từng bước. Hãy cập nhật tiến độ ở thanh tổng.</p>';
-            } else {
-                steps.forEach((step, idx) => {
-                    let text = typeof step === 'string' ? step : step.text;
-                    let stepProg = 0;
-                    if (typeof step === 'object') {
-                        if (step.progress !== undefined) stepProg = step.progress;
-                        else if (step.done) stepProg = 100;
-                    }
-
-                    let isDoneClass = stepProg === 100 ? 'line-through text-emerald-600' : 'text-slate-700 dark:text-slate-200';
-                    let accentClass = stepProg === 100 ? 'accent-emerald-500' : 'accent-blue-600';
-
-                    container.innerHTML += `
-                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                            <div class="flex justify-between items-start mb-2 gap-2">
-                                <span id="step-title-${idx}" class="text-sm font-bold ${isDoneClass} transition-colors">${text}</span>
-                                <span id="step-val-${idx}" class="text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded shrink-0">${stepProg}%</span>
-                            </div>
-                            <input type="range" min="0" max="100" value="${stepProg}" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer modal-step-slider ${accentClass}" data-idx="${idx}" oninput="window.updateStepProg(this)">
-                        </div>
-                    `;
-                });
-            }
-
-            window.recalcProgress();
-            
-            const isSelfAssigned = (t.assignee_id === t.assigner_id);
-            const evalSec = document.getElementById('eval-section');
-            const reqReviewSec = document.getElementById('request-review-section');
-            const reqReviewCheck = document.getElementById('task-request-review');
-            const evalInput = document.getElementById('task-eval');
-            const doneCheck = document.getElementById('task-done');
-            
-            if (evalInput) evalInput.value = t.evaluation || "";
-            reqReviewSec.classList.add('hidden'); // Reset
-            
-            // XỬ LÝ QUYỀN HIỂN THỊ DỰA TRÊN TAB
-            if (currentTab === 'my-tasks') {
-                evalSec.classList.add('hidden');
-                document.getElementById('update-modal-title').innerText = 'Báo cáo Tiến độ từng bước';
-                
-                // Hiển thị nút Trình Sếp nếu là việc Tự Theo Dõi
-                if (isSelfAssigned) {
-                    reqReviewSec.classList.remove('hidden');
-                    reqReviewCheck.checked = !!t.is_review_requested;
-                }
-            } else {
-                evalSec.classList.remove('hidden');
-                if (doneCheck) doneCheck.checked = (t.status === 'Done');
-                document.getElementById('update-modal-title').innerHTML = '<i class="ph-fill ph-crown text-amber-500"></i> Góc Lãnh Đạo Đánh Giá';
-            }
-
-            document.getElementById('update-modal').classList.remove('hidden');
-            const btnUpdate = document.getElementById('btn-update-task');
-            btnUpdate.innerHTML = 'Lưu Cập Nhật Tiến Độ';
-            btnUpdate.disabled = false;
+        window.toggleReviewerSelect = function() {
+            const isChecked = document.getElementById('task-request-review').checked;
+            const container = document.getElementById('reviewer-select-container');
+            if(isChecked) container.classList.remove('hidden');
+            else container.classList.add('hidden');
         };
-
-        window.recalcProgress = function() {
-            const sliders = document.querySelectorAll('.modal-step-slider');
-            let prog = 0;
-            if(sliders.length > 0) {
-                let total = 0;
-                sliders.forEach(s => { total += parseInt(s.value); });
-                prog = Math.round(total / sliders.length);
-            }
-            document.getElementById('task-progress').value = prog;
-            document.getElementById('prog-val').innerText = prog + '%';
-        };
-
-        window.closeUpdateModal = function() { document.getElementById('update-modal').classList.add('hidden'); };
 
         async function loadUsersDropdown() {
             const ul = document.getElementById('assignee-list');
+            const revSelect = document.getElementById('task-reviewer');
             document.getElementById('assignee-display').innerHTML = `<span>-- Chọn nhân sự --</span> <i class="ph-bold ph-caret-down shrink-0"></i>`;
+            
             try {
                 const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
                 let html = `<li onclick="window.selectAssignee('${currentUserId}', '${currentUserName}')" class="assignee-item p-3 mb-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg cursor-pointer transition font-black text-blue-700 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">🌟 [TỰ GIAO] Việc cá nhân của tôi</li>`;
+                let revHtml = `<option value="">-- Chọn Sếp đánh giá (Select Leader / 选择领导) --</option>`;
                 
                 globalUserDeptMap = {};
-                
+                let currentUserRole = "";
+
                 snap.forEach(doc => {
                     const data = doc.data();
+                    
                     if(data.ma_nv) {
                         globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
                     }
 
+                    // Tìm vị trí của chính người đang đăng nhập
+                    if(data.ma_nv === currentUserId) {
+                        currentUserRole = (data.vi_tri || "") + " " + (data.bo_phan || "");
+                    }
+
+                    // Danh sách Giao Việc
                     if(data.ma_nv && data.ho_ten && data.ma_nv !== currentUserId) {
                         html += `<li onclick="window.selectAssignee('${data.ma_nv}', '${data.ho_ten.replace(/'/g, "\\'")}')" class="assignee-item p-2 mb-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer transition text-sm border-b border-slate-50 dark:border-slate-800">
                             <div class="font-bold text-slate-800 dark:text-slate-200">${data.ho_ten} (${data.ma_nv})</div>
                             <div class="text-[10px] text-slate-500 mt-0.5">${data.bo_phan || 'Chưa cập nhật bộ phận'}</div>
                         </li>`;
                     }
+                    
+                    // Nạp danh sách Lãnh Đạo cho dropdown Reviewer
+                    const roleStr = ((data.vi_tri || "") + " " + (data.bo_phan || "") + " " + (data.vai_tro_phu?.pccc || "")).toLowerCase();
+                    const isLeaderRole = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin/i.test(roleStr);
+                    
+                    if (isLeaderRole && data.ma_nv !== currentUserId) {
+                        revHtml += `<option value="${data.ma_nv}|${data.ho_ten}">${data.ho_ten} - ${data.vi_tri || data.bo_phan}</option>`;
+                    }
                 });
+                
                 ul.innerHTML = html;
+                revSelect.innerHTML = revHtml;
+                
+                // Xác định lại quyền lãnh đạo thực sự của user đang đăng nhập từ CSDL
+                const myRoleStr = currentUserRole.toLowerCase();
+                isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin/i.test(myRoleStr);
+                isGlobalLeader = /ehs|admin/i.test(myRoleStr);
+
+                if(isLeader) {
+                    document.getElementById('tab-all').classList.remove('hidden');
+                    document.getElementById('tab-all').classList.add('flex');
+                }
+
             } catch (e) {
                 ul.innerHTML = '<li class="p-2 text-red-500 font-bold">Lỗi tải danh sách từ Firebase</li>';
                 console.error("Lỗi dropdown: ", e);
@@ -558,27 +494,29 @@
 
             let filteredTasks = rawTasksData.filter(t => {
                 let tabMatch = false;
+                const isSelfAssigned = (t.assignee_id === t.assigner_id);
                 
                 if (currentTab === 'my-tasks' && t.assignee_id === currentUserId) tabMatch = true;
-                if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId && t.assignee_id !== currentUserId) tabMatch = true;
+                if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId && !isSelfAssigned) tabMatch = true;
                 
                 if (currentTab === 'all-tasks' && isLeader) {
-                    // KHÓA CHẶN 1: Bỏ qua việc tự theo dõi TRỪ KHI nhân viên đã ấn "Trình sếp"
-                    const isSelfAssigned = (t.assignee_id === t.assigner_id);
-                    if (isSelfAssigned && !t.is_review_requested) {
-                        return false; 
-                    }
-
-                    // KHÓA CHẶN 2: Lọc theo bộ phận
-                    if (isGlobalLeader) {
-                        tabMatch = true; 
-                    } else {
-                        let myMainDept = userDept.split('-')[0].trim().toLowerCase();
-                        let taskAssigneeDept = globalUserDeptMap[t.assignee_id] || "";
-                        let theirMainDept = taskAssigneeDept.split('-')[0].trim().toLowerCase();
-                        
-                        if (myMainDept && theirMainDept && myMainDept === theirMainDept) {
+                    if (isSelfAssigned) {
+                        // Nếu là việc tự theo dõi, CHỈ HIỆN khi đã ấn Trình Sếp VÀ sếp đang đăng nhập chính là sếp được chọn (hoặc EHS/Admin)
+                        if (t.is_review_requested && (t.reviewer_id === currentUserId || isGlobalLeader)) {
                             tabMatch = true;
+                        }
+                    } else {
+                        // Việc giao chéo bình thường -> Lọc cách ly theo bộ phận
+                        if (isGlobalLeader) {
+                            tabMatch = true; 
+                        } else {
+                            let myMainDept = userDept.split('-')[0].trim().toLowerCase();
+                            let taskAssigneeDept = globalUserDeptMap[t.assignee_id] || "";
+                            let theirMainDept = taskAssigneeDept.split('-')[0].trim().toLowerCase();
+                            
+                            if (myMainDept && theirMainDept && myMainDept === theirMainDept) {
+                                tabMatch = true;
+                            }
                         }
                     }
                 }
@@ -598,7 +536,7 @@
                 return timeB - timeA;
             });
 
-            // VẼ BẢNG XẾP HẠNG TIẾN ĐỘ (LEADERBOARD) DÀNH CHO LÃNH ĐẠO
+            // VẼ BẢNG XẾP HẠNG TIẾN ĐỘ (LEADERBOARD)
             if (currentTab === 'all-tasks' && isLeader && filteredTasks.length > 0) {
                 let userStats = {};
                 filteredTasks.forEach(t => {
@@ -660,7 +598,7 @@
                 let statusHtml = '';
                 if (t.status === 'Done') statusHtml = `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-check-circle"></i> Hoàn thành</span>`;
                 else if (isOverdue) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase animate-pulse"><i class="ph-bold ph-warning-circle"></i> Quá hạn</span>`;
-                else if (t.is_review_requested && t.status !== 'Done') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-paper-plane-tilt"></i> Chờ sếp duyệt</span>`;
+                else if (t.is_review_requested && t.status !== 'Done') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-paper-plane-tilt"></i> Chờ duyệt</span>`;
                 else if (t.status === 'Review') statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> Chờ nghiệm thu</span>`;
                 else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> Đang làm</span>`;
                 else statusHtml = `<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> Mới giao</span>`;
@@ -709,11 +647,10 @@
                     `;
                 }
                 
-                // HIỆN THỊ NGUỒN GỐC TASK
                 let sourceTaskHtml = '';
                 if (isSelfAssigned) {
                     if (t.is_review_requested) {
-                        sourceTaskHtml = `<div class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-purple-100 dark:border-purple-800"><i class="ph-fill ph-paper-plane-tilt"></i> Đã trình Lãnh đạo xem xét</div>`;
+                        sourceTaskHtml = `<div class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 p-2 rounded-lg font-semibold flex items-start gap-1.5 border border-purple-100 dark:border-purple-800"><i class="ph-fill ph-paper-plane-tilt mt-0.5 shrink-0"></i> <span>Đã trình: <b class="text-purple-800 dark:text-purple-200">${t.reviewer_name || 'Sếp'}</b></span></div>`;
                     } else {
                         sourceTaskHtml = `<div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-indigo-100 dark:border-indigo-800"><i class="ph-fill ph-user-circle"></i> Công việc tự theo dõi</div>`;
                     }
@@ -762,6 +699,100 @@
             grid.classList.remove('hidden');
         };
 
+        window.openUpdateModal = function(taskId) {
+            const t = rawTasksData.find(x => x.id === taskId);
+            if(!t) return;
+
+            upTaskId = t.id; 
+            upTaskAssigner = t.assigner_id;
+            
+            document.getElementById('up-task-id').value = t.id;
+            document.getElementById('disp-title').innerText = t.title;
+            document.getElementById('disp-deadline').innerText = new Date(t.due_date).toLocaleDateString('vi-VN');
+            
+            const container = document.getElementById('modal-checklist-container');
+            container.innerHTML = '';
+            let steps = t.plan_steps || [];
+
+            if (steps.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-500 italic">Công việc này không có chi tiết từng bước. Hãy cập nhật tiến độ ở thanh tổng.</p>';
+            } else {
+                steps.forEach((step, idx) => {
+                    let text = typeof step === 'string' ? step : step.text;
+                    let stepProg = 0;
+                    if (typeof step === 'object') {
+                        if (step.progress !== undefined) stepProg = step.progress;
+                        else if (step.done) stepProg = 100;
+                    }
+
+                    let isDoneClass = stepProg === 100 ? 'line-through text-emerald-600' : 'text-slate-700 dark:text-slate-200';
+                    let accentClass = stepProg === 100 ? 'accent-emerald-500' : 'accent-blue-600';
+
+                    container.innerHTML += `
+                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <div class="flex justify-between items-start mb-2 gap-2">
+                                <span id="step-title-${idx}" class="text-sm font-bold ${isDoneClass} transition-colors">${text}</span>
+                                <span id="step-val-${idx}" class="text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded shrink-0">${stepProg}%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="${stepProg}" class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer modal-step-slider ${accentClass}" data-idx="${idx}" oninput="window.updateStepProg(this)">
+                        </div>
+                    `;
+                });
+            }
+
+            window.recalcProgress();
+            
+            const isSelfAssigned = (t.assignee_id === t.assigner_id);
+            const evalSec = document.getElementById('eval-section');
+            const reqReviewSec = document.getElementById('request-review-section');
+            const reqReviewCheck = document.getElementById('task-request-review');
+            const evalInput = document.getElementById('task-eval');
+            const doneCheck = document.getElementById('task-done');
+            
+            if (evalInput) evalInput.value = t.evaluation || "";
+            reqReviewSec.classList.add('hidden'); // Reset
+            
+            if (currentTab === 'my-tasks') {
+                evalSec.classList.add('hidden');
+                document.getElementById('update-modal-title').innerText = 'Báo cáo Tiến độ từng bước';
+                
+                if (isSelfAssigned) {
+                    reqReviewSec.classList.remove('hidden');
+                    reqReviewCheck.checked = !!t.is_review_requested;
+                    window.toggleReviewerSelect();
+                    
+                    if(t.reviewer_id) {
+                        document.getElementById('task-reviewer').value = `${t.reviewer_id}|${t.reviewer_name}`;
+                    } else {
+                        document.getElementById('task-reviewer').value = "";
+                    }
+                }
+            } else {
+                evalSec.classList.remove('hidden');
+                if (doneCheck) doneCheck.checked = (t.status === 'Done');
+                document.getElementById('update-modal-title').innerHTML = '<i class="ph-fill ph-crown text-amber-500"></i> Góc Lãnh Đạo Đánh Giá';
+            }
+
+            document.getElementById('update-modal').classList.remove('hidden');
+            const btnUpdate = document.getElementById('btn-update-task');
+            btnUpdate.innerHTML = 'Lưu Cập Nhật Tiến Độ';
+            btnUpdate.disabled = false;
+        };
+
+        window.closeUpdateModal = function() { document.getElementById('update-modal').classList.add('hidden'); };
+
+        window.recalcProgress = function() {
+            const sliders = document.querySelectorAll('.modal-step-slider');
+            let prog = 0;
+            if(sliders.length > 0) {
+                let total = 0;
+                sliders.forEach(s => { total += parseInt(s.value); });
+                prog = Math.round(total / sliders.length);
+            }
+            document.getElementById('task-progress').value = prog;
+            document.getElementById('prog-val').innerText = prog + '%';
+        };
+
         window.saveTask = async function() {
             const title = document.getElementById('task-title').value.trim();
             const assigneeRaw = document.getElementById('task-assignee').value;
@@ -790,6 +821,7 @@
                     assignee_id: assignee_id, assignee_name: assignee_name,
                     progress: 0, status: 'To Do', evaluation: '',
                     is_review_requested: false,
+                    reviewer_id: "", reviewer_name: "",
                     created_at: new Date()
                 };
                 
@@ -848,7 +880,6 @@
                 if (isDone) { 
                     updateData.status = 'Done'; 
                     updateData.progress = 100; 
-                    // Chuyển toàn bộ bước con thành 100% nếu sếp đóng việc
                     updateData.plan_steps = updateData.plan_steps.map(s => ({...s, progress: 100}));
                 }
                 else if (t.status === 'Done' && !isDone) { updateData.status = 'In Progress'; }
@@ -861,7 +892,24 @@
                     const reqReviewCheck = document.getElementById('task-request-review');
                     if (reqReviewCheck) {
                         updateData.is_review_requested = reqReviewCheck.checked;
-                        if (reqReviewCheck.checked) updateData.status = 'Review';
+                        if (reqReviewCheck.checked) {
+                            const reviewerVal = document.getElementById('task-reviewer').value;
+                            if(!reviewerVal) {
+                                showToast("Vui lòng chọn đích danh Lãnh đạo để gửi duyệt!", "error");
+                                const btn = document.getElementById('btn-update-task');
+                                btn.disabled = false; btn.innerHTML = 'Lưu Cập Nhật Tiến Độ';
+                                return; 
+                            }
+                            const [revId, revName] = reviewerVal.split('|');
+                            updateData.reviewer_id = revId;
+                            updateData.reviewer_name = revName;
+                            updateData.status = 'Review';
+                        } else {
+                            updateData.reviewer_id = "";
+                            updateData.reviewer_name = "";
+                            if (newProg === 100) updateData.status = 'Done';
+                            else updateData.status = 'In Progress';
+                        }
                     }
                 }
             }
@@ -881,7 +929,6 @@
         };
 
         applyTheme();
-        
         window.addPlanStep();
 
         onAuthStateChanged(auth, async (user) => {
