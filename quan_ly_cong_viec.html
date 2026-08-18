@@ -495,17 +495,16 @@
                         </li>`;
                     }
                     
-                    // CHỈ LỌC CÁC CHỨC DANH LÃNH ĐẠO THỰC SỰ ĐỂ DUYỆT (Giám đốc, Quản đốc, Giám sát, Trưởng nhóm, EHS...)
+                    // CHỈ LỌC CÁC CHỨC DANH LÃNH ĐẠO THỰC SỰ ĐỂ DUYỆT 
                     const roleTitle = (data.vi_tri || "").toLowerCase();
                     const pcccRole = (data.vai_tro_phu?.pccc || "").toLowerCase();
-                    const deptTitle = (data.bo_phan || "").toLowerCase();
                     
-                    const isStrictLeader = /giám đốc|quản đốc|giám sát|trưởng nhóm|trưởng phòng|đội trưởng|đội phó|ehs|admin/i.test(roleTitle) ||
-                                           /trưởng|phó/i.test(pcccRole) ||
-                                           /ehs|admin/i.test(deptTitle);
+                    // Đã gỡ bỏ điều kiện xét theo Tên Bộ Phận. Chỉ xét thuần túy theo Vị trí công việc (Role).
+                    const isStrictLeader = /giám đốc|quản đốc|giám sát|trưởng|đội phó|ehs|admin/i.test(roleTitle) ||
+                                           /trưởng|phó/i.test(pcccRole);
                     
                     if (isStrictLeader && data.ma_nv !== currentUserId && data.ma_nv && data.ho_ten) {
-                        const displayRole = data.vi_tri || data.bo_phan || 'Lãnh đạo';
+                        const displayRole = data.vi_tri || 'Lãnh đạo';
                         revHtml += `
                             <li onclick="window.selectReviewer('${data.ma_nv}', '${data.ho_ten.replace(/'/g, "\\'")}', '${displayRole.replace(/'/g, "\\'")}')" class="reviewer-item p-2.5 mb-1 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg cursor-pointer transition text-sm border-b border-slate-100 dark:border-slate-700">
                                 <div class="font-black text-purple-900 dark:text-purple-200 flex items-center justify-between">
