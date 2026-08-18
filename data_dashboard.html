@@ -43,7 +43,6 @@
             <div class="bg-blue-600 px-4 py-2 rounded-xl shadow-md flex items-center gap-3 w-full sm:w-auto border-2 border-blue-400">
                 <i class="ph-fill ph-factory text-white text-2xl"></i>
                 <label class="font-bold text-sm text-blue-100 hidden sm:block">Đang Xem Bản Ghi Của:</label>
-                <!-- ĐÃ XÓA TÙY CHỌN "TẤT CẢ" ĐỂ CÁCH LY DỮ LIỆU TỪNG NHÀ MÁY -->
                 <select id="global-plant-filter" onchange="reloadAllCharts()" class="bg-blue-800 border border-blue-500 text-white font-black px-4 py-2 rounded-lg outline-none cursor-pointer flex-1 focus:ring-2 focus:ring-white">
                     <option value="Nhà máy Can">🏭 Nhóm: Nhà máy Can</option>
                     <option value="Nhà máy End">🏭 Nhóm: Nhà máy End</option>
@@ -86,16 +85,17 @@
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar">
-                    <table class="w-full text-left border-collapse min-w-[900px]">
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-12">STT</th>
                                 <th class="p-3 border-b border-slate-700 text-center">Ngày đo</th>
-                                <th class="p-3 border-b border-slate-700">Người trực / Ghi chú</th>
+                                <th class="p-3 border-b border-slate-700">Người trực</th>
                                 <th class="p-3 border-b border-slate-700 text-center text-blue-300">pH<br><span class="text-[9px]">6-9</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-rose-300">COD<br><span class="text-[9px]">Max 90</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-amber-300">Florua<br><span class="text-[9px]">Max 15</span></th>
-                                <th class="p-3 border-b border-slate-700 text-center">Xóa</th>
+                                <th class="p-3 border-b border-slate-700">Ghi chú</th>
+                                <th class="p-3 border-b border-slate-700 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="dailyBody" class="text-sm divide-y divide-slate-100 bg-white"></tbody>
@@ -137,7 +137,7 @@
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar">
-                    <table class="w-full text-left border-collapse min-w-[1600px]">
+                    <table class="w-full text-left border-collapse min-w-[1700px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-10">STT</th>
@@ -207,19 +207,24 @@
     <div id="daily-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
             <div class="p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-blue-800 flex items-center gap-2"><i class="ph-fill ph-waves"></i> Ghi Nhận Nước Thải (Hằng Ngày)</h3>
+                <h3 id="daily-modal-title" class="text-lg font-bold text-blue-800 flex items-center gap-2"><i class="ph-fill ph-waves"></i> Thêm Kết Quả Hôm Nay</h3>
                 <button onclick="closeDailyModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
             <div class="p-6 space-y-4">
+                <input type="hidden" id="d-doc-id">
                 <div class="bg-blue-100 text-blue-800 font-bold p-3 rounded-xl border border-blue-200 text-sm mb-2 text-center" id="d-plant-display">
                     Đang nhập cho: Nhà máy Can
                 </div>
                 
-                <div class="grid grid-cols-1 gap-4 border-b border-slate-100 pb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày trực <span class="text-red-500">*</span></label>
                         <input type="date" id="d-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-blue-500 font-bold text-slate-700 bg-slate-50">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Người trực / Cán bộ nhập liệu <span class="text-red-500">*</span></label>
+                        <input type="text" id="d-operator" readonly class="w-full border border-slate-200 px-3 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold cursor-not-allowed">
                     </div>
                 </div>
 
@@ -239,7 +244,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Người trực / Ghi chú</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ghi chú (Tình trạng, Hóa chất đã châm...)</label>
                     <input type="text" id="d-note" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-blue-500 text-sm bg-slate-50 focus:bg-white" placeholder="VD: Nước trong, châm thêm PAC...">
                 </div>
             </div>
@@ -247,13 +252,12 @@
             <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
                 <button onclick="closeDailyModal()" class="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition">Hủy</button>
                 <button id="btn-save-daily" onclick="saveDailyData()" class="bg-blue-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-floppy-disk"></i> Lưu Hệ Thống
+                    <i class="ph-bold ph-floppy-disk"></i> Lưu Kết Quả
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal Nhập Nước Thải Định Kỳ (Đã mở rộng Grid cho Amoni) -->
     <div id="water-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col">
             <div class="p-5 border-b border-slate-100 bg-teal-50 flex justify-between items-center">
@@ -278,17 +282,13 @@
                     </div>
                 </div>
 
-                <!-- Thay đổi thành grid-cols-6 để chứa đủ các ô dữ liệu một cách cân đối -->
                 <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">pH (6-9)</label><input type="number" step="0.01" id="w-ph" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
                     <div class="bg-purple-50 p-2 rounded-xl border border-purple-200 shadow-sm"><label class="block text-[10px] font-black text-purple-700 uppercase mb-1 text-center">Độ màu (Max 100)</label><input type="number" step="0.1" id="w-color" class="w-full border border-purple-300 px-2 py-1.5 rounded-lg outline-none text-purple-800 font-mono font-bold text-center focus:bg-white"></div>
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">TSS (Max 80)</label><input type="number" step="0.1" id="w-tss" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
                     <div class="bg-amber-50 p-2 rounded-xl border border-amber-200 shadow-sm"><label class="block text-[10px] font-black text-amber-700 uppercase mb-1 text-center">BOD5 (Max 60)</label><input type="number" step="0.1" id="w-bod" class="w-full border border-amber-300 px-2 py-1.5 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white"></div>
                     <div class="bg-rose-50 p-2 rounded-xl border border-rose-200 shadow-sm"><label class="block text-[10px] font-black text-rose-700 uppercase mb-1 text-center">COD (Max 90)</label><input type="number" step="0.1" id="w-cod" class="w-full border border-rose-300 px-2 py-1.5 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white"></div>
-                    
-                    <!-- THÊM Ô NHẬP LIỆU AMONI MÀU CYAN -->
                     <div class="bg-cyan-50 p-2 rounded-xl border border-cyan-200 shadow-sm"><label class="block text-[10px] font-black text-cyan-700 uppercase mb-1 text-center">Amoni (Max 10)</label><input type="number" step="0.1" id="w-amoni" class="w-full border border-cyan-300 px-2 py-1.5 rounded-lg outline-none text-cyan-800 font-mono font-bold text-center focus:bg-white"></div>
-                    
                     <div class="bg-orange-50 p-2 rounded-xl border border-orange-200 shadow-sm"><label class="block text-[10px] font-black text-orange-700 uppercase mb-1 text-center">Florua (Max 15)</label><input type="number" step="0.001" id="w-florua" class="w-full border border-orange-300 px-2 py-1.5 rounded-lg outline-none text-orange-800 font-mono font-bold text-center focus:bg-white"></div>
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng N (Max 40)</label><input type="number" step="0.1" id="w-tongn" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng P (Max 6)</label><input type="number" step="0.01" id="w-tongp" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
@@ -365,7 +365,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -382,6 +382,9 @@
         let waterChartConcInstance = null;
         let waterChartSpecInstance = null;
         let airChartInstance = null;
+
+        // Lấy tên đăng nhập
+        const currentUser = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
 
         window.showToast = function(msg, type = 'success') {
             const toast = document.getElementById('custom-toast');
@@ -430,18 +433,36 @@
             loadAirData();
         }
 
-        // ==========================================
-        // MODULE VẬN HÀNH HẰNG NGÀY
-        // ==========================================
         window.openDailyModal = () => { 
+            document.getElementById('d-doc-id').value = ''; // Reset ID
             document.getElementById('d-date').value = new Date().toISOString().split('T')[0]; 
+            document.getElementById('d-ph').value = '';
+            document.getElementById('d-cod').value = '';
+            document.getElementById('d-florua').value = '';
+            document.getElementById('d-note').value = '';
+            document.getElementById('d-operator').value = currentUser; // Tự động lấy tên
+            document.getElementById('daily-modal-title').innerHTML = '<i class="ph-fill ph-waves"></i> Thêm Kết Quả Hôm Nay';
             document.getElementById('daily-modal').classList.remove('hidden'); 
         };
+
+        window.editDailyData = (id, date, ph, cod, florua, note, operator) => {
+            document.getElementById('d-doc-id').value = id;
+            document.getElementById('d-date').value = date;
+            document.getElementById('d-ph').value = ph;
+            document.getElementById('d-cod').value = cod;
+            document.getElementById('d-florua').value = florua;
+            document.getElementById('d-note').value = note;
+            document.getElementById('d-operator').value = operator || currentUser;
+            document.getElementById('daily-modal-title').innerHTML = '<i class="ph-fill ph-pencil-simple"></i> Cập Nhật Kết Quả';
+            document.getElementById('daily-modal').classList.remove('hidden');
+        };
+
         window.closeDailyModal = () => document.getElementById('daily-modal').classList.add('hidden');
 
         window.saveDailyData = async () => {
+            const docId = document.getElementById('d-doc-id').value;
             const dateVal = document.getElementById('d-date').value;
-            const plantVal = document.getElementById('global-plant-filter').value; // Lấy trực tiếp từ bộ lọc
+            const plantVal = document.getElementById('global-plant-filter').value;
             
             if(!dateVal) return showToast("Vui lòng nhập Ngày trực!", "error");
 
@@ -452,22 +473,28 @@
                 cod: parseFloat(document.getElementById('d-cod').value) || 0,
                 florua: parseFloat(document.getElementById('d-florua').value) || 0,
                 ghi_chu: document.getElementById('d-note').value.trim() || "",
-                thoi_gian_nhap: new Date()
+                nguoi_truc: document.getElementById('d-operator').value, // Lưu người trực
+                thoi_gian_cap_nhat: new Date()
             };
 
             const btn = document.getElementById('btn-save-daily');
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
 
             try {
-                await addDoc(collection(db, "quan_trac_hang_ngay"), data);
+                if (docId) {
+                    await updateDoc(doc(db, "quan_trac_hang_ngay", docId), data);
+                    showToast("Cập nhật kết quả thành công!");
+                } else {
+                    data.thoi_gian_nhap = new Date();
+                    await addDoc(collection(db, "quan_trac_hang_ngay"), data);
+                    showToast("Thêm mới kết quả thành công!");
+                }
                 closeDailyModal(); 
-                showToast("Lưu kết quả hằng ngày thành công!");
                 loadDailyData();
             } catch(e) { 
                 showToast("Lỗi bảo mật Firebase: Cần cấp quyền rules", "error");
             } finally { 
-                btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Lưu Hệ Thống'; btn.disabled = false; 
-                document.getElementById('d-ph').value = ''; document.getElementById('d-cod').value = ''; document.getElementById('d-florua').value = ''; document.getElementById('d-note').value = '';
+                btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Lưu Kết Quả'; btn.disabled = false; 
             }
         };
 
@@ -480,14 +507,14 @@
 
         async function loadDailyData() {
             document.getElementById('daily-chart-loader').classList.remove('hidden');
-            const selectedPlant = document.getElementById('global-plant-filter').value; // BẮT BUỘC THEO NHÀ MÁY NÀY
+            const selectedPlant = document.getElementById('global-plant-filter').value;
             
             try {
                 const snap = await getDocs(collection(db, "quan_trac_hang_ngay"));
                 let raw = []; 
                 snap.forEach(d => {
                     const data = d.data();
-                    if(data.nha_may === selectedPlant) raw.push({ id: d.id, ...data }); // LỌC CỨNG DỮ LIỆU
+                    if(data.nha_may === selectedPlant) raw.push({ id: d.id, ...data });
                 });
                 
                 raw.sort((a, b) => new Date(a.ngay_lay_mau) - new Date(b.ngay_lay_mau));
@@ -496,23 +523,31 @@
                 const labels = [], dCod = [], dFlorua = [], dPh = [];
 
                 if(raw.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center p-8 font-bold text-slate-400">Chưa có dữ liệu vận hành hằng ngày cho ${selectedPlant}</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center p-8 font-bold text-slate-400">Chưa có dữ liệu vận hành hằng ngày cho ${selectedPlant}</td></tr>`;
                 }
 
                 [...raw].reverse().forEach((d, i) => {
                     let codCls = d.cod >= 90 ? "text-red-600 font-black" : "font-bold text-rose-700";
                     let fCls = d.florua >= 15 ? "text-red-600 font-black" : "font-bold text-amber-700";
                     let phCls = (d.pH < 6 || d.pH > 9) && d.pH !== 0 ? "text-red-600 font-black" : "font-bold text-blue-700";
+                    
+                    // Xử lý chuỗi an toàn trước khi truyền vào hàm Edit
+                    const safeNote = (d.ghi_chu || '').replace(/'/g, "\\'");
+                    const safeOperator = (d.nguoi_truc || '').replace(/'/g, "\\'");
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 whitespace-nowrap">
                             <td class="p-3 text-center text-slate-500">${i+1}</td>
                             <td class="p-3 text-center font-bold text-slate-700">${new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN')}</td>
-                            <td class="p-3 font-medium text-slate-600 max-w-[200px] truncate" title="${d.ghi_chu}">${d.ghi_chu || '-'}</td>
+                            <td class="p-3 font-medium text-blue-700">${d.nguoi_truc || '-'}</td>
                             <td class="p-3 text-center ${phCls} bg-blue-50/30">${d.pH || 0}</td>
                             <td class="p-3 text-center ${codCls} bg-rose-50/30">${d.cod || 0}</td>
                             <td class="p-3 text-center ${fCls} bg-amber-50/30">${d.florua || 0}</td>
-                            <td class="p-3 text-center"><button onclick="deleteDailyData('${d.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="ph-bold ph-trash text-lg"></i></button></td>
+                            <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${d.ghi_chu}">${d.ghi_chu || '-'}</td>
+                            <td class="p-3 text-center whitespace-nowrap">
+                                <button onclick="editDailyData('${d.id}', '${d.ngay_lay_mau}', ${d.pH}, ${d.cod}, ${d.florua}, '${safeNote}', '${safeOperator}')" class="text-blue-500 hover:text-blue-700 transition p-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                                <button onclick="deleteDailyData('${d.id}')" class="text-slate-300 hover:text-red-500 transition p-1 ml-2" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -548,9 +583,6 @@
             } catch(e) { console.log(e); } finally { document.getElementById('daily-chart-loader').classList.add('hidden'); }
         }
 
-        // ==========================================
-        // MODULE NƯỚC THẢI ĐỊNH KỲ (ĐÃ TÍCH HỢP AMONI)
-        // ==========================================
         window.openWaterModal = () => { 
             document.getElementById('w-date').value = new Date().toISOString().split('T')[0]; 
             document.getElementById('water-modal').classList.remove('hidden'); 
@@ -559,7 +591,7 @@
 
         window.saveWaterData = async () => {
             const dateVal = document.getElementById('w-date').value;
-            const plantVal = document.getElementById('global-plant-filter').value; // Lấy từ bộ lọc
+            const plantVal = document.getElementById('global-plant-filter').value;
             const locVal = document.getElementById('w-location').value.trim();
             
             if(!dateVal || !locVal) return showToast("Vui lòng nhập Ngày lấy mẫu và Vị trí!", "error");
@@ -571,7 +603,7 @@
                 tss: parseFloat(document.getElementById('w-tss').value) || 0,
                 bod: parseFloat(document.getElementById('w-bod').value) || 0,
                 cod: parseFloat(document.getElementById('w-cod').value) || 0,
-                amoni: parseFloat(document.getElementById('w-amoni').value) || 0, // Dữ liệu Amoni
+                amoni: parseFloat(document.getElementById('w-amoni').value) || 0,
                 florua: parseFloat(document.getElementById('w-florua').value) || 0,
                 tong_n: parseFloat(document.getElementById('w-tongn').value) || 0,
                 tong_p: parseFloat(document.getElementById('w-tongp').value) || 0,
@@ -600,14 +632,14 @@
 
         async function loadWaterData() {
             document.getElementById('water-chart-loader').classList.remove('hidden');
-            const selectedPlant = document.getElementById('global-plant-filter').value; // BẮT BUỘC THEO NHÀ MÁY
+            const selectedPlant = document.getElementById('global-plant-filter').value;
             
             try {
                 const snap = await getDocs(collection(db, "quan_trac_nuoc_thai"));
                 let raw = []; 
                 snap.forEach(d => {
                     const data = d.data();
-                    if(data.nha_may === selectedPlant) raw.push({ id: d.id, ...data }); // LỌC CỨNG
+                    if(data.nha_may === selectedPlant) raw.push({ id: d.id, ...data });
                 });
                 
                 raw.sort((a, b) => new Date(a.ngay_lay_mau) - new Date(b.ngay_lay_mau));
@@ -624,7 +656,7 @@
                     let bodCls = d.bod >= 60 ? "text-red-600 font-black" : "font-bold text-amber-700";
                     let colorCls = d.color >= 100 ? "text-red-600 font-black" : "font-bold text-purple-700";
                     let fCls = d.florua >= 15 ? "text-red-600 font-black" : "font-bold text-orange-700";
-                    let amoniCls = d.amoni >= 10 ? "text-red-600 font-black" : "font-bold text-cyan-700"; // Định dạng màu Amoni
+                    let amoniCls = d.amoni >= 10 ? "text-red-600 font-black" : "font-bold text-cyan-700";
                     let coliCls = d.coliform >= 5000 ? "text-red-600 font-black" : "font-bold text-emerald-700";
                     
                     tbody.innerHTML += `
@@ -667,7 +699,7 @@
                             { label: 'TSS', data: dTss, borderColor: '#475569', borderWidth: 2, borderDash: [5,5], tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'Tổng N', data: dTongN, borderColor: '#2563eb', borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'Florua', data: dFlorua, borderColor: '#059669', borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
-                            { label: 'Amoni', data: dAmoni, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' } // Thêm Dataset Amoni
+                            { label: 'Amoni', data: dAmoni, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
                         ]
                     },
                     options: {
@@ -703,9 +735,6 @@
             } catch(e) {} finally { document.getElementById('water-chart-loader').classList.add('hidden'); }
         }
 
-        // ==========================================
-        // MODULE KHÍ THẢI
-        // ==========================================
         window.openAirModal = () => { 
             document.getElementById('a-date').value = new Date().toISOString().split('T')[0]; 
             document.getElementById('air-modal').classList.remove('hidden'); 
@@ -743,14 +772,14 @@
 
         async function loadAirData() {
             document.getElementById('air-chart-loader').classList.remove('hidden');
-            const selectedPlant = document.getElementById('global-plant-filter').value; // BẮT BUỘC THEO NHÀ MÁY
+            const selectedPlant = document.getElementById('global-plant-filter').value;
 
             try {
                 const snap = await getDocs(collection(db, "quan_trac_khi_thai"));
                 let raw = []; 
                 snap.forEach(d => {
                     const data = d.data();
-                    if(data.nha_may === selectedPlant) raw.push({ id: d.id, ...data }); // LỌC CỨNG
+                    if(data.nha_may === selectedPlant) raw.push({ id: d.id, ...data });
                 });
                 raw.sort((a, b) => new Date(a.ngay_lay_mau) - new Date(b.ngay_lay_mau));
 
