@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EHS System - Bảng Điều Khiển</title>
     
+    <!-- KHÔI PHỤC FONT CHỮ CHUẨN -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -36,19 +37,24 @@
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen overflow-hidden flex transition-colors duration-300">
 
+    <!-- LỚP PHỦ MÀN HÌNH ĐEN KHI MỞ MENU TRÊN ĐIỆN THOẠI -->
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300 opacity-0"></div>
 
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="w-[280px] md:w-64 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col shrink-0 transition-transform duration-300 fixed md:relative z-50 h-full -translate-x-full md:translate-x-0">
+        <!-- Logo -->
         <div class="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-dark-border shrink-0">
             <div class="flex items-center">
                 <i class="ph-fill ph-shield-check text-blue-600 dark:text-blue-400 text-2xl mr-2"></i>
                 <span class="font-black text-xl tracking-tight text-slate-800 dark:text-white">EHS System</span>
             </div>
+            <!-- Nút đóng menu trên Mobile -->
             <button onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-red-500 transition">
                 <i class="ph-bold ph-x text-2xl"></i>
             </button>
         </div>
 
+        <!-- Menu -->
         <div class="flex-1 overflow-y-auto custom-scrollbar py-4 px-3 space-y-1">
             <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold">
                 <i class="ph-fill ph-squares-four text-lg"></i> <span data-i18n="nav_dashboard">Bảng Điều Khiển chính</span>
@@ -78,6 +84,9 @@
             </div>
             <a href="quan_ly_cong_viec.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
                 <i class="ph-fill ph-kanban text-lg text-blue-500"></i> <span data-i18n="nav_tasks">Quản lý Kế Hoạch & Tiến Độ</span>
+            </a>
+            <a href="quan_ly_cuoc_hop.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
+                <i class="ph-fill ph-users-three text-lg text-indigo-500"></i> <span data-i18n="nav_meeting">Họp & Toolbox Meeting</span>
             </a>
             <a href="trung_tam_kiem_tra.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
                 <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_audit">Trung tâm Kiểm tra</span>
@@ -135,6 +144,7 @@
             </a>
         </div>
 
+        <!-- Footer Sidebar (User Info) -->
         <div class="p-4 border-t border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg" id="sidebar-footer">
             <a href="login.html" class="flex items-center justify-center gap-2 bg-blue-600 text-white w-full py-2.5 rounded-xl font-bold shadow-md hover:bg-blue-700 transition">
                 <i class="ph-bold ph-sign-in"></i> Đăng Nhập
@@ -142,12 +152,16 @@
         </div>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
+        <!-- Topbar -->
         <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 transition-colors duration-300 w-full z-[45]">
             <div class="flex items-center gap-2 text-sm">
+                <!-- NÚT HAMBURGER DÀNH CHO ĐIỆN THOẠI -->
                 <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 -ml-2 mr-1 sm:mr-2 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition shrink-0">
                     <i class="ph-bold ph-list text-xl"></i>
                 </button>
+                
                 <span class="text-slate-500 dark:text-dark-muted font-medium hidden sm:inline">EHS System</span>
                 <i class="ph-bold ph-caret-right text-slate-400 hidden sm:inline"></i>
                 <span class="font-bold text-slate-800 dark:text-white" data-i18n="nav_dashboard">Bảng Điều Khiển</span>
@@ -177,7 +191,7 @@
                     </div>
                 </div>
 
-                <!-- Ngôn ngữ -->
+                <!-- Đa ngôn ngữ -->
                 <div class="relative group">
                     <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition border border-slate-200 dark:border-slate-700">
                         <i class="ph-bold ph-translate"></i> <span id="current-lang-display" class="hidden sm:inline">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs hidden sm:inline"></i>
@@ -189,6 +203,7 @@
                     </div>
                 </div>
 
+                <!-- Dark Mode Toggle -->
                 <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition border border-slate-200 dark:border-slate-700 shrink-0">
                     <i id="theme-icon" class="ph-bold ph-moon text-lg"></i>
                 </button>
@@ -202,8 +217,10 @@
         <!-- Lớp phủ đóng popup thông báo -->
         <div id="notif-overlay" onclick="closeNotifications()" class="fixed inset-0 z-40 hidden"></div>
 
+        <!-- Content Area -->
         <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 w-full">
             <div class="max-w-6xl mx-auto w-full">
+                
                 <!-- Hero Banner -->
                 <div class="bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 rounded-3xl p-6 sm:p-12 mb-8 text-white shadow-lg relative overflow-hidden">
                     <div class="absolute top-0 right-0 -mr-8 -mt-8 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl pointer-events-none"></div>
@@ -215,8 +232,8 @@
                     <i class="ph-fill ph-shield-check absolute -bottom-10 -right-10 text-9xl text-white opacity-10 rotate-12 pointer-events-none"></i>
                 </div>
 
-                <!-- Thẻ Tính năng -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                <!-- 6 Thẻ Tính năng chính -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                     
                     <button onclick="openCourseModal()" class="group bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center">
                         <div class="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
@@ -251,50 +268,130 @@
                         <p class="text-xs text-blue-600/70 dark:text-blue-400/70 font-medium" data-i18n="card4_desc">Hỏi đáp luật EHS tự động</p>
                     </a>
 
-                    <a href="quan_ly_cong_viec.html" class="group bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center lg:col-start-2">
+                    <a href="quan_ly_cong_viec.html" class="group bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center">
                         <div class="w-16 h-16 rounded-full bg-cyan-50 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400 flex items-center justify-center mb-4 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
                             <i class="ph-fill ph-kanban text-3xl"></i>
                         </div>
                         <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-1" data-i18n="card5_title">Giao Việc & Tiến Độ</h3>
                         <p class="text-xs text-slate-500 dark:text-dark-muted font-medium" data-i18n="card5_desc">Theo dõi task, đánh giá KPI</p>
                     </a>
+
+                    <a href="quan_ly_cuoc_hop.html" class="group bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center">
+                        <div class="w-16 h-16 rounded-full bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                            <i class="ph-fill ph-users-three text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-1" data-i18n="card6_title">Toolbox Meeting</h3>
+                        <p class="text-xs text-slate-500 dark:text-dark-muted font-medium" data-i18n="card6_desc">Tổ chức họp, lấy ý kiến & điểm danh</p>
+                    </a>
+
                 </div>
             </div>
         </div>
     </main>
 
     <!-- REPORT MODAL -->
-    <div id="report-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-opacity">
+    <div id="report-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative">
-            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 rounded-full p-1 transition z-10"><i class="ph-bold ph-x text-xl"></i></button>
+            
+            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 rounded-full p-1 transition z-10">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+
+            <!-- Giao diện nhập mật khẩu -->
             <div id="password-view" class="p-8 text-center pt-10">
-                <div class="flex justify-center mb-4"><i id="modal-icon" class="ph-fill ph-lock-key text-5xl text-teal-600 dark:text-teal-400"></i></div>
+                <div class="flex justify-center mb-4">
+                    <i id="modal-icon" class="ph-fill ph-lock-key text-5xl text-teal-600 dark:text-teal-400"></i>
+                </div>
                 <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2" data-i18n="modal_report_title">Kho Báo Cáo EHS</h3>
                 <p class="text-slate-500 dark:text-dark-muted text-sm mb-6" data-i18n="modal_report_desc">Tài liệu nội bộ. Vui lòng nhập mật khẩu quản lý để truy cập.</p>
+                
                 <input type="password" id="report-password" class="w-full px-4 py-4 border-2 border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-dark-bg dark:text-white rounded-xl text-center tracking-[0.5em] font-mono text-2xl focus:border-teal-500 focus:bg-white outline-none transition mb-4">
+                
                 <p id="password-error" class="text-red-500 text-sm font-bold mb-4 hidden"></p>
-                <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl hover:bg-teal-700 shadow-md transition flex items-center justify-center gap-2"><span data-i18n="btn_confirm">Xác Nhận Truy Cập</span></button>
+                
+                <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl hover:bg-teal-700 shadow-md transition flex items-center justify-center gap-2">
+                    <span data-i18n="btn_confirm">Xác Nhận Truy Cập</span>
+                </button>
             </div>
+
+            <!-- Giao diện Danh sách File -->
             <div id="report-list-view" class="p-5 flex flex-col gap-3 hidden h-[400px] overflow-y-auto custom-scrollbar">
-                <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-teal-500 hover:bg-teal-50 transition group shadow-sm"><div class="flex items-center gap-3"><i class="ph-fill ph-file-pdf text-rose-500 text-2xl"></i><span class="font-bold text-slate-700">Báo cáo EHS Tháng 01/2026</span></div><i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i></a>
-                <!-- Thêm các file khác tương tự... -->
+                <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 01/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_02.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 02/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_03.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 03/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_04.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 04/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_05.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 05/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_06.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 06/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- COURSE MODAL -->
-    <div id="course-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 w-full">
+    <!-- COURSE MODAL (Khóa học tùy chỉnh) -->
+    <div id="course-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 w-full">
         <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 border-t-4 border-indigo-500 relative">
             <button onclick="document.getElementById('course-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 rounded-full p-1"><i class="ph-bold ph-x text-xl"></i></button>
-            <div class="flex justify-center mb-4"><div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center"><i class="ph-fill ph-books text-4xl"></i></div></div>
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center"><i class="ph-fill ph-books text-4xl"></i></div>
+            </div>
             <h3 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white mb-2 text-center" data-i18n="modal_course_title">Lộ trình học tập của bạn</h3>
             <p class="text-slate-500 dark:text-dark-muted text-sm mb-6 text-center" data-i18n="modal_course_desc">Hệ thống đã tự động phân loại khóa học dựa trên bộ phận và vị trí làm việc của bạn.</p>
             
             <div id="course-list-container" class="space-y-3">
-                <a href="bai_giang.html?id=data_ehs_chung" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 transition"><h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">1. An Toàn EHS Cơ Bản</h4><p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">Bắt buộc cho 100% CB-CNV toàn nhà máy.</p></a>
-                <a href="bai_giang.html?id=data_5s" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 transition shadow-sm mt-3"><div class="flex items-center justify-between mb-1"><h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. Đào tạo tiêu chuẩn 5S</h4><span class="bg-emerald-200 dark:bg-emerald-700 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ml-2">Bắt buộc</span></div><p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học duy trì không gian làm việc sạch sẽ, an toàn.</p></a>
-                <a href="bai_giang.html?id=data_loto" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 transition shadow-sm mt-3"><div class="flex items-center justify-between mb-1"><h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg truncate">3. An toàn LOTO</h4><span class="bg-rose-200 dark:bg-rose-700 text-rose-800 text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ml-2">Nhóm 3</span></div><p class="text-xs text-indigo-600 dark:text-indigo-400">Quy trình cô lập năng lượng dành cho bộ phận Bảo trì, Kỹ thuật.</p></a>
-                <div id="dynamic-courses"></div>
+                <a href="bai_giang.html?id=data_ehs_chung" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition">
+                    <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">1. An Toàn EHS Cơ Bản</h4>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">Bắt buộc cho 100% CB-CNV toàn nhà máy.</p>
+                </a>
+                <a href="bai_giang.html?id=data_5s" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition shadow-sm mt-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. Đào tạo tiêu chuẩn 5S</h4>
+                        <span class="bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ml-2">Bắt buộc</span>
+                    </div>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học duy trì không gian làm việc sạch sẽ, an toàn.</p>
+                </a>
+                <a href="bai_giang.html?id=data_loto" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition shadow-sm mt-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg truncate">3. An toàn LOTO</h4>
+                        <span class="bg-rose-200 dark:bg-rose-700 text-rose-800 dark:text-rose-200 text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ml-2">Nhóm 3</span>
+                    </div>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400">Quy trình cô lập năng lượng dành cho bộ phận Bảo trì, Kỹ thuật.</p>
+                </a>
+            <div id="dynamic-courses"></div>
             </div>
         </div>
     </div>
@@ -312,7 +409,7 @@
         </div>
     </div>
 
-    <!-- MODAL TRUNG TÂM CÁ NHÂN -->
+    <!-- MODAL TRUNG TÂM CÁ NHÂN (USER PROFILE) -->
     <div id="user-profile-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[105] hidden items-center justify-center p-0 sm:p-4 transition-opacity w-full">
         <div class="bg-slate-50 dark:bg-dark-bg sm:rounded-3xl shadow-2xl w-full h-full sm:h-auto sm:max-w-3xl overflow-hidden flex flex-col sm:max-h-[95vh] border border-slate-200 dark:border-dark-border">
             <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card relative flex items-center justify-between shrink-0">
@@ -336,51 +433,59 @@
             </div>
 
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden h-full">
-                <!-- Mobile Tabs -->
+                <!-- Mobile Tabs Navigation -->
                 <div class="flex md:hidden border-b border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card shrink-0">
-                    <button onclick="switchProfileTab('info')" id="mobile-tab-btn-info" class="flex-1 py-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600 transition">Hồ sơ</button>
-                    <button onclick="switchProfileTab('task')" id="mobile-tab-btn-task" class="flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 transition relative">Nhiệm vụ <span id="mobile-task-badge" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full animate-ping hidden"></span></button>
+                    <button onclick="switchProfileTab('info')" id="mobile-tab-btn-info" class="flex-1 py-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 transition">Hồ sơ</button>
+                    <button onclick="switchProfileTab('task')" id="mobile-tab-btn-task" class="flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 transition relative">
+                        Nhiệm vụ 
+                        <span id="mobile-task-badge" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full animate-ping hidden"></span>
+                    </button>
                 </div>
 
-                <!-- Desktop Sidebar -->
+                <!-- Desktop Sidebar Navigation -->
                 <div class="hidden md:flex w-full md:w-1/3 border-r border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card p-4 flex-col space-y-2 shrink-0">
-                    <button onclick="switchProfileTab('info')" id="tab-btn-info" class="w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center gap-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 border border-blue-100">
+                    <button onclick="switchProfileTab('info')" id="tab-btn-info" class="w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center gap-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50">
                         <i class="ph-fill ph-user-circle text-xl"></i> Hồ sơ nhân sự
                     </button>
-                    <button onclick="switchProfileTab('task')" id="tab-btn-task" class="w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center gap-3 text-slate-600 hover:bg-slate-50 border border-transparent">
-                        <i class="ph-fill ph-bell-ringing text-xl relative"><span id="task-badge" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping hidden"></span></i> Nhiệm vụ & Nhắc nhở
+                    <button onclick="switchProfileTab('task')" id="tab-btn-task" class="w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent">
+                        <i class="ph-fill ph-bell-ringing text-xl relative">
+                            <span id="task-badge" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping hidden"></span>
+                        </i> 
+                        Nhiệm vụ & Nhắc nhở
                     </button>
                 </div>
 
                 <!-- Content Area -->
                 <div class="w-full md:w-2/3 p-4 sm:p-6 overflow-y-auto custom-scrollbar relative h-full">
                     <div id="profile-loader" class="absolute inset-0 bg-slate-50 dark:bg-dark-bg z-10 flex flex-col items-center justify-center hidden">
-                        <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-500 mb-3"></i><p class="font-bold text-slate-500">Đang tải dữ liệu...</p>
+                        <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-500 mb-3"></i>
+                        <p class="font-bold text-slate-500 dark:text-dark-muted">Đang tải dữ liệu...</p>
                     </div>
 
-                    <!-- Tab Info -->
                     <div id="tab-content-info" class="space-y-4 pb-20 sm:pb-0">
-                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 p-3 rounded-xl text-amber-800 text-xs font-medium flex gap-2"><i class="ph-fill ph-info text-lg shrink-0"></i><p>Vui lòng cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo (Theo Vị trí/Ca làm việc).</p></div>
+                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-3 rounded-xl text-amber-800 dark:text-amber-400 text-xs font-medium flex gap-2">
+                            <i class="ph-fill ph-info text-lg shrink-0"></i>
+                            <p>Vui lòng cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo (Theo Vị trí/Ca làm việc). Mã NV dùng để đăng nhập nên không thể tự thay đổi.</p>
+                        </div>
                         <input type="hidden" id="up-doc-id">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mã NV</label><input type="text" id="up-id" class="w-full px-3 py-2 border border-slate-300 bg-slate-100 rounded-lg font-mono font-bold cursor-not-allowed" readonly></div>
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ và Tên</label><input type="text" id="up-name" class="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg font-bold outline-none focus:border-blue-500 dark:bg-dark-card dark:text-white"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Mã NV (MSSV)</label><input type="text" id="up-id" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded-lg font-mono font-bold cursor-not-allowed" readonly></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Họ và Tên</label><input type="text" id="up-name" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg font-bold outline-none focus:border-blue-500"></div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày sinh</label><input type="date" id="up-dob" class="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg outline-none focus:border-blue-500 dark:bg-dark-card dark:text-white"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giới tính</label><select id="up-gender" class="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg outline-none focus:border-blue-500 dark:bg-dark-card dark:text-white"><option value="">-- Chọn --</option><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ngày sinh</label><input type="date" id="up-dob" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giới tính</label><select id="up-gender" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="">-- Chọn --</option><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nhà Máy</label><select id="up-plant" class="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg outline-none focus:border-blue-500 dark:bg-dark-card dark:text-white"><option value="">-- Chọn --</option><option value="Nhà máy Can">Nhà máy Can</option><option value="Nhà máy End">Nhà máy End</option></select></div>
-                            <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ca Làm Việc</label><select id="up-shift" class="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg outline-none focus:border-blue-500 dark:bg-dark-card dark:text-white"><option value="Chưa xác định">-- Chọn Ca --</option><option value="Ca A">Ca A</option><option value="Ca B">Ca B</option><option value="Ca C">Ca C</option><option value="Ca D">Ca D</option><option value="Hành Chánh">Hành Chánh</option></select></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Nhà Máy</label><select id="up-plant" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="">-- Chọn --</option><option value="Nhà máy Can">Nhà máy Can</option><option value="Nhà máy End">Nhà máy End</option></select></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ca Làm Việc</label><select id="up-shift" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="Chưa xác định">-- Chọn Ca --</option><option value="Ca A">Ca A</option><option value="Ca B">Ca B</option><option value="Ca C">Ca C</option><option value="Ca D">Ca D</option><option value="Hành Chánh">Hành Chánh</option></select></div>
                         </div>
-                        <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bộ Phận / Vị trí</label><input type="text" id="up-dept-pos" class="w-full px-3 py-2 border border-slate-300 bg-white rounded-lg outline-none focus:border-blue-500 font-medium dark:bg-dark-card dark:text-white" placeholder="VD: Sản xuất - Vận hành máy Washer..."></div>
+                        <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Bộ Phận / Vị trí</label><input type="text" id="up-dept-pos" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="VD: Sản xuất - Vận hành máy Washer..."></div>
                         <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full mt-4 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2"><i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ</button>
                     </div>
 
-                    <!-- Tab Tasks -->
                     <div id="tab-content-task" class="hidden space-y-4 pb-20 sm:pb-0">
-                        <h4 class="font-black text-slate-800 dark:text-white text-lg border-b border-slate-200 pb-2 mb-4">Nhiệm vụ cần thực hiện</h4>
+                        <h4 class="font-black text-slate-800 dark:text-white text-lg border-b border-slate-200 dark:border-dark-border pb-2 mb-4">Nhiệm vụ cần thực hiện</h4>
                         <div id="task-container" class="space-y-3"></div>
                     </div>
                 </div>
@@ -388,19 +493,21 @@
         </div>
     </div>
 
+    <!-- CORE LOGIC AND FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
-          authDomain: "ehs-training-app.firebaseapp.com",
-          projectId: "ehs-training-app",
-          storageBucket: "ehs-training-app.firebasestorage.app",
-          messagingSenderId: "354083430003",
-          appId: "1:354083430003:web:059953b7b9c1a9470a5406"
-        };
+       const firebaseConfig = {
+         apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+         authDomain: "ehs-training-app.firebaseapp.com",
+         projectId: "ehs-training-app",
+         storageBucket: "ehs-training-app.firebasestorage.app",
+         messagingSenderId: "354083430003",
+         appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+         measurementId: "G-74ETHWTJCW"
+       };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -438,11 +545,6 @@
         document.getElementById('report-password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') document.getElementById('btn-report-login').click();
         });
-
-        // KÍCH HOẠT THÔNG BÁO TỰ ĐỘNG
-        if(localStorage.getItem("ehs_user_id")) {
-            setTimeout(window.fetchNotifications, 1500); // Đợi Firebase load xong
-        }
     </script>
 
     <script>
@@ -455,6 +557,7 @@
                 nav_personnel: "Hồ sơ Nhân sự Nội bộ",
                 group_management: "Nhóm 2: Quản trị & Báo cáo",
                 nav_tasks: "Quản lý Kế Hoạch & Tiến Độ",
+                nav_meeting: "Họp & Toolbox Meeting",
                 nav_audit: "Trung tâm Kiểm tra",
                 nav_report: "Kho Báo Cáo EHS",
                 nav_admin_audit: "Quản trị Báo cáo",
@@ -482,6 +585,8 @@
                 card4_desc: "Hỏi đáp luật EHS tự động",
                 card5_title: "Giao Việc & Tiến Độ",
                 card5_desc: "Theo dõi task, đánh giá KPI",
+                card6_title: "Toolbox Meeting",
+                card6_desc: "Tổ chức họp, lấy ý kiến & điểm danh",
                 modal_report_title: "Kho Báo Cáo EHS",
                 modal_report_desc: "Tài liệu nội bộ. Vui lòng nhập mật khẩu quản lý để truy cập.",
                 btn_confirm: "Xác Nhận Truy Cập",
@@ -501,6 +606,7 @@
                 nav_personnel: "Internal Personnel Profile",
                 group_management: "Group 2: Management & Reports",
                 nav_tasks: "Task & Progress Management",
+                nav_meeting: "Meeting & Toolbox",
                 nav_audit: "Audit Center",
                 nav_report: "EHS Report Vault",
                 nav_admin_audit: "Report Admin",
@@ -528,6 +634,8 @@
                 card4_desc: "Automated EHS law Q&A",
                 card5_title: "Task & Progress",
                 card5_desc: "Track tasks, evaluate KPI",
+                card6_title: "Toolbox Meeting",
+                card6_desc: "Organize, discuss & check-in",
                 modal_report_title: "EHS Report Vault",
                 modal_report_desc: "Internal documents. Please enter the admin password to access.",
                 btn_confirm: "Confirm Access",
@@ -547,6 +655,7 @@
                 nav_personnel: "内部人员档案",
                 group_management: "第 2 组：管理和报告",
                 nav_tasks: "任务和进度管理",
+                nav_meeting: "工具箱会议",
                 nav_audit: "审核中心",
                 nav_report: "EHS 报告库",
                 nav_admin_audit: "报告管理",
@@ -574,6 +683,8 @@
                 card4_desc: "自动EHS法律问答",
                 card5_title: "任务与进度",
                 card5_desc: "跟踪任务，评估KPI",
+                card6_title: "工具箱会议",
+                card6_desc: "组织会议，征求意见并签到",
                 modal_report_title: "EHS 报告库",
                 modal_report_desc: "内部文件。请输入管理密码以访问。",
                 btn_confirm: "确认访问",
@@ -599,7 +710,7 @@
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (translations[lang] && translations[lang][key]) {
-                    el.innerHTML = translations[lang][key]; // Thay vì innerText để giữ icon nếu có
+                    el.innerHTML = translations[lang][key]; 
                 }
             });
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
@@ -878,7 +989,7 @@
 
                         snap.forEach(doc => {
                             const task = { id: doc.id, ...doc.data() };
-                            if (task.status === 'Done') return; // Bỏ qua việc đã làm xong
+                            if (task.status === 'Done') return;
 
                             const deadline = new Date(task.due_date);
                             deadline.setHours(0,0,0,0);
@@ -1014,10 +1125,10 @@
             if (userDept.toLowerCase().includes("điện")) {
                 groupDetected = "Nhóm 3 - An Toàn Điện";
                 htmlStr += `
-                    <a href="bai_giang.html?id=data_an_toan_dien" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 transition mt-3">
+                    <a href="bai_giang.html?id=data_an_toan_dien" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition mt-3">
                         <div class="flex items-center justify-between mb-1">
                             <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. An Toàn Điện</h4>
-                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
+                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
                         </div>
                         <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học bắt buộc dành riêng cho bộ phận Cơ Điện, Bảo trì.</p>
                     </a>
@@ -1025,10 +1136,10 @@
             } else if (userDept.toLowerCase().includes("sản xuất") || userDept.toLowerCase().includes("washer")) {
                 groupDetected = "Nhóm 3 - An Toàn Hóa Chất";
                 htmlStr += `
-                    <a href="bai_giang.html?id=data_hoa_chat" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 transition mt-3">
+                    <a href="bai_giang.html?id=data_hoa_chat" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition mt-3">
                         <div class="flex items-center justify-between mb-1">
                             <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. An Toàn Hóa Chất</h4>
-                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
+                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
                         </div>
                         <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học bắt buộc dành riêng cho nhân sự tiếp xúc hóa chất.</p>
                     </a>
@@ -1076,7 +1187,6 @@
                 dropdown.classList.add('opacity-100', 'visible', 'scale-100');
                 overlay.classList.remove('hidden');
                 
-                // Hide badge when opened
                 document.getElementById('notif-badge').classList.add('hidden');
                 document.getElementById('notif-count').classList.add('hidden');
             } else {
@@ -1092,7 +1202,6 @@
             overlay.classList.add('hidden');
         }
 
-        // Ngăn click bên trong dropdown làm đóng nó
         document.getElementById('notif-dropdown').addEventListener('click', function(e) {
             e.stopPropagation();
         });
@@ -1118,13 +1227,13 @@
 
                 snapMyTasks.forEach(doc => {
                     const task = doc.data();
-                    if (task.status === 'Done') return; // Đã đóng thì bỏ qua
-                    if (task.status === 'Review') return; // Đang chờ sếp duyệt thì mình không cần nhận thông báo nữa
+                    if (task.status === 'Done') return;
+                    if (task.status === 'Review') return;
                     
                     const deadline = new Date(task.due_date);
                     deadline.setHours(0,0,0,0);
 
-                    // Bị sếp trả lại (Có nhận xét và chưa làm xong)
+                    // Bị sếp trả lại
                     if (task.evaluation && task.progress < 100) {
                         notifications.push({
                             type: 'feedback',
@@ -1146,7 +1255,7 @@
                             link: 'quan_ly_cong_viec.html'
                         });
                     } 
-                    // Sắp đến hạn (Báo trước 3 ngày)
+                    // Sắp đến hạn
                     else if (deadline <= threeDaysLater) {
                         notifications.push({
                             type: 'due_soon',
@@ -1157,7 +1266,7 @@
                             link: 'quan_ly_cong_viec.html'
                         });
                     } 
-                    // Công việc mới được giao
+                    // Việc mới
                     else if (task.progress === 0 && task.assigner_id !== currentUserId) {
                         notifications.push({
                             type: 'new_task',
@@ -1170,7 +1279,7 @@
                     }
                 });
 
-                // 2. TÌM KIẾM CÔNG VIỆC CHỜ TÔI PHÊ DUYỆT (GÓC LÃNH ĐẠO)
+                // 2. CHỜ PHÊ DUYỆT (LÃNH ĐẠO)
                 const qReview = window.query(window.collection(window.db, "ehs_tasks"), window.where("reviewer_id", "==", currentUserId));
                 const snapReview = await window.getDocs(qReview);
                 
@@ -1188,7 +1297,7 @@
                     }
                 });
 
-                // 3. NHẮC NHỞ ANH EM UTILITY NHẬP QUAN TRẮC THEO NGÀY
+                // 3. NHẮC NHỞ UTILITY NHẬP QUAN TRẮC
                 if (userDept.toLowerCase().includes("utility") || userDept.toLowerCase().includes("vận hành")) {
                     const todayStr = today.toISOString().split('T')[0];
                     const qUtility = window.query(window.collection(window.db, "quan_trac_hang_ngay"), window.where("ngay_lay_mau", "==", todayStr));
@@ -1206,7 +1315,30 @@
                     }
                 }
 
-                // HIỂN THỊ LÊN GIAO DIỆN CHUÔNG
+                // 4. THÔNG BÁO CUỘC HỌP SẮP DIỄN RA
+                const qMeetingsReal = window.query(window.collection(window.db, "ehs_meetings"), window.where("status", "==", "Upcoming"));
+                const snapMeetings = await window.getDocs(qMeetingsReal);
+
+                snapMeetings.forEach(doc => {
+                    const m = doc.data();
+                    // Nếu tôi được mời
+                    if (m.attendee_ids && m.attendee_ids.includes(currentUserId)) {
+                        // Kiểm tra xem đã điểm danh chưa
+                        const myRecord = m.attendance_records ? m.attendance_records[currentUserId] : null;
+                        if (!myRecord || myRecord.status !== 'Attended') {
+                            notifications.push({
+                                type: 'meeting_invite',
+                                title: 'Thư mời họp / Toolbox Meeting',
+                                message: `Bạn có lịch họp: "${m.title}" vào lúc ${m.time} ngày ${new Date(m.date).toLocaleDateString('vi-VN')}.`,
+                                icon: 'ph-users-three text-indigo-500',
+                                bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50',
+                                link: 'quan_ly_cuoc_hop.html'
+                            });
+                        }
+                    }
+                });
+
+                // HIỂN THỊ
                 if (notifications.length > 0) {
                     badge.classList.remove('hidden');
                     countLabel.innerText = notifications.length;
@@ -1243,6 +1375,11 @@
         applyTheme();
         changeLanguage(currentLang);
         checkLoginStatus();
+        
+        // Tải thông báo 1 lần sau khi load xong nếu đã có user
+        if(currentUserId) {
+            setTimeout(window.fetchNotifications, 1500); 
+        }
     </script>
 </body>
 </html>
