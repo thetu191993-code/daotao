@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Trung Tâm Dữ Liệu Quan Trắc</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -13,18 +13,23 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px;}
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Chống zoom tự động trên iOS khi ấn vào ô input */
+        input[type="text"], input[type="number"], input[type="date"], input[type="time"], select, textarea {
+            font-size: 16px !important; 
+        }
     </style>
 </head>
 <body class="bg-slate-50 p-2 md:p-6 font-sans text-slate-800 pb-24">
 
     <!-- Toast Thông báo -->
-    <div id="custom-toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+    <div id="custom-toast" class="fixed top-5 right-5 z-[200] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-msg">Thông báo</span>
     </div>
 
     <!-- Confirm Modal -->
-    <div id="custom-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-opacity">
+    <div id="custom-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border-t-4 border-red-500">
             <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-warning-circle text-4xl"></i></div>
             <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="confirm_del_title">Xác nhận xóa</h3>
@@ -42,16 +47,14 @@
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 relative z-50">
             <!-- Trái: Về trang chủ & Ngôn ngữ -->
             <div class="flex items-center gap-4 w-full md:w-auto">
-                <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold transition bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shrink-0">
+                <a href="index.html" class="inline-flex items-center justify-center gap-2 text-slate-500 hover:text-blue-600 font-bold transition bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shrink-0 w-full sm:w-auto">
                     <i class="ph-bold ph-arrow-left text-lg"></i> <span data-i18n="back_home" class="hidden sm:inline">Về Bảng Điều Khiển</span>
                 </a>
                 
-                <!-- ĐÃ SỬA LỖI ĐA NGÔN NGỮ Ở ĐÂY: Thêm thẻ bọc ngoài có padding để chuột không bị trượt khỏi menu -->
-                <div class="relative group">
+                <div class="relative group hidden sm:block">
                     <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 bg-slate-100 px-3 py-2 rounded-xl hover:bg-slate-200 transition border border-slate-200">
                         <i class="ph-bold ph-translate"></i> <span id="current-lang-display">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs"></i>
                     </button>
-                    <!-- Thêm vùng đệm vô hình (pt-2) để tránh trượt hover -->
                     <div class="absolute left-0 top-full pt-2 w-36 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
                         <div class="bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden flex flex-col">
                             <button onclick="changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">Tiếng Việt</button>
@@ -65,11 +68,11 @@
             
             <!-- Phải: Bộ Lọc Tháng & Nhà Máy -->
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto bg-blue-50 p-2 rounded-xl border border-blue-100">
-                <div class="flex items-center gap-2 w-full sm:w-auto bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm">
+                <div class="flex items-center gap-2 w-full sm:w-auto bg-white px-3 py-2 sm:py-1.5 rounded-lg border border-blue-200 shadow-sm">
                     <i class="ph-bold ph-calendar-blank text-blue-600"></i>
-                    <input type="month" id="month-filter" onchange="reloadAllCharts()" class="outline-none text-sm font-bold text-slate-700 w-full sm:w-auto cursor-pointer">
+                    <input type="month" id="month-filter" onchange="reloadAllCharts()" class="outline-none text-sm font-bold text-slate-700 w-full sm:w-auto cursor-pointer bg-transparent">
                 </div>
-                <div class="flex items-center gap-2 w-full sm:w-auto bg-blue-600 px-3 py-1.5 rounded-lg border border-blue-700 shadow-sm text-white">
+                <div class="flex items-center gap-2 w-full sm:w-auto bg-blue-600 px-3 py-2 sm:py-1.5 rounded-lg border border-blue-700 shadow-sm text-white">
                     <i class="ph-fill ph-factory text-blue-200"></i>
                     <select id="global-plant-filter" onchange="reloadAllCharts()" class="bg-transparent text-sm font-bold outline-none cursor-pointer w-full sm:w-auto">
                         <option value="Nhà máy Can" class="text-slate-800">Nhà máy Can</option>
@@ -79,14 +82,14 @@
             </div>
         </div>
 
-        <div class="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-slate-200 relative z-10">
+        <div class="bg-white p-4 md:p-8 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 relative z-10">
             
             <div class="border-b border-slate-100 pb-6 mb-8">
-                <h2 class="text-2xl sm:text-3xl font-bold text-blue-800 mb-2 flex items-center uppercase tracking-tight">
-                    <i class="ph-fill ph-chart-line-up text-4xl mr-3 text-blue-600"></i>
-                    <span data-i18n="main_title">Dữ Liệu Quan Trắc</span> - <span id="title-plant-name">Nhà máy Can</span>
+                <h2 id="main-dashboard-title" class="text-2xl sm:text-3xl font-bold text-blue-800 mb-2 flex items-center uppercase tracking-tight">
+                    <i class="ph-fill ph-chart-line-up text-3xl md:text-4xl mr-3 text-blue-600"></i>
+                    <span class="truncate">Dữ Liệu Quan Trắc - Nhà máy Can</span>
                 </h2>
-                <p class="text-slate-500 text-sm sm:text-base font-medium" data-i18n="main_subtitle">Mọi biểu đồ và thông số bên dưới đã được lọc đồng bộ theo Tháng và Nhà máy được chọn.</p>
+                <p class="text-slate-500 text-sm sm:text-base font-medium" data-i18n="main_subtitle">Mọi biểu đồ và thông số bên dưới đã được lọc riêng biệt cho nhà máy này.</p>
             </div>
 
             <!-- MẢNG 1: NƯỚC THẢI HẰNG NGÀY -->
@@ -99,11 +102,11 @@
                         <p class="text-xs text-slate-500 font-medium" data-i18n="daily_desc">Dành cho bộ phận vận hành trạm đo đạc và điều chỉnh hóa chất thực tế.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-                        <button onclick="exportTableAsExcel('dailyBody', 'Du_Lieu_Hang_Ngay')" class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm">
-                            <i class="ph-bold ph-file-csv"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
+                        <button onclick="exportTableAsExcel('dailyBody', 'Du_Lieu_Hang_Ngay')" class="flex-1 lg:flex-none justify-center bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm">
+                            <i class="ph-bold ph-file-csv text-lg"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
                         </button>
-                        <button onclick="openDailyModal()" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-md text-sm">
-                            <i class="ph-bold ph-plus"></i> <span data-i18n="btn_add_daily">Nhập Kết Quả</span>
+                        <button onclick="openDailyModal()" class="flex-1 lg:flex-none justify-center bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-md text-sm">
+                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_daily">Nhập Kết Quả</span>
                         </button>
                     </div>
                 </div>
@@ -119,7 +122,7 @@
                             <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-white py-1 px-3 rounded-lg shadow-sm border border-slate-100">Chỉ tiêu Hóa Lý (COD, pH, Flo)</h4>
                             <button onclick="exportChartAsImage('dailyChart', 'Bieu_Do_Hoa_Ly_Hang_Ngay')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
                         </div>
-                        <div class="relative w-full h-[300px] grow bg-white rounded-xl">
+                        <div class="relative w-full h-[250px] md:h-[300px] grow bg-white rounded-xl">
                             <canvas id="dailyChart"></canvas>
                         </div>
                     </div>
@@ -129,14 +132,14 @@
                             <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-white py-1 px-3 rounded-lg shadow-sm border border-slate-100">Lưu lượng & Độ dẫn điện</h4>
                             <button onclick="exportChartAsImage('dailyFlowChart', 'Bieu_Do_Luu_Luong')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
                         </div>
-                        <div class="relative w-full h-[300px] grow bg-white rounded-xl">
+                        <div class="relative w-full h-[250px] md:h-[300px] grow bg-white rounded-xl">
                             <canvas id="dailyFlowChart"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
-                    <table class="w-full text-left border-collapse min-w-[1400px]">
+                    <table class="w-full text-left border-collapse min-w-[1200px] md:min-w-[1400px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-12">STT</th>
@@ -150,7 +153,7 @@
                                 <th class="p-3 border-b border-slate-700 text-center text-purple-300">Độ dẫn điện<br><span class="text-[9px]">(mS/cm)</span></th>
                                 <th class="p-3 border-b border-slate-700 text-center text-cyan-300">Lưu lượng<br><span class="text-[9px]">(m³/h)</span></th>
                                 <th class="p-3 border-b border-slate-700">Ghi chú</th>
-                                <th class="p-3 border-b border-slate-700 text-center">Thao tác</th>
+                                <th class="p-3 border-b border-slate-700 text-center" data-i18n="col_action">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="dailyBody" class="text-sm divide-y divide-slate-100"></tbody>
@@ -174,11 +177,11 @@
                         <p class="text-xs text-slate-500 font-medium" data-i18n="water_desc">Dữ liệu từ phòng thí nghiệm trung tâm (QCVN 40:2011/BTNMT Cột B).</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-                        <button onclick="exportTableAsExcel('waterBody', 'Du_Lieu_Dinh_Ky')" class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm">
-                            <i class="ph-bold ph-file-csv"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
+                        <button onclick="exportTableAsExcel('waterBody', 'Du_Lieu_Dinh_Ky')" class="flex-1 lg:flex-none justify-center bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm">
+                            <i class="ph-bold ph-file-csv text-lg"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
                         </button>
-                        <button onclick="openWaterModal()" class="bg-teal-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-teal-700 transition flex items-center gap-2 shadow-md text-sm">
-                            <i class="ph-bold ph-plus"></i> <span data-i18n="btn_add_water">Nhập Phiếu K.Nghiệm</span>
+                        <button onclick="openWaterModal()" class="flex-1 lg:flex-none justify-center bg-teal-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-teal-700 transition flex items-center gap-2 shadow-md text-sm">
+                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_water">Nhập KQ Khí Thải</span>
                         </button>
                     </div>
                 </div>
@@ -193,7 +196,7 @@
                             <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-slate-50 py-1 px-3 rounded-lg" data-i18n="chart_conc">Nhóm Chỉ Tiêu Nồng Độ</h4>
                             <button onclick="exportChartAsImage('waterChartConc', 'Bieu_Do_Nong_Do')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
                         </div>
-                        <div class="relative w-full h-[300px] grow">
+                        <div class="relative w-full h-[250px] md:h-[300px] grow">
                             <canvas id="waterChartConc"></canvas>
                         </div>
                     </div>
@@ -203,14 +206,14 @@
                             <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-slate-50 py-1 px-3 rounded-lg" data-i18n="chart_micro">Nhóm Vi Sinh & Cảm Quan</h4>
                             <button onclick="exportChartAsImage('waterChartSpec', 'Bieu_Do_Vi_Sinh')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
                         </div>
-                        <div class="relative w-full h-[300px] grow">
+                        <div class="relative w-full h-[250px] md:h-[300px] grow">
                             <canvas id="waterChartSpec"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
-                    <table class="w-full text-left border-collapse min-w-[1800px]">
+                    <table class="w-full text-left border-collapse min-w-[1400px] md:min-w-[1800px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-10">STT</th>
@@ -245,14 +248,14 @@
                         </h3>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full lg:w-auto">
-                        <button onclick="exportChartAsImage('airChart', 'Bieu_do_Khi_Thai')" class="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200 text-sm">
-                            <i class="ph-bold ph-image"></i> <span data-i18n="btn_export_chart">Tải Ảnh Biểu Đồ</span>
+                        <button onclick="exportChartAsImage('airChart', 'Bieu_do_Khi_Thai')" class="flex-1 lg:flex-none justify-center bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200 text-sm">
+                            <i class="ph-bold ph-image text-lg"></i> <span data-i18n="btn_export_chart" class="hidden sm:inline">Tải Ảnh Biểu Đồ</span>
                         </button>
-                        <button onclick="exportTableAsExcel('airBody', 'Du_Lieu_Khi_Thai')" class="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm">
-                            <i class="ph-bold ph-file-csv"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
+                        <button onclick="exportTableAsExcel('airBody', 'Du_Lieu_Khi_Thai')" class="flex-1 lg:flex-none justify-center bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm">
+                            <i class="ph-bold ph-file-csv text-lg"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
                         </button>
-                        <button onclick="openAirModal()" class="bg-sky-600 text-white px-5 py-2 rounded-xl font-bold hover:bg-sky-700 transition flex items-center gap-2 shadow-md text-sm">
-                            <i class="ph-bold ph-plus"></i> <span data-i18n="btn_add_air">Nhập KQ Khí Thải</span>
+                        <button onclick="openAirModal()" class="w-full sm:w-auto bg-sky-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-sky-700 transition flex items-center justify-center gap-2 shadow-md text-sm">
+                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_air">Nhập KQ Khí Thải</span>
                         </button>
                     </div>
                 </div>
@@ -261,13 +264,13 @@
                     <div id="air-chart-loader" class="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center rounded-2xl">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-sky-600 mb-2"></i>
                     </div>
-                    <div class="relative w-full h-[350px] bg-white rounded-xl">
+                    <div class="relative w-full h-[250px] md:h-[350px] bg-white rounded-xl">
                         <canvas id="airChart"></canvas>
                     </div>
                 </div>
 
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
-                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <table class="w-full text-left border-collapse min-w-[800px] md:min-w-[1000px]">
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-12">STT</th>
@@ -289,174 +292,178 @@
     </div>
 
     <!-- MODAL NHẬP LIỆU: HẰNG NGÀY -->
-    <div id="daily-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col">
-            <div class="p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
-                <h3 id="daily-modal-title" class="text-lg font-bold text-blue-800 flex items-center gap-2"><i class="ph-fill ph-waves"></i> Thêm Kết Quả Hôm Nay</h3>
-                <button onclick="closeDailyModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+    <!-- ĐÃ FIX: max-h-[90dvh], overflow-y-auto, shrink-0 -->
+    <div id="daily-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
+        <div class="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
+            <!-- Header (Cố định) -->
+            <div class="p-4 md:p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center shrink-0">
+                <h3 id="daily-modal-title" class="text-base sm:text-lg font-bold text-blue-800 flex items-center gap-2"><i class="ph-fill ph-waves"></i> Thêm Kết Quả Hôm Nay</h3>
+                <button onclick="closeDailyModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl sm:text-2xl"></i></button>
             </div>
             
-            <div class="p-6 space-y-4">
+            <!-- Body (Cuộn lên xuống) -->
+            <div class="p-4 md:p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="d-doc-id">
-                <div class="bg-blue-100 text-blue-800 font-bold p-3 rounded-xl border border-blue-200 text-sm mb-2 text-center" id="d-plant-display">
+                <div class="bg-blue-100 text-blue-800 font-bold p-3 rounded-xl border border-blue-200 text-sm mb-2 text-center shrink-0" id="d-plant-display">
                     Đang nhập cho: Nhà máy Can
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-b border-slate-100 pb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 border-b border-slate-100 pb-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày đo <span class="text-red-500">*</span></label>
-                        <input type="date" id="d-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-blue-500 font-bold text-slate-700 bg-slate-50">
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Ngày đo <span class="text-red-500">*</span></label>
+                        <input type="date" id="d-date" class="w-full border border-slate-300 px-3 py-2 md:py-2.5 rounded-xl outline-none focus:border-blue-500 font-bold text-slate-700 bg-slate-50 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giờ lấy mẫu <span class="text-red-500">*</span></label>
-                        <input type="time" id="d-time-sample" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-blue-500 font-bold text-emerald-700 bg-emerald-50">
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Giờ lấy mẫu <span class="text-red-500">*</span></label>
+                        <input type="time" id="d-time-sample" class="w-full border border-slate-300 px-3 py-2 md:py-2.5 rounded-xl outline-none focus:border-blue-500 font-bold text-emerald-700 bg-emerald-50 text-sm">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Người trực / Nhập liệu <span class="text-red-500">*</span></label>
-                        <input type="text" id="d-operator" readonly class="w-full border border-slate-200 px-3 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold cursor-not-allowed">
+                    <div class="sm:col-span-2 md:col-span-1">
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Người trực / Nhập liệu <span class="text-red-500">*</span></label>
+                        <input type="text" id="d-operator" readonly class="w-full border border-slate-200 px-3 py-2 md:py-2.5 rounded-xl bg-slate-100 text-slate-600 font-bold cursor-not-allowed text-sm">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 shadow-sm">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3">
+                    <div class="bg-blue-50 p-2 md:p-3 rounded-xl border border-blue-200 shadow-sm">
                         <label class="block text-[10px] font-black text-blue-700 uppercase mb-1 text-center">pH (6-9)</label>
-                        <input type="number" step="0.01" id="d-ph" class="w-full border border-blue-300 px-2 py-2 rounded-lg outline-none text-blue-800 font-mono font-bold text-center focus:bg-white">
+                        <input type="number" step="0.01" id="d-ph" class="w-full border border-blue-300 px-2 py-2 rounded-lg outline-none text-blue-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
-                    <div class="bg-rose-50 p-3 rounded-xl border border-rose-200 shadow-sm">
+                    <div class="bg-rose-50 p-2 md:p-3 rounded-xl border border-rose-200 shadow-sm">
                         <label class="block text-[10px] font-black text-rose-700 uppercase mb-1 text-center">COD (Max 90)</label>
-                        <input type="number" step="0.1" id="d-cod" class="w-full border border-rose-300 px-2 py-2 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white">
+                        <input type="number" step="0.1" id="d-cod" class="w-full border border-rose-300 px-2 py-2 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
-                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 shadow-sm">
+                    <div class="bg-amber-50 p-2 md:p-3 rounded-xl border border-amber-200 shadow-sm">
                         <label class="block text-[10px] font-black text-amber-700 uppercase mb-1 text-center">Florua (Max 15)</label>
-                        <input type="number" step="0.01" id="d-florua" class="w-full border border-amber-300 px-2 py-2 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white">
+                        <input type="number" step="0.01" id="d-florua" class="w-full border border-amber-300 px-2 py-2 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
-                    <div class="bg-purple-50 p-3 rounded-xl border border-purple-200 shadow-sm">
+                    <div class="bg-purple-50 p-2 md:p-3 rounded-xl border border-purple-200 shadow-sm">
                         <label class="block text-[10px] font-black text-purple-700 uppercase mb-1 text-center">Độ dẫn điện (mS/cm)</label>
-                        <input type="number" step="0.01" id="d-ec" class="w-full border border-purple-300 px-2 py-2 rounded-lg outline-none text-purple-800 font-mono font-bold text-center focus:bg-white">
+                        <input type="number" step="0.01" id="d-ec" class="w-full border border-purple-300 px-2 py-2 rounded-lg outline-none text-purple-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
-                    <div class="bg-cyan-50 p-3 rounded-xl border border-cyan-200 shadow-sm">
+                    <div class="bg-cyan-50 p-2 md:p-3 rounded-xl border border-cyan-200 shadow-sm col-span-2 md:col-span-1">
                         <label class="block text-[10px] font-black text-cyan-700 uppercase mb-1 text-center">Lưu lượng (m³/h)</label>
-                        <input type="number" step="0.1" id="d-flow" class="w-full border border-cyan-300 px-2 py-2 rounded-lg outline-none text-cyan-800 font-mono font-bold text-center focus:bg-white">
+                        <input type="number" step="0.1" id="d-flow" class="w-full border border-cyan-300 px-2 py-2 rounded-lg outline-none text-cyan-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ghi chú (Tình trạng, Hóa chất đã châm...)</label>
-                    <input type="text" id="d-note" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-blue-500 text-sm bg-slate-50 focus:bg-white" placeholder="VD: Nước trong, châm thêm PAC...">
+                    <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Ghi chú (Tình trạng, Hóa chất đã châm...)</label>
+                    <input type="text" id="d-note" class="w-full border border-slate-300 px-3 py-3 md:py-2.5 rounded-xl outline-none focus:border-blue-500 text-base md:text-sm bg-slate-50 focus:bg-white" placeholder="VD: Nước trong, châm thêm PAC...">
                 </div>
             </div>
 
-            <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-                <button onclick="closeDailyModal()" class="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition" data-i18n="btn_cancel">Hủy</button>
-                <button id="btn-save-daily" onclick="saveDailyData()" class="bg-blue-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>
+            <!-- Footer (Cố định) -->
+            <div class="p-4 md:p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
+                <button onclick="closeDailyModal()" class="px-4 sm:px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition text-sm sm:text-base w-full sm:w-auto" data-i18n="btn_cancel">Hủy</button>
+                <button id="btn-save-daily" onclick="saveDailyData()" class="bg-blue-600 text-white px-5 sm:px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto">
+                    <i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- MODAL NHẬP LIỆU: ĐỊNH KỲ -->
-    <div id="water-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col">
-            <div class="p-5 border-b border-slate-100 bg-teal-50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-teal-800 flex items-center gap-2"><i class="ph-fill ph-flask"></i> Nhập Phiếu Thử Nghiệm Nước Thải</h3>
-                <button onclick="closeWaterModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+    <div id="water-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
+        <div class="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
+            <div class="p-4 md:p-5 border-b border-slate-100 bg-teal-50 flex justify-between items-center shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-teal-800 flex items-center gap-2"><i class="ph-fill ph-flask"></i> Nhập Phiếu Thử Nghiệm Nước Thải</h3>
+                <button onclick="closeWaterModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl sm:text-2xl"></i></button>
             </div>
             
-            <div class="p-6 space-y-4 overflow-y-auto max-h-[75vh] custom-scrollbar bg-slate-50/50">
+            <div class="p-4 md:p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
                 
-                <div class="bg-teal-100 text-teal-800 font-bold p-3 rounded-xl border border-teal-200 text-sm mb-2 text-center" id="w-plant-display">
+                <div class="bg-teal-100 text-teal-800 font-bold p-3 rounded-xl border border-teal-200 text-sm mb-2 text-center shrink-0" id="w-plant-display">
                     Đang nhập cho: Nhà máy Can
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-200 pb-5">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 border-b border-slate-200 pb-5">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày lấy (nhận) mẫu <span class="text-red-500">*</span></label>
-                        <input type="date" id="w-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-white">
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Ngày lấy (nhận) mẫu <span class="text-red-500">*</span></label>
+                        <input type="date" id="w-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-white text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ký hiệu/Vị trí lấy mẫu <span class="text-red-500">*</span></label>
-                        <input type="text" id="w-location" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-white" placeholder="VD: NT1 Nước thải sx...">
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Ký hiệu/Vị trí lấy mẫu <span class="text-red-500">*</span></label>
+                        <input type="text" id="w-location" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-teal-500 font-bold text-slate-700 bg-white text-base md:text-sm" placeholder="VD: NT1 Nước thải sx...">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">pH (6-9)</label><input type="number" step="0.01" id="w-ph" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
-                    <div class="bg-purple-50 p-2 rounded-xl border border-purple-200 shadow-sm"><label class="block text-[10px] font-black text-purple-700 uppercase mb-1 text-center">Độ màu (Max 100)</label><input type="number" step="0.1" id="w-color" class="w-full border border-purple-300 px-2 py-1.5 rounded-lg outline-none text-purple-800 font-mono font-bold text-center focus:bg-white"></div>
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">TSS (Max 80)</label><input type="number" step="0.1" id="w-tss" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
-                    <div class="bg-amber-50 p-2 rounded-xl border border-amber-200 shadow-sm"><label class="block text-[10px] font-black text-amber-700 uppercase mb-1 text-center">BOD5 (Max 60)</label><input type="number" step="0.1" id="w-bod" class="w-full border border-amber-300 px-2 py-1.5 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white"></div>
-                    <div class="bg-rose-50 p-2 rounded-xl border border-rose-200 shadow-sm"><label class="block text-[10px] font-black text-rose-700 uppercase mb-1 text-center">COD (Max 90)</label><input type="number" step="0.1" id="w-cod" class="w-full border border-rose-300 px-2 py-1.5 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white"></div>
-                    <div class="bg-cyan-50 p-2 rounded-xl border border-cyan-200 shadow-sm"><label class="block text-[10px] font-black text-cyan-700 uppercase mb-1 text-center">Amoni (Max 10)</label><input type="number" step="0.1" id="w-amoni" class="w-full border border-cyan-300 px-2 py-1.5 rounded-lg outline-none text-cyan-800 font-mono font-bold text-center focus:bg-white"></div>
-                    <div class="bg-orange-50 p-2 rounded-xl border border-orange-200 shadow-sm"><label class="block text-[10px] font-black text-orange-700 uppercase mb-1 text-center">Florua (Max 15)</label><input type="number" step="0.001" id="w-florua" class="w-full border border-orange-300 px-2 py-1.5 rounded-lg outline-none text-orange-800 font-mono font-bold text-center focus:bg-white"></div>
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng N (Max 40)</label><input type="number" step="0.1" id="w-tongn" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng P (Max 6)</label><input type="number" step="0.01" id="w-tongp" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Al (Nhôm)</label><input type="number" step="0.001" id="w-al" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Dầu mỡ (Max 5)</label><input type="number" step="0.1" id="w-daukhoang" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50"></div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 md:gap-3">
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">pH (6-9)</label><input type="number" step="0.01" id="w-ph" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-base md:text-sm"></div>
+                    <div class="bg-purple-50 p-2 rounded-xl border border-purple-200 shadow-sm"><label class="block text-[10px] font-black text-purple-700 uppercase mb-1 text-center">Độ màu (Max 100)</label><input type="number" step="0.1" id="w-color" class="w-full border border-purple-300 px-2 py-1.5 rounded-lg outline-none text-purple-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">TSS (Max 80)</label><input type="number" step="0.1" id="w-tss" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-base md:text-sm"></div>
+                    <div class="bg-amber-50 p-2 rounded-xl border border-amber-200 shadow-sm"><label class="block text-[10px] font-black text-amber-700 uppercase mb-1 text-center">BOD5 (Max 60)</label><input type="number" step="0.1" id="w-bod" class="w-full border border-amber-300 px-2 py-1.5 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm"></div>
+                    <div class="bg-rose-50 p-2 rounded-xl border border-rose-200 shadow-sm"><label class="block text-[10px] font-black text-rose-700 uppercase mb-1 text-center">COD (Max 90)</label><input type="number" step="0.1" id="w-cod" class="w-full border border-rose-300 px-2 py-1.5 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm"></div>
+                    <div class="bg-cyan-50 p-2 rounded-xl border border-cyan-200 shadow-sm"><label class="block text-[10px] font-black text-cyan-700 uppercase mb-1 text-center">Amoni (Max 10)</label><input type="number" step="0.1" id="w-amoni" class="w-full border border-cyan-300 px-2 py-1.5 rounded-lg outline-none text-cyan-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm"></div>
+                    <div class="bg-orange-50 p-2 rounded-xl border border-orange-200 shadow-sm"><label class="block text-[10px] font-black text-orange-700 uppercase mb-1 text-center">Florua (Max 15)</label><input type="number" step="0.001" id="w-florua" class="w-full border border-orange-300 px-2 py-1.5 rounded-lg outline-none text-orange-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng N (Max 40)</label><input type="number" step="0.1" id="w-tongn" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-base md:text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng P (Max 6)</label><input type="number" step="0.01" id="w-tongp" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-base md:text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Al (Nhôm)</label><input type="number" step="0.001" id="w-al" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-base md:text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm col-span-2 md:col-span-1"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Dầu mỡ (Max 5)</label><input type="number" step="0.1" id="w-daukhoang" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-base md:text-sm"></div>
                 </div>
                 
-                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-inner mt-4">
-                    <label class="block text-xs font-black text-emerald-800 uppercase mb-2 text-center">Tổng Coliform (MPN/100mL - Max 5000)</label>
-                    <input type="number" step="1" id="w-coliform" class="w-full max-w-xs mx-auto block border-2 border-emerald-300 px-4 py-3 rounded-xl outline-none focus:border-emerald-500 font-mono text-center text-emerald-900 font-black text-xl shadow-sm bg-white">
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-inner mt-4 shrink-0">
+                    <label class="block text-[11px] sm:text-xs font-black text-emerald-800 uppercase mb-2 text-center">Tổng Coliform (MPN/100mL - Max 5000)</label>
+                    <input type="number" step="1" id="w-coliform" class="w-full max-w-xs mx-auto block border-2 border-emerald-300 px-4 py-2 sm:py-3 rounded-xl outline-none focus:border-emerald-500 font-mono text-center text-emerald-900 font-black text-lg sm:text-xl shadow-sm bg-white text-base md:text-sm">
                 </div>
             </div>
 
-            <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-white">
-                <button onclick="closeWaterModal()" class="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition" data-i18n="btn_cancel">Hủy</button>
-                <button id="btn-save-water" onclick="saveWaterData()" class="bg-teal-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-teal-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>
+            <div class="p-4 md:p-5 border-t border-slate-100 flex justify-end gap-3 bg-white shrink-0">
+                <button onclick="closeWaterModal()" class="px-4 sm:px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition text-sm sm:text-base w-full sm:w-auto" data-i18n="btn_cancel">Hủy</button>
+                <button id="btn-save-water" onclick="saveWaterData()" class="bg-teal-600 text-white px-5 sm:px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-teal-700 transition flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto">
+                    <i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>
                 </button>
             </div>
         </div>
     </div>
 
     <!-- MODAL NHẬP LIỆU: KHÍ THẢI -->
-    <div id="air-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col">
-            <div class="p-5 border-b border-slate-100 bg-sky-50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-sky-800 flex items-center gap-2"><i class="ph-fill ph-wind"></i> Nhập Kết Quả Khí Thải</h3>
-                <button onclick="closeAirModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+    <div id="air-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
+        <div class="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
+            <div class="p-4 md:p-5 border-b border-slate-100 bg-sky-50 flex justify-between items-center shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-sky-800 flex items-center gap-2"><i class="ph-fill ph-wind"></i> Nhập Kết Quả Khí Thải</h3>
+                <button onclick="closeAirModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl sm:text-2xl"></i></button>
             </div>
             
-            <div class="p-6 space-y-4">
-                <div class="bg-sky-100 text-sky-800 font-bold p-3 rounded-xl border border-sky-200 text-sm mb-2 text-center" id="a-plant-display">
+            <div class="p-4 md:p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                <div class="bg-sky-100 text-sky-800 font-bold p-3 rounded-xl border border-sky-200 text-sm mb-2 text-center shrink-0" id="a-plant-display">
                     Đang nhập cho: Nhà máy Can
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-slate-100 pb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 border-b border-slate-100 pb-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày đo đạc <span class="text-red-500">*</span></label>
-                        <input type="date" id="a-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50">
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Ngày đo đạc <span class="text-red-500">*</span></label>
+                        <input type="date" id="a-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Vị trí đo đạc <span class="text-red-500">*</span></label>
-                        <input type="text" id="a-location" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50" placeholder="VD: Ống khói lò hơi...">
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Vị trí đo đạc <span class="text-red-500">*</span></label>
+                        <input type="text" id="a-location" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-sky-500 font-bold text-slate-700 bg-slate-50 text-base md:text-sm" placeholder="VD: Ống khói lò hơi...">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1 text-center">Bụi Tổng (Max 200)</label>
-                        <input type="number" step="0.1" id="a-dust" class="w-full border border-slate-300 px-3 py-2 rounded-lg outline-none font-mono text-center focus:border-sky-500 focus:bg-white">
+                <div class="grid grid-cols-2 gap-3 md:gap-4">
+                    <div class="bg-slate-50 p-2 md:p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <label class="block text-[10px] md:text-[11px] font-bold text-slate-500 uppercase mb-1 text-center">Bụi Tổng (Max 200)</label>
+                        <input type="number" step="0.1" id="a-dust" class="w-full border border-slate-300 px-2 md:px-3 py-2 rounded-lg outline-none font-mono text-center focus:border-sky-500 focus:bg-white text-base md:text-sm">
                     </div>
-                    <div class="bg-rose-50 p-3 rounded-xl border border-rose-200">
-                        <label class="block text-[11px] font-black text-rose-700 uppercase mb-1 text-center">SO2 (Max 500)</label>
-                        <input type="number" step="0.1" id="a-so2" class="w-full border border-rose-300 px-3 py-2 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white">
+                    <div class="bg-rose-50 p-2 md:p-3 rounded-xl border border-rose-200 shadow-sm">
+                        <label class="block text-[10px] md:text-[11px] font-black text-rose-700 uppercase mb-1 text-center">SO2 (Max 500)</label>
+                        <input type="number" step="0.1" id="a-so2" class="w-full border border-rose-300 px-2 md:px-3 py-2 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
-                    <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
-                        <label class="block text-[11px] font-black text-amber-700 uppercase mb-1 text-center">NOx (Max 850)</label>
-                        <input type="number" step="0.1" id="a-nox" class="w-full border border-amber-300 px-3 py-2 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white">
+                    <div class="bg-amber-50 p-2 md:p-3 rounded-xl border border-amber-200 shadow-sm">
+                        <label class="block text-[10px] md:text-[11px] font-black text-amber-700 uppercase mb-1 text-center">NOx (Max 850)</label>
+                        <input type="number" step="0.1" id="a-nox" class="w-full border border-amber-300 px-2 md:px-3 py-2 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
-                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-200">
-                        <label class="block text-[11px] font-black text-blue-700 uppercase mb-1 text-center">CO (Max 1000)</label>
-                        <input type="number" step="0.1" id="a-co" class="w-full border border-blue-300 px-3 py-2 rounded-lg outline-none text-blue-800 font-mono font-bold text-center focus:bg-white">
+                    <div class="bg-blue-50 p-2 md:p-3 rounded-xl border border-blue-200 shadow-sm">
+                        <label class="block text-[10px] md:text-[11px] font-black text-blue-700 uppercase mb-1 text-center">CO (Max 1000)</label>
+                        <input type="number" step="0.1" id="a-co" class="w-full border border-blue-300 px-2 md:px-3 py-2 rounded-lg outline-none text-blue-800 font-mono font-bold text-center focus:bg-white text-base md:text-sm">
                     </div>
                 </div>
             </div>
 
-            <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50">
-                <button onclick="closeAirModal()" class="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition" data-i18n="btn_cancel">Hủy</button>
-                <button id="btn-save-air" onclick="saveAirData()" class="bg-sky-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-sky-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-floppy-disk"></i> <span data-i18n="btn_save">Lưu Hệ Thống</span>
+            <div class="p-4 md:p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
+                <button onclick="closeAirModal()" class="px-4 sm:px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition text-sm sm:text-base w-full sm:w-auto" data-i18n="btn_cancel">Hủy</button>
+                <button id="btn-save-air" onclick="saveAirData()" class="bg-sky-600 text-white px-5 sm:px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-sky-700 transition flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto">
+                    <i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Hệ Thống</span>
                 </button>
             </div>
         </div>
@@ -494,7 +501,7 @@
         window.showToast = function(msg, type = 'success') {
             const toast = document.getElementById('custom-toast');
             const icon = document.getElementById('toast-icon');
-            toast.className = "fixed top-5 right-5 z-[120] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
             
             if (type === 'success') {
                 toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl";
