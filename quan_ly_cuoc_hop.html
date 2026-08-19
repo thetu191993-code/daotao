@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHS - Quản Lý Cuộc Họp & Toolbox Meeting</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { dark: { bg: '#0f172a', card: '#1e293b', border: '#334155', muted: '#94a3b8' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
+
+    <!-- Toast Thông báo -->
+    <div id="toast" class="fixed top-5 right-5 z-[200] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+        <i id="toast-icon" class="text-2xl"></i>
+        <span id="toast-message">Thành công!</span>
+    </div>
+
+    <!-- HEADER -->
+    <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
+                <i class="ph-bold ph-arrow-left text-lg"></i>
+            </a>
+            <h1 class="font-black text-xl leading-tight text-indigo-700 dark:text-indigo-400 flex items-center gap-2">
+                <i class="ph-fill ph-users-three"></i> <span>Toolbox Meeting</span>
+            </h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg hidden sm:block" id="header-user-name">Đang tải...</div>
+            <button onclick="window.toggleDarkMode()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center hover:bg-slate-200 transition border border-slate-200 dark:border-slate-700 shrink-0">
+                <i id="theme-icon" class="ph-bold ph-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
+        <div class="max-w-7xl mx-auto space-y-6">
+            
+            <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border flex flex-col md:flex-row justify-between gap-4">
+                <div class="flex flex-wrap bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
+                    <button onclick="window.switchTab('upcoming')" id="tab-upcoming" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-indigo-700 dark:text-white transition">Lịch sắp tới</button>
+                    <button onclick="window.switchTab('history')" id="tab-history" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 transition">Biên bản đã họp</button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <select id="filter-category" onchange="window.loadMeetings()" class="px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-bold outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300">
+                        <option value="all">Tất cả chủ đề</option>
+                        <option value="An toàn">An toàn (Safety)</option>
+                        <option value="Môi trường">Môi trường (Env)</option>
+                        <option value="Sức khỏe">Sức khỏe (Health)</option>
+                        <option value="PCCC">PCCC</option>
+                        <option value="ATVSV">Họp mạng lưới ATVSV</option>
+                    </select>
+                    <button onclick="window.openCreateMeetingModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2 whitespace-nowrap">
+                        <i class="ph-bold ph-calendar-plus"></i> Tạo Lịch Họp
+                    </button>
+                </div>
+            </div>
+
+            <div id="loader" class="flex flex-col items-center justify-center py-20 text-indigo-500">
+                <i class="ph-bold ph-spinner animate-spin text-4xl mb-4"></i>
+                <p class="font-bold text-slate-500">Đang đồng bộ dữ liệu cuộc họp...</p>
+            </div>
+
+            <div id="meetings-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 hidden"></div>
+            
+            <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
+                <i class="ph-fill ph-calendar-x text-6xl mb-4 opacity-50"></i>
+                <p class="font-bold text-lg">Không có cuộc họp nào trong mục này.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL TẠO LỊCH HỌP -->
+    <div id="create-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-3xl flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
+                <h2 class="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-calendar-plus text-indigo-600"></i> Lên Kế Hoạch Cuộc Họp</h2>
+                <button onclick="window.closeCreateModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tiêu đề cuộc họp <span class="text-red-500">*</span></label>
+                    <input type="text" id="m-title" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-2.5 font-bold text-slate-800 outline-none focus:border-indigo-500" placeholder="VD: Toolbox Meeting An toàn nâng hạ...">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày & Giờ Họp <span class="text-red-500">*</span></label>
+                        <div class="flex gap-2">
+                            <input type="date" id="m-date" class="w-full border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 font-bold text-slate-800 outline-none focus:border-indigo-500 bg-slate-50 dark:bg-slate-900">
+                            <input type="time" id="m-time" class="w-24 shrink-0 border border-slate-300 dark:border-slate-700 rounded-xl px-2 py-2.5 font-bold text-slate-800 outline-none focus:border-indigo-500 bg-slate-50 dark:bg-slate-900 text-center">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Địa điểm / Link Online <span class="text-red-500">*</span></label>
+                        <input type="text" id="m-location" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-2.5 font-medium text-slate-800 outline-none focus:border-indigo-500" placeholder="Phòng họp 1 / Tại công trường / Google Meet...">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ đề (Category)</label>
+                    <select id="m-category" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-4 py-2.5 font-semibold text-slate-700 outline-none focus:border-indigo-500">
+                        <option value="An toàn">An toàn (Safety)</option><option value="Môi trường">Môi trường (Env)</option><option value="Sức khỏe">Sức khỏe (Health)</option><option value="PCCC">Phòng cháy chữa cháy</option><option value="ATVSV">Mạng lưới ATVSV</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nội dung họp (Agenda) <span class="text-red-500">*</span></label>
+                    <textarea id="m-agenda" rows="3" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 custom-scrollbar resize-none" placeholder="1. Đánh giá rủi ro... 2. Đề xuất giải pháp..."></textarea>
+                </div>
+
+                <!-- CHỌN THÀNH VIÊN THAM DỰ -->
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 p-4 rounded-xl">
+                    <label class="block text-xs font-bold text-indigo-800 uppercase mb-2"><i class="ph-fill ph-users"></i> Thành phần tham dự (Triệu tập) <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <button type="button" onclick="document.getElementById('attendee-menu').classList.toggle('hidden')" class="w-full border border-indigo-300 bg-white rounded-xl px-4 py-2.5 font-bold text-indigo-700 outline-none flex justify-between items-center text-sm shadow-sm">
+                            <span id="selected-count">Chưa chọn người tham gia</span>
+                            <i class="ph-bold ph-caret-down"></i>
+                        </button>
+                        <div id="attendee-menu" class="absolute z-[100] w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl hidden flex-col max-h-60 overflow-hidden">
+                            <div class="p-2 border-b border-slate-100 bg-slate-50">
+                                <input type="text" id="search-user" onkeyup="window.filterUsers()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" placeholder="🔍 Tìm tên nhân viên...">
+                            </div>
+                            <ul id="user-checkbox-list" class="overflow-y-auto custom-scrollbar p-2 space-y-1"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-5 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="window.closeCreateModal()" class="px-6 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition">Hủy</button>
+                <button id="btn-save-meeting" onclick="window.saveMeeting()" class="bg-indigo-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-indigo-700 transition flex items-center gap-2">
+                    <i class="ph-bold ph-paper-plane-tilt"></i> Đặt Lịch & Gửi Thông Báo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VÀO PHÒNG HỌP -->
+    <div id="room-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[60] hidden flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col h-[95vh]">
+            
+            <!-- Room Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-start bg-slate-800 text-white rounded-t-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 opacity-10"><i class="ph-fill ph-users-three text-9xl"></i></div>
+                <div class="relative z-10 pr-10">
+                    <span id="r-status-badge" class="px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-black rounded uppercase tracking-wider mb-2 inline-block">Sắp diễn ra</span>
+                    <h2 id="r-title" class="text-xl sm:text-2xl font-black leading-tight mb-2">Tên cuộc họp</h2>
+                    <div class="flex flex-wrap gap-4 text-xs font-medium text-slate-300">
+                        <span class="flex items-center gap-1"><i class="ph-fill ph-calendar-blank"></i> <span id="r-datetime"></span></span>
+                        <span class="flex items-center gap-1"><i class="ph-fill ph-map-pin"></i> <span id="r-location"></span></span>
+                        <span class="flex items-center gap-1"><i class="ph-fill ph-user-circle"></i> Tổ chức: <span id="r-organizer" class="text-white font-bold"></span></span>
+                    </div>
+                </div>
+                <button onclick="window.closeRoomModal()" class="text-slate-400 hover:text-white transition absolute top-4 right-4 z-20"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            
+            <!-- Room Body (Grid layout) -->
+            <div class="flex-1 overflow-hidden flex flex-col lg:flex-row bg-slate-50 dark:bg-dark-bg rounded-b-2xl">
+                
+                <!-- Cột trái: Thông tin & Báo cáo -->
+                <div class="w-full lg:w-7/12 p-4 sm:p-6 overflow-y-auto custom-scrollbar border-r border-slate-200 dark:border-slate-700 space-y-6">
+                    
+                    <!-- Dành cho người tham dự: Bấm điểm danh -->
+                    <div id="checkin-section" class="bg-indigo-100 border border-indigo-300 p-4 rounded-xl flex items-center justify-between shadow-sm hidden">
+                        <div>
+                            <h4 class="font-bold text-indigo-900 text-sm">Xác nhận tham gia</h4>
+                            <p class="text-xs text-indigo-700 mt-0.5">Vui lòng điểm danh để hệ thống ghi nhận.</p>
+                        </div>
+                        <button id="btn-checkin" onclick="window.submitCheckIn()" class="bg-indigo-600 text-white font-bold px-6 py-2 rounded-lg shadow hover:bg-indigo-700 transition flex items-center gap-2">
+                            <i class="ph-bold ph-hand-tap"></i> Điểm Danh Ngay
+                        </button>
+                    </div>
+
+                    <div id="checked-in-msg" class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center gap-3 text-emerald-700 font-bold text-sm shadow-sm hidden">
+                        <i class="ph-fill ph-check-circle text-2xl text-emerald-500"></i> Bạn đã điểm danh tham gia cuộc họp này.
+                    </div>
+
+                    <div>
+                        <h3 class="font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2"><i class="ph-fill ph-list-dashes text-indigo-500"></i> Nội dung cuộc họp (Agenda)</h3>
+                        <div id="r-agenda" class="text-sm text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 whitespace-pre-wrap leading-relaxed shadow-sm"></div>
+                    </div>
+
+                    <!-- Gửi ý kiến -->
+                    <div id="submit-proposal-section" class="hidden">
+                        <h3 class="font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2"><i class="ph-fill ph-lightbulb text-amber-500"></i> Đóng góp ý kiến / Ghi nhận vấn đề</h3>
+                        <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <textarea id="my-proposal" rows="2" class="w-full border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-sm outline-none focus:border-amber-500 bg-slate-50 dark:bg-slate-900 custom-scrollbar resize-none mb-3" placeholder="Gõ vấn đề rủi ro hoặc giải pháp đề xuất tại đây..."></textarea>
+                            <div class="flex justify-end">
+                                <button onclick="window.submitProposal()" class="bg-amber-500 text-white font-bold px-5 py-2 rounded-lg hover:bg-amber-600 transition shadow flex items-center gap-2 text-sm">
+                                    <i class="ph-bold ph-paper-plane-right"></i> Gửi Ý Kiến
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danh sách ý kiến (Realtime) -->
+                    <div>
+                        <h3 class="font-black text-slate-800 dark:text-white mb-2 flex items-center gap-2"><i class="ph-fill ph-chat-centered-text text-blue-500"></i> Thảo luận & Đề xuất trong cuộc họp</h3>
+                        <div id="proposals-list" class="space-y-3">
+                            <!-- Nạp bằng JS -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Cột phải: Dành cho Organizer (Danh sách điểm danh & Biên bản) -->
+                <div class="w-full lg:w-5/12 bg-white dark:bg-slate-900 flex flex-col relative">
+                    
+                    <div class="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 shrink-0">
+                        <h3 class="font-black text-slate-800 dark:text-white text-sm flex justify-between items-center">
+                            <span><i class="ph-fill ph-users"></i> Điểm danh tham dự</span>
+                            <span id="attendance-count" class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs">0/0 Đạt</span>
+                        </h3>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
+                        <ul id="attendance-list" class="space-y-1"></ul>
+                    </div>
+
+                    <!-- Bảng chốt biên bản dành riêng cho Organizer -->
+                    <div id="organizer-conclusion-section" class="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0 hidden">
+                        <label class="block text-[11px] font-black text-slate-500 uppercase mb-2">Chốt Biên bản (Kết luận cuộc họp)</label>
+                        <textarea id="meeting-minutes" rows="3" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-emerald-500 bg-white mb-3 custom-scrollbar resize-none" placeholder="Tổng hợp lại các quyết định, ai làm việc gì..."></textarea>
+                        <button onclick="window.closeMeetingProcess()" class="w-full bg-emerald-600 text-white font-bold py-2.5 rounded-lg hover:bg-emerald-700 shadow flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-check-square-offset text-lg"></i> Lưu Biên Bản & Đóng Cuộc Họp
+                        </button>
+                    </div>
+
+                    <!-- Hiển thị biên bản cho mọi người xem nếu họp xong -->
+                    <div id="final-minutes-section" class="p-4 border-t border-emerald-200 bg-emerald-50 shrink-0 hidden">
+                        <h4 class="font-black text-emerald-800 text-xs uppercase mb-2 flex items-center gap-1"><i class="ph-fill ph-check-circle"></i> Kết luận cuộc họp:</h4>
+                        <div id="r-minutes-text" class="text-sm text-emerald-900 whitespace-pre-wrap leading-relaxed"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CODE XỬ LÝ LÕI -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUserId = localStorage.getItem("ehs_user_id");
+        let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
+        let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
+        
+        let allUsers = [];
+        let selectedUserIds = [];
+        let rawMeetingsData = [];
+        let activeTab = 'upcoming';
+        let currentRoomId = null;
+        let roomUnsubscribe = null; // Để tắt realtime khi đóng modal
+
+        window.showToast = function(message, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            toast.className = "fixed top-5 right-5 z-[250] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            if (type === "success") { toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl"; } 
+            else { toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl"; }
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-x-[150%]');
+            setTimeout(() => toast.classList.add('translate-x-[150%]'), 3000);
+        }
+
+        window.toggleDarkMode = function() {
+            isDarkMode = !isDarkMode; 
+            localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light'); 
+            applyTheme();
+        };
+
+        function applyTheme() {
+            if (isDarkMode) { document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = "ph-fill ph-sun text-amber-400"; } 
+            else { document.documentElement.classList.remove('dark'); document.getElementById('theme-icon').className = "ph-bold ph-moon text-slate-600"; }
+        }
+        applyTheme();
+
+        window.switchTab = function(tab) {
+            activeTab = tab;
+            const btnUp = document.getElementById('tab-upcoming');
+            const btnHis = document.getElementById('tab-history');
+            const aCls = "px-6 py-2 rounded-lg font-bold text-sm bg-white shadow text-indigo-700 transition";
+            const iCls = "px-6 py-2 rounded-lg font-bold text-sm text-slate-500 hover:text-slate-800 transition";
+            btnUp.className = tab === 'upcoming' ? aCls : iCls;
+            btnHis.className = tab === 'history' ? aCls : iCls;
+            window.renderMeetings();
+        }
+
+        // ============ TẠO LỊCH HỌP ============
+        window.openCreateMeetingModal = async function() {
+            document.getElementById('m-title').value = '';
+            document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('m-time').value = '14:00';
+            document.getElementById('m-location').value = '';
+            document.getElementById('m-agenda').value = '';
+            selectedUserIds = [];
+            updateSelectedCount();
+            
+            // Render danh sách user để chọn
+            if(allUsers.length === 0) await loadUsersList();
+            renderUserCheckboxes(allUsers);
+            
+            document.getElementById('create-modal').classList.remove('hidden');
+        }
+        window.closeCreateModal = () => document.getElementById('create-modal').classList.add('hidden');
+
+        async function loadUsersList() {
+            try {
+                const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
+                allUsers = [];
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if(data.ma_nv && data.ho_ten) allUsers.push({ id: data.ma_nv, name: data.ho_ten, dept: data.bo_phan || '' });
+                });
+            } catch(e) { console.error("Lỗi lấy user:", e); }
+        }
+
+        function renderUserCheckboxes(users) {
+            const ul = document.getElementById('user-checkbox-list');
+            ul.innerHTML = users.map(u => `
+                <li>
+                    <label class="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg cursor-pointer transition">
+                        <input type="checkbox" value="${u.id}" class="w-4 h-4 text-indigo-600 rounded border-slate-300 user-cb" ${selectedUserIds.includes(u.id) ? 'checked' : ''} onchange="window.handleCheckboxChange(this, '${u.id}', '${u.name.replace(/'/g, "\\'")}')">
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">${u.name} <span class="text-[10px] text-slate-400 font-normal">(${u.id})</span></p>
+                            <p class="text-[10px] text-slate-500">${u.dept}</p>
+                        </div>
+                    </label>
+                </li>
+            `).join('');
+        }
+
+        window.filterUsers = function() {
+            const kw = document.getElementById('search-user').value.toLowerCase();
+            const filtered = allUsers.filter(u => u.name.toLowerCase().includes(kw) || u.id.toLowerCase().includes(kw));
+            renderUserCheckboxes(filtered);
+        }
+
+        window.handleCheckboxChange = function(cb, id, name) {
+            if(cb.checked) { if(!selectedUserIds.includes(id)) selectedUserIds.push(id); }
+            else { selectedUserIds = selectedUserIds.filter(x => x !== id); }
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            document.getElementById('selected-count').innerText = selectedUserIds.length > 0 ? `Đã chọn ${selectedUserIds.length} người` : 'Chưa chọn người tham gia';
+        }
+
+        window.saveMeeting = async function() {
+            const title = document.getElementById('m-title').value.trim();
+            const date = document.getElementById('m-date').value;
+            const time = document.getElementById('m-time').value;
+            const loc = document.getElementById('m-location').value.trim();
+            const agenda = document.getElementById('m-agenda').value.trim();
+            const cat = document.getElementById('m-category').value;
+
+            if(!title || !date || !time || !loc || !agenda) return showToast("Vui lòng nhập đủ các thông tin bắt buộc (*)", "error");
+            if(selectedUserIds.length === 0) return showToast("Vui lòng chọn ít nhất 1 người tham gia!", "error");
+
+            // Tạo bảng điểm danh ban đầu
+            let attendanceRecords = {};
+            selectedUserIds.forEach(uid => {
+                const u = allUsers.find(x => x.id === uid);
+                attendanceRecords[uid] = { name: u ? u.name : uid, status: 'Pending', time: null };
+            });
+
+            const meetingData = {
+                title: title, category: cat, date: date, time: time, location: loc, agenda: agenda,
+                organizer_id: currentUserId, organizer_name: currentUserName,
+                status: 'Upcoming', // Upcoming, Completed
+                attendee_ids: selectedUserIds, 
+                attendance_records: attendanceRecords,
+                proposals: [], meeting_minutes: "",
+                created_at: new Date()
+            };
+
+            const btn = document.getElementById('btn-save-meeting');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tạo lịch...'; btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "ehs_meetings"), meetingData);
+                showToast("Tạo lịch họp thành công! Thông báo đã được gửi đi.");
+                closeCreateModal();
+                loadMeetings();
+            } catch(e) {
+                showToast("Lỗi lưu DB: " + e.message, "error");
+                btn.disabled = false; btn.innerHTML = 'Thử lại';
+            }
+        }
+
+        // ============ HIỂN THỊ DANH SÁCH ============
+        window.loadMeetings = async function() {
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('meetings-grid').classList.add('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+
+            try {
+                const snap = await getDocs(collection(db, "ehs_meetings"));
+                rawMeetingsData = [];
+                snap.forEach(doc => { rawMeetingsData.push({ id: doc.id, ...doc.data() }); });
+                renderMeetings();
+            } catch(e) { console.log(e); }
+        }
+
+        window.renderMeetings = function() {
+            const grid = document.getElementById('meetings-grid'); grid.innerHTML = '';
+            const filterCat = document.getElementById('filter-category').value;
+            const today = new Date(); today.setHours(0,0,0,0);
+
+            let filtered = rawMeetingsData.filter(m => {
+                // Lọc theo trạng thái (Upcoming vs History)
+                const isUpcoming = m.status === 'Upcoming';
+                if(activeTab === 'upcoming' && !isUpcoming) return false;
+                if(activeTab === 'history' && isUpcoming) return false;
+
+                // Lọc theo người (Chỉ thấy nếu mình là Organizer hoặc nằm trong danh sách Attendee)
+                const amIInvited = m.attendee_ids && m.attendee_ids.includes(currentUserId);
+                const amIOrganizer = m.organizer_id === currentUserId;
+                if(!amIInvited && !amIOrganizer) return false;
+
+                // Lọc theo category
+                if(filterCat !== 'all' && m.category !== filterCat) return false;
+
+                return true;
+            });
+
+            // Sort: Upcoming (sớm lên đầu), History (mới nhất lên đầu)
+            filtered.sort((a,b) => {
+                let da = new Date(a.date + 'T' + a.time);
+                let db = new Date(b.date + 'T' + b.time);
+                return activeTab === 'upcoming' ? da - db : db - da;
+            });
+
+            if(filtered.length === 0) {
+                document.getElementById('loader').classList.add('hidden');
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            }
+
+            filtered.forEach(m => {
+                const mDate = new Date(m.date);
+                const dateStr = mDate.toLocaleDateString('vi-VN');
+                
+                let statusBadge = m.status === 'Upcoming' ? `<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold"><i class="ph-bold ph-clock"></i> Sắp diễn ra</span>` 
+                                                          : `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold"><i class="ph-bold ph-check-circle"></i> Đã kết thúc</span>`;
+                
+                let myStatus = "";
+                if(m.organizer_id === currentUserId) {
+                    myStatus = `<span class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 border border-indigo-200 rounded">Người Tổ Chức</span>`;
+                } else if (m.attendance_records && m.attendance_records[currentUserId]) {
+                    const st = m.attendance_records[currentUserId].status;
+                    myStatus = st === 'Attended' ? `<span class="text-[10px] font-black text-emerald-600"><i class="ph-fill ph-check-circle"></i> Đã tham gia</span>` : `<span class="text-[10px] font-bold text-slate-400">Chưa điểm danh</span>`;
+                }
+
+                grid.innerHTML += `
+                    <div class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-5 rounded-2xl flex flex-col hover:shadow-md transition shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            ${statusBadge}
+                            <span class="text-xs font-mono font-bold text-slate-500">${dateStr} ${m.time}</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2 leading-tight">${m.title}</h3>
+                        <div class="text-xs text-slate-600 dark:text-slate-400 space-y-1 mb-4 flex-1">
+                            <p><i class="ph-fill ph-map-pin text-indigo-400"></i> ${m.location}</p>
+                            <p><i class="ph-fill ph-user-circle text-amber-500"></i> Tổ chức: <b>${m.organizer_name}</b></p>
+                        </div>
+                        <div class="border-t border-slate-100 dark:border-slate-700 pt-4 flex justify-between items-center mt-auto">
+                            ${myStatus}
+                            <button onclick="window.openRoom('${m.id}')" class="bg-indigo-50 text-indigo-700 font-bold px-4 py-2 rounded-lg hover:bg-indigo-600 hover:text-white transition text-xs flex items-center gap-1 border border-indigo-200 hover:border-indigo-600">
+                                Vào Phòng <i class="ph-bold ph-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('loader').classList.add('hidden');
+            grid.classList.remove('hidden');
+        }
+
+        // ============ TRONG PHÒNG HỌP (REALTIME) ============
+        window.openRoom = function(roomId) {
+            currentRoomId = roomId;
+            document.getElementById('room-modal').classList.remove('hidden');
+
+            // Bật lắng nghe Realtime từ Firestore để thấy người khác nhắn tin/điểm danh
+            roomUnsubscribe = onSnapshot(doc(db, "ehs_meetings", roomId), (docSnap) => {
+                if(docSnap.exists()) {
+                    updateRoomUI(docSnap.data());
+                }
+            });
+        }
+
+        window.closeRoomModal = function() {
+            document.getElementById('room-modal').classList.add('hidden');
+            if(roomUnsubscribe) { roomUnsubscribe(); roomUnsubscribe = null; } // Tắt realtime
+            currentRoomId = null;
+        }
+
+        function updateRoomUI(m) {
+            // Cập nhật Header
+            document.getElementById('r-title').innerText = m.title;
+            document.getElementById('r-datetime').innerText = `${new Date(m.date).toLocaleDateString('vi-VN')} lúc ${m.time}`;
+            document.getElementById('r-location').innerText = m.location;
+            document.getElementById('r-organizer').innerText = m.organizer_name;
+            document.getElementById('r-agenda').innerText = m.agenda;
+
+            const badge = document.getElementById('r-status-badge');
+            if(m.status === 'Completed') {
+                badge.innerText = "Cuộc họp đã kết thúc"; badge.className = "px-2 py-0.5 bg-slate-500 text-white text-[10px] font-black rounded uppercase tracking-wider mb-2 inline-block";
+                document.getElementById('submit-proposal-section').classList.add('hidden');
+                document.getElementById('checkin-section').classList.add('hidden');
+                
+                // Hiện biên bản
+                document.getElementById('final-minutes-section').classList.remove('hidden');
+                document.getElementById('r-minutes-text').innerText = m.meeting_minutes || "Không có biên bản ghi nhận.";
+                document.getElementById('organizer-conclusion-section').classList.add('hidden');
+
+            } else {
+                badge.innerText = "Đang diễn ra"; badge.className = "px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-black rounded uppercase tracking-wider mb-2 inline-block animate-pulse";
+                document.getElementById('final-minutes-section').classList.add('hidden');
+            }
+
+            // Phân quyền hiển thị
+            const isOrganizer = m.organizer_id === currentUserId;
+            const amIInvited = m.attendee_ids && m.attendee_ids.includes(currentUserId);
+            
+            // Xử lý nút Điểm danh cho người được mời
+            if(amIInvited && m.status === 'Upcoming') {
+                const myRecord = m.attendance_records[currentUserId];
+                if(myRecord && myRecord.status === 'Attended') {
+                    document.getElementById('checkin-section').classList.add('hidden');
+                    document.getElementById('checked-in-msg').classList.remove('hidden');
+                } else {
+                    document.getElementById('checkin-section').classList.remove('hidden');
+                    document.getElementById('checked-in-msg').classList.add('hidden');
+                }
+                document.getElementById('submit-proposal-section').classList.remove('hidden');
+            } else {
+                document.getElementById('checkin-section').classList.add('hidden');
+                document.getElementById('checked-in-msg').classList.add('hidden');
+            }
+
+            // Organizer chốt biên bản
+            if(isOrganizer && m.status === 'Upcoming') {
+                document.getElementById('organizer-conclusion-section').classList.remove('hidden');
+                document.getElementById('submit-proposal-section').classList.remove('hidden'); // Sếp cũng gõ ý kiến được
+            }
+
+            // Render Danh sách điểm danh (Organizer xem kỹ, NV xem cho biết)
+            const attList = document.getElementById('attendance-list');
+            let attHtml = ''; let attendedCount = 0;
+            const records = m.attendance_records || {};
+            for(let uid in records) {
+                const r = records[uid];
+                if(r.status === 'Attended') {
+                    attendedCount++;
+                    attHtml += `<li class="flex items-center gap-2 p-2 bg-emerald-50 rounded-lg text-emerald-800 text-xs font-bold border border-emerald-100"><i class="ph-fill ph-check-circle text-emerald-500"></i> ${r.name} <span class="text-[9px] text-emerald-600 ml-auto">${r.time}</span></li>`;
+                } else {
+                    attHtml += `<li class="flex items-center gap-2 p-2 bg-slate-50 rounded-lg text-slate-500 text-xs border border-slate-100"><i class="ph-bold ph-minus text-slate-300"></i> ${r.name}</li>`;
+                }
+            }
+            attList.innerHTML = attHtml;
+            document.getElementById('attendance-count').innerText = `${attendedCount}/${m.attendee_ids.length} Đạt`;
+
+            // Render Thảo luận / Đề xuất
+            const propList = document.getElementById('proposals-list');
+            let propHtml = '';
+            if(m.proposals && m.proposals.length > 0) {
+                m.proposals.forEach(p => {
+                    const isMe = p.user_id === currentUserId;
+                    propHtml += `
+                        <div class="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-bold text-xs ${isMe ? 'text-indigo-600' : 'text-slate-700'}">${p.user_name}</span>
+                                <span class="text-[9px] text-slate-400">${p.time}</span>
+                            </div>
+                            <p class="text-sm text-slate-600 dark:text-slate-300">${p.content}</p>
+                        </div>
+                    `;
+                });
+            } else {
+                propHtml = `<p class="text-xs text-slate-400 italic">Chưa có ý kiến nào được ghi nhận.</p>`;
+            }
+            propList.innerHTML = propHtml;
+        }
+
+        // Action: Điểm danh
+        window.submitCheckIn = async function() {
+            if(!currentRoomId) return;
+            const btn = document.getElementById('btn-checkin');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>'; btn.disabled = true;
+
+            const timeStr = new Date().toLocaleTimeString('vi-VN');
+            try {
+                // Update nested object in Firestore
+                await updateDoc(doc(db, "ehs_meetings", currentRoomId), {
+                    [`attendance_records.${currentUserId}.status`]: 'Attended',
+                    [`attendance_records.${currentUserId}.time`]: timeStr
+                });
+                // Realtime sẽ tự giấu nút này đi.
+            } catch(e) { showToast("Lỗi điểm danh!", "error"); btn.innerHTML = 'Điểm Danh Ngay'; btn.disabled = false; }
+        }
+
+        // Action: Gửi ý kiến
+        window.submitProposal = async function() {
+            if(!currentRoomId) return;
+            const input = document.getElementById('my-proposal');
+            const val = input.value.trim();
+            if(!val) return;
+
+            try {
+                const timeStr = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                await updateDoc(doc(db, "ehs_meetings", currentRoomId), {
+                    proposals: arrayUnion({ user_id: currentUserId, user_name: currentUserName, content: val, time: timeStr })
+                });
+                input.value = ''; // Xóa ô nhập sau khi gửi
+            } catch(e) { showToast("Lỗi gửi ý kiến!", "error"); }
+        }
+
+        // Action: Chốt biên bản & Đóng cuộc họp
+        window.closeMeetingProcess = async function() {
+            if(!currentRoomId) return;
+            const minutes = document.getElementById('meeting-minutes').value.trim();
+            if(!confirm("Bạn có chắc muốn chốt biên bản và kết thúc cuộc họp? Sau khi kết thúc sẽ không thể điểm danh hay gõ ý kiến thêm.")) return;
+
+            try {
+                await updateDoc(doc(db, "ehs_meetings", currentRoomId), {
+                    status: 'Completed',
+                    meeting_minutes: minutes,
+                    completed_at: new Date()
+                });
+                showToast("Đã chốt biên bản cuộc họp!");
+            } catch(e) { showToast("Lỗi lưu biên bản!", "error"); }
+        }
+
+        // Khởi động
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('header-user-name').innerText = currentUserName;
+                await loadMeetings();
+            } else {
+                document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold">Vui lòng đăng nhập hệ thống.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
+```
+
+### 🔔 BƯỚC 2: CẬP NHẬT TRANG CHỦ (`index.html`) ĐỂ TÍCH HỢP HỆ THỐNG
+Sau khi tạo xong file trên, anh cần mở file **`index.html`** ra và làm 2 thao tác nhỏ để gắn nó vào hệ thống:
+
+**1. Gắn Menu vào thanh Sidebar (Nhóm 2: Quản trị & Báo cáo):**
+Tìm thẻ `<a>` của phần "Quản lý Kế Hoạch & Tiến Độ", sau đó dán đoạn mã này ngay phía dưới nó để tạo đường link truy cập:
+
+```html
+<a href="quan_ly_cuoc_hop.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
+    <i class="ph-fill ph-users-three text-lg text-indigo-500"></i> Toolbox Meeting
+</a>
+```
+
+**2. Gắn Thông Báo Cuộc Họp Mới vào Cái Chuông (AI Notification):**
+Tìm đến hàm `window.fetchNotifications = async function() {` (khoảng dòng 685) trong file `index.html`. Cuộn xuống dưới cùng của hàm đó (ngay trước đoạn `// HIỂN THỊ LÊN GIAO DIỆN CHUÔNG`), dán đoạn mã truy vấn này vào để Chuông reng lên khi sếp gạch tên mình đi họp:
+
+```javascript
+// 4. KIỂM TRA LỊCH HỌP MỚI (TOOLBOX MEETING)
+const qMeeting = window.query(window.collection(window.db, "ehs_meetings"), window.where("attendee_ids", "array-contains", currentUserId));
+const snapMeeting = await window.getDocs(qMeeting);
+
+snapMeeting.forEach(doc => {
+    const meeting = doc.data();
+    // Báo nếu có lịch họp Upcoming mà mình chưa điểm danh
+    if (meeting.status === 'Upcoming' && meeting.attendance_records && meeting.attendance_records[currentUserId].status === 'Pending') {
+        const meetDate = new Date(meeting.date).toLocaleDateString('vi-VN');
+        notifications.push({
+            type: 'meeting_invite',
+            title: '📅 Lịch Họp Mới',
+            message: `Anh/Chị được mời tham gia: "${meeting.title}" vào lúc ${meeting.time} ngày ${meetDate}. Tại: ${meeting.location}.`,
+            icon: 'ph-users-three text-indigo-500',
+            bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50',
+            link: 'quan_ly_cuoc_hop.html'
+        });
+    }
+});
+```
+
+---
+**TÓM TẮT TÍNH NĂNG ĐẠT ĐƯỢC THEO LUỒNG ISO 45001:**
+1. **Lập Kế Hoạch (Plan):** Đặt lịch họp, chốt Agenda, triệu tập nhân sự bằng Dropdown thông minh.
+2. **Thực Hiện (Do):** Anh em công nhân mở điện thoại bấm 1 nút "Điểm danh" lấy giờ chính xác (Không cần sổ ký tên giấy).
+3. **Thảo Luận (Check):** Gõ trực tiếp rủi ro, ý tưởng vào khung chat chung của phòng họp. Mọi người đều thấy Realtime.
+4. **Hành Động (Act):** Lãnh đạo gõ kết luận vào "Chốt Biên Bản", khóa meeting lại, file được lưu vĩnh viễn trên mây phục vụ Audit nội bộ/bên ngoài!
