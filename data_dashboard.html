@@ -484,7 +484,10 @@
                     <div class="bg-orange-50 p-2 rounded-xl border border-orange-200 shadow-sm"><label class="block text-[10px] font-black text-orange-700 uppercase mb-1 text-center">Florua (Max 15)</label><input type="number" step="0.001" id="s-florua" class="w-full border border-orange-300 px-2 py-1.5 rounded-lg outline-none text-orange-800 font-mono font-bold text-center focus:bg-white text-sm"></div>
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng N (Max 40)</label><input type="number" step="0.1" id="s-tongn" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng P (Max 6)</label><input type="number" step="0.01" id="s-tongp" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm col-span-2 md:col-span-3"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Dầu mỡ (Max 5)</label><input type="number" step="0.1" id="s-daukhoang" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
+                    
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Al (Nhôm)</label><input type="number" step="0.001" id="s-al" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
+                    
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm col-span-2 md:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Dầu mỡ (Max 5)</label><input type="number" step="0.1" id="s-daukhoang" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
                 </div>
                 
                 <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-inner mt-4">
@@ -855,7 +858,6 @@
                 });
                 tbody.innerHTML = rowsHtml;
 
-                // TÍNH TOÁN TRUNG BÌNH NGÀY CHO BIỂU ĐỒ (Chống biểu đồ zig-zag khi có 2 mẫu/ngày)
                 let dailyAverages = {};
                 raw.forEach(d => {
                     let dateKey = d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '';
@@ -884,7 +886,6 @@
                     dFlow.push((avg.flow / avg.count).toFixed(2));
                 });
 
-                // VẼ BIỂU ĐỒ 1: HÓA LÝ VÀ ĐƯỜNG TARGET
                 const targetCOD = labels.map(() => 90);
                 const targetFlo = labels.map(() => 15);
 
@@ -913,7 +914,6 @@
                     }
                 });
 
-                // VẼ BIỂU ĐỒ 2: LƯU LƯỢNG & ĐỘ DẪN ĐIỆN
                 const ctxFlow = document.getElementById('dailyFlowChart').getContext('2d');
                 if(dailyFlowChartInstance) dailyFlowChartInstance.destroy();
                 dailyFlowChartInstance = new Chart(ctxFlow, {
@@ -1055,7 +1055,6 @@
                     dFlorua.push(d.florua); dAmoni.push(d.amoni); dColor.push(d.color); dColi.push(d.coliform);
                 });
 
-                // TARGET LINES (QCVN 40)
                 const targetCOD = labels.map(() => 90);
                 const targetBOD = labels.map(() => 60);
 
@@ -1110,33 +1109,44 @@
 
             if(!dateVal || !locVal || !agencyVal) return showToast("Vui lòng nhập Ngày, Đơn vị và Vị trí!", "error");
 
-            const data = {
-                ngay_lay_mau: dateVal, nha_may: plantVal, vi_tri: locVal, don_vi: agencyVal,
-                pH: parseFloat(document.getElementById('s-ph').value) || 0,
-                color: parseFloat(document.getElementById('s-color').value) || 0,
-                tss: parseFloat(document.getElementById('s-tss').value) || 0,
-                bod: parseFloat(document.getElementById('s-bod').value) || 0,
-                cod: parseFloat(document.getElementById('s-cod').value) || 0,
-                amoni: parseFloat(document.getElementById('s-amoni').value) || 0,
-                florua: parseFloat(document.getElementById('s-florua').value) || 0,
-                tong_n: parseFloat(document.getElementById('s-tongn').value) || 0,
-                tong_p: parseFloat(document.getElementById('s-tongp').value) || 0,
-                al: parseFloat(document.getElementById('s-al').value) || 0,
-                dau_khoang: parseFloat(document.getElementById('s-daukhoang').value) || 0,
-                coliform: parseFloat(document.getElementById('s-coliform').value) || 0,
-                thoi_gian_nhap: new Date()
-            };
-
             const btn = document.getElementById('btn-save-supervisory');
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
 
             try {
+                // Tối ưu: Đưa việc lấy dữ liệu vào trong try...catch để bắt mọi lỗi tiềm ẩn
+                const data = {
+                    ngay_lay_mau: dateVal, nha_may: plantVal, vi_tri: locVal, don_vi: agencyVal,
+                    pH: parseFloat(document.getElementById('s-ph').value) || 0,
+                    color: parseFloat(document.getElementById('s-color').value) || 0,
+                    tss: parseFloat(document.getElementById('s-tss').value) || 0,
+                    bod: parseFloat(document.getElementById('s-bod').value) || 0,
+                    cod: parseFloat(document.getElementById('s-cod').value) || 0,
+                    amoni: parseFloat(document.getElementById('s-amoni').value) || 0,
+                    florua: parseFloat(document.getElementById('s-florua').value) || 0,
+                    tong_n: parseFloat(document.getElementById('s-tongn').value) || 0,
+                    tong_p: parseFloat(document.getElementById('s-tongp').value) || 0,
+                    al: parseFloat(document.getElementById('s-al').value) || 0, // Đã bổ sung s-al
+                    dau_khoang: parseFloat(document.getElementById('s-daukhoang').value) || 0,
+                    coliform: parseFloat(document.getElementById('s-coliform').value) || 0,
+                    thoi_gian_nhap: new Date()
+                };
+
                 await addDoc(collection(db, "quan_trac_giam_sat"), data);
-                closeSupervisoryModal(); showToast("Lưu KQ Giám sát thành công!"); loadSupervisoryData();
-            } catch(e) { showToast("Lỗi bảo mật Firebase: " + e.message, "error"); } 
-            finally { 
+                closeSupervisoryModal(); 
+                showToast("Lưu KQ Giám sát thành công!"); 
+                loadSupervisoryData();
+                
+                // Xóa trắng form sau khi lưu thành công
+                ['s-location', 's-agency', 's-ph','s-color','s-tss','s-bod','s-cod','s-amoni','s-florua','s-tongn','s-tongp','s-al','s-daukhoang','s-coliform'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.value = '';
+                });
+
+            } catch(e) { 
+                console.error(e);
+                showToast("Lỗi xử lý dữ liệu: " + e.message, "error"); 
+            } finally { 
                 btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>'; btn.disabled = false; 
-                ['s-agency', 's-ph','s-color','s-tss','s-bod','s-cod','s-amoni','s-florua','s-tongn','s-tongp','s-al','s-daukhoang','s-coliform'].forEach(id => document.getElementById(id).value = '');
             }
         };
 
@@ -1284,7 +1294,6 @@
                     dBui.push(d.bui); dSo2.push(d.so2); dNox.push(d.nox); dCo.push(d.co);
                 });
 
-                // TARGET LINES
                 const targetSO2 = labels.map(() => 500);
                 const targetNOx = labels.map(() => 850);
 
