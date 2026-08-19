@@ -2,7 +2,6 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <!-- Cố định zoom trên mobile để tránh vỡ form khi gõ phím -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Trung Tâm Dữ Liệu Quan Trắc</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,7 +13,6 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px;}
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        /* Chống zoom tự động trên iOS Safari khi focus vào ô input */
         input[type="text"], input[type="number"], input[type="date"], input[type="time"], select, textarea {
             font-size: 16px !important; 
         }
@@ -22,14 +20,12 @@
 </head>
 <body class="bg-slate-50 p-2 md:p-6 font-sans text-slate-800 pb-24">
 
-    <!-- Toast Thông báo -->
-    <div id="custom-toast" class="fixed top-5 right-5 z-[150] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+    <div id="custom-toast" class="fixed top-5 right-5 z-[250] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-msg">Thông báo</span>
     </div>
 
-    <!-- Confirm Modal -->
-    <div id="custom-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-opacity">
+    <div id="custom-confirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border-t-4 border-red-500">
             <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-warning-circle text-4xl"></i></div>
             <h3 class="text-lg font-bold text-slate-800 mb-2" data-i18n="confirm_del_title">Xác nhận xóa</h3>
@@ -42,20 +38,16 @@
     </div>
 
     <div class="max-w-[1600px] mx-auto">
-        <!-- THANH ĐIỀU HƯỚNG & LỌC DỮ LIỆU TỔNG -->
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row justify-between items-center gap-4 relative z-50">
-            <!-- Trái: Về trang chủ & Ngôn ngữ -->
             <div class="flex items-center gap-4 w-full md:w-auto">
                 <a href="index.html" class="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 font-bold transition bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shrink-0">
                     <i class="ph-bold ph-arrow-left text-lg"></i> <span data-i18n="back_home" class="hidden sm:inline">Về Bảng Điều Khiển</span>
                 </a>
                 
-                <!-- BỘ ĐA NGÔN NGỮ ĐÃ ĐƯỢC FIX LỖI "HOVER" BẰNG PT-2 (VÙNG ĐỆM) VÀ Z-INDEX -->
                 <div class="relative group">
                     <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 bg-slate-100 px-3 py-2 rounded-xl hover:bg-slate-200 transition border border-slate-200">
                         <i class="ph-bold ph-translate"></i> <span id="current-lang-display">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs"></i>
                     </button>
-                    <!-- Vùng đệm vô hình pt-2 giúp rê chuột không bị mất focus -->
                     <div class="absolute left-0 top-full pt-2 w-36 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60]">
                         <div class="bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden flex flex-col">
                             <button onclick="changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">Tiếng Việt</button>
@@ -67,7 +59,6 @@
                 </div>
             </div>
             
-            <!-- Phải: Bộ Lọc Tháng & Nhà Máy -->
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto bg-blue-50 p-2 rounded-xl border border-blue-100">
                 <div class="flex items-center gap-2 w-full sm:w-auto bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm">
                     <i class="ph-bold ph-calendar-blank text-blue-600"></i>
@@ -93,37 +84,36 @@
                 <p class="text-slate-500 text-sm sm:text-base font-medium" data-i18n="main_subtitle">Mọi biểu đồ và thông số bên dưới đã được lọc đồng bộ theo Tháng và Nhà máy được chọn.</p>
             </div>
 
-            <!-- MẢNG 1: NƯỚC THẢI HẰNG NGÀY -->
             <div class="mb-12 border-b border-slate-100 pb-10">
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-5 gap-4">
                     <div>
                         <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-1">
                             <i class="ph-fill ph-waves text-blue-600 text-2xl"></i> <span data-i18n="daily_title">Giám Sát Vận Hành Nước Thải (Hằng Ngày)</span>
                         </h3>
-                        <p class="text-xs text-slate-500 font-medium" data-i18n="daily_desc">Dành cho bộ phận vận hành trạm đo đạc và điều chỉnh hóa chất thực tế.</p>
+                        <p class="text-xs text-slate-500 font-medium" data-i18n="daily_desc">Dành cho bộ phận vận hành trạm đo đạc. Biểu đồ sẽ tự động lấy giá trị trung bình nếu nhập nhiều lần trong ngày.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+                        <button onclick="exportChartAsImage('dailyChart', 'Bieu_do_Hang_Ngay')" class="bg-slate-100 text-slate-700 px-4 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200 text-sm">
+                            <i class="ph-bold ph-image text-lg"></i> <span data-i18n="btn_export_chart" class="hidden sm:inline">Tải Ảnh Biểu Đồ</span>
+                        </button>
                         <button onclick="exportTableAsExcel('dailyBody', 'Du_Lieu_Hang_Ngay')" class="bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm flex-1 sm:flex-none justify-center">
                             <i class="ph-bold ph-file-csv text-lg"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
                         </button>
-                        <button onclick="openDailyModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-md text-sm flex-1 sm:flex-none justify-center">
-                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_daily">Nhập Kết Quả</span>
+                        <button onclick="openDailyModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-md text-sm flex-1 sm:flex-none">
+                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_daily">Nhập Kết Quả Hôm Nay</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Bố cục 2 biểu đồ song song cho mảng Hằng Ngày -->
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6 relative">
-                    <!-- LOADER ĐƯỢC ẨN BẰNG CLASS HIDDEN TỪ ĐẦU -->
                     <div id="daily-chart-loader" class="absolute inset-0 bg-white/90 z-20 hidden flex-col items-center justify-center rounded-2xl">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-600 mb-2"></i>
-                        <span class="text-sm font-bold text-blue-600">Đang tối ưu dữ liệu...</span>
+                        <span class="text-sm font-bold text-blue-600">Đang tối ưu dữ liệu trung bình...</span>
                     </div>
                     
                     <div class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-white py-1 px-3 rounded-lg shadow-sm border border-slate-100">Chỉ tiêu Hóa Lý (COD, pH, Flo)</h4>
-                            <button onclick="exportChartAsImage('dailyChart', 'Bieu_Do_Hoa_Ly_Hang_Ngay')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
                         </div>
                         <div class="relative w-full h-[300px] grow bg-white rounded-xl">
                             <canvas id="dailyChart"></canvas>
@@ -133,7 +123,6 @@
                     <div class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="text-[11px] font-black text-slate-500 uppercase tracking-wider bg-white py-1 px-3 rounded-lg shadow-sm border border-slate-100">Lưu lượng & Độ dẫn điện</h4>
-                            <button onclick="exportChartAsImage('dailyFlowChart', 'Bieu_Do_Luu_Luong')" class="text-slate-400 hover:text-blue-600" title="Tải ảnh"><i class="ph-bold ph-download-simple text-lg"></i></button>
                         </div>
                         <div class="relative w-full h-[300px] grow bg-white rounded-xl">
                             <canvas id="dailyFlowChart"></canvas>
@@ -146,7 +135,7 @@
                         <thead>
                             <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                 <th class="p-3 border-b border-slate-700 text-center w-12">STT</th>
-                                <th class="p-3 border-b border-slate-700 text-center">Ngày đo</th>
+                                <th class="p-3 border-b border-slate-700 text-center" data-i18n="col_date">Ngày đo</th>
                                 <th class="p-3 border-b border-slate-700 text-center text-emerald-300">Giờ Lấy Mẫu</th>
                                 <th class="p-3 border-b border-slate-700 text-center text-teal-300">Giờ Phân Tích</th>
                                 <th class="p-3 border-b border-slate-700" data-i18n="col_operator">Người trực</th>
@@ -163,14 +152,12 @@
                     </table>
                 </div>
                 
-                <!-- Bảng chú giải thuật toán -->
                 <div class="mt-3 bg-red-50 border border-red-100 rounded-lg p-3 flex gap-2 items-start text-xs text-red-700">
                     <i class="ph-fill ph-info text-lg shrink-0 mt-0.5"></i>
-                    <p><b>Thuật toán Cảnh báo (AI):</b> Nếu Độ dẫn điện $\ge$ 1.5 mS/cm <b>VÀ</b> Lưu lượng $\ge$ 25 m³/h, hệ thống sẽ cảnh báo tải lượng ô nhiễm cao, có nguy cơ làm COD vượt ngưỡng an toàn.</p>
+                    <p><b>Thuật toán Cảnh báo (AI):</b> Nếu Độ dẫn điện $\ge$ 1.5 mS/cm <b>VÀ</b> Lưu lượng $\ge$ 25 m³/h, hệ thống sẽ cảnh báo tải lượng ô nhiễm cao, nguy cơ COD vượt ngưỡng.</p>
                 </div>
             </div>
 
-            <!-- MẢNG 2: NƯỚC THẢI ĐỊNH KỲ -->
             <div class="mb-12 border-b border-slate-100 pb-10">
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-5 gap-4">
                     <div>
@@ -183,17 +170,15 @@
                         <button onclick="exportTableAsExcel('waterBody', 'Du_Lieu_Dinh_Ky')" class="bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm flex-1 sm:flex-none justify-center">
                             <i class="ph-bold ph-file-csv text-lg"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
                         </button>
-                        <button onclick="openWaterModal()" class="bg-teal-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-teal-700 transition flex items-center gap-2 shadow-md text-sm flex-1 sm:flex-none justify-center">
-                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_water">Nhập Phiếu K.Nghiệm</span>
+                        <button onclick="openWaterModal()" class="bg-teal-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-md text-sm flex-1 sm:flex-none">
+                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_water">Nhập KQ Định Kỳ</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6 relative">
-                    <!-- LOADER ẨN TỪ ĐẦU -->
                     <div id="water-chart-loader" class="absolute inset-0 bg-white/90 z-20 hidden flex-col items-center justify-center rounded-2xl">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-teal-600 mb-2"></i>
-                        <span class="text-sm font-bold text-teal-600">Đang tối ưu dữ liệu...</span>
                     </div>
                     
                     <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col">
@@ -244,7 +229,50 @@
                 </div>
             </div>
 
-            <!-- MẢNG 3: KHÍ THẢI -->
+            <div class="mb-12 border-b border-slate-100 pb-10">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-5 gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2 mb-1">
+                            <i class="ph-fill ph-users-three text-orange-600 text-2xl"></i> <span data-i18n="supervisory_title">Kết Quả Giám Sát Bởi Bên Thứ 3</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 font-medium" data-i18n="supervisory_desc">Dữ liệu từ đơn vị bên ngoài (Khu công nghiệp, Sở TNMT, Đơn vị độc lập...).</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+                        <button onclick="exportTableAsExcel('supervisoryBody', 'Du_Lieu_Giam_Sat_B3')" class="bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 text-sm flex-1 sm:flex-none justify-center">
+                            <i class="ph-bold ph-file-csv text-lg"></i> <span data-i18n="btn_export_excel">Xuất Excel</span>
+                        </button>
+                        <button onclick="openSupervisoryModal()" class="bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-orange-700 transition flex items-center justify-center gap-2 shadow-md text-sm flex-1 sm:flex-none">
+                            <i class="ph-bold ph-plus text-lg"></i> <span data-i18n="btn_add_supervisory">Nhập KQ Bên Thứ 3</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
+                    <table class="w-full text-left border-collapse min-w-[1800px]">
+                        <thead>
+                            <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
+                                <th class="p-3 border-b border-slate-700 text-center w-10">STT</th>
+                                <th class="p-3 border-b border-slate-700 text-center" data-i18n="col_date_receive">Ngày nhận</th>
+                                <th class="p-3 border-b border-slate-700 text-orange-300">Đơn vị Giám sát</th>
+                                <th class="p-3 border-b border-slate-700" data-i18n="col_location">Vị trí mẫu</th>
+                                <th class="p-3 border-b border-slate-700 text-center text-blue-300">pH<br><span class="text-[9px]">6-9</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center text-purple-300">Độ màu<br><span class="text-[9px]">Max 100</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center">TSS<br><span class="text-[9px]">Max 80</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center text-amber-300">BOD5<br><span class="text-[9px]">Max 60</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center text-rose-300">COD<br><span class="text-[9px]">Max 90</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center text-cyan-300">Amoni<br><span class="text-[9px]">Max 10</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center text-orange-300">Florua<br><span class="text-[9px]">Max 15</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center">Tổng N<br><span class="text-[9px]">Max 40</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center">Tổng P<br><span class="text-[9px]">Max 6</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center text-emerald-300">Coliform<br><span class="text-[9px]">Max 5000</span></th>
+                                <th class="p-3 border-b border-slate-700 text-center" data-i18n="col_action">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="supervisoryBody" class="text-sm divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
+            </div>
+
             <div>
                 <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-5 gap-4">
                     <div>
@@ -266,10 +294,8 @@
                 </div>
 
                 <div class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 mb-6 relative">
-                    <!-- LOADER ẨN TỪ ĐẦU -->
                     <div id="air-chart-loader" class="absolute inset-0 bg-white/90 z-20 hidden flex-col items-center justify-center rounded-2xl">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-sky-600 mb-2"></i>
-                        <span class="text-sm font-bold text-sky-600">Đang tối ưu dữ liệu...</span>
                     </div>
                     <div class="relative w-full h-[350px] bg-white rounded-xl">
                         <canvas id="airChart"></canvas>
@@ -298,17 +324,14 @@
         </div>
     </div>
 
-    <!-- MODAL NHẬP LIỆU: HẰNG NGÀY (FIX MOBILE: TÁCH HEADER/FOOTER, CHỈ CUỘN PHẦN THÂN) -->
     <div id="daily-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
         <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
             
-            <!-- HEADER CỐ ĐỊNH -->
             <div class="p-4 sm:p-5 border-b border-slate-100 bg-blue-50 flex justify-between items-center shrink-0">
                 <h3 id="daily-modal-title" class="text-base sm:text-lg font-bold text-blue-800 flex items-center gap-2"><i class="ph-fill ph-waves"></i> Thêm Kết Quả Hôm Nay</h3>
                 <button onclick="closeDailyModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl sm:text-2xl"></i></button>
             </div>
             
-            <!-- THÂN CUỘN TRƯỢT ĐƯỢC KHI BÀN PHÍM ĐIỆN THOẠI BẬT LÊN -->
             <div class="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="d-doc-id">
                 <div class="bg-blue-100 text-blue-800 font-bold p-3 rounded-xl border border-blue-200 text-sm mb-2 text-center" id="d-plant-display">
@@ -359,7 +382,6 @@
                 </div>
             </div>
 
-            <!-- FOOTER CỐ ĐỊNH -->
             <div class="p-4 sm:p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
                 <button onclick="closeDailyModal()" class="px-5 py-2.5 font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition text-sm sm:text-base w-full sm:w-auto" data-i18n="btn_cancel">Hủy</button>
                 <button id="btn-save-daily" onclick="saveDailyData()" class="bg-blue-600 text-white px-6 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto">
@@ -369,7 +391,6 @@
         </div>
     </div>
 
-    <!-- MODAL NHẬP LIỆU: ĐỊNH KỲ (FIX MOBILE) -->
     <div id="water-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
         <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
             
@@ -406,7 +427,7 @@
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng N (Max 40)</label><input type="number" step="0.1" id="w-tongn" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-sm"></div>
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng P (Max 6)</label><input type="number" step="0.01" id="w-tongp" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-sm"></div>
                     <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Al (Nhôm)</label><input type="number" step="0.001" id="w-al" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-sm"></div>
-                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm col-span-2 md:col-span-1"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Dầu mỡ (Max 5)</label><input type="number" step="0.1" id="w-daukhoang" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm col-span-2 md:col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Dầu mỡ (Max 5)</label><input type="number" step="0.1" id="w-daukhoang" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-teal-500 focus:bg-teal-50 text-sm"></div>
                 </div>
                 
                 <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-inner mt-4">
@@ -424,7 +445,63 @@
         </div>
     </div>
 
-    <!-- MODAL NHẬP LIỆU: KHÍ THẢI (FIX MOBILE) -->
+    <div id="supervisory-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
+        <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
+            
+            <div class="p-4 sm:p-5 border-b border-slate-100 bg-orange-50 flex justify-between items-center shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-orange-800 flex items-center gap-2"><i class="ph-fill ph-users-three"></i> Nhập Kết Quả Quan Trắc Giám Sát</h3>
+                <button onclick="closeSupervisoryModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl sm:text-2xl"></i></button>
+            </div>
+            
+            <div class="p-4 sm:p-6 space-y-4 flex-1 overflow-y-auto custom-scrollbar bg-slate-50/50">
+                
+                <div class="bg-orange-100 text-orange-800 font-bold p-3 rounded-xl border border-orange-200 text-sm mb-2 text-center" id="s-plant-display">
+                    Đang nhập cho: Nhà máy Can
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-slate-200 pb-5">
+                    <div>
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Ngày lấy mẫu <span class="text-red-500">*</span></label>
+                        <input type="date" id="s-date" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-orange-500 font-bold text-slate-700 bg-white text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Đơn vị Giám sát (Bên thứ 3) <span class="text-red-500">*</span></label>
+                        <input type="text" id="s-agency" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-orange-500 font-bold text-slate-700 bg-white text-sm" placeholder="VD: Becamex, Sở TNMT...">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] sm:text-xs font-bold text-slate-500 uppercase mb-1">Vị trí lấy mẫu <span class="text-red-500">*</span></label>
+                        <input type="text" id="s-location" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl outline-none focus:border-orange-500 font-bold text-slate-700 bg-white text-sm" placeholder="VD: Hố ga đấu nối...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3">
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">pH (6-9)</label><input type="number" step="0.01" id="s-ph" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
+                    <div class="bg-purple-50 p-2 rounded-xl border border-purple-200 shadow-sm"><label class="block text-[10px] font-black text-purple-700 uppercase mb-1 text-center">Độ màu (Max 100)</label><input type="number" step="0.1" id="s-color" class="w-full border border-purple-300 px-2 py-1.5 rounded-lg outline-none text-purple-800 font-mono font-bold text-center focus:bg-white text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">TSS (Max 80)</label><input type="number" step="0.1" id="s-tss" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
+                    <div class="bg-amber-50 p-2 rounded-xl border border-amber-200 shadow-sm"><label class="block text-[10px] font-black text-amber-700 uppercase mb-1 text-center">BOD5 (Max 60)</label><input type="number" step="0.1" id="s-bod" class="w-full border border-amber-300 px-2 py-1.5 rounded-lg outline-none text-amber-800 font-mono font-bold text-center focus:bg-white text-sm"></div>
+                    <div class="bg-rose-50 p-2 rounded-xl border border-rose-200 shadow-sm"><label class="block text-[10px] font-black text-rose-700 uppercase mb-1 text-center">COD (Max 90)</label><input type="number" step="0.1" id="s-cod" class="w-full border border-rose-300 px-2 py-1.5 rounded-lg outline-none text-rose-800 font-mono font-bold text-center focus:bg-white text-sm"></div>
+                    <div class="bg-cyan-50 p-2 rounded-xl border border-cyan-200 shadow-sm"><label class="block text-[10px] font-black text-cyan-700 uppercase mb-1 text-center">Amoni (Max 10)</label><input type="number" step="0.1" id="s-amoni" class="w-full border border-cyan-300 px-2 py-1.5 rounded-lg outline-none text-cyan-800 font-mono font-bold text-center focus:bg-white text-sm"></div>
+                    <div class="bg-orange-50 p-2 rounded-xl border border-orange-200 shadow-sm"><label class="block text-[10px] font-black text-orange-700 uppercase mb-1 text-center">Florua (Max 15)</label><input type="number" step="0.001" id="s-florua" class="w-full border border-orange-300 px-2 py-1.5 rounded-lg outline-none text-orange-800 font-mono font-bold text-center focus:bg-white text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng N (Max 40)</label><input type="number" step="0.1" id="s-tongn" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Tổng P (Max 6)</label><input type="number" step="0.01" id="s-tongp" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
+                    <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm col-span-2 md:col-span-3"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1 text-center">Dầu mỡ (Max 5)</label><input type="number" step="0.1" id="s-daukhoang" class="w-full border border-slate-200 px-2 py-1.5 rounded-lg outline-none font-mono text-center focus:border-orange-500 focus:bg-orange-50 text-sm"></div>
+                </div>
+                
+                <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-inner mt-4">
+                    <label class="block text-xs font-black text-emerald-800 uppercase mb-2 text-center">Tổng Coliform (MPN/100mL - Max 5000)</label>
+                    <input type="number" step="1" id="s-coliform" class="w-full max-w-xs mx-auto block border-2 border-emerald-300 px-4 py-2 sm:py-3 rounded-xl outline-none focus:border-emerald-500 font-mono text-center text-emerald-900 font-black text-lg sm:text-xl shadow-sm bg-white">
+                </div>
+            </div>
+
+            <div class="p-4 sm:p-5 border-t border-slate-100 flex justify-end gap-3 bg-white shrink-0">
+                <button onclick="closeSupervisoryModal()" class="px-5 py-2.5 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition text-sm sm:text-base w-full sm:w-auto" data-i18n="btn_cancel">Hủy</button>
+                <button id="btn-save-supervisory" onclick="saveSupervisoryData()" class="bg-orange-600 text-white px-6 py-2.5 font-bold rounded-xl shadow-md hover:bg-orange-700 transition flex items-center justify-center gap-2 text-sm sm:text-base w-full sm:w-auto">
+                    <i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="air-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4 transition-opacity">
         <div class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]">
             
@@ -478,7 +555,6 @@
         </div>
     </div>
 
-    <!-- CODE XỬ LÝ LÕI -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -502,7 +578,6 @@
 
         const currentUser = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
 
-        // THIẾT LẬP THÁNG HIỆN TẠI KHI MỞ TRANG
         const today = new Date();
         const currentMonthVal = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
         document.getElementById('month-filter').value = currentMonthVal;
@@ -510,7 +585,7 @@
         window.showToast = function(msg, type = 'success') {
             const toast = document.getElementById('custom-toast');
             const icon = document.getElementById('toast-icon');
-            toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            toast.className = "fixed top-5 right-5 z-[300] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
             
             if (type === 'success') {
                 toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl";
@@ -543,6 +618,7 @@
             document.getElementById('title-plant-name').innerText = selectedPlant;
             document.getElementById('d-plant-display').innerText = `Đang nhập dữ liệu cho: ${selectedPlant}`;
             document.getElementById('w-plant-display').innerText = `Đang nhập dữ liệu cho: ${selectedPlant}`;
+            document.getElementById('s-plant-display').innerText = `Đang nhập dữ liệu cho: ${selectedPlant}`;
             document.getElementById('a-plant-display').innerText = `Đang nhập dữ liệu cho: ${selectedPlant}`;
         }
 
@@ -550,10 +626,10 @@
             updateDashboardTitle();
             loadDailyData();
             loadWaterData();
+            loadSupervisoryData();
             loadAirData();
         }
 
-        // --- XUẤT ẢNH BIỂU ĐỒ (CHO BÁO CÁO PPT) ---
         window.exportChartAsImage = function(canvasId, fileNamePrefix) {
             const canvas = document.getElementById(canvasId);
             if(!canvas) return showToast("Không tìm thấy biểu đồ", "error");
@@ -577,7 +653,6 @@
             showToast("Đã tải ảnh biểu đồ thành công!");
         }
 
-        // --- XUẤT DỮ LIỆU EXCEL (CSV) ---
         window.exportTableAsExcel = function(tableBodyId, fileNamePrefix) {
             const tbody = document.getElementById(tableBodyId);
             if(!tbody) return;
@@ -591,7 +666,7 @@
                 let text = th.childNodes[0].nodeValue ? th.childNodes[0].nodeValue.trim() : th.innerText.trim();
                 headers.push('"' + text + '"');
             });
-            headers.pop(); // Bỏ cột thao tác
+            headers.pop(); 
 
             let csvRows = [headers.join(",")];
             
@@ -625,7 +700,6 @@
         window.openDailyModal = () => { 
             document.getElementById('d-doc-id').value = '';
             document.getElementById('d-date').value = new Date().toISOString().split('T')[0]; 
-            // Reset giờ lấy mẫu về mặc định hiện tại
             document.getElementById('d-time-sample').value = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
             
             ['d-ph', 'd-cod', 'd-florua', 'd-ec', 'd-flow', 'd-note'].forEach(id => document.getElementById(id).value = '');
@@ -661,7 +735,7 @@
                 ngay_lay_mau: dateVal, 
                 nha_may: plantVal,
                 gio_lay_mau: document.getElementById('d-time-sample').value || '',
-                gio_phan_tich: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }), // Tự động lấy giờ hiện tại
+                gio_phan_tich: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }), 
                 pH: parseFloat(document.getElementById('d-ph').value) || 0,
                 cod: parseFloat(document.getElementById('d-cod').value) || 0,
                 florua: parseFloat(document.getElementById('d-florua').value) || 0,
@@ -689,7 +763,7 @@
             } catch(e) { 
                 showToast("Lỗi kết nối Firebase", "error"); 
             } finally { 
-                btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Lưu Kết Quả'; btn.disabled = false; 
+                btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>'; btn.disabled = false; 
             }
         };
 
@@ -708,85 +782,111 @@
             const filterMonth = document.getElementById('month-filter').value; 
             
             try {
-                // TỐI ƯU HÓA: Dùng Query để máy chủ chỉ trả về đúng Nhà Máy được chọn (Giảm 50% dữ liệu rác)
                 const q = query(collection(db, "quan_trac_hang_ngay"), where("nha_may", "==", selectedPlant));
                 const snap = await getDocs(q);
                 
                 let raw = []; 
                 snap.forEach(d => {
                     const data = d.data();
-                    // TỐI ƯU HÓA: Lọc tháng bằng so sánh chuỗi cực nhanh (thay vì dùng new Date)
                     if (filterMonth && data.ngay_lay_mau) {
                         if (!data.ngay_lay_mau.startsWith(filterMonth)) return;
                     }
                     raw.push({ id: d.id, ...data });
                 });
                 
-                // TỐI ƯU HÓA: Sắp xếp chuỗi nhanh
                 raw.sort((a, b) => (a.ngay_lay_mau || "").localeCompare(b.ngay_lay_mau || ""));
 
                 const tbody = document.getElementById('dailyBody');
-                const labels = [], dCod = [], dFlorua = [], dPh = [], dEc = [], dFlow = [];
-
+                
                 if(raw.length === 0) {
                     let msg = filterMonth ? `Chưa có dữ liệu vận hành cho tháng ${filterMonth.split('-').reverse().join('/')}` : `Chưa có dữ liệu vận hành cho ${selectedPlant}`;
                     tbody.innerHTML = `<tr><td colspan="12" class="text-center p-8 font-bold text-slate-400">${msg}</td></tr>`;
-                } else {
-                    // TỐI ƯU HÓA DOM: Gộp toàn bộ mã HTML vào một chuỗi (rowsHtml) và render 1 lần duy nhất
-                    let rowsHtml = '';
-                    [...raw].reverse().forEach((d, i) => {
-                        let codWarning = false;
-                        let ecVal = d.do_dan_dien || 0;
-                        let flowVal = d.luu_luong || 0;
-                        
-                        if (ecVal >= 1.5 && flowVal >= 25) {
-                            codWarning = true;
-                        }
+                    if(dailyChartInstance) dailyChartInstance.destroy();
+                    if(dailyFlowChartInstance) dailyFlowChartInstance.destroy();
+                    loader.classList.add('hidden');
+                    return;
+                } 
 
-                        let codDisplay = d.cod || 0;
-                        let codCls = d.cod >= 90 ? "text-red-600 font-black" : "font-bold text-rose-700";
-                        
-                        if (codWarning) {
-                            codDisplay = `${d.cod || 0} <i class="ph-fill ph-warning text-red-500 animate-pulse ml-1" title="Cảnh báo: Độ dẫn điện và Lưu lượng cao, rủi ro COD vượt!"></i>`;
-                            codCls += " bg-red-100 border border-red-200";
-                        }
+                let rowsHtml = '';
+                [...raw].reverse().forEach((d, i) => {
+                    let codWarning = false;
+                    let ecVal = d.do_dan_dien || 0;
+                    let flowVal = d.luu_luong || 0;
+                    
+                    if (ecVal >= 1.5 && flowVal >= 25) {
+                        codWarning = true;
+                    }
 
-                        let fCls = d.florua >= 15 ? "text-red-600 font-black" : "font-bold text-amber-700";
-                        let phCls = (d.pH < 6 || d.pH > 9) && d.pH !== 0 ? "text-red-600 font-black" : "font-bold text-blue-700";
-                        
-                        const safeNote = (d.ghi_chu || '').replace(/'/g, "\\'");
-                        const safeOperator = (d.nguoi_truc || '').replace(/'/g, "\\'");
-                        const safeTimeSample = (d.gio_lay_mau || '').replace(/'/g, "\\'");
-                        const displayDate = d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '-';
+                    let codDisplay = d.cod || 0;
+                    let codCls = d.cod >= 90 ? "text-red-600 font-black" : "font-bold text-rose-700";
+                    
+                    if (codWarning) {
+                        codDisplay = `${d.cod || 0} <i class="ph-fill ph-warning text-red-500 animate-pulse ml-1" title="Cảnh báo: Độ dẫn điện và Lưu lượng cao, rủi ro COD vượt!"></i>`;
+                        codCls += " bg-red-100 border border-red-200";
+                    }
 
-                        rowsHtml += `
-                            <tr class="hover:bg-slate-50 whitespace-nowrap transition">
-                                <td class="p-3 text-center text-slate-500">${i+1}</td>
-                                <td class="p-3 text-center font-bold text-slate-700">${displayDate}</td>
-                                <td class="p-3 text-center font-mono font-bold text-emerald-600 bg-emerald-50/50">${d.gio_lay_mau || '-'}</td>
-                                <td class="p-3 text-center font-mono font-bold text-teal-600 bg-teal-50/50">${d.gio_phan_tich || '-'}</td>
-                                <td class="p-3 font-medium text-blue-700">${d.nguoi_truc || '-'}</td>
-                                <td class="p-3 text-center ${phCls} bg-blue-50/30">${d.pH || 0}</td>
-                                <td class="p-3 text-center ${codCls} bg-rose-50/30">${codDisplay}</td>
-                                <td class="p-3 text-center ${fCls} bg-amber-50/30">${d.florua || 0}</td>
-                                <td class="p-3 text-center font-bold text-purple-700 bg-purple-50/30">${d.do_dan_dien || 0}</td>
-                                <td class="p-3 text-center font-bold text-cyan-700 bg-cyan-50/30">${d.luu_luong || 0}</td>
-                                <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${d.ghi_chu}">${d.ghi_chu || '-'}</td>
-                                <td class="p-3 text-center whitespace-nowrap">
-                                    <button onclick="editDailyData('${d.id}', '${d.ngay_lay_mau}', '${safeTimeSample}', ${d.pH}, ${d.cod}, ${d.florua}, ${d.do_dan_dien||0}, ${d.luu_luong||0}, '${safeNote}', '${safeOperator}')" class="text-blue-500 hover:text-blue-700 transition p-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                                    <button onclick="deleteDailyData('${d.id}')" class="text-slate-300 hover:text-red-500 transition p-1 ml-2" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    tbody.innerHTML = rowsHtml;
-                }
+                    let fCls = d.florua >= 15 ? "text-red-600 font-black" : "font-bold text-amber-700";
+                    let phCls = (d.pH < 6 || d.pH > 9) && d.pH !== 0 ? "text-red-600 font-black" : "font-bold text-blue-700";
+                    
+                    const safeNote = (d.ghi_chu || '').replace(/'/g, "\\'");
+                    const safeOperator = (d.nguoi_truc || '').replace(/'/g, "\\'");
+                    const safeTimeSample = (d.gio_lay_mau || '').replace(/'/g, "\\'");
+                    const displayDate = d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '-';
 
-                raw.forEach(d => {
-                    labels.push(d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '');
-                    dCod.push(d.cod); dFlorua.push(d.florua); dPh.push(d.pH);
-                    dEc.push(d.do_dan_dien || 0); dFlow.push(d.luu_luong || 0);
+                    rowsHtml += `
+                        <tr class="hover:bg-slate-50 whitespace-nowrap transition">
+                            <td class="p-3 text-center text-slate-500">${i+1}</td>
+                            <td class="p-3 text-center font-bold text-slate-700">${displayDate}</td>
+                            <td class="p-3 text-center font-mono font-bold text-emerald-600 bg-emerald-50/50">${d.gio_lay_mau || '-'}</td>
+                            <td class="p-3 text-center font-mono font-bold text-teal-600 bg-teal-50/50">${d.gio_phan_tich || '-'}</td>
+                            <td class="p-3 font-medium text-blue-700">${d.nguoi_truc || '-'}</td>
+                            <td class="p-3 text-center ${phCls} bg-blue-50/30">${d.pH || 0}</td>
+                            <td class="p-3 text-center ${codCls} bg-rose-50/30">${codDisplay}</td>
+                            <td class="p-3 text-center ${fCls} bg-amber-50/30">${d.florua || 0}</td>
+                            <td class="p-3 text-center font-bold text-purple-700 bg-purple-50/30">${d.do_dan_dien || 0}</td>
+                            <td class="p-3 text-center font-bold text-cyan-700 bg-cyan-50/30">${d.luu_luong || 0}</td>
+                            <td class="p-3 text-xs text-slate-500 max-w-[150px] truncate" title="${d.ghi_chu}">${d.ghi_chu || '-'}</td>
+                            <td class="p-3 text-center whitespace-nowrap">
+                                <button onclick="editDailyData('${d.id}', '${d.ngay_lay_mau}', '${safeTimeSample}', ${d.pH}, ${d.cod}, ${d.florua}, ${d.do_dan_dien||0}, ${d.luu_luong||0}, '${safeNote}', '${safeOperator}')" class="text-blue-500 hover:text-blue-700 transition p-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                                <button onclick="deleteDailyData('${d.id}')" class="text-slate-300 hover:text-red-500 transition p-1 ml-2" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
+                            </td>
+                        </tr>
+                    `;
                 });
+                tbody.innerHTML = rowsHtml;
+
+                // TÍNH TOÁN TRUNG BÌNH NGÀY CHO BIỂU ĐỒ (Chống biểu đồ zig-zag khi có 2 mẫu/ngày)
+                let dailyAverages = {};
+                raw.forEach(d => {
+                    let dateKey = d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '';
+                    if(!dateKey) return;
+                    
+                    if(!dailyAverages[dateKey]) {
+                        dailyAverages[dateKey] = { cod: 0, florua: 0, ph: 0, ec: 0, flow: 0, count: 0 };
+                    }
+                    dailyAverages[dateKey].cod += (d.cod || 0);
+                    dailyAverages[dateKey].florua += (d.florua || 0);
+                    dailyAverages[dateKey].ph += (d.pH || 0);
+                    dailyAverages[dateKey].ec += (d.do_dan_dien || 0);
+                    dailyAverages[dateKey].flow += (d.luu_luong || 0);
+                    dailyAverages[dateKey].count++;
+                });
+
+                const labels = Object.keys(dailyAverages);
+                const dCod = [], dFlorua = [], dPh = [], dEc = [], dFlow = [];
+                
+                labels.forEach(date => {
+                    let avg = dailyAverages[date];
+                    dCod.push((avg.cod / avg.count).toFixed(2));
+                    dFlorua.push((avg.florua / avg.count).toFixed(2));
+                    dPh.push((avg.ph / avg.count).toFixed(2));
+                    dEc.push((avg.ec / avg.count).toFixed(2));
+                    dFlow.push((avg.flow / avg.count).toFixed(2));
+                });
+
+                // VẼ BIỂU ĐỒ 1: HÓA LÝ VÀ ĐƯỜNG TARGET
+                const targetCOD = labels.map(() => 90);
+                const targetFlo = labels.map(() => 15);
 
                 const ctx = document.getElementById('dailyChart').getContext('2d');
                 if(dailyChartInstance) dailyChartInstance.destroy();
@@ -795,6 +895,8 @@
                     data: {
                         labels: labels,
                         datasets: [
+                            { label: 'Target COD (90)', data: targetCOD, borderColor: 'rgba(239, 68, 68, 0.5)', borderDash: [5,5], pointRadius: 0, fill: false, borderWidth: 2, yAxisID: 'y' },
+                            { label: 'Target Flo (15)', data: targetFlo, borderColor: 'rgba(245, 158, 11, 0.5)', borderDash: [5,5], pointRadius: 0, fill: false, borderWidth: 2, yAxisID: 'y' },
                             { label: 'COD (mg/L)', data: dCod, borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 2, fill: true, tension: 0.3, yAxisID: 'y', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'Florua (mg/L)', data: dFlorua, borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, yAxisID: 'y', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'pH', data: dPh, borderColor: '#3b82f6', borderWidth: 2, borderDash: [5,5], tension: 0.3, yAxisID: 'y1', pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
@@ -811,6 +913,7 @@
                     }
                 });
 
+                // VẼ BIỂU ĐỒ 2: LƯU LƯỢNG & ĐỘ DẪN ĐIỆN
                 const ctxFlow = document.getElementById('dailyFlowChart').getContext('2d');
                 if(dailyFlowChartInstance) dailyFlowChartInstance.destroy();
                 dailyFlowChartInstance = new Chart(ctxFlow, {
@@ -841,7 +944,6 @@
             }
         }
 
-        // ============ LOGIC ĐỊNH KỲ ============
         window.openWaterModal = () => { 
             document.getElementById('w-date').value = new Date().toISOString().split('T')[0]; 
             document.getElementById('water-modal').classList.remove('hidden'); 
@@ -879,7 +981,7 @@
                 closeWaterModal(); showToast("Lưu phiếu thử nghiệm thành công!"); loadWaterData();
             } catch(e) { showToast("Lỗi bảo mật Firebase: " + e.message, "error"); } 
             finally { 
-                btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Lưu Kết Quả'; btn.disabled = false; 
+                btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>'; btn.disabled = false; 
                 ['w-ph','w-color','w-tss','w-bod','w-cod','w-amoni','w-florua','w-tongn','w-tongp','w-al','w-daukhoang','w-coliform'].forEach(id => document.getElementById(id).value = '');
             }
         };
@@ -906,7 +1008,7 @@
                 });
                 raw.sort((a, b) => (a.ngay_lay_mau || "").localeCompare(b.ngay_lay_mau || ""));
 
-                const tbody = document.getElementById('waterBody');
+                const tbody = document.getElementById('waterBody'); tbody.innerHTML = '';
                 const labels = [], dCod = [], dBod = [], dTss = [], dAmoni = [], dTongN = [], dFlorua = [], dColor = [], dColi = [];
 
                 if(raw.length === 0) {
@@ -948,10 +1050,14 @@
                 }
 
                 raw.forEach(d => {
-                    labels.push(d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '');
+                    labels.push(new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN'));
                     dCod.push(d.cod); dBod.push(d.bod); dTss.push(d.tss); dTongN.push(d.tong_n); 
                     dFlorua.push(d.florua); dAmoni.push(d.amoni); dColor.push(d.color); dColi.push(d.coliform);
                 });
+
+                // TARGET LINES (QCVN 40)
+                const targetCOD = labels.map(() => 90);
+                const targetBOD = labels.map(() => 60);
 
                 const ctxConc = document.getElementById('waterChartConc').getContext('2d');
                 if(waterChartConcInstance) waterChartConcInstance.destroy();
@@ -960,6 +1066,8 @@
                     data: {
                         labels: labels,
                         datasets: [
+                            { label: 'Target COD (90)', data: targetCOD, borderColor: 'rgba(239, 68, 68, 0.3)', borderDash: [5,5], pointRadius: 0, fill: false, borderWidth: 2 },
+                            { label: 'Target BOD (60)', data: targetBOD, borderColor: 'rgba(245, 158, 11, 0.3)', borderDash: [5,5], pointRadius: 0, fill: false, borderWidth: 2 },
                             { label: 'COD', data: dCod, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'BOD5', data: dBod, borderColor: '#d97706', borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'TSS', data: dTss, borderColor: '#475569', borderWidth: 2, borderDash: [5,5], tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
@@ -968,7 +1076,7 @@
                             { label: 'Amoni', data: dAmoni, borderColor: '#06b6d4', borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
                         ]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } }, scales: { x: { offset: true }, y: { beginAtZero: true, suggestedMax: 100, title: {display: true, text: 'mg/L', font: {size: 10}} } } }
+                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } } }, scales: { x: { offset: true }, y: { beginAtZero: true, suggestedMax: 120, title: {display: true, text: 'mg/L', font: {size: 10}} } } }
                 });
 
                 const ctxSpec = document.getElementById('waterChartSpec').getContext('2d');
@@ -988,7 +1096,111 @@
             finally { loader.classList.add('hidden'); }
         }
 
-        // ============ LOGIC KHÍ THẢI ============
+        window.openSupervisoryModal = () => { 
+            document.getElementById('s-date').value = new Date().toISOString().split('T')[0]; 
+            document.getElementById('supervisory-modal').classList.remove('hidden'); 
+        };
+        window.closeSupervisoryModal = () => document.getElementById('supervisory-modal').classList.add('hidden');
+
+        window.saveSupervisoryData = async () => {
+            const dateVal = document.getElementById('s-date').value;
+            const plantVal = document.getElementById('global-plant-filter').value;
+            const locVal = document.getElementById('s-location').value.trim();
+            const agencyVal = document.getElementById('s-agency').value.trim();
+
+            if(!dateVal || !locVal || !agencyVal) return showToast("Vui lòng nhập Ngày, Đơn vị và Vị trí!", "error");
+
+            const data = {
+                ngay_lay_mau: dateVal, nha_may: plantVal, vi_tri: locVal, don_vi: agencyVal,
+                pH: parseFloat(document.getElementById('s-ph').value) || 0,
+                color: parseFloat(document.getElementById('s-color').value) || 0,
+                tss: parseFloat(document.getElementById('s-tss').value) || 0,
+                bod: parseFloat(document.getElementById('s-bod').value) || 0,
+                cod: parseFloat(document.getElementById('s-cod').value) || 0,
+                amoni: parseFloat(document.getElementById('s-amoni').value) || 0,
+                florua: parseFloat(document.getElementById('s-florua').value) || 0,
+                tong_n: parseFloat(document.getElementById('s-tongn').value) || 0,
+                tong_p: parseFloat(document.getElementById('s-tongp').value) || 0,
+                al: parseFloat(document.getElementById('s-al').value) || 0,
+                dau_khoang: parseFloat(document.getElementById('s-daukhoang').value) || 0,
+                coliform: parseFloat(document.getElementById('s-coliform').value) || 0,
+                thoi_gian_nhap: new Date()
+            };
+
+            const btn = document.getElementById('btn-save-supervisory');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "quan_trac_giam_sat"), data);
+                closeSupervisoryModal(); showToast("Lưu KQ Giám sát thành công!"); loadSupervisoryData();
+            } catch(e) { showToast("Lỗi bảo mật Firebase: " + e.message, "error"); } 
+            finally { 
+                btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Kết Quả</span>'; btn.disabled = false; 
+                ['s-agency', 's-ph','s-color','s-tss','s-bod','s-cod','s-amoni','s-florua','s-tongn','s-tongp','s-al','s-daukhoang','s-coliform'].forEach(id => document.getElementById(id).value = '');
+            }
+        };
+
+        window.deleteSupervisoryData = async (id) => { showConfirm("Xóa dữ liệu bên thứ 3 này?", async () => { await deleteDoc(doc(db, "quan_trac_giam_sat", id)); showToast("Đã xóa!"); loadSupervisoryData(); }); };
+
+        async function loadSupervisoryData() {
+            const selectedPlant = document.getElementById('global-plant-filter').value;
+            const filterMonth = document.getElementById('month-filter').value;
+
+            try {
+                const q = query(collection(db, "quan_trac_giam_sat"), where("nha_may", "==", selectedPlant));
+                const snap = await getDocs(q);
+                
+                let raw = []; 
+                snap.forEach(d => {
+                    const data = d.data();
+                    if (filterMonth && data.ngay_lay_mau) {
+                        if (!data.ngay_lay_mau.startsWith(filterMonth)) return;
+                    }
+                    raw.push({ id: d.id, ...data });
+                });
+                raw.sort((a, b) => (a.ngay_lay_mau || "").localeCompare(b.ngay_lay_mau || ""));
+
+                const tbody = document.getElementById('supervisoryBody'); tbody.innerHTML = '';
+                if(raw.length === 0) {
+                    let msg = filterMonth ? `Chưa có KQ Giám sát bên thứ 3 nào trong tháng ${filterMonth.split('-').reverse().join('/')}` : "Chưa có dữ liệu giám sát bên thứ 3.";
+                    tbody.innerHTML = `<tr><td colspan="15" class="text-center p-8 font-bold text-slate-400">${msg}</td></tr>`;
+                    return;
+                } 
+
+                let rowsHtml = '';
+                [...raw].reverse().forEach((d, i) => {
+                    let codCls = d.cod >= 90 ? "text-red-600 font-black" : "font-bold text-rose-700";
+                    let bodCls = d.bod >= 60 ? "text-red-600 font-black" : "font-bold text-amber-700";
+                    let colorCls = d.color >= 100 ? "text-red-600 font-black" : "font-bold text-purple-700";
+                    let fCls = d.florua >= 15 ? "text-red-600 font-black" : "font-bold text-orange-700";
+                    let amoniCls = d.amoni >= 10 ? "text-red-600 font-black" : "font-bold text-cyan-700";
+                    let coliCls = d.coliform >= 5000 ? "text-red-600 font-black" : "font-bold text-emerald-700";
+                    const displayDate = d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '-';
+                    
+                    rowsHtml += `
+                        <tr class="hover:bg-slate-50 whitespace-nowrap">
+                            <td class="p-3 text-center text-slate-500">${i+1}</td>
+                            <td class="p-3 text-center font-bold text-slate-700">${displayDate}</td>
+                            <td class="p-3 text-[11px] font-black text-orange-700 bg-orange-50/50">${d.don_vi || ''}</td>
+                            <td class="p-3 text-[11px] font-bold text-slate-600 truncate max-w-[150px]">${d.vi_tri || ''}</td>
+                            <td class="p-3 text-center text-blue-700 font-medium">${d.pH || 0}</td>
+                            <td class="p-3 text-center ${colorCls} bg-purple-50/30">${d.color || 0}</td>
+                            <td class="p-3 text-center text-slate-600">${d.tss || 0}</td>
+                            <td class="p-3 text-center ${bodCls}">${d.bod || 0}</td>
+                            <td class="p-3 text-center ${codCls} bg-rose-50/30">${d.cod || 0}</td>
+                            <td class="p-3 text-center ${amoniCls} bg-cyan-50/30">${d.amoni || 0}</td>
+                            <td class="p-3 text-center ${fCls} bg-orange-50/30">${d.florua || 0}</td>
+                            <td class="p-3 text-center text-slate-600">${d.tong_n || 0}</td>
+                            <td class="p-3 text-center text-slate-600">${d.tong_p || 0}</td>
+                            <td class="p-3 text-center ${coliCls} bg-emerald-50/30">${d.coliform || 0}</td>
+                            <td class="p-3 text-center"><button onclick="deleteSupervisoryData('${d.id}')" class="text-slate-300 hover:text-red-500 transition"><i class="ph-bold ph-trash text-lg"></i></button></td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = rowsHtml;
+            } catch(e) { console.error("Supervisory Load Error:", e); } 
+        }
+
         window.openAirModal = () => { 
             document.getElementById('a-date').value = new Date().toISOString().split('T')[0]; 
             document.getElementById('air-modal').classList.remove('hidden'); 
@@ -1016,7 +1228,7 @@
             try {
                 await addDoc(collection(db, "quan_trac_khi_thai"), data);
                 closeAirModal(); showToast("Lưu kết quả khí thải thành công!"); loadAirData();
-            } catch(e) { showToast(e.message, "error"); } finally { btn.innerHTML = '<i class="ph-bold ph-floppy-disk"></i> Lưu Hệ Thống'; btn.disabled = false; }
+            } catch(e) { showToast(e.message, "error"); } finally { btn.innerHTML = '<i class="ph-bold ph-floppy-disk text-lg"></i> <span data-i18n="btn_save">Lưu Hệ Thống</span>'; btn.disabled = false; }
         };
 
         window.deleteAirData = async (id) => { showConfirm("Xóa phiếu khí thải này?", async () => { await deleteDoc(doc(db, "quan_trac_khi_thai", id)); showToast("Đã xóa!"); loadAirData(); }); };
@@ -1041,7 +1253,7 @@
                 });
                 raw.sort((a, b) => (a.ngay_lay_mau || "").localeCompare(b.ngay_lay_mau || ""));
 
-                const tbody = document.getElementById('airBody');
+                const tbody = document.getElementById('airBody'); tbody.innerHTML = '';
                 const labels = [], dBui = [], dSo2 = [], dNox = [], dCo = [];
 
                 if(raw.length === 0) {
@@ -1068,9 +1280,13 @@
                 }
 
                 raw.forEach(d => {
-                    labels.push(d.ngay_lay_mau ? d.ngay_lay_mau.split('-').reverse().join('/') : '');
+                    labels.push(new Date(d.ngay_lay_mau).toLocaleDateString('vi-VN'));
                     dBui.push(d.bui); dSo2.push(d.so2); dNox.push(d.nox); dCo.push(d.co);
                 });
+
+                // TARGET LINES
+                const targetSO2 = labels.map(() => 500);
+                const targetNOx = labels.map(() => 850);
 
                 const ctx = document.getElementById('airChart').getContext('2d');
                 if(airChartInstance) airChartInstance.destroy();
@@ -1079,131 +1295,96 @@
                     data: {
                         labels: labels,
                         datasets: [
+                            { label: 'Target SO2 (500)', data: targetSO2, borderColor: 'rgba(239, 68, 68, 0.3)', borderDash: [5,5], pointRadius: 0, fill: false, borderWidth: 2 },
+                            { label: 'Target NOx (850)', data: targetNOx, borderColor: 'rgba(245, 158, 11, 0.3)', borderDash: [5,5], pointRadius: 0, fill: false, borderWidth: 2 },
                             { label: 'SO2 (mg/Nm3)', data: dSo2, borderColor: '#e11d48', backgroundColor: 'rgba(225, 29, 72, 0.1)', fill: true, borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'NOx (mg/Nm3)', data: dNox, borderColor: '#d97706', borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'CO (mg/Nm3)', data: dCo, borderColor: '#2563eb', borderWidth: 2, tension: 0.3, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' },
                             { label: 'Bụi Tổng', data: dBui, borderColor: '#94a3b8', borderDash: [5,5], borderWidth: 2, tension: 0.3, hidden: true, pointRadius: 4, pointHoverRadius: 6, pointBackgroundColor: '#fff' }
                         ]
                     },
-                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { offset: true }, y: { beginAtZero: true, title: {display: true, text: 'Nồng độ (mg/Nm3)'} } } }
+                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { x: { offset: true }, y: { beginAtZero: true, suggestedMax: 1000, title: {display: true, text: 'Nồng độ (mg/Nm3)'} } } }
                 });
             } catch(e) { console.error("Air Load Error", e); } 
             finally { loader.classList.add('hidden'); }
         }
 
-        // ============ ĐA NGÔN NGỮ ============
         const translations = {
             "vi": {
-                back_home: "Về Bảng Điều Khiển",
-                main_title: "Dữ Liệu Quan Trắc",
+                back_home: "Về Bảng Điều Khiển", main_title: "Dữ Liệu Quan Trắc",
                 main_subtitle: "Mọi biểu đồ và thông số bên dưới đã được lọc đồng bộ theo Tháng và Nhà máy được chọn.",
                 daily_title: "Giám Sát Vận Hành Nước Thải (Hằng Ngày)",
-                daily_desc: "Dành cho bộ phận vận hành trạm đo đạc và điều chỉnh hóa chất thực tế.",
+                daily_desc: "Dành cho bộ phận vận hành trạm đo đạc. Biểu đồ sẽ tự động lấy giá trị trung bình nếu nhập nhiều lần trong ngày.",
                 water_title: "Kết Quả Thử Nghiệm Nước Thải (Định Kỳ)",
                 water_desc: "Dữ liệu từ phòng thí nghiệm trung tâm (QCVN 40:2011/BTNMT Cột B).",
+                supervisory_title: "Kết Quả Giám Sát Bởi Bên Thứ 3",
+                supervisory_desc: "Dữ liệu từ đơn vị bên ngoài (Khu công nghiệp, Sở TNMT, Đơn vị độc lập...).",
                 air_title: "Giám Sát Chất Lượng Khí Thải (QCVN 19:2009)",
-                btn_export_chart: "Tải Ảnh Biểu Đồ",
-                btn_export_excel: "Xuất Excel",
-                btn_add_daily: "Nhập Kết Quả",
-                btn_add_water: "Nhập Phiếu K.Nghiệm",
-                btn_add_air: "Nhập KQ Khí Thải",
-                chart_conc: "Nhóm Chỉ Tiêu Nồng Độ",
-                chart_micro: "Nhóm Vi Sinh & Cảm Quan",
-                col_date: "Ngày đo đạc",
-                col_date_receive: "Ngày nhận",
-                col_operator: "Người trực",
-                col_note: "Ghi chú",
-                col_location: "Vị trí",
-                col_action: "Thao tác",
-                confirm_del_title: "Xác nhận xóa",
-                confirm_del_desc: "Bạn có chắc chắn muốn xóa dữ liệu này?",
-                btn_cancel: "Hủy bỏ",
-                btn_agree_del: "Đồng ý Xóa",
-                btn_save: "Lưu Kết Quả"
+                btn_export_chart: "Tải Ảnh Biểu Đồ", btn_export_excel: "Xuất Excel",
+                btn_add_daily: "Nhập Kết Quả Hôm Nay", btn_add_water: "Nhập KQ Định Kỳ", 
+                btn_add_supervisory: "Nhập KQ Bên Thứ 3", btn_add_air: "Nhập KQ Khí Thải",
+                chart_conc: "Nhóm Chỉ Tiêu Nồng Độ", chart_micro: "Nhóm Vi Sinh & Cảm Quan",
+                col_date: "Ngày đo", col_date_receive: "Ngày nhận", col_operator: "Người trực",
+                col_note: "Ghi chú", col_location: "Vị trí mẫu", col_action: "Thao tác",
+                confirm_del_title: "Xác nhận xóa", confirm_del_desc: "Bạn có chắc chắn muốn xóa dữ liệu này?",
+                btn_cancel: "Hủy bỏ", btn_agree_del: "Đồng ý Xóa", btn_save: "Lưu Kết Quả"
             },
             "en": {
-                back_home: "Back to Dashboard",
-                main_title: "Monitoring Data",
+                back_home: "Back to Dashboard", main_title: "Monitoring Data",
                 main_subtitle: "All charts and parameters below are synchronously filtered by the selected Month and Plant.",
                 daily_title: "Daily Wastewater Operation Monitoring",
-                daily_desc: "For the operation team to record measurements and chemical adjustments.",
+                daily_desc: "For operation team. Chart will automatically average values if multiple entries exist per day.",
                 water_title: "Periodic Wastewater Test Results",
-                water_desc: "Data from the central laboratory (QCVN 40:2011/BTNMT Column B).",
+                water_desc: "Data from central lab (QCVN 40:2011/BTNMT Column B).",
+                supervisory_title: "Third-Party Supervisory Testing",
+                supervisory_desc: "Data from external agencies (Industrial Park, DONRE, Independent labs...).",
                 air_title: "Air Quality Monitoring (QCVN 19:2009)",
-                btn_export_chart: "Export Chart",
-                btn_export_excel: "Export Excel",
-                btn_add_daily: "Add Daily Record",
-                btn_add_water: "Add Test Report",
-                btn_add_air: "Add Air Record",
-                chart_conc: "Concentration Indicators",
-                chart_micro: "Microbial & Sensory Indicators",
-                col_date: "Date",
-                col_date_receive: "Date Received",
-                col_operator: "Operator",
-                col_note: "Notes",
-                col_location: "Location",
-                col_action: "Actions",
-                confirm_del_title: "Confirm Deletion",
-                confirm_del_desc: "Are you sure you want to delete this data?",
-                btn_cancel: "Cancel",
-                btn_agree_del: "Delete",
-                btn_save: "Save Data"
+                btn_export_chart: "Export Chart", btn_export_excel: "Export Excel",
+                btn_add_daily: "Add Daily Record", btn_add_water: "Add Periodic Record", 
+                btn_add_supervisory: "Add 3rd Party Record", btn_add_air: "Add Air Record",
+                chart_conc: "Concentration Indicators", chart_micro: "Microbial & Sensory",
+                col_date: "Date", col_date_receive: "Date Received", col_operator: "Operator",
+                col_note: "Notes", col_location: "Location", col_action: "Actions",
+                confirm_del_title: "Confirm Deletion", confirm_del_desc: "Are you sure you want to delete this data?",
+                btn_cancel: "Cancel", btn_agree_del: "Delete", btn_save: "Save Data"
             },
             "zh": {
-                back_home: "返回主面板",
-                main_title: "监测数据",
+                back_home: "返回主面板", main_title: "监测数据",
                 main_subtitle: "以下所有图表和参数均根据所选月份和工厂同步过滤。",
                 daily_title: "每日废水运行监测",
-                daily_desc: "供运营团队记录测量和化学品调整。",
+                daily_desc: "供运营团队使用。如果每天有多个输入，图表将自动计算平均值。",
                 water_title: "定期废水测试结果",
                 water_desc: "来自中央实验室的数据 (QCVN 40:2011/BTNMT B栏).",
+                supervisory_title: "第三方监督检测",
+                supervisory_desc: "来自外部机构的数据（工业园区、环保局、独立实验室...）。",
                 air_title: "空气质量监测 (QCVN 19:2009)",
-                btn_export_chart: "导出图表",
-                btn_export_excel: "导出 Excel",
-                btn_add_daily: "添加每日记录",
-                btn_add_water: "添加测试报告",
-                btn_add_air: "添加空气记录",
-                chart_conc: "浓度指标",
-                chart_micro: "微生物和感官指标",
-                col_date: "日期",
-                col_date_receive: "接收日期",
-                col_operator: "操作员",
-                col_note: "备注",
-                col_location: "位置",
-                col_action: "操作",
-                confirm_del_title: "确认删除",
-                confirm_del_desc: "您确定要删除此数据吗？",
-                btn_cancel: "取消",
-                btn_agree_del: "删除",
-                btn_save: "保存数据"
+                btn_export_chart: "导出图表", btn_export_excel: "导出 Excel",
+                btn_add_daily: "添加每日记录", btn_add_water: "添加定期记录", 
+                btn_add_supervisory: "添加第三方记录", btn_add_air: "添加空气记录",
+                chart_conc: "浓度指标", chart_micro: "微生物和感官",
+                col_date: "日期", col_date_receive: "接收日期", col_operator: "操作员",
+                col_note: "备注", col_location: "位置", col_action: "操作",
+                confirm_del_title: "确认删除", confirm_del_desc: "您确定要删除此数据吗？",
+                btn_cancel: "取消", btn_agree_del: "删除", btn_save: "保存数据"
             },
             "es": {
-                back_home: "Volver al Panel",
-                main_title: "Datos de Monitoreo",
-                main_subtitle: "Todos los gráficos y parámetros a continuación se filtran sincrónicamente por Mes y Planta seleccionados.",
+                back_home: "Volver al Panel", main_title: "Datos de Monitoreo",
+                main_subtitle: "Todos los gráficos y parámetros a continuación se filtran sincrónicamente por Mes y Planta.",
                 daily_title: "Monitoreo Diario de Operación de Aguas Residuales",
-                daily_desc: "Para que el equipo de operación registre medidas y ajustes químicos.",
+                daily_desc: "El gráfico promediará automáticamente los valores si hay múltiples entradas por día.",
                 water_title: "Resultados Periódicos de Pruebas de Aguas Residuales",
                 water_desc: "Datos del laboratorio central (QCVN 40:2011/BTNMT Columna B).",
+                supervisory_title: "Pruebas de Supervisión de Terceros",
+                supervisory_desc: "Datos de agencias externas (Parque Industrial, DONRE, laboratorios independientes...).",
                 air_title: "Monitoreo de Calidad del Aire (QCVN 19:2009)",
-                btn_export_chart: "Exportar Gráfico",
-                btn_export_excel: "Exportar Excel",
-                btn_add_daily: "Añadir Registro Diario",
-                btn_add_water: "Añadir Informe",
-                btn_add_air: "Añadir Registro Aire",
-                chart_conc: "Indicadores de Concentración",
-                chart_micro: "Indicadores Microbianos y Sensoriales",
-                col_date: "Fecha",
-                col_date_receive: "Fecha Recepción",
-                col_operator: "Operador",
-                col_note: "Notas",
-                col_location: "Ubicación",
-                col_action: "Acciones",
-                confirm_del_title: "Confirmar Eliminación",
-                confirm_del_desc: "¿Está seguro de que desea eliminar estos datos?",
-                btn_cancel: "Cancelar",
-                btn_agree_del: "Eliminar",
-                btn_save: "Guardar Datos"
+                btn_export_chart: "Exportar Gráfico", btn_export_excel: "Exportar Excel",
+                btn_add_daily: "Añadir Reg. Diario", btn_add_water: "Añadir Reg. Periódico", 
+                btn_add_supervisory: "Añadir Reg. Terceros", btn_add_air: "Añadir Reg. Aire",
+                chart_conc: "Indicadores de Concentración", chart_micro: "Microbianos y Sensoriales",
+                col_date: "Fecha", col_date_receive: "Fecha Recepción", col_operator: "Operador",
+                col_note: "Notas", col_location: "Ubicación", col_action: "Acciones",
+                confirm_del_title: "Confirmar Eliminación", confirm_del_desc: "¿Está seguro de que desea eliminar estos datos?",
+                btn_cancel: "Cancelar", btn_agree_del: "Eliminar", btn_save: "Guardar Datos"
             }
         };
 
@@ -1214,7 +1395,7 @@
 
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (translations[lang][key]) el.innerText = translations[lang][key];
+                if (translations[lang][key]) el.innerHTML = translations[lang][key]; 
             });
         }
 
