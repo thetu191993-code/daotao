@@ -306,6 +306,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        window.db = db;
 
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
         let currentUserId = localStorage.getItem("ehs_user_id");
@@ -433,7 +434,7 @@
                     el.placeholder = translations[lang][key];
                 }
             });
-            window.renderTasks(); // Re-render to update badges
+            window.renderTasks(); 
         };
 
         window.showToast = function(message, type = "success") {
@@ -637,7 +638,9 @@
 
                 snap.forEach(doc => {
                     const data = doc.data();
-                    if(data.ma_nv) globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
+                    if(data.ma_nv) {
+                        globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
+                    }
                     if(data.ma_nv === currentUserId) currentUserRole = (data.vi_tri || "") + " " + (data.bo_phan || "");
 
                     if(data.ma_nv && data.ho_ten && data.ma_nv !== currentUserId) {
@@ -933,14 +936,14 @@
 
         // Hàm Save chung cho Tạo Mới và Cập Nhật (Sửa)
         window.saveTask = async function() {
-            const editId = document.getElementById('edit-task-id').value; // Lấy ID ẩn
+            const editId = document.getElementById('edit-task-id').value; 
             const title = document.getElementById('task-title').value.trim();
             const assigneeRaw = document.getElementById('task-assignee').value;
             const deadline = document.getElementById('task-deadline').value;
             const cat = document.getElementById('task-category').value;
 
             const stepInputs = document.querySelectorAll('.step-input');
-            const oldProgInputs = document.querySelectorAll('.step-old-prog'); // Dữ liệu % cũ
+            const oldProgInputs = document.querySelectorAll('.step-old-prog'); 
             
             const planStepsArray = Array.from(stepInputs).map((inp, idx) => {
                 let p = parseInt(oldProgInputs[idx].value) || 0;
@@ -974,6 +977,33 @@
                     };
                     await addDoc(collection(db, "ehs_tasks"), newTask);
                     showToast("Đã phát hành kế hoạch thành công!");
+                    
+                    // ===============================================================
+                    // KÍCH HOẠT BẮN THÔNG BÁO ĐẨY LÊN ĐIỆN THOẠI CỦA NGƯỜI NHẬN
+                    // ===============================================================
+                    try {
+                        const qUser = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", assignee_id));
+                        const snapUser = await window.getDocs(qUser);
+                        // Chỉ gửi nếu người dùng đã có Token trong hồ sơ
+                        if(!snapUser.empty && snapUser.docs[0].data().fcm_token) {
+                            const fcmToken = snapUser.docs[0].data().fcm_token;
+                            
+                            // ANH DÁN LINK GOOGLE APPS SCRIPT VỪA TRIỂN KHAI VÀO ĐÂY:
+                            const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbwRPJ6N66lilgaEGVoBXQ2FO3OaLLy-UhohtBFUXBEBUkrJSWrqTyhdIxe_lvAcUjgQ/exec";
+                            
+                            fetch(PUSH_API_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                    fcmToken: fcmToken,
+                                    title: "🔔 EHS: NHIỆM VỤ MỚI",
+                                    body: `${currentUserName} vừa giao cho bạn: ${title}. Hạn chót: ${deadline.split('-').reverse().join('/')}`
+                                })
+                            }).catch(e => console.log("Gửi Push ngầm thất bại:", e));
+                        }
+                    } catch(pushErr) {
+                        console.log("Không thể lấy token để bắn push:", pushErr);
+                    }
+                    // ===============================================================
                 }
 
                 window.closeTaskModal();
