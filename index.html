@@ -1272,6 +1272,12 @@
                 
                 document.getElementById('notif-badge').classList.add('hidden');
                 document.getElementById('notif-count').classList.add('hidden');
+                
+                // TẢI LẠI THÔNG BÁO KHI BẤM VÀO CHUÔNG
+                if(window.fetchNotifications) {
+                    document.getElementById('notif-list').innerHTML = '<div class="p-6 text-center text-blue-500"><i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i><br>Đang đồng bộ dữ liệu...</div>';
+                    window.fetchNotifications();
+                }
             } else {
                 window.closeNotifications();
             }
@@ -1290,12 +1296,16 @@
         });
 
         window.fetchNotifications = async function() {
-            if (!currentUserId) return;
             const notifList = document.getElementById('notif-list');
             const badge = document.getElementById('notif-badge');
             const countLabel = document.getElementById('notif-count');
-            const userDept = localStorage.getItem("ehs_user_dept") || "";
             
+            if (!currentUserId || !window.db) {
+                notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Hệ thống chưa sẵn sàng. Vui lòng tải lại trang.</div>`;
+                return;
+            }
+
+            const userDept = localStorage.getItem("ehs_user_dept") || "";
             let notifications = [];
 
             try {
@@ -1457,18 +1467,12 @@
 
         applyTheme();
         changeLanguage(currentLang);
+        checkLoginStatus();
         
-        // KIỂM TRA ĐĂNG NHẬP MƯỢT MÀ
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                if (window.checkLoginStatus) window.checkLoginStatus();
-                // Tải thông báo ngay khi nhận diện được user
-                setTimeout(window.fetchNotifications, 1500); 
-            } else {
-                console.log("Phiên đăng nhập đã hết hạn hoặc chưa đăng nhập.");
-            }
-        });
-        
+        // Tải thông báo 1 lần sau khi load xong nếu đã có user
+        if(currentUserId && window.db) {
+            setTimeout(window.fetchNotifications, 1000); 
+        }
     </script>
 </body>
 </html>
