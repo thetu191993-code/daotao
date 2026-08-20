@@ -3,272 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trợ lý AI Pháp chế EHS - Bản Bảo Mật</title>
+    <title>Trợ lý AI Pháp chế EHS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
     <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        .typing-indicator span { 
-            display: inline-block; width: 6px; height: 6px; background-color: #3b82f6; 
-            border-radius: 50%; animation: typing 1.4s infinite ease-in-out both; margin: 0 2px; 
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        /* Animation cho dấu chấm suy nghĩ của AI */
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-        
-        .ai-response-content p { margin-bottom: 0.5rem; }
-        .ai-response-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.5rem; }
-        .ai-response-content strong { color: #1e40af; }
     </style>
 </head>
-<body class="bg-slate-50 h-screen flex flex-col font-sans text-slate-800">
+<body class="bg-slate-100 font-sans text-slate-800 h-screen flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <header class="bg-indigo-900 text-white p-4 shadow-md shrink-0 flex items-center justify-between z-10">
-        <div class="flex items-center gap-3">
-            <a href="index.html" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition">
-                <i class="ph-bold ph-arrow-left text-xl"></i>
+    <div class="bg-[#2B3078] text-white p-4 shadow-md shrink-0">
+        <div class="max-w-5xl mx-auto flex items-center gap-4">
+            <a href="index.html" class="text-white hover:text-indigo-200 transition">
+                <i class="ph-bold ph-arrow-left text-2xl"></i>
             </a>
             <div>
-                <h1 class="font-bold text-xl leading-tight flex items-center gap-2">
-                    <i class="ph-fill ph-scales"></i> AI Pháp chế EHS
+                <h1 class="font-bold text-lg flex items-center gap-2">
+                    <i class="ph-fill ph-scales text-2xl"></i> AI Pháp chế EHS
                 </h1>
-                <p class="text-indigo-200 text-xs tracking-wider font-medium flex items-center gap-1">
-                    <i class="ph-fill ph-shield-check text-emerald-400"></i> Server Backend Secured
+                <p class="text-xs text-indigo-200 flex items-center gap-1">
+                    <i class="ph-fill ph-shield-check text-emerald-400"></i> Kênh kết nối máy chủ an toàn (Proxy Secured)
                 </p>
             </div>
         </div>
-    </header>
-
-    <div class="bg-amber-50 border-b border-amber-200 p-2 text-center text-xs text-amber-700 font-medium shrink-0 flex items-center justify-center gap-2">
-        <i class="ph-fill ph-warning-circle text-base"></i> 
-        <span>AI chỉ tra cứu trong phạm vi Google Sheets của Phòng EHS. Vui lòng luôn đối chiếu bằng nút "Xem văn bản gốc".</span>
     </div>
 
-    <!-- Main Chat Window -->
-    <main class="flex-1 w-full max-w-5xl mx-auto p-4 flex flex-col gap-4 overflow-hidden relative">
-        <div id="chat-container" class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-6 overflow-y-auto custom-scrollbar flex flex-col gap-6">
+    <!-- Cảnh báo an toàn -->
+    <div class="bg-amber-50 border-b border-amber-200 p-2 text-center text-xs font-bold text-amber-700 flex justify-center items-center gap-2 shrink-0">
+        <i class="ph-fill ph-warning-circle"></i> AI chỉ hỗ trợ tư vấn sơ bộ dựa trên dữ liệu học máy. Luôn đối chiếu với văn bản pháp luật gốc.
+    </div>
+
+    <!-- Khu vực Chat chính -->
+    <div class="flex-1 max-w-5xl w-full mx-auto p-4 flex flex-col bg-white sm:my-4 sm:rounded-2xl sm:shadow-sm border border-slate-200 overflow-hidden">
+        
+        <!-- Khung hiển thị nội dung tin nhắn -->
+        <div id="chat-box" class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-6">
             
+            <!-- Lời chào mở đầu của AI -->
             <div class="flex gap-4">
-                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200 shadow-sm">
+                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-200">
                     <i class="ph-fill ph-robot text-2xl"></i>
                 </div>
-                <div class="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm">
-                    <p class="font-bold text-indigo-800 mb-2">Xin chào! Tôi là Trợ lý AI Pháp chế EHS.</p>
-                    <p class="text-sm text-slate-600 mb-3">Tôi đã được kết nối với Sổ tay Pháp luật Google Sheets của công ty qua máy chủ bảo mật. Bạn cần hỏi gì?</p>
-                    <div class="flex flex-col gap-2">
-                        <button onclick="fillPrompt('Quy định về thời gian lưu trữ chất thải nguy hại tối đa là bao lâu?')" class="text-left bg-white p-2.5 text-sm rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 shadow-sm transition font-medium">👉 Quy định về thời gian lưu trữ chất thải nguy hại?</button>
-                        <button onclick="fillPrompt('Thời hạn thẻ huấn luyện PCCC')" class="text-left bg-white p-2.5 text-sm rounded-lg border border-slate-200 hover:border-indigo-400 hover:text-indigo-700 shadow-sm transition font-medium">👉 Thẻ huấn luyện PCCC có thời hạn mấy năm?</button>
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-none p-4 w-full max-w-2xl text-sm text-slate-700 shadow-sm">
+                    <p class="font-bold text-indigo-800 mb-2 text-base">Xin chào! Tôi là Trợ lý AI Pháp chế EHS.</p>
+                    <p class="mb-4">Tôi đã được kết nối với hệ thống máy chủ bảo mật. Bạn cần hỏi về quy định gì?</p>
+                    
+                    <div class="space-y-2">
+                        <button onclick="sendQuickPrompt('Quy định mới nhất về thời gian lưu trữ chất thải nguy hại tại nhà máy là bao lâu?')" class="w-full text-left bg-white border border-slate-200 p-3 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition font-medium text-slate-600 flex items-start gap-2 shadow-sm">
+                            <span class="text-amber-500">👉</span> Quy định thời gian lưu trữ chất thải nguy hại?
+                        </button>
+                        <button onclick="sendQuickPrompt('Thẻ huấn luyện An toàn lao động nhóm 3 có thời hạn bao nhiêu năm theo Nghị định 44?')" class="w-full text-left bg-white border border-slate-200 p-3 rounded-xl hover:border-indigo-400 hover:bg-indigo-50 transition font-medium text-slate-600 flex items-start gap-2 shadow-sm">
+                            <span class="text-amber-500">👉</span> Thời hạn thẻ huấn luyện ATLĐ nhóm 3?
+                        </button>
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <div id="typing-indicator" class="hidden absolute bottom-24 left-8 bg-white border border-slate-200 px-4 py-2 rounded-full shadow-md flex items-center gap-2 z-10">
-            <span class="text-xs font-bold text-slate-500">Hệ thống đang kết nối và phân tích...</span>
-            <div class="typing-indicator"><span></span><span></span><span></span></div>
+        <!-- Khung nhập liệu -->
+        <div class="pt-4 mt-2 border-t border-slate-100 shrink-0">
+            <div class="flex items-center gap-3">
+                <textarea id="user-input" rows="1" class="w-full bg-slate-50 border border-slate-300 rounded-2xl px-4 py-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm resize-none custom-scrollbar" placeholder="Nhập câu hỏi pháp lý của bạn..."></textarea>
+                <button id="btn-send" onclick="sendMessage()" class="w-12 h-12 rounded-full bg-[#3B42C4] text-white flex items-center justify-center hover:bg-indigo-800 transition shadow-md shrink-0">
+                    <i id="send-icon" class="ph-bold ph-paper-plane-right text-xl"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="bg-white p-2 rounded-2xl shadow-md border border-slate-200 flex items-end gap-2 shrink-0">
-            <textarea id="user-input" class="w-full max-h-32 min-h-[50px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-indigo-500 focus:bg-white transition custom-scrollbar resize-none text-sm disabled:opacity-50 font-medium" placeholder="Đang nạp dữ liệu..." onkeydown="handleEnter(event)" disabled></textarea>
-            <button id="btn-send" onclick="processQuery()" class="bg-indigo-600 text-white p-3 md:px-6 md:py-3 rounded-xl hover:bg-indigo-700 transition shadow-md font-bold flex items-center gap-2 h-[50px] disabled:opacity-50" disabled>
-                <span class="hidden md:inline">Gửi</span>
-                <i class="ph-bold ph-paper-plane-right text-xl"></i>
-            </button>
-        </div>
-    </main>
+    </div>
 
+    <!-- JAVASCRIPT XỬ LÝ LÕI -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        let knowledgeBase = [];
-        
         // =========================================================================
-        // ĐƯỜNG LINK CỔNG AN NINH GOOGLE APPS SCRIPT CỦA ANH
+        // BƯỚC QUAN TRỌNG NHẤT: DÁN ĐƯỜNG LINK GOOGLE APPS SCRIPT CỦA ANH VÀO ĐÂY
         // =========================================================================
-        const SECURITY_GATE_URL = "https://script.google.com/macros/s/AKfycbyRsMk3ZpxBa7OiOTK9HJ-hX78BQene1qPMR08JS3BOoySmhNQ4oIb6EQWKYgquPx4Q/exec"; 
-        
-        // Link CSV Google Sheets Pháp luật EHS
-        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTe-A3J9zQ7HwuZMjS4SKy_nQmIrh95Powvq-3idXsyBwPrh44q1lsEsZVRTCG8hJHkN8xSUatlZWH4/pub?output=csv'; 
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzPs0bxSANI0Hn6CJ0nK2sgcgFlieW-IOd6WufqqzjCHLS9vuQcTm6SEBloAcTHepw/exec"; 
 
-        Papa.parse(GOOGLE_SHEET_CSV_URL, {
-            download: true,
-            header: true,
-            complete: function(results) {
-                knowledgeBase = results.data.filter(row => row.noi_dung && row.noi_dung.trim() !== "");
-                console.log("Đã nạp kho luật từ Google Sheets:", knowledgeBase.length, "điều");
-                
-                const inputArea = document.getElementById('user-input');
-                const btnSend = document.getElementById('btn-send');
-                inputArea.placeholder = `Đã nạp xong ${knowledgeBase.length} điều luật! Nhập câu hỏi...`;
-                inputArea.disabled = false;
-                btnSend.disabled = false;
-            },
-            error: function(err) {
-                console.error("Lỗi nạp luật từ Google Sheets:", err);
-                document.getElementById('user-input').placeholder = "Lỗi kết nối Google Sheets. Vui lòng kiểm tra link.";
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const btnSend = document.getElementById('btn-send');
+        const sendIcon = document.getElementById('send-icon');
+
+        // Tự động kéo dãn ô nhập liệu
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight < 120 ? this.scrollHeight : 120) + 'px';
+        });
+
+        // Bấm Enter để gửi (Nhấn Shift+Enter để xuống dòng)
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
         });
 
-        const chatContainer = document.getElementById('chat-container');
-        const userInput = document.getElementById('user-input');
-
-        function fillPrompt(text) {
+        // Hàm bấm nhanh từ gợi ý
+        window.sendQuickPrompt = function(text) {
             userInput.value = text;
-            userInput.focus();
+            sendMessage();
         }
 
-        function handleEnter(e) {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); processQuery(); }
+        // Hàm cuộn xuống cuối
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        function appendMessage(sender, text, contextHTML = "", isError = false) {
+        // VẼ TIN NHẮN LÊN MÀN HÌNH
+        function appendMessage(sender, text) {
             const div = document.createElement('div');
             
             if (sender === 'user') {
-                div.className = "flex gap-4 flex-row-reverse mb-2";
+                div.className = "flex gap-3 justify-end animate-[slideUp_0.3s_ease-out]";
                 div.innerHTML = `
-                    <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center flex-shrink-0 text-white shadow-sm"><i class="ph-fill ph-user text-xl"></i></div>
-                    <div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none p-4 max-w-[85%] shadow-sm"><p class="text-sm leading-relaxed font-medium">${text}</p></div>
+                    <div class="bg-[#3B42C4] text-white p-3 rounded-2xl rounded-tr-none text-sm max-w-[80%] shadow-sm">
+                        ${text.replace(/\n/g, '<br>')}
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center shrink-0 shadow-md">
+                        <i class="ph-fill ph-user"></i>
+                    </div>
                 `;
             } else {
-                div.className = "flex gap-4 mb-2";
-                const parsedText = isError ? text : marked.parse(text); 
+                // Tin nhắn của AI (Sử dụng thư viện marked để render Markdown cho đẹp)
+                div.className = "flex gap-3 justify-start animate-[slideUp_0.3s_ease-out]";
                 div.innerHTML = `
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-indigo-600 border border-indigo-200 shadow-sm"><i class="ph-fill ph-robot text-2xl"></i></div>
-                    <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 max-w-[85%] shadow-sm w-full">
-                        <div class="ai-response-content text-sm text-slate-700 leading-relaxed">${parsedText}</div>
-                        ${contextHTML}
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-200">
+                        <i class="ph-fill ph-robot text-2xl"></i>
+                    </div>
+                    <div class="bg-white border border-indigo-100 rounded-2xl rounded-tl-none p-4 w-full max-w-[85%] text-sm text-slate-700 shadow-sm leading-relaxed" style="line-height: 1.6;">
+                        ${marked.parse(text)}
                     </div>
                 `;
             }
-            chatContainer.appendChild(div);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            chatBox.appendChild(div);
+            scrollToBottom();
         }
 
-        function searchKnowledgeBase(queryText) {
-            const keywords = queryText.toLowerCase().split(/[\s,?\.]+/).filter(w => w.length > 2);
-            let scoredResults = knowledgeBase.map(doc => {
-                let score = 0;
-                const docText = ((doc.chu_de || "") + " " + (doc.tu_khoa || "") + " " + (doc.noi_dung || "")).toLowerCase();
-                keywords.forEach(kw => { if (docText.includes(kw)) score++; });
-                return { doc, score };
-            });
-            scoredResults.sort((a, b) => b.score - a.score);
-            return scoredResults.filter(res => res.score > 0).slice(0, 2).map(res => res.doc);
+        // HIỂN THỊ ANIMATION AI ĐANG SUY NGHĨ
+        function showLoading() {
+            const div = document.createElement('div');
+            div.id = "ai-loading";
+            div.className = "flex gap-3 justify-start animate-[slideUp_0.3s_ease-out]";
+            div.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 border border-indigo-200">
+                    <i class="ph-fill ph-robot text-2xl"></i>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1 w-fit shadow-sm h-[40px]">
+                    <div class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></div>
+                    <div class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></div>
+                    <div class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></div>
+                </div>
+            `;
+            chatBox.appendChild(div);
+            scrollToBottom();
+            
+            // Đổi trạng thái nút bấm thành đang xử lý
+            btnSend.disabled = true;
+            sendIcon.className = "ph-bold ph-spinner animate-spin text-xl";
+            userInput.disabled = true;
         }
 
-        async function processQuery() {
-            const queryText = userInput.value.trim();
-            if (!queryText) return;
+        // XÓA ANIMATION SUY NGHĨ
+        function removeLoading() {
+            const loading = document.getElementById('ai-loading');
+            if (loading) loading.remove();
+            
+            // Trả lại trạng thái nút bấm
+            btnSend.disabled = false;
+            sendIcon.className = "ph-bold ph-paper-plane-right text-xl";
+            userInput.disabled = false;
+            userInput.focus();
+        }
 
-            appendMessage('user', queryText);
+        // HÀM GỬI LÊN MÁY CHỦ GAS CHUẨN MỰC
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            
+            if (WEB_APP_URL === "DÁN_LINK_WEB_APP_Ở_BƯỚC_2_VÀO_ĐÂY") {
+                alert("Bạn chưa dán đường link Google Apps Script vào code!");
+                return;
+            }
+
+            appendMessage('user', message);
             userInput.value = '';
-            userInput.style.height = 'auto';
-
-            document.getElementById('typing-indicator').classList.remove('hidden');
-            document.getElementById('btn-send').disabled = true;
+            userInput.style.height = 'auto'; // Reset height
+            showLoading();
 
             try {
-                const relevantDocs = searchKnowledgeBase(queryText);
-                
-                let systemInstruction = `Bạn là Trợ lý AI Pháp chế EHS. 
-                LỆNH 1: BẮT BUỘC CHỈ SỬ DỤNG thông tin trong [DỮ LIỆU CUNG CẤP] để trả lời.
-                LỆNH 2: NGƯỜI DÙNG CÓ THỂ CHỈ NHẬP TỪ KHÓA CỘC LỐC. Kể cả khi họ nhập cộc lốc, NẾU CÓ [DỮ LIỆU CUNG CẤP], BẠN PHẢI LẤY DỮ LIỆU ĐÓ RA DIỄN GIẢI CHỨ KHÔNG ĐƯỢC TỪ CHỐI TRẢ LỜI. Tổng hợp ngắn gọn, dễ hiểu.
-                LỆNH 3: CHỈ KHI [DỮ LIỆU CUNG CẤP] ghi là "(Trống...)", bạn mới được phép trả lời: "Hệ thống dữ liệu nội bộ chưa có thông tin này, vui lòng liên hệ Admin EHS để cập nhật." Không được tự bịa ra luật.`;
-                
-                let finalPrompt = `Câu hỏi/Từ khóa: "${queryText}"\n\n`;
-                let contextHTML = "";
-
-                if (relevantDocs.length > 0) {
-                    finalPrompt += `[DỮ LIỆU CUNG CẤP TỪ HỆ THỐNG NỘI BỘ]:\n`;
-                    relevantDocs.forEach(doc => {
-                        finalPrompt += `- Luật: ${doc.luat}\n- Nghị định: ${doc.nghi_dinh}\n- Thông tư: ${doc.thong_tu}\n- Nội dung quy định: ${doc.noi_dung}\n\n`;
-                        
-                        let linkGocBtn = "";
-                        if (doc.link_goc && doc.link_goc.trim() !== "") {
-                            linkGocBtn = `<a href="${doc.link_goc}" target="_blank" class="mt-2 inline-flex items-center gap-1 bg-white hover:bg-slate-100 border border-slate-300 text-indigo-700 px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm transition"><i class="ph-bold ph-link"></i> Xem văn bản gốc</a>`;
-                        }
-
-                        contextHTML += `
-                            <div class="mt-4 bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs">
-                                <p class="font-bold text-indigo-800 mb-1 flex items-center gap-1"><i class="ph-bold ph-scales"></i> Căn cứ pháp lý nội bộ:</p>
-                                <div class="flex flex-wrap gap-1 mt-2 mb-1">
-                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded border border-blue-200 font-medium">${doc.luat || "Chưa cập nhật"}</span>
-                                    <i class="ph-bold ph-arrow-right text-slate-400 mt-1"></i>
-                                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded border border-emerald-200 font-medium">${doc.nghi_dinh || doc.thong_tu || "Chưa cập nhật"}</span>
-                                </div>
-                                ${linkGocBtn}
-                            </div>
-                        `;
-                    });
-                } else {
-                    finalPrompt += `[DỮ LIỆU CUNG CẤP]: (Trống. Không tìm thấy thông tin nào khớp)`;
-                }
-                
-                const payload = {
-                    contents: [{ parts: [{ text: finalPrompt }] }],
-                    systemInstruction: { parts: [{ text: systemInstruction }] },
-                    generationConfig: { temperature: 0.1 }
-                };
-
-                const response = await fetch(SECURITY_GATE_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-                    body: JSON.stringify(payload) 
+                // Gửi request tới Google Apps Script (Người đưa thư)
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Dùng text/plain để tránh lỗi CORS Preflight phức tạp
+                    body: JSON.stringify({ message: message })
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`Máy chủ báo lỗi HTTP ${response.status}. Vui lòng kiểm tra lại quyền truy cập Apps Script.`);
-                }
-                
-                const result = await response.json();
-                
-                let aiResponseText = "";
-                if (result.candidates && result.candidates[0] && result.candidates[0].content) {
-                     aiResponseText = result.candidates[0].content.parts[0].text;
-                } else if (result.error) {
-                     aiResponseText = `Máy chủ AI báo lỗi: ${result.error.message}`;
-                     appendMessage('ai', `<span class="text-rose-600 font-bold"><i class="ph-bold ph-warning-circle"></i> ${aiResponseText}</span>`, contextHTML, true);
-                     document.getElementById('typing-indicator').classList.add('hidden');
-                     document.getElementById('btn-send').disabled = false;
-                     return;
-                } else {
-                     aiResponseText = "Không nhận được phản hồi từ AI. Vui lòng thử lại.";
-                }
 
-                document.getElementById('typing-indicator').classList.add('hidden');
-                
-                if (aiResponseText.includes("chưa có thông tin này") || relevantDocs.length === 0) {
-                    appendMessage('ai', aiResponseText, "");
+                const data = await response.json();
+                removeLoading();
+
+                if (data.error) {
+                    appendMessage('ai', "🚨 **Lỗi từ máy chủ:**\n" + data.error);
+                } else if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    appendMessage('ai', data.candidates[0].content.parts[0].text);
                 } else {
-                    appendMessage('ai', aiResponseText, contextHTML);
+                    appendMessage('ai', "⚠️ Trợ lý AI hiện không thể phản hồi. Vui lòng thử lại sau.");
                 }
 
             } catch (error) {
-                console.error("Chi tiết lỗi hệ thống:", error);
-                document.getElementById('typing-indicator').classList.add('hidden');
-                const errHTML = `
-                    <div class="bg-red-50 p-3 rounded-xl border border-red-200 text-xs text-red-800">
-                        <p class="font-bold flex items-center gap-1 mb-1"><i class="ph-bold ph-warning-circle text-base text-red-600"></i> Sự cố kết nối máy chủ:</p>
-                        <p class="font-mono">${error.message}</p>
-                    </div>
-                `;
-                appendMessage('ai', errHTML, "", true);
-            } finally {
-                document.getElementById('btn-send').disabled = false;
+                removeLoading();
+                appendMessage('ai', "🚨 **Mất kết nối với máy chủ AI:**\nVui lòng kiểm tra lại đường truyền Internet hoặc link Google Apps Script.");
+                console.error(error);
             }
         }
 
-        userInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
     </script>
+    <style>
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* CSS tuỳ chỉnh cho Markdown sinh ra từ AI để đẹp hơn */
+        #chat-box strong { color: #1e40af; }
+        #chat-box ul { list-style-type: disc; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        #chat-box ol { list-style-type: decimal; padding-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        #chat-box blockquote { border-left: 4px solid #c7d2fe; padding-left: 1rem; color: #475569; font-style: italic; background-color: #f8fafc; padding: 0.5rem 1rem; border-radius: 0.5rem;}
+        #chat-box h1, #chat-box h2, #chat-box h3 { font-weight: bold; color: #1e3a8a; margin-top: 1rem; margin-bottom: 0.5rem;}
+    </style>
 </body>
 </html>
+`
