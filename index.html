@@ -555,38 +555,54 @@
         // HÀM XIN QUYỀN VÀ LẤY TOKEN THÔNG BÁO
         window.requestNotificationPermission = async function() {
             if (!messaging) {
-                alert("Môi trường mạng của bạn không hỗ trợ nhận thông báo (Yêu cầu phải chạy trên HTTPS).");
+                alert("❌ THÔNG BÁO BỊ CHẶN: Thiết bị hoặc mạng của bạn không hỗ trợ (bắt buộc phải chạy tên miền có ổ khóa bảo mật https://).");
                 return;
             }
+
+            // Kiểm tra trạng thái cấp quyền hiện tại
+            if (Notification.permission === 'denied') {
+                alert("❌ QUYỀN BỊ CHẶN: Bạn đã lỡ tay chặn thông báo trang này. Vui lòng bấm vào biểu tượng Ổ KHÓA 🔒 trên thanh địa chỉ, chọn 'Cài đặt trang web' và cho phép 'Thông báo'.");
+                return;
+            }
+
             try {
-                console.log("Đang xin quyền thông báo đẩy...");
+                // Hiển thị Popup xin quyền của trình duyệt
                 const permission = await Notification.requestPermission();
                 
                 if (permission === 'granted') {
-                    console.log("Đã cấp quyền! Đang lấy Token...");
-                    const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+                    alert("⏳ Bắt đầu tạo Mã Bảo Mật (Token)... Vui lòng chờ 3-5 giây.");
                     
-                    if (currentToken) {
-                        console.log("FCM Token lấy thành công:", currentToken);
-                        const userId = localStorage.getItem("ehs_user_id");
+                    try {
+                        const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
                         
-                        if(userId) {
-                            const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", userId));
-                            const snap = await window.getDocs(q);
-                            if (!snap.empty) {
-                                const userDocId = snap.docs[0].id;
-                                await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", userDocId), {
-                                    fcm_token: currentToken
-                                });
-                                alert("Đã liên kết thiết bị. Bạn sẽ nhận được thông báo khi có việc mới!");
+                        if (currentToken) {
+                            const userId = localStorage.getItem("ehs_user_id");
+                            if(userId) {
+                                const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", userId));
+                                const snap = await window.getDocs(q);
+                                if (!snap.empty) {
+                                    const userDocId = snap.docs[0].id;
+                                    await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", userDocId), {
+                                        fcm_token: currentToken
+                                    });
+                                    alert("✅ THÀNH CÔNG: Đã liên kết thiết bị bảo mật cao! Bạn sẽ nhận được thông báo ngay khi có việc mới.");
+                                } else {
+                                    alert("❌ Lỗi: Không tìm thấy hồ sơ cá nhân của bạn trong cơ sở dữ liệu hệ thống.");
+                                }
+                            } else {
+                                alert("❌ Lỗi: Bạn chưa đăng nhập vào hệ thống.");
                             }
+                        } else {
+                            alert("⚠️ Cảnh báo: Không thể sinh ra mã Token. Hãy chắc chắn bạn đã tạo file 'firebase-messaging-sw.js' trên GitHub.");
                         }
+                    } catch(tokenErr) {
+                        alert("🚨 LỖI TẠO TOKEN: Trình duyệt không tìm thấy file 'firebase-messaging-sw.js' hoặc mạng bị lỗi. Chi tiết: " + tokenErr.message);
                     }
                 } else {
-                    console.log("Người dùng từ chối nhận thông báo.");
+                    alert("❌ Thất bại: Bạn đã bấm TỪ CHỐI nhận thông báo. Hệ thống không thể gửi việc cho bạn.");
                 }
             } catch (error) {
-                console.error("Lỗi khi cài đặt thông báo đẩy:", error);
+                alert("🚨 Lỗi hệ thống: " + error.message);
             }
         };
 
