@@ -122,7 +122,6 @@
             <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
                 <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_incidents">Quy trình Sự cố</span>
             </a>
-            <!-- FIX: Thêm thẻ đóng </a> cho Quản lý hóa chất -->
             <a href="quan_ly_hoa_chat.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
                 <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_chemicals">Quản lý Hóa chất</span>
             </a>
@@ -382,7 +381,7 @@
                         <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. Đào tạo tiêu chuẩn 5S</h4>
                         <span class="bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ml-2">Bắt buộc</span>
                     </div>
-                    <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học duy trì không gian làm việc sạch sẽ, an toàn.</p>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học duy trì không gian làm việc sạch会ẽ, an toàn.</p>
                 </a>
                 <a href="bai_giang.html?id=data_loto" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition shadow-sm mt-3">
                     <div class="flex items-center justify-between mb-1">
@@ -498,26 +497,73 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // NẠP THƯ VIỆN BẮT THÔNG BÁO PUSH
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
-       const firebaseConfig = {
-         apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
-         authDomain: "ehs-training-app.firebaseapp.com",
-         projectId: "ehs-training-app",
-         storageBucket: "ehs-training-app.firebasestorage.app",
-         messagingSenderId: "354083430003",
-         appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-         measurementId: "G-74ETHWTJCW"
-       };
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
+        };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // KHỞI TẠO BỘ MÁY THÔNG BÁO VÀ CHÌA KHÓA VAPID
+        const messaging = getMessaging(app);
+        const VAPID_KEY = "BNTDgWXyrg7X7cQBDOUHk_76XVK5pkNUAnycD4zNf4cd-FmDtn5epWr1L5cJaKFLfErqSuoOLD7D2G3puasks74";
         
         window.auth = auth; window.db = db;
         window.EmailAuthProvider = EmailAuthProvider; window.reauthenticateWithCredential = reauthenticateWithCredential;
         window.updatePassword = updatePassword; window.signInWithEmailAndPassword = signInWithEmailAndPassword;
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
+
+        // HÀM XIN QUYỀN VÀ LẤY TOKEN THÔNG BÁO
+        window.requestNotificationPermission = async function() {
+            try {
+                console.log("Đang xin quyền thông báo đẩy...");
+                const permission = await Notification.requestPermission();
+                
+                if (permission === 'granted') {
+                    console.log("Đã cấp quyền! Đang lấy Token...");
+                    const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+                    
+                    if (currentToken) {
+                        console.log("FCM Token lấy thành công:", currentToken);
+                        const userId = localStorage.getItem("ehs_user_id");
+                        
+                        if(userId) {
+                            const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", userId));
+                            const snap = await window.getDocs(q);
+                            if (!snap.empty) {
+                                const userDocId = snap.docs[0].id;
+                                await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", userDocId), {
+                                    fcm_token: currentToken
+                                });
+                                console.log("Đã lưu FCM Token vào hồ sơ nhân sự nội bộ!");
+                            }
+                        }
+                    }
+                } else {
+                    console.log("Người dùng từ chối nhận thông báo.");
+                }
+            } catch (error) {
+                console.error("Lỗi khi cài đặt thông báo đẩy:", error);
+            }
+        };
+
+        // HỨNG THÔNG BÁO KHI ĐANG MỞ WEB (FOREGROUND)
+        onMessage(messaging, (payload) => {
+            console.log('Tin nhắn đến lúc đang mở web: ', payload);
+            alert(`🔔 THÔNG BÁO EHS MỚI:\n\nTiêu đề: ${payload.notification.title}\nNội dung: ${payload.notification.body}`);
+        });
 
         document.getElementById('btn-report-login').addEventListener('click', async () => {
             const inputPass = document.getElementById('report-password').value;
@@ -778,6 +824,9 @@
                         </button>
                     </div>
                 `;
+
+                // TỰ ĐỘNG BẬT BẢNG XIN QUYỀN THÔNG BÁO KHI ĐÃ ĐĂNG NHẬP
+                setTimeout(window.requestNotificationPermission, 2000);
             }
         }
 
