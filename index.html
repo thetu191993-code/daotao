@@ -184,6 +184,7 @@
                             <h3 class="font-bold text-slate-800 dark:text-white" data-i18n="notif_title">Thông báo</h3>
                         </div>
                         <div id="notif-list" class="max-h-[60vh] overflow-y-auto custom-scrollbar bg-white dark:bg-dark-card divide-y divide-slate-50 dark:divide-slate-800/50">
+                            <!-- Dữ liệu được nạp vào đây -->
                             <div class="p-6 text-center text-slate-400">Đang tải thông báo...</div>
                         </div>
                     </div>
@@ -215,12 +216,6 @@
         <!-- Lớp phủ đóng popup thông báo -->
         <div id="notif-overlay" onclick="closeNotifications()" class="fixed inset-0 z-40 hidden"></div>
 
-        <!-- Toast Thông báo -->
-        <div id="toast" class="fixed top-5 right-5 z-[250] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
-            <i id="toast-icon" class="text-2xl"></i>
-            <span id="toast-message">Thành công!</span>
-        </div>
-
         <!-- Content Area -->
         <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-8 w-full">
             <div class="max-w-6xl mx-auto w-full">
@@ -238,6 +233,7 @@
 
                 <!-- 6 Thẻ Tính năng chính -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                    
                     <button onclick="openCourseModal()" class="group bg-white dark:bg-dark-card rounded-2xl p-6 border border-slate-200 dark:border-dark-border shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center">
                         <div class="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-4 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                             <i class="ph-fill ph-graduation-cap text-3xl"></i>
@@ -286,38 +282,116 @@
                         <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-1" data-i18n="card6_title">Toolbox Meeting</h3>
                         <p class="text-xs text-slate-500 dark:text-dark-muted font-medium" data-i18n="card6_desc">Tổ chức họp, lấy ý kiến & điểm danh</p>
                     </a>
+
                 </div>
             </div>
         </div>
     </main>
 
     <!-- REPORT MODAL -->
-    <div id="report-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4 transition-opacity">
+    <div id="report-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative">
-            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 rounded-full p-1 transition z-10"><i class="ph-bold ph-x text-xl"></i></button>
+            
+            <button onclick="closeReportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 rounded-full p-1 transition z-10">
+                <i class="ph-bold ph-x text-xl"></i>
+            </button>
+
+            <!-- Giao diện nhập mật khẩu -->
             <div id="password-view" class="p-8 text-center pt-10">
-                <div class="flex justify-center mb-4"><i id="modal-icon" class="ph-fill ph-lock-key text-5xl text-teal-600 dark:text-teal-400"></i></div>
+                <div class="flex justify-center mb-4">
+                    <i id="modal-icon" class="ph-fill ph-lock-key text-5xl text-teal-600 dark:text-teal-400"></i>
+                </div>
                 <h3 class="text-2xl font-bold text-slate-800 dark:text-white mb-2" data-i18n="modal_report_title">Kho Báo Cáo EHS</h3>
                 <p class="text-slate-500 dark:text-dark-muted text-sm mb-6" data-i18n="modal_report_desc">Tài liệu nội bộ. Vui lòng nhập mật khẩu quản lý để truy cập.</p>
+                
                 <input type="password" id="report-password" class="w-full px-4 py-4 border-2 border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-dark-bg dark:text-white rounded-xl text-center tracking-[0.5em] font-mono text-2xl focus:border-teal-500 focus:bg-white outline-none transition mb-4">
+                
                 <p id="password-error" class="text-red-500 text-sm font-bold mb-4 hidden"></p>
-                <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl hover:bg-teal-700 shadow-md transition flex items-center justify-center gap-2"><span data-i18n="btn_confirm">Xác Nhận Truy Cập</span></button>
+                
+                <button id="btn-report-login" class="w-full bg-teal-600 text-white font-bold py-3.5 rounded-xl hover:bg-teal-700 shadow-md transition flex items-center justify-center gap-2">
+                    <span data-i18n="btn_confirm">Xác Nhận Truy Cập</span>
+                </button>
             </div>
+
+            <!-- Giao diện Danh sách File -->
             <div id="report-list-view" class="p-5 flex flex-col gap-3 hidden h-[400px] overflow-y-auto custom-scrollbar">
-                <!-- Links báo cáo... -->
-                <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm"><div class="flex items-center gap-3"><i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i><span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 01</span></div><i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i></a>
+                <a href="bao_cao/Thang_01.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 01/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_02.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 02/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_03.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 03/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_04.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 04/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_05.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 05/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
+                <a href="bao_cao/Thang_06.pdf" target="_blank" class="flex items-center justify-between p-4 rounded-xl border border-slate-200 dark:border-dark-border hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/30 transition group shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="ph-fill ph-file-pdf text-rose-500 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-800 dark:group-hover:text-teal-400">Báo cáo EHS Tháng 06/2026</span>
+                    </div>
+                    <i class="ph-bold ph-download-simple text-slate-400 group-hover:text-teal-600 text-lg"></i>
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- COURSE MODAL -->
+    <!-- COURSE MODAL (Khóa học tùy chỉnh) -->
     <div id="course-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 w-full">
         <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 border-t-4 border-indigo-500 relative">
             <button onclick="document.getElementById('course-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 rounded-full p-1"><i class="ph-bold ph-x text-xl"></i></button>
-            <div class="flex justify-center mb-4"><div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center"><i class="ph-fill ph-books text-4xl"></i></div></div>
+            <div class="flex justify-center mb-4">
+                <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center"><i class="ph-fill ph-books text-4xl"></i></div>
+            </div>
             <h3 class="text-xl sm:text-2xl font-bold text-slate-800 dark:text-white mb-2 text-center" data-i18n="modal_course_title">Lộ trình học tập của bạn</h3>
-            <p class="text-slate-500 dark:text-dark-muted text-sm mb-6 text-center" data-i18n="modal_course_desc">Hệ thống phân loại tự động dựa trên bộ phận của bạn.</p>
-            <div id="dynamic-courses" class="space-y-3"></div>
+            <p class="text-slate-500 dark:text-dark-muted text-sm mb-6 text-center" data-i18n="modal_course_desc">Hệ thống đã tự động phân loại khóa học dựa trên bộ phận và vị trí làm việc của bạn.</p>
+            
+            <div id="course-list-container" class="space-y-3">
+                <a href="bai_giang.html?id=data_ehs_chung" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition">
+                    <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">1. An Toàn EHS Cơ Bản</h4>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1">Bắt buộc cho 100% CB-CNV toàn nhà máy.</p>
+                </a>
+                <a href="bai_giang.html?id=data_5s" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition shadow-sm mt-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. Đào tạo tiêu chuẩn 5S</h4>
+                        <span class="bg-emerald-200 dark:bg-emerald-700 text-emerald-800 dark:text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ml-2">Bắt buộc</span>
+                    </div>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học duy trì không gian làm việc sạch sẽ, an toàn.</p>
+                </a>
+                <a href="bai_giang.html?id=data_loto" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition shadow-sm mt-3">
+                    <div class="flex items-center justify-between mb-1">
+                        <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg truncate">3. An toàn LOTO</h4>
+                        <span class="bg-rose-200 dark:bg-rose-700 text-rose-800 dark:text-rose-200 text-[10px] font-bold px-2 py-0.5 rounded shrink-0 ml-2">Nhóm 3</span>
+                    </div>
+                    <p class="text-xs text-indigo-600 dark:text-indigo-400">Quy trình cô lập năng lượng dành cho bộ phận Bảo trì, Kỹ thuật.</p>
+                </a>
+            <div id="dynamic-courses"></div>
+            </div>
         </div>
     </div>
 
@@ -327,10 +401,10 @@
             <button onclick="document.getElementById('change-pass-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 rounded-full p-1"><i class="ph-bold ph-x text-xl"></i></button>
             <div class="flex justify-center mb-4"><i class="ph-fill ph-shield-check text-5xl text-blue-600 dark:text-blue-400"></i></div>
             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 text-center" data-i18n="modal_changepass_title">Đổi Mật Khẩu</h3>
-            <input type="password" id="cp-old" class="w-full px-4 py-3 border border-slate-300 dark:border-dark-border bg-transparent dark:text-white rounded-xl mb-3 outline-none" placeholder="Mật khẩu hiện tại" data-i18n-placeholder="cp_old">
-            <input type="password" id="cp-new" class="w-full px-4 py-3 border border-slate-300 dark:border-dark-border bg-transparent dark:text-white rounded-xl mb-3 outline-none" placeholder="Mật khẩu mới (> 6 ký tự)" data-i18n-placeholder="cp_new">
-            <input type="password" id="cp-confirm" class="w-full px-4 py-3 border border-slate-300 dark:border-dark-border bg-transparent dark:text-white rounded-xl mb-6 outline-none" placeholder="Xác nhận mật khẩu mới" data-i18n-placeholder="cp_confirm">
-            <button onclick="handleChangePassword()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition" data-i18n="btn_update_pass">Cập Nhật</button>
+            <input type="password" id="cp-old" class="w-full px-4 py-3 border border-slate-300 dark:border-dark-border bg-transparent dark:text-white rounded-xl mb-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Mật khẩu hiện tại" data-i18n-placeholder="cp_old">
+            <input type="password" id="cp-new" class="w-full px-4 py-3 border border-slate-300 dark:border-dark-border bg-transparent dark:text-white rounded-xl mb-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Mật khẩu mới (> 6 ký tự)" data-i18n-placeholder="cp_new">
+            <input type="password" id="cp-confirm" class="w-full px-4 py-3 border border-slate-300 dark:border-dark-border bg-transparent dark:text-white rounded-xl mb-6 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Xác nhận lại mật khẩu mới" data-i18n-placeholder="cp_confirm">
+            <button onclick="handleChangePassword()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition" data-i18n="btn_update_pass">Cập Nhật Mật Khẩu</button>
         </div>
     </div>
 
@@ -387,10 +461,11 @@
                         <p class="font-bold text-slate-500 dark:text-dark-muted">Đang tải dữ liệu...</p>
                     </div>
 
+                    <!-- TAB HỒ SƠ -->
                     <div id="tab-content-info" class="space-y-4 pb-20 sm:pb-0">
                         <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-3 rounded-xl text-amber-800 dark:text-amber-400 text-xs font-medium flex gap-2">
                             <i class="ph-fill ph-info text-lg shrink-0"></i>
-                            <p>Cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo.</p>
+                            <p>Vui lòng cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo (Theo Vị trí/Ca làm việc). Mã NV dùng để đăng nhập nên không thể tự thay đổi.</p>
                         </div>
                         <input type="hidden" id="up-doc-id">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -403,17 +478,22 @@
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Nhà Máy</label><select id="up-plant" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="">-- Chọn --</option><option value="Nhà máy Can">Nhà máy Can</option><option value="Nhà máy End">Nhà máy End</option></select></div>
-                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Bộ Phận / Vị trí</label><input type="text" id="up-dept-pos" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ca Làm Việc</label><select id="up-shift" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="Chưa xác định">-- Chọn Ca --</option><option value="Ca A">Ca A</option><option value="Ca B">Ca B</option><option value="Ca C">Ca C</option><option value="Ca D">Ca D</option><option value="Hành Chánh">Hành Chánh</option></select></div>
                         </div>
+                        <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Bộ Phận / Vị trí</label><input type="text" id="up-dept-pos" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="VD: Sản xuất - Vận hành máy Washer..."></div>
                         
-                        <div class="flex gap-3 mt-4">
-                            <!-- NÚT BẬT THÔNG BÁO Ở ĐÂY -->
-                            <button id="btn-enable-notif" type="button" onclick="requestNotificationPermission()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2"><i class="ph-bold ph-bell-ringing text-lg"></i> Bật Thông Báo</button>
-                            
-                            <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2"><i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ</button>
+                        <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                            <!-- NÚT XIN QUYỀN THÔNG BÁO BẰNG TAY -->
+                            <button onclick="requestNotificationPermission()" class="w-full sm:w-1/2 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-bell-ringing text-lg"></i> Bật Thông Báo
+                            </button>
+                            <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full sm:w-1/2 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ
+                            </button>
                         </div>
                     </div>
 
+                    <!-- TAB NHIỆM VỤ -->
                     <div id="tab-content-task" class="hidden space-y-4 pb-20 sm:pb-0">
                         <h4 class="font-black text-slate-800 dark:text-white text-lg border-b border-slate-200 dark:border-dark-border pb-2 mb-4">Nhiệm vụ cần thực hiện</h4>
                         <div id="task-container" class="space-y-3"></div>
@@ -429,8 +509,8 @@
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // NẠP THƯ VIỆN BẮT THÔNG BÁO PUSH
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
+        // NẠP THƯ VIỆN BẮT THÔNG BÁO PUSH VÀ HÀM BỌC LỖI (isSupported)
+        import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -446,42 +526,44 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // KHỞI TẠO BỘ MÁY THÔNG BÁO VÀ CHÌA KHÓA VAPID
-        const messaging = getMessaging(app);
-        const VAPID_KEY = "BNTDgWXyrg7X7cQBDOUHk_76XVK5pkNUAnycD4zNf4cd-FmDtn5epWr1L5cJaKFLfErqSuoOLD7D2G3puasks74";
-        
         window.auth = auth; window.db = db;
         window.EmailAuthProvider = EmailAuthProvider; window.reauthenticateWithCredential = reauthenticateWithCredential;
         window.updatePassword = updatePassword; window.signInWithEmailAndPassword = signInWithEmailAndPassword;
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
 
-        function showToast(message, type = "success") {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            toast.className = "fixed top-5 right-5 z-[300] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
-            if (type === "success") { toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl"; } 
-            else { toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl"; }
-            document.getElementById('toast-message').innerText = message;
-            toast.classList.remove('translate-x-[150%]');
-            setTimeout(() => toast.classList.add('translate-x-[150%]'), 3000);
-        }
-        window.showToast = showToast;
+        // =========================================================================
+        // BẢO VỆ HỆ THỐNG: KIỂM TRA XEM MÁY CÓ HỖ TRỢ THÔNG BÁO KHÔNG RỒI MỚI CHẠY
+        // =========================================================================
+        let messaging = null;
+        const VAPID_KEY = "BNTDgWXyrg7X7cQBDOUHk_76XVK5pkNUAnycD4zNf4cd-FmDtn5epWr1L5cJaKFLfErqSuoOLD7D2G3puasks74";
 
-        // ==========================================
-        // HÀM XIN QUYỀN VÀ LẤY TOKEN THÔNG BÁO (ĐƯỢC GỌI KHI BẤM NÚT)
-        // ==========================================
+        isSupported().then((supported) => {
+            if (supported) {
+                messaging = getMessaging(app);
+                
+                // HỨNG THÔNG BÁO KHI ĐANG MỞ WEB (FOREGROUND)
+                onMessage(messaging, (payload) => {
+                    console.log('Tin nhắn đến lúc đang mở web: ', payload);
+                    alert(`🔔 THÔNG BÁO EHS MỚI:\n\nTiêu đề: ${payload.notification.title}\nNội dung: ${payload.notification.body}`);
+                });
+            } else {
+                console.warn("Trình duyệt này không hỗ trợ Firebase Cloud Messaging.");
+            }
+        });
+
+        // HÀM XIN QUYỀN VÀ LẤY TOKEN THÔNG BÁO
         window.requestNotificationPermission = async function() {
-            const btn = document.getElementById('btn-enable-notif');
-            if(btn) { btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang xử lý...'; btn.disabled = true; }
-
+            if (!messaging) {
+                alert("Môi trường mạng của bạn không hỗ trợ nhận thông báo (Yêu cầu phải chạy trên HTTPS).");
+                return;
+            }
             try {
                 console.log("Đang xin quyền thông báo đẩy...");
-                // Browser sẽ hiện hộp thoại hỏi xin quyền tại đây
                 const permission = await Notification.requestPermission();
                 
                 if (permission === 'granted') {
-                    console.log("Đã cấp quyền! Đang kết nối Firebase...");
+                    console.log("Đã cấp quyền! Đang lấy Token...");
                     const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
                     
                     if (currentToken) {
@@ -496,32 +578,29 @@
                                 await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", userDocId), {
                                     fcm_token: currentToken
                                 });
-                                showToast("Đã bật thông báo thành công!");
+                                alert("Đã liên kết thiết bị. Bạn sẽ nhận được thông báo khi có việc mới!");
                             }
                         }
-                    } else {
-                        showToast("Lỗi: Không lấy được Token máy chủ.", "error");
                     }
                 } else {
-                    showToast("Bạn đã từ chối nhận thông báo.", "error");
+                    console.log("Người dùng từ chối nhận thông báo.");
                 }
             } catch (error) {
-                console.error("Lỗi:", error);
-                showToast("Lỗi kết nối. Hãy chắc chắn bạn đang dùng HTTPS.", "error");
-            } finally {
-                if(btn) { btn.innerHTML = '<i class="ph-bold ph-bell-ringing text-lg"></i> Bật Thông Báo'; btn.disabled = false; }
+                console.error("Lỗi khi cài đặt thông báo đẩy:", error);
             }
         };
 
-        // HỨNG THÔNG BÁO KHI ĐANG MỞ WEB (FOREGROUND)
-        onMessage(messaging, (payload) => {
-            console.log('Tin nhắn đến lúc đang mở web: ', payload);
-            showToast(`🔔 ${payload.notification.title}: ${payload.notification.body}`, "success");
+        // =========================================================================
+        // KHÔI PHỤC LÍNH CANH ĐĂNG NHẬP
+        // =========================================================================
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Kích hoạt giao diện người dùng
+                if (window.checkLoginStatus) window.checkLoginStatus();
+            } else {
+                console.log("Phiên đăng nhập đã hết hạn.");
+            }
         });
-
-        // ==========================================
-        // CÁC HÀM CŨ GIỮ NGUYÊN BÊN DƯỚI
-        // ==========================================
 
         document.getElementById('btn-report-login').addEventListener('click', async () => {
             const inputPass = document.getElementById('report-password').value;
@@ -549,7 +628,182 @@
         document.getElementById('report-password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') document.getElementById('btn-report-login').click();
         });
+    </script>
+
+    <script>
+        const translations = {
+            "vi": {
+                nav_dashboard: "Bảng Điều Khiển chính",
+                group_training: "Nhóm 1: Đào tạo EHS",
+                nav_classroom: "Phòng Học EHS",
+                nav_documents: "Tài liệu Đào tạo",
+                nav_personnel: "Hồ sơ Nhân sự Nội bộ",
+                group_management: "Nhóm 2: Quản trị & Báo cáo",
+                nav_tasks: "Quản lý Kế Hoạch & Tiến Độ",
+                nav_meeting: "Họp & Toolbox Meeting",
+                nav_audit: "Trung tâm Kiểm tra",
+                nav_report: "Kho Báo Cáo EHS",
+                nav_admin_audit: "Quản trị Báo cáo",
+                nav_admin_scores: "Quản trị Điểm thi",
+                nav_admin_fire: "Quản trị PCCC",
+                nav_monitoring: "Đồng bộ Quan trắc",
+                group_procedures: "Nhóm 3: Quy trình & HD",
+                nav_ai_law: "Trợ lý AI Pháp chế",
+                nav_manuals: "Sổ tay Vận hành",
+                nav_incidents: "Quy trình Sự cố",
+                nav_chemicals: "Quản lý Hóa chất",
+                group_contractors: "Nhóm 4: Quản trị Nhà thầu",
+                nav_contractor_profile: "Hồ sơ Nhà thầu",
+                nav_contractor_portal: "Cổng Khai báo",
+                nav_security: "Trạm Gác An Ninh",
+                hero_title: "Trung Tâm Quản Lý EHS",
+                hero_subtitle: "Nền tảng quản trị thông minh dành riêng cho Phòng An Toàn - Vệ Sinh - Môi Trường. Tự động hóa lộ trình đào tạo, số hóa dữ liệu hóa chất và kiểm soát rủi ro nhà thầu theo thời gian thực.",
+                card1_title: "Phòng Học EHS",
+                card1_desc: "Lộ trình học tập & thi trắc nghiệm",
+                card2_title: "Đi Kiểm Tra (Audit)",
+                card2_desc: "Checklist an toàn hiện trường",
+                card3_title: "Kho Báo Cáo EHS",
+                card3_desc: "Tài liệu bảo mật nội bộ",
+                card4_title: "AI Pháp Chế",
+                card4_desc: "Hỏi đáp luật EHS tự động",
+                card5_title: "Giao Việc & Tiến Độ",
+                card5_desc: "Theo dõi task, đánh giá KPI",
+                card6_title: "Toolbox Meeting",
+                card6_desc: "Tổ chức họp, lấy ý kiến & điểm danh",
+                modal_report_title: "Kho Báo Cáo EHS",
+                modal_report_desc: "Tài liệu nội bộ. Vui lòng nhập mật khẩu quản lý để truy cập.",
+                btn_confirm: "Xác Nhận Truy Cập",
+                authenticating: "Đang xác thực...",
+                modal_course_title: "Lộ trình học tập của bạn",
+                modal_course_desc: "Hệ thống đã tự động phân loại khóa học dựa trên bộ phận và vị trí làm việc của bạn.",
+                emp_id: "MÃ NV",
+                modal_changepass_title: "Đổi Mật Khẩu",
+                btn_update_pass: "Cập Nhật Mật Khẩu",
+                notif_title: "Thông báo"
+            },
+            "en": {
+                nav_dashboard: "Main Dashboard",
+                group_training: "Group 1: EHS Training",
+                nav_classroom: "EHS Classroom",
+                nav_documents: "Training Documents",
+                nav_personnel: "Internal Personnel Profile",
+                group_management: "Group 2: Management & Reports",
+                nav_tasks: "Task & Progress Management",
+                nav_meeting: "Meeting & Toolbox",
+                nav_audit: "Audit Center",
+                nav_report: "EHS Report Vault",
+                nav_admin_audit: "Report Admin",
+                nav_admin_scores: "Score Admin",
+                nav_admin_fire: "Fire Safety Admin",
+                nav_monitoring: "Monitoring Sync",
+                group_procedures: "Group 3: Procedures & Guides",
+                nav_ai_law: "Legal AI Assistant",
+                nav_manuals: "Operation Manuals",
+                nav_incidents: "Incident Procedures",
+                nav_chemicals: "Chemical Management",
+                group_contractors: "Group 4: Contractor Management",
+                nav_contractor_profile: "Contractor Profiles",
+                nav_contractor_portal: "Declaration Portal",
+                nav_security: "Security Guard Station",
+                hero_title: "EHS Management Center",
+                hero_subtitle: "Smart management platform exclusively for the EHS Department. Automate training roadmaps, digitize chemical data, and control contractor risks in real-time.",
+                card1_title: "EHS Classroom",
+                card1_desc: "Training roadmap & quizzes",
+                card2_title: "Audit & Inspection",
+                card2_desc: "On-site safety checklists",
+                card3_title: "EHS Report Vault",
+                card3_desc: "Confidential internal docs",
+                card4_title: "Legal AI",
+                card4_desc: "Automated EHS law Q&A",
+                card5_title: "Task & Progress",
+                card5_desc: "Track tasks, evaluate KPI",
+                card6_title: "Toolbox Meeting",
+                card6_desc: "Organize, discuss & check-in",
+                modal_report_title: "EHS Report Vault",
+                modal_report_desc: "Internal documents. Please enter the admin password to access.",
+                btn_confirm: "Confirm Access",
+                authenticating: "Authenticating...",
+                modal_course_title: "Your Learning Roadmap",
+                modal_course_desc: "The system has automatically categorized courses based on your department and job position.",
+                emp_id: "ID",
+                modal_changepass_title: "Change Password",
+                btn_update_pass: "Update Password",
+                notif_title: "Notifications"
+            },
+            "zh": {
+                nav_dashboard: "主仪表板",
+                group_training: "第 1 组：EHS 培训",
+                nav_classroom: "EHS 教室",
+                nav_documents: "培训文件",
+                nav_personnel: "内部人员档案",
+                group_management: "第 2 组：管理和报告",
+                nav_tasks: "任务和进度管理",
+                nav_meeting: "工具箱会议",
+                nav_audit: "审核中心",
+                nav_report: "EHS 报告库",
+                nav_admin_audit: "报告管理",
+                nav_admin_scores: "成绩管理",
+                nav_admin_fire: "消防管理",
+                nav_monitoring: "监控同步",
+                group_procedures: "第 3 组：程序和指南",
+                nav_ai_law: "法律人工智能助理",
+                nav_manuals: "操作手册",
+                nav_incidents: "事件程序",
+                nav_chemicals: "化学品管理",
+                group_contractors: "第 4 组：承包商管理",
+                nav_contractor_profile: "承包商概况",
+                nav_contractor_portal: "申报门户",
+                nav_security: "保安站",
+                hero_title: "EHS 管理中心",
+                hero_subtitle: "专为安全、健康和环境部门打造的智能管理平台。自动执行培训路线图、数字化化学品数据并实时控制承包商风险。",
+                card1_title: "EHS 教室",
+                card1_desc: "培训路线图和测验",
+                card2_title: "现场检查 (Audit)",
+                card2_desc: "现场安全检查表",
+                card3_title: "EHS 报告库",
+                card3_desc: "内部机密文件",
+                card4_title: "法律人工智能",
+                card4_desc: "自动EHS法律问答",
+                card5_title: "任务与进度",
+                card5_desc: "跟踪任务，评估KPI",
+                card6_title: "工具箱会议",
+                card6_desc: "组织会议，征求意见并签到",
+                modal_report_title: "EHS 报告库",
+                modal_report_desc: "内部文件。请输入管理密码以访问。",
+                btn_confirm: "确认访问",
+                authenticating: "验证中...",
+                modal_course_title: "您的学习路线图",
+                modal_course_desc: "系统已根据您的部门和职位自动对课程进行分类。",
+                emp_id: "工号",
+                modal_changepass_title: "更改密码",
+                btn_update_pass: "更新密码",
+                notif_title: "通知"
+            }
+        };
+
+        let currentLang = localStorage.getItem('ehs_lang') || 'vi';
         
+        function changeLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('ehs_lang', lang);
+            
+            const langNames = { 'vi': 'Tiếng Việt', 'en': 'English', 'zh': '中文' };
+            document.getElementById('current-lang-display').innerText = langNames[lang];
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key]; 
+                }
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+        }
+
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
         
         function applyTheme() {
@@ -564,7 +818,7 @@
             }
         }
 
-        window.toggleDarkMode = function() {
+        function toggleDarkMode() {
             isDarkMode = !isDarkMode;
             localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light');
             applyTheme();
@@ -573,7 +827,7 @@
         const currentUserId = localStorage.getItem("ehs_user_id");
         const currentUserName = localStorage.getItem("ehs_user_name");
         
-        window.checkLoginStatus = function() {
+        function checkLoginStatus() {
             const sidebarFooter = document.getElementById('sidebar-footer');
             const topProfileSection = document.getElementById('top-profile-section');
             
@@ -585,7 +839,7 @@
                         <div class="bg-blue-600 dark:bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-inner sm:mr-2 shrink-0"><i class="ph-fill ph-user"></i></div>
                         <div class="mr-2 pr-3 border-r border-slate-200 dark:border-slate-600 hidden sm:block">
                             <p class="text-[13px] font-bold text-slate-800 dark:text-white leading-tight truncate max-w-[120px]">${displayName}</p>
-                            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">MÃ NV: ${currentUserId}</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider"><span data-i18n="emp_id">${translations[currentLang].emp_id}</span>: ${currentUserId}</p>
                         </div>
                         <div class="hidden sm:flex items-center gap-1 pl-1">
                             <button onclick="event.stopPropagation(); handleLogout()" class="text-slate-400 hover:text-red-500 p-1.5 rounded-full transition bg-slate-100 dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-900/30" title="Đăng xuất"><i class="ph-bold ph-power text-lg"></i></button>
@@ -599,7 +853,7 @@
                             <div class="bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-sm border border-slate-200 dark:border-slate-600"><i class="ph-fill ph-user"></i></div>
                             <div class="overflow-hidden">
                                 <p class="text-sm font-bold text-slate-800 dark:text-white truncate">${displayName}</p>
-                                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider truncate">MÃ NV: ${currentUserId}</p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider truncate"><span data-i18n="emp_id">${translations[currentLang].emp_id}</span>: ${currentUserId}</p>
                             </div>
                         </div>
                         <button onclick="event.stopPropagation(); handleLogout()" class="text-slate-400 hover:text-red-500 p-2 rounded-full transition bg-white dark:bg-slate-700 shadow-sm border border-slate-200 dark:border-slate-600 flex-shrink-0" title="Đăng xuất">
@@ -720,12 +974,12 @@
                 localStorage.setItem("ehs_user_name", data.ho_ten);
                 localStorage.setItem("ehs_user_dept", data.bo_phan);
                 
-                showToast("Cập nhật hồ sơ thành công!");
+                alert("Cập nhật hồ sơ cá nhân thành công!");
                 window.closeUserProfileModal();
                 checkLoginStatus(); 
                 
             } catch (error) {
-                showToast("Lỗi lưu hồ sơ: " + error.message, "error");
+                alert("Lỗi lưu hồ sơ: " + error.message);
             } finally {
                 btn.innerHTML = ogText;
                 btn.disabled = false;
@@ -756,6 +1010,50 @@
                         <button onclick="closeUserProfileModal(); window.openCourseModal();" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-700 text-xs font-bold transition shadow-sm whitespace-nowrap hidden sm:block">Xem</button>
                     </div>
                 `;
+
+                if (userData && userData.vai_tro_phu) {
+                    if (userData.vai_tro_phu.pccc) {
+                        hasTask = true;
+                        staticHtml += `
+                            <div class="p-4 border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-900/20 rounded-xl shadow-sm relative overflow-hidden mt-3">
+                                <div class="absolute -right-4 -top-4 bg-rose-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45 shadow-sm">${userData.vai_tro_phu.pccc}</div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-rose-100 dark:bg-rose-800 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-700">
+                                        <i class="ph-fill ph-fire-extinguisher text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-rose-800 dark:text-rose-300 text-sm">Kiểm tra PCCC định kỳ</h5>
+                                        <p class="text-xs text-rose-600 dark:text-rose-400 font-medium mt-0.5 mb-3">Nhiệm vụ tuần: Vui lòng đi kiểm tra tình trạng bình chữa cháy/tủ vách tường tại khu vực làm việc.</p>
+                                        <a href="kiem_tra_pccc.html" class="inline-flex items-center gap-1.5 bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-rose-700 transition shadow-md">
+                                            <i class="ph-bold ph-clipboard-text"></i> Thực hiện Checklist
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    if (userData.vai_tro_phu.atvsv === true) {
+                        hasTask = true;
+                        staticHtml += `
+                            <div class="p-4 border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl shadow-sm relative overflow-hidden mt-3">
+                                <div class="absolute -right-4 -top-4 bg-emerald-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45 shadow-sm">ATVSV</div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-700">
+                                        <i class="ph-fill ph-first-aid text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-emerald-800 dark:text-emerald-300 text-sm">Đánh giá An toàn Hiện trường (5S)</h5>
+                                        <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 mb-3">Nhiệm vụ ATVSV: Tuần tra, phát hiện và báo cáo các hành vi, điều kiện mất an toàn tại line.</p>
+                                        <a href="kiem_tra_tong_the.html" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition shadow-md">
+                                            <i class="ph-bold ph-check-square-offset"></i> Đánh giá ngay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
 
                 let dynamicHtml = '';
                 try {
@@ -1157,19 +1455,20 @@
             }
         };
 
-        // KHOỞI CHẠY HỆ THỐNG
         applyTheme();
+        changeLanguage(currentLang);
         
+        // KIỂM TRA ĐĂNG NHẬP MƯỢT MÀ
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                changeLanguage(currentLang);
-                checkLoginStatus();
-                // Tải thông báo ngay lập tức
-                fetchNotifications(); 
+                if (window.checkLoginStatus) window.checkLoginStatus();
+                // Tải thông báo ngay khi nhận diện được user
+                setTimeout(window.fetchNotifications, 1500); 
             } else {
-                // ... Xử lý khi chưa đăng nhập (đã có ở file login.html)
+                console.log("Phiên đăng nhập đã hết hạn hoặc chưa đăng nhập.");
             }
         });
+        
     </script>
 </body>
 </html>
