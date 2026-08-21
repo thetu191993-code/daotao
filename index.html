@@ -286,7 +286,8 @@
                         <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-1" data-i18n="card6_title">Toolbox Meeting</h3>
                         <p class="text-xs text-slate-500 dark:text-dark-muted font-medium" data-i18n="card6_desc">Tổ chức họp, lấy ý kiến & điểm danh</p>
                     </a>
-                    <!-- THÊM THẺ Y TẾ VÀO MÀN HÌNH CHÍNH CHỖ NÀY -->
+                    
+                    <!-- THẺ Y TẾ -->
                     <a href="quan_ly_suc_khoe.html" class="group bg-white dark:bg-dark-card rounded-2xl p-6 border border-rose-100 dark:border-rose-900/30 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center relative overflow-hidden">
                         <div class="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors">
                             <i class="ph-fill ph-stethoscope text-3xl"></i>
@@ -296,8 +297,9 @@
                     </a>
                     
                 </div>
+                
                 <!-- GIAI ĐOẠN 3: WIDGET HIỂN THỊ GIẤY PHÉP THI CÔNG TRỰC TIẾP -->
-                <div class="mb-12">
+                <div class="mb-12 mt-8">
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center rounded-xl shadow-sm border border-amber-200 dark:border-amber-800">
                             <i class="ph-fill ph-warning-circle text-2xl animate-pulse"></i>
@@ -310,7 +312,7 @@
                     
                     <div id="live-ptw-loader" class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center justify-center">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-amber-500 mb-2"></i>
-                        <p class="font-bold text-slate-500 dark:text-slate-400">Đang đồng bộ máy chủ...</p>
+                        <p class="font-bold text-slate-500 dark:text-slate-400 mt-2">Đang đồng bộ máy chủ...</p>
                     </div>
 
                     <div id="live-ptw-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 hidden">
@@ -587,15 +589,20 @@
             
             try {
                 // Lấy tất cả giấy phép ĐÃ DUYỆT
-                const q = query(collection(db, "giay_phep_lam_viec"), where("trang_thai", "==", "Đã duyệt"));
-                const snap = await getDocs(q);
+                const q = window.query(window.collection(window.db, "giay_phep_lam_viec"), window.where("trang_thai", "==", "Đã duyệt"));
+                const snap = await window.getDocs(q);
                 
-                const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+                // Xử lý múi giờ cục bộ (Vietnam GMT+7) thay vì toISOString (GMT 0)
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const todayStr = `${yyyy}-${mm}-${dd}`; 
+
                 let validPermits = [];
 
                 snap.forEach(doc => {
                     const p = doc.data();
-                    // So sánh ngày: Nếu Giấy phép có Ngày bắt đầu <= Hôm nay <= Ngày kết thúc
                     if(p.thoi_gian_bat_dau <= todayStr && p.thoi_gian_ket_thuc >= todayStr) {
                         validPermits.push({id: doc.id, ...p});
                     }
@@ -747,6 +754,8 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (window.checkLoginStatus) window.checkLoginStatus();
+                // FIX: Kích hoạt tải dữ liệu PTW Live khi người dùng đăng nhập
+                if (window.fetchLivePTW) window.fetchLivePTW();
             } else {
                 console.log("Phiên đăng nhập đã hết hạn.");
             }
@@ -1664,6 +1673,8 @@
         // Tải thông báo 1 lần sau khi load xong nếu đã có user
         if(currentUserId && window.db) {
             setTimeout(window.fetchNotifications, 1000); 
+            // FIX: Kích hoạt tải dữ liệu PTW Live ngay cả khi trang web được tải lại
+            setTimeout(window.fetchLivePTW, 500); 
         }
     </script>
 </body>
