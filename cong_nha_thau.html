@@ -18,6 +18,19 @@
         .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* CSS DÀNH RIÊNG CHO IN ẤN (KHẮC PHỤC LỖI TRẮNG TRANG) */
+        .print-area { display: none; }
+        @media print {
+            body { background-color: white !important; }
+            /* Ẩn mọi thứ trên web TRỪ khu vực in */
+            body > *:not(#print-section) { display: none !important; }
+            #print-section { display: block !important; position: static; width: 100%; padding: 0; font-family: 'Times New Roman', Times, serif; color: black !important; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px;}
+            .print-table th, .print-table td { border: 1px solid black !important; padding: 8px; text-align: left; font-size: 14px;}
+            .print-header { text-align: center; margin-bottom: 20px;}
+            .print-title { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
+        }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 text-slate-800 flex flex-col items-center relative pb-24">
@@ -113,8 +126,7 @@
             <button onclick="window.switchTab('nhan-su')" id="btn-tab-nhan-su" class="px-6 py-2.5 font-bold text-sm rounded-lg transition bg-white shadow text-blue-700">Nhân sự</button>
             <button onclick="window.switchTab('vat-tu')" id="btn-tab-vat-tu" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Hàng hóa & Vật tư</button>
             <button onclick="window.switchTab('may-moc')" id="btn-tab-may-moc" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Máy móc Nghiêm ngặt</button>
-            
-            <!-- TAB MỚI: GIẤY PHÉP LÀM VIỆC -->
+            <!-- TAB GIẤY PHÉP LÀM VIỆC -->
             <button onclick="window.switchTab('giay-phep')" id="btn-tab-giay-phep" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800 flex items-center gap-2">
                 <i class="ph-fill ph-file-text text-amber-500"></i> Xin Giấy Phép (PTW)
             </button>
@@ -214,7 +226,7 @@
         </div>
     </div>
 
-    <!-- CÁC MODAL NHẬP LIỆU (Giữ nguyên Nhân sự, Vật tư, Máy móc) -->
+    <!-- CÁC MODAL NHẬP LIỆU -->
     <!-- MODAL: KHAI BÁO NHÂN SỰ -->
     <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh]">
@@ -308,9 +320,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL MỚI: XIN GIẤY PHÉP LÀM VIỆC (PTW)    -->
-    <!-- ========================================== -->
+    <!-- MODAL: XIN GIẤY PHÉP LÀM VIỆC (PTW) -->
     <div id="permit-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[95vh] border-t-4 border-amber-500">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-amber-50/50">
@@ -402,20 +412,8 @@
         </div>
     </div>
 
-    <!-- MẪU IN PDF GIẤY PHÉP LÀM VIỆC (ẨN KHỎI GIAO DIỆN CHÍNH, CHỈ HIỆN KHI PRINT) -->
-    <style>
-        @media print {
-            body * { visibility: hidden; }
-            #print-section, #print-section * { visibility: visible; }
-            #print-section { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; font-family: 'Times New Roman', Times, serif; color: black !important;}
-            .no-print { display: none !important; }
-            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px;}
-            .print-table th, .print-table td { border: 1px solid black; padding: 8px; text-align: left; font-size: 14px;}
-            .print-header { text-align: center; margin-bottom: 20px;}
-            .print-title { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
-        }
-    </style>
-    <div id="print-section" class="hidden">
+    <!-- MẪU IN PDF GIẤY PHÉP LÀM VIỆC -->
+    <div id="print-section" class="print-area">
         <div class="print-header">
             <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
             <h4>Độc lập - Tự do - Hạnh phúc</h4>
@@ -471,7 +469,7 @@
         </table>
     </div>
 
-    <!-- TẢI FIREBASE SAU CÙNG ĐỂ CHỐNG LỖI RACE CONDITION -->
+    <!-- TẢI FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -548,7 +546,7 @@
         let myCompany = localStorage.getItem("nt_company_name") || "";
         let myPhone = localStorage.getItem("nt_phone") || "";
         let currentTab = 'nhan-su';
-        let rawWorkerData = []; // Dùng để chọn danh sách nhân sự làm PTW
+        let rawWorkerData = []; 
         let isLockedByApproval = false;
 
         window.toggleMode = function() {
@@ -616,7 +614,6 @@
             window.checkAuth(); window.showToast("Đã đăng xuất an toàn!");
         }
 
-        // Bắt phím Enter
         document.getElementById('nt-pass').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') { e.preventDefault(); window.handleLogin(); }
         });
@@ -642,7 +639,6 @@
                 }
             });
 
-            // Ẩn khu vực duyệt cơ bản nếu ở tab Giấy phép
             if(tabId === 'giay-phep') {
                 basicApproval.classList.add('hidden');
                 addBtn.classList.remove('hidden');
@@ -680,9 +676,6 @@
 
         window.closeModal = function(modalId) { document.getElementById(modalId).classList.add('hidden'); }
 
-        // ==========================================
-        // CÁC HÀM XÓA CHUẨN
-        // ==========================================
         let deleteTarget = null;
         window.confirmDelete = function(collectionName, id, itemName) {
             deleteTarget = { collection: collectionName, id: id };
@@ -702,12 +695,11 @@
         }
 
         // ==========================================
-        // TẢI DỮ LIỆU HỒ SƠ CƠ BẢN (NHÂN SỰ, VẬT TƯ, MÁY MÓC)
+        // TẢI DỮ LIỆU HỒ SƠ CƠ BẢN
         // ==========================================
         window.loadData = async function() {
             document.getElementById('loading-msg').classList.remove('hidden');
             try {
-                // KIỂM TRA TRẠNG THÁI PHÊ DUYỆT CƠ BẢN
                 const taskSnap = await window.getDocs(window.query(window.collection(window.db, "ehs_tasks"), window.where("assigner_name", "==", myCompany), window.where("task_type", "==", "contractor_approval")));
                 let latestTask = null;
                 taskSnap.forEach(doc => { let t = { id: doc.id, ...doc.data() }; if (!latestTask || t.created_at > latestTask.created_at) latestTask = t; });
@@ -715,6 +707,7 @@
                 const badge = document.getElementById('approval-status-badge');
                 const btnSubmit = document.getElementById('btn-submit-approval');
                 isLockedByApproval = false;
+                let isApproved = false;
 
                 if (latestTask) {
                     if (latestTask.status === 'Review' || latestTask.status === 'In Progress') {
@@ -724,7 +717,9 @@
                     } else if (latestTask.status === 'Done') {
                         badge.innerHTML = '<i class="ph-bold ph-check-circle"></i> Hồ sơ cơ bản đã được PHÊ DUYỆT hợp lệ';
                         badge.className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200";
-                        btnSubmit.parentElement.classList.remove('hidden'); btnSubmit.innerHTML = '<i class="ph-bold ph-paper-plane-right text-xl"></i> TRÌNH DUYỆT BỔ SUNG (NẾU CÓ)'; isLockedByApproval = false; 
+                        btnSubmit.parentElement.classList.remove('hidden'); btnSubmit.innerHTML = '<i class="ph-bold ph-paper-plane-right text-xl"></i> TRÌNH DUYỆT BỔ SUNG (NẾU CÓ)'; 
+                        isLockedByApproval = false; 
+                        isApproved = true;
                     } else if (latestTask.status === 'Rejected') {
                         badge.innerHTML = `<i class="ph-bold ph-x-circle"></i> Bị từ chối: ${latestTask.evaluation || 'Vui lòng bổ sung hồ sơ'}`;
                         badge.className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-700 border border-red-200";
@@ -742,18 +737,21 @@
                     else document.getElementById('main-add-btn').classList.remove('hidden');
                 }
 
+                // >>> FIX 1: NHÃN ĐÃ DUYỆT ĐỘNG <<<
+                let badgeHtml = isApproved ? '<span class="ml-2 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap border border-emerald-200"><i class="ph-bold ph-check-circle"></i> Đã duyệt</span>' : '';
+
                 // TẢI NHÂN SỰ
                 const snapWorker = await window.getDocs(window.query(window.collection(window.db, "nha_thau_nhan_su"), window.where("cong_ty", "==", myCompany)));
                 let htmlWorker = ''; let sttW = 1; rawWorkerData = [];
                 snapWorker.forEach(doc => {
                     const d = doc.data();
-                    rawWorkerData.push({ id: doc.id, name: d.ho_ten }); // Lưu để dùng cho Giấy phép
+                    rawWorkerData.push({ id: doc.id, name: d.ho_ten }); 
                     const atldStatus = window.formatDateAndStatus(d.han_atld);
                     let atldClass = d.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-700 border-blue-100";
                     let actionHtml = isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
                         <button onclick="window.editWorker('${doc.id}', '${d.ho_ten}', '${d.ngay_sinh||''}', '${d.cccd}', '${d.nhom_atld}', '${d.han_atld||''}', '${d.han_bao_hiem||''}', '${d.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
                         <button onclick="window.confirmDelete('nha_thau_nhan_su', '${doc.id}', '${d.ho_ten}')" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>`;
-                    htmlWorker += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-4 text-center font-medium text-slate-500">${sttW++}</td><td class="p-4 font-bold text-slate-800">${d.ho_ten}</td><td class="p-4 text-slate-600">${window.formatSimpleDate(d.ngay_sinh)}</td><td class="p-4 text-slate-600 font-mono text-sm">${d.cccd}</td><td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${d.nhom_atld}</span></div>${atldStatus.html}</td><td class="p-4 text-center">${window.formatDateAndStatus(d.han_bao_hiem).html}</td><td class="p-4 text-center">${window.formatDateAndStatus(d.han_suc_khoe).html}</td><td class="p-4 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
+                    htmlWorker += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-4 text-center font-medium text-slate-500">${sttW++}</td><td class="p-4 font-bold text-slate-800">${d.ho_ten} ${badgeHtml}</td><td class="p-4 text-slate-600">${window.formatSimpleDate(d.ngay_sinh)}</td><td class="p-4 text-slate-600 font-mono text-sm">${d.cccd}</td><td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${d.nhom_atld}</span></div>${atldStatus.html}</td><td class="p-4 text-center">${window.formatDateAndStatus(d.han_bao_hiem).html}</td><td class="p-4 text-center">${window.formatDateAndStatus(d.han_suc_khoe).html}</td><td class="p-4 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
                 });
                 document.getElementById('worker-results').innerHTML = htmlWorker || `<tr><td colspan="8" class="p-8 text-center text-slate-400">Chưa khai báo nhân sự.</td></tr>`;
 
@@ -765,7 +763,7 @@
                     let actionHtml = isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
                         <button onclick="window.editMaterial('${doc.id}', '${d.ten_vat_tu}', '${d.so_luong}', '${d.muc_dich||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
                         <button onclick="window.confirmDelete('nha_thau_vat_tu', '${doc.id}', '${d.ten_vat_tu}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>`;
-                    htmlMat += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-4 text-center font-medium text-slate-500">${sttM++}</td><td class="p-4 font-bold text-slate-800">${d.ten_vat_tu}</td><td class="p-4 text-center font-bold text-blue-600">${d.so_luong}</td><td class="p-4 text-slate-600">${d.muc_dich || ''}</td><td class="p-4 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
+                    htmlMat += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-4 text-center font-medium text-slate-500">${sttM++}</td><td class="p-4 font-bold text-slate-800">${d.ten_vat_tu} ${badgeHtml}</td><td class="p-4 text-center font-bold text-blue-600">${d.so_luong}</td><td class="p-4 text-slate-600">${d.muc_dich || ''}</td><td class="p-4 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
                 });
                 document.getElementById('material-results').innerHTML = htmlMat || `<tr><td colspan="5" class="p-8 text-center text-slate-400">Chưa khai báo Hàng hóa/Vật tư.</td></tr>`;
 
@@ -778,7 +776,7 @@
                     let actionHtml = isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
                         <button onclick="window.editMachine('${doc.id}', '${d.ten_may}', '${d.bien_so||''}', '${d.nguoi_van_hanh||''}', '${d.han_kiem_dinh||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
                         <button onclick="window.confirmDelete('nha_thau_may_moc', '${doc.id}', '${d.ten_may}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>`;
-                    htmlMac += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-4 text-center font-medium text-slate-500">${sttE++}</td><td class="p-4 font-bold text-slate-800">${d.ten_may}</td><td class="p-4 font-mono text-sm">${d.bien_so || ''}</td><td class="p-4 text-slate-600">${d.nguoi_van_hanh || ''}</td><td class="p-4 text-center">${window.formatDateAndStatus(d.han_kiem_dinh).html}</td><td class="p-4 text-center">${linkHtml}</td><td class="p-4 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
+                    htmlMac += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-4 text-center font-medium text-slate-500">${sttE++}</td><td class="p-4 font-bold text-slate-800">${d.ten_may} ${badgeHtml}</td><td class="p-4 font-mono text-sm">${d.bien_so || ''}</td><td class="p-4 text-slate-600">${d.nguoi_van_hanh || ''}</td><td class="p-4 text-center">${window.formatDateAndStatus(d.han_kiem_dinh).html}</td><td class="p-4 text-center">${linkHtml}</td><td class="p-4 text-center whitespace-nowrap">${actionHtml}</td></tr>`;
                 });
                 document.getElementById('machine-results').innerHTML = htmlMac || `<tr><td colspan="7" class="p-8 text-center text-slate-400">Chưa khai báo Máy móc.</td></tr>`;
 
@@ -786,9 +784,6 @@
             finally { document.getElementById('loading-msg').classList.add('hidden'); }
         }
 
-        // ==========================================
-        // CÁC HÀM EDIT / SAVE CƠ BẢN (NHÂN SỰ, VẬT TƯ, MÁY MÓC)
-        // ==========================================
         window.saveDataToFirebase = async function(collectionName, id, data, btnId, modalId) {
             const btn = document.getElementById(btnId); const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...';
             try {
@@ -862,7 +857,6 @@
                 const snap = await window.getDocs(window.query(window.collection(window.db, "giay_phep_lam_viec"), window.where("cong_ty", "==", myCompany)));
                 let raw = []; snap.forEach(d => { raw.push({ id: d.id, ...d.data() }); });
                 
-                // VÁ LỖI TẠI ĐÂY: Sắp xếp thời gian chuẩn xác của Firebase
                 raw.sort((a,b) => {
                     let timeA = a.ngay_tao ? (a.ngay_tao.toDate ? a.ngay_tao.toDate().getTime() : new Date(a.ngay_tao).getTime()) : 0;
                     let timeB = b.ngay_tao ? (b.ngay_tao.toDate ? b.ngay_tao.toDate().getTime() : new Date(b.ngay_tao).getTime()) : 0;
@@ -999,9 +993,9 @@
             document.getElementById('pr-workers').innerHTML = (p.danh_sach_nhan_su || []).map((w, i) => `${i+1}. ${w}`).join('<br>');
             document.getElementById('pr-rules').innerHTML = (p.cam_ket || []).map(r => `<li>${r}</li>`).join('');
             
-            document.getElementById('pr-sign-contractor').innerText = p.cong_ty; // Chữ ký số tạm thời
+            document.getElementById('pr-sign-contractor').innerText = p.cong_ty;
 
-            // Kích hoạt in của trình duyệt (Sẽ chỉ in phần #print-section nhờ CSS @media print)
+            // Kích hoạt in của trình duyệt (Sẽ chỉ in phần .print-area nhờ CSS @media print)
             window.print();
         }
 
