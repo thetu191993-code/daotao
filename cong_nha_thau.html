@@ -18,19 +18,6 @@
         .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* CSS DÀNH RIÊNG CHO IN ẤN (KHẮC PHỤC LỖI TRẮNG TRANG) */
-        .print-area { display: none; }
-        @media print {
-            body { background-color: white !important; }
-            /* Ẩn mọi thứ trên web TRỪ khu vực in */
-            body > *:not(#print-section) { display: none !important; }
-            #print-section { display: block !important; position: static; width: 100%; padding: 0; font-family: 'Times New Roman', Times, serif; color: black !important; }
-            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px;}
-            .print-table th, .print-table td { border: 1px solid black !important; padding: 8px; text-align: left; font-size: 14px;}
-            .print-header { text-align: center; margin-bottom: 20px;}
-            .print-title { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
-        }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 text-slate-800 flex flex-col items-center relative pb-24">
@@ -126,7 +113,8 @@
             <button onclick="window.switchTab('nhan-su')" id="btn-tab-nhan-su" class="px-6 py-2.5 font-bold text-sm rounded-lg transition bg-white shadow text-blue-700">Nhân sự</button>
             <button onclick="window.switchTab('vat-tu')" id="btn-tab-vat-tu" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Hàng hóa & Vật tư</button>
             <button onclick="window.switchTab('may-moc')" id="btn-tab-may-moc" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Máy móc Nghiêm ngặt</button>
-            <!-- TAB GIẤY PHÉP LÀM VIỆC -->
+            
+            <!-- TAB: GIẤY PHÉP LÀM VIỆC -->
             <button onclick="window.switchTab('giay-phep')" id="btn-tab-giay-phep" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800 flex items-center gap-2">
                 <i class="ph-fill ph-file-text text-amber-500"></i> Xin Giấy Phép (PTW)
             </button>
@@ -378,7 +366,6 @@
                         <span class="text-[10px] bg-white px-2 py-0.5 rounded border border-blue-200">Chọn từ DS đã khai báo</span>
                     </label>
                     <div id="ptw-worker-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-h-40 overflow-y-auto custom-scrollbar p-1">
-                        <!-- Javascript load worker checkboxes here -->
                         <div class="text-xs text-slate-500 italic">Đang tải danh sách nhân sự...</div>
                     </div>
                 </div>
@@ -412,8 +399,57 @@
         </div>
     </div>
 
-    <!-- MẪU IN PDF GIẤY PHÉP LÀM VIỆC -->
-    <div id="print-section" class="print-area">
+    <!-- MODAL BÁO CÁO NGHIỆM THU HOÀN THÀNH 5S -->
+    <div id="ptw-complete-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col border-t-4 border-emerald-500">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-emerald-50/50">
+                <h3 class="text-lg font-black text-emerald-800 flex items-center gap-2">
+                    <i class="ph-fill ph-broom"></i> Báo Cáo Hoàn Thành (5S)
+                </h3>
+                <button onclick="window.closeCompleteModal()" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="comp-ptw-id">
+                
+                <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 text-xs text-emerald-700 font-medium">
+                    Yêu cầu nhà thầu thu dọn sạch sẽ rác thải, trả lại mặt bằng an toàn trước khi đóng Giấy phép. Vui lòng chụp ảnh chứng minh.
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ghi chú hoàn thành</label>
+                    <textarea id="comp-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-emerald-500 text-sm custom-scrollbar resize-none" placeholder="VD: Đã dọn dẹp xà bần, thu hồi dây điện..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph-bold ph-image text-emerald-500"></i> Tải Ảnh Hiện Trường 5S (Bắt buộc) <span class="text-red-500">*</span></label>
+                    <input type="file" id="comp-file" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer outline-none">
+                </div>
+            </div>
+            
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="window.closeCompleteModal()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-submit-complete" onclick="window.submitCompletePTW()" class="bg-emerald-600 text-white px-8 py-2.5 rounded-xl font-black hover:bg-emerald-700 shadow-md transition flex items-center gap-2">
+                    <i class="ph-bold ph-check-circle text-lg"></i> GỬI BÁO CÁO 5S
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MẪU IN PDF GIẤY PHÉP LÀM VIỆC (ẨN KHỎI GIAO DIỆN CHÍNH, CHỈ HIỆN KHI PRINT) -->
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #print-section, #print-section * { visibility: visible; }
+            #print-section { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; font-family: 'Times New Roman', Times, serif; color: black !important;}
+            .no-print { display: none !important; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 15px;}
+            .print-table th, .print-table td { border: 1px solid black; padding: 8px; text-align: left; font-size: 14px;}
+            .print-header { text-align: center; margin-bottom: 20px;}
+            .print-title { font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px;}
+        }
+    </style>
+    <div id="print-section" class="hidden">
         <div class="print-header">
             <h3>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h3>
             <h4>Độc lập - Tự do - Hạnh phúc</h4>
@@ -469,7 +505,7 @@
         </table>
     </div>
 
-    <!-- TẢI FIREBASE -->
+    <!-- TẢI FIREBASE SAU CÙNG ĐỂ CHỐNG LỖI RACE CONDITION -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -737,7 +773,7 @@
                     else document.getElementById('main-add-btn').classList.remove('hidden');
                 }
 
-                // >>> FIX 1: NHÃN ĐÃ DUYỆT ĐỘNG <<<
+                // NHÃN "ĐÃ DUYỆT" CHO TỪNG DÒNG
                 let badgeHtml = isApproved ? '<span class="ml-2 bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap border border-emerald-200"><i class="ph-bold ph-check-circle"></i> Đã duyệt</span>' : '';
 
                 // TẢI NHÂN SỰ
@@ -847,7 +883,7 @@
         }
 
         // ==========================================
-        // MODULE MỚI: GIẤY PHÉP LÀM VIỆC (PTW)
+        // MODULE: GIẤY PHÉP LÀM VIỆC (PTW) & BÁO CÁO 5S
         // ==========================================
 
         window.loadPermitData = async function() {
@@ -868,27 +904,50 @@
                 let html = ''; let stt = 1;
                 raw.forEach(d => {
                     let statusBadge = '';
-                    if(d.trang_thai === 'Chờ duyệt') statusBadge = `<span class="bg-amber-100 text-amber-700 font-bold px-2 py-1 rounded text-[10px] animate-pulse">Chờ EHS Duyệt</span>`;
-                    else if(d.trang_thai === 'Đã duyệt') statusBadge = `<span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded text-[10px]"><i class="ph-bold ph-check"></i> Đã Duyệt</span>`;
-                    else statusBadge = `<span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded text-[10px]"><i class="ph-bold ph-x"></i> Bị Từ Chối</span>`;
+                    let actionHtml = '';
+
+                    // NÚT IN PDF LUÔN CÓ
+                    actionHtml += `<button onclick="window.printPermit('${d.id}')" class="text-slate-600 hover:text-slate-900 bg-slate-100 p-1.5 rounded-lg border border-slate-300 shadow-sm transition" title="In / Lưu PDF"><i class="ph-bold ph-printer text-lg"></i></button>`;
+
+                    if(d.trang_thai === 'Chờ duyệt') {
+                        statusBadge = `<span class="bg-amber-100 text-amber-700 font-bold px-2 py-1 rounded text-[10px] animate-pulse">Chờ EHS Duyệt</span>`;
+                        actionHtml += `<button onclick="window.confirmDelete('giay_phep_lam_viec', '${d.id}', 'Giấy phép ${d.loai_giay_phep}')" class="text-red-500 hover:text-red-700 p-1.5 ml-1 transition" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>`;
+                    }
+                    else if(d.trang_thai === 'Đã duyệt') {
+                        statusBadge = `<span class="bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded text-[10px] animate-pulse"><i class="ph-bold ph-play"></i> Đang thi công</span>`;
+                        // Nút Báo cáo hoàn thành (5S)
+                        actionHtml += `<button onclick="window.openCompleteModal('${d.id}')" class="text-emerald-600 hover:text-emerald-800 bg-emerald-50 p-1.5 rounded-lg border border-emerald-200 shadow-sm transition ml-1" title="Báo cáo hoàn thành (5S)"><i class="ph-bold ph-check-square-offset text-lg"></i></button>`;
+                    }
+                    else if(d.trang_thai === 'Chờ nghiệm thu') {
+                        statusBadge = `<span class="bg-blue-100 text-blue-700 font-bold px-2 py-1 rounded text-[10px]"><i class="ph-bold ph-broom"></i> Chờ EHS nghiệm thu</span>`;
+                    }
+                    else if(d.trang_thai === 'Đã đóng') {
+                        statusBadge = `<span class="bg-slate-200 text-slate-600 font-bold px-2 py-1 rounded text-[10px]"><i class="ph-bold ph-lock-key"></i> Đã hoàn thành</span>`;
+                    }
+                    else if(d.trang_thai === 'Bị đình chỉ') {
+                        statusBadge = `<span class="bg-red-600 text-white font-bold px-2 py-1 rounded text-[10px]"><i class="ph-bold ph-warning-octagon"></i> Bị Đình Chỉ</span>`;
+                    }
+                    else {
+                        statusBadge = `<span class="bg-red-100 text-red-700 font-bold px-2 py-1 rounded text-[10px]"><i class="ph-bold ph-x"></i> Bị Từ Chối</span>`;
+                    }
+
+                    // Ghi chú nếu bị đình chỉ/từ chối
+                    let noteHtml = d.ghi_chu_ehs ? `<p class="text-[10px] text-red-500 font-medium mt-1 w-48 whitespace-normal leading-tight"><b>EHS Note:</b> ${d.ghi_chu_ehs}</p>` : '';
 
                     html += `
-                        <tr class="hover:bg-slate-50 transition">
+                        <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                             <td class="p-4 text-center text-slate-500">${stt++}</td>
                             <td class="p-4 font-black text-amber-700">${d.loai_giay_phep}</td>
                             <td class="p-4 font-bold text-slate-700">${d.khu_vuc}</td>
                             <td class="p-4 text-center font-mono text-sm">${window.formatSimpleDate(d.thoi_gian_bat_dau)} ${d.gio_bat_dau}</td>
                             <td class="p-4 text-center font-mono text-sm">${window.formatSimpleDate(d.thoi_gian_ket_thuc)} ${d.gio_ket_thuc}</td>
-                            <td class="p-4 text-center">${statusBadge}</td>
-                            <td class="p-4 text-center whitespace-nowrap">
-                                <button onclick="window.printPermit('${d.id}')" class="text-slate-600 hover:text-slate-900 bg-slate-100 p-1.5 rounded-lg border border-slate-300 shadow-sm transition" title="In / Lưu PDF"><i class="ph-bold ph-printer text-lg"></i></button>
-                                ${d.trang_thai !== 'Đã duyệt' ? `<button onclick="window.confirmDelete('giay_phep_lam_viec', '${d.id}', 'Giấy phép ${d.loai_giay_phep}')" class="text-red-500 hover:text-red-700 p-1.5 ml-1 transition" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>` : ''}
-                            </td>
+                            <td class="p-4 text-center">${statusBadge} ${noteHtml}</td>
+                            <td class="p-4 text-center whitespace-nowrap">${actionHtml}</td>
                         </tr>
                     `;
                 });
                 tbody.innerHTML = html;
-                window.rawPermits = raw; // Lưu lại để dùng cho in ấn
+                window.rawPermits = raw; 
             } catch(e) { 
                 console.log(e); 
                 tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${e.message}</td></tr>`; 
@@ -909,7 +968,6 @@
             document.getElementById('ptw-description').value = "";
             document.getElementById('ptw-commitment').checked = false;
 
-            // Load workers into checkboxes
             const workerListDiv = document.getElementById('ptw-worker-list');
             if(rawWorkerData.length === 0) {
                 workerListDiv.innerHTML = '<span class="text-red-500 text-xs font-bold">Chưa có nhân sự nào được khai báo hợp lệ.</span>';
@@ -944,7 +1002,6 @@
             const desc = document.getElementById('ptw-description').value.trim();
             const isCommitted = document.getElementById('ptw-commitment').checked;
 
-            // Get selected workers
             const cbs = document.querySelectorAll('.ptw-worker-cb:checked');
             let selectedWorkers = [];
             cbs.forEach(cb => selectedWorkers.push(cb.value));
@@ -976,6 +1033,65 @@
             } catch(e) { window.showToast("Lỗi gửi đơn: " + e.message, "error"); } finally { btn.disabled = false; btn.innerHTML = og; }
         }
 
+        // ==========================================
+        // BÁO CÁO HOÀN THÀNH (ĐÓNG GIẤY PHÉP)
+        // ==========================================
+        window.openCompleteModal = function(id) {
+            document.getElementById('comp-ptw-id').value = id;
+            document.getElementById('comp-note').value = '';
+            document.getElementById('comp-file').value = '';
+            document.getElementById('ptw-complete-modal').classList.remove('hidden');
+        }
+
+        window.closeCompleteModal = function() {
+            document.getElementById('ptw-complete-modal').classList.add('hidden');
+        }
+
+        window.submitCompletePTW = async function() {
+            const id = document.getElementById('comp-ptw-id').value;
+            const note = document.getElementById('comp-note').value.trim();
+            const fileInput = document.getElementById('comp-file');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                return window.showToast("Bắt buộc phải tải lên ảnh chụp hiện trường (5S)!", "error");
+            }
+
+            const btn = document.getElementById('btn-submit-complete');
+            const og = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải ảnh lên...';
+            btn.disabled = true;
+
+            try {
+                // Upload ảnh lên ImgBB
+                const formData = new FormData(); 
+                formData.append("image", fileInput.files[0]);
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=6193096d9989e38412da2d277a2a6b9c`, { method: "POST", body: formData });
+                const result = await response.json(); 
+                
+                if (!result.success) throw new Error("Lỗi máy chủ ảnh ImgBB.");
+                
+                const imgUrl = result.data.url;
+
+                // Cập nhật trạng thái
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
+                    trang_thai: 'Chờ nghiệm thu',
+                    anh_5s: imgUrl,
+                    ghi_chu_5s: note,
+                    thoi_gian_bao_cao_xong: new Date()
+                });
+
+                window.showToast("Đã gửi báo cáo nghiệm thu cho EHS!");
+                window.closeCompleteModal();
+                window.loadPermitData();
+
+            } catch(e) {
+                window.showToast("Lỗi gửi báo cáo: " + e.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = og;
+            }
+        }
+
         window.printPermit = function(id) {
             if(!window.rawPermits) return;
             const p = window.rawPermits.find(x => x.id === id);
@@ -993,13 +1109,11 @@
             document.getElementById('pr-workers').innerHTML = (p.danh_sach_nhan_su || []).map((w, i) => `${i+1}. ${w}`).join('<br>');
             document.getElementById('pr-rules').innerHTML = (p.cam_ket || []).map(r => `<li>${r}</li>`).join('');
             
-            document.getElementById('pr-sign-contractor').innerText = p.cong_ty;
+            document.getElementById('pr-sign-contractor').innerText = p.cong_ty; 
 
-            // Kích hoạt in của trình duyệt (Sẽ chỉ in phần .print-area nhờ CSS @media print)
             window.print();
         }
 
-        // Khởi động
         window.checkAuth();
     </script>
 </body>
