@@ -23,13 +23,28 @@
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 text-slate-800 flex flex-col items-center relative pb-24">
 
     <!-- HIỂN THỊ THÔNG BÁO (TOAST) -->
-    <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+    <div id="toast" class="fixed top-5 right-5 z-[200] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-message"></span>
     </div>
 
+    <!-- HỘP THOẠI XÁC NHẬN XÓA (ĐÃ BỔ SUNG) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
+                <i class="ph-fill ph-warning text-4xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Xác nhận xóa</h3>
+            <p class="text-slate-500 text-sm mb-6" id="confirm-message">Bạn có chắc chắn muốn xóa hạng mục này?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="window.closeConfirmModal()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2">Hủy</button>
+                <button id="btn-confirm-yes" onclick="window.executeDelete()" class="bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-red-700 shadow-md w-1/2">Xóa</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MÀN HÌNH ĐĂNG NHẬP -->
-    <div id="login-screen" class="w-full max-w-md mt-10 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 relative">
+    <div id="login-screen" class="w-full max-w-md mt-10 bg-white p-8 rounded-3xl shadow-xl border border-slate-200 relative">
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
                 <i class="ph-fill ph-hard-hat text-4xl"></i>
@@ -43,7 +58,7 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Số điện thoại</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-phone text-slate-400 text-lg"></i></div>
-                    <input type="text" id="nt-phone" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="VD: 0909123456">
+                    <input type="text" id="nt-phone" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="VD: 0909123456">
                 </div>
             </div>
 
@@ -51,7 +66,7 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Tên Công Ty Nhà Thầu</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-buildings text-slate-400 text-lg"></i></div>
-                    <input type="text" id="nt-company" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-700" placeholder="VD: Công ty TNHH Xây Dựng ABC">
+                    <input type="text" id="nt-company" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-bold text-blue-700 transition" placeholder="VD: Công ty TNHH Xây Dựng ABC">
                 </div>
             </div>
 
@@ -59,22 +74,22 @@
                 <label class="block text-sm font-semibold text-slate-700 mb-1">Mật khẩu</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-lock-key text-slate-400 text-lg"></i></div>
-                    <input type="password" id="nt-pass" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••">
+                    <input type="password" id="nt-pass" class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••••">
                 </div>
             </div>
 
-            <button id="btn-login" onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-2 hover:bg-blue-700 transition shadow-md">Đăng nhập</button>
+            <button id="btn-login" onclick="window.handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl mt-2 hover:bg-blue-700 transition shadow-md">Đăng nhập</button>
         </div>
 
         <div class="mt-6 text-center text-sm text-slate-600 border-t border-slate-100 pt-4">
             <span id="toggle-text">Nhà thầu mới?</span> 
-            <button onclick="toggleMode()" id="btn-toggle" class="text-blue-600 font-bold hover:underline ml-1">Đăng ký tài khoản</button>
+            <button onclick="window.toggleMode()" id="btn-toggle" class="text-blue-600 font-bold hover:underline ml-1">Đăng ký tài khoản</button>
         </div>
     </div>
 
     <!-- MÀN HÌNH LÀM VIỆC CHÍNH -->
     <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200 hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-slate-800 flex items-center">
                     <i class="ph-fill ph-folder-notch-plus text-blue-600 text-3xl mr-3"></i>
@@ -87,7 +102,7 @@
                 </div>
             </div>
             <div class="flex gap-3">
-                <button onclick="handleLogout()" class="bg-slate-50 text-slate-600 px-4 py-2 rounded-xl font-bold hover:bg-slate-100 transition flex items-center gap-2 border border-slate-200 shadow-sm">
+                <button onclick="window.handleLogout()" class="bg-slate-50 text-slate-600 px-4 py-2 rounded-xl font-bold hover:bg-slate-100 transition flex items-center gap-2 border border-slate-200 shadow-sm">
                     <i class="ph-bold ph-sign-out"></i> Đăng xuất
                 </button>
             </div>
@@ -95,13 +110,13 @@
 
         <!-- 3 TABS ĐIỀU HƯỚNG -->
         <div class="flex flex-wrap gap-2 mb-6 bg-slate-100 p-1 rounded-xl w-fit">
-            <button onclick="switchTab('nhan-su')" id="btn-tab-nhan-su" class="px-6 py-2.5 font-bold text-sm rounded-lg transition bg-white shadow text-blue-700">Nhân sự</button>
-            <button onclick="switchTab('vat-tu')" id="btn-tab-vat-tu" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Hàng hóa & Vật tư</button>
-            <button onclick="switchTab('may-moc')" id="btn-tab-may-moc" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Máy móc Nghiêm ngặt</button>
+            <button onclick="window.switchTab('nhan-su')" id="btn-tab-nhan-su" class="px-6 py-2.5 font-bold text-sm rounded-lg transition bg-white shadow text-blue-700">Nhân sự</button>
+            <button onclick="window.switchTab('vat-tu')" id="btn-tab-vat-tu" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Hàng hóa & Vật tư</button>
+            <button onclick="window.switchTab('may-moc')" id="btn-tab-may-moc" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800">Máy móc Nghiêm ngặt</button>
         </div>
 
         <div class="flex justify-end mb-4">
-            <button id="main-add-btn" onclick="openCurrentModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-md">
+            <button id="main-add-btn" onclick="window.openCurrentModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-md">
                 <i class="ph-bold ph-plus"></i> Khai báo Nhân sự
             </button>
         </div>
@@ -112,7 +127,7 @@
         </div>
 
         <!-- TAB NHÂN SỰ -->
-        <div id="tab-nhan-su" class="tab-content active overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+        <div id="tab-nhan-su" class="tab-content active overflow-x-auto rounded-xl border border-slate-200 shadow-sm custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
@@ -131,7 +146,7 @@
         </div>
 
         <!-- TAB HÀNG HÓA VẬT TƯ CHUNG -->
-        <div id="tab-vat-tu" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+        <div id="tab-vat-tu" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[800px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
@@ -147,7 +162,7 @@
         </div>
 
         <!-- TAB MÁY MÓC YÊU CẦU NGHIÊM NGẶT -->
-        <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+        <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
@@ -170,7 +185,7 @@
                 <h4 class="font-bold text-slate-800 flex items-center gap-2"><i class="ph-fill ph-paper-plane-tilt text-blue-600"></i> Xác nhận & Gửi Phê Duyệt</h4>
                 <p class="text-xs text-slate-500 mt-1">Sau khi bấm Gửi, hồ sơ sẽ được khóa lại để Ban Giám Đốc EHS xét duyệt.</p>
             </div>
-            <button id="btn-submit-approval" onclick="submitApproval()" class="w-full sm:w-auto bg-emerald-600 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-md flex items-center justify-center gap-2">
+            <button id="btn-submit-approval" onclick="window.submitApproval()" class="w-full sm:w-auto bg-emerald-600 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-md flex items-center justify-center gap-2">
                 <i class="ph-bold ph-check-square-offset text-xl"></i> TRÌNH PHÊ DUYỆT EHS
             </button>
         </div>
@@ -181,37 +196,37 @@
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="modal-worker-title">Khai báo Nhân sự</h3>
-                <button onclick="closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="window.closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto space-y-4">
+            <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar">
                 <input type="hidden" id="wk-doc-id">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ và Tên <span class="text-red-500">*</span></label><input type="text" id="wk-ho-ten" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: Nguyễn Văn A"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số CCCD <span class="text-red-500">*</span></label><input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="VD: 07909300xxxx"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ và Tên <span class="text-red-500">*</span></label><input type="text" id="wk-ho-ten" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500" placeholder="VD: Nguyễn Văn A"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số CCCD <span class="text-red-500">*</span></label><input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500" placeholder="VD: 07909300xxxx"></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Sinh</label><input type="date" id="wk-ngay-sinh" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Sinh</label><input type="date" id="wk-ngay-sinh" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500"></div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Đào tạo ATLĐ</label>
-                        <select id="wk-nhom-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <select id="wk-nhom-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500 bg-white">
                             <option value="Chưa đào tạo">-- Chưa đào tạo --</option><option value="Nhóm 1">Nhóm 1 (Quản lý)</option><option value="Nhóm 2">Nhóm 2 (CB An toàn)</option><option value="Nhóm 3">Nhóm 3 (Nghiêm ngặt)</option><option value="Nhóm 4">Nhóm 4 (LĐ chung)</option><option value="Nhóm 5">Nhóm 5 (Y tế)</option><option value="Nhóm 6">Nhóm 6 (ATVSV)</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Thẻ ATLĐ</label><input type="date" id="wk-han-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Bảo Hiểm TN</label><input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Khám Sức Khỏe</label><input type="date" id="wk-han-suc-khoe" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Thẻ ATLĐ</label><input type="date" id="wk-han-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Bảo Hiểm TN</label><input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Khám Sức Khỏe</label><input type="date" id="wk-han-suc-khoe" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500"></div>
                 </div>
             </div>
             
             <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="closeModal('worker-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
-                <button id="btn-save-worker" onclick="saveWorker()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-md transition">Lưu Hồ Sơ</button>
+                <button onclick="window.closeModal('worker-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-save-worker" onclick="window.saveWorker()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-md transition">Lưu Hồ Sơ</button>
             </div>
         </div>
     </div>
@@ -221,7 +236,7 @@
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-lg font-bold text-slate-800" id="modal-material-title">Khai báo Vật tư/Hàng hóa</h3>
-                <button onclick="closeModal('material-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="window.closeModal('material-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             <div class="p-6 space-y-4">
                 <input type="hidden" id="mat-doc-id">
@@ -230,8 +245,8 @@
                 <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mục Đích Sử Dụng</label><input type="text" id="mat-desc" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-blue-500" placeholder="Thi công vách ngăn..."></div>
             </div>
             <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="closeModal('material-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
-                <button id="btn-save-material" onclick="saveMaterial()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-md transition">Lưu Lại</button>
+                <button onclick="window.closeModal('material-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-save-material" onclick="window.saveMaterial()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-md transition">Lưu Lại</button>
             </div>
         </div>
     </div>
@@ -241,10 +256,10 @@
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-red-50">
                 <h3 class="text-lg font-bold text-red-800 flex items-center gap-2" id="modal-strict-title"><i class="ph-fill ph-warning-circle"></i> Máy Móc Yêu Cầu Nghiêm Ngặt</h3>
-                <button onclick="closeModal('strict-equip-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="window.closeModal('strict-equip-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto space-y-4">
+            <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar">
                 <input type="hidden" id="se-doc-id">
                 <div class="bg-red-50 p-3 rounded-lg border border-red-100 text-xs text-red-700 font-medium mb-2">
                     Các thiết bị nâng, cẩu, máy nén khí, bình áp lực... bắt buộc phải có Giấy Kiểm Định An Toàn còn hiệu lực và phải đính kèm ảnh chụp chứng minh.
@@ -260,24 +275,22 @@
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Kiểm Định <span class="text-red-500">*</span></label><input type="date" id="se-expire" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-red-500"></div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph-bold ph-image text-blue-500"></i> Tải Ảnh Giấy Kiểm Định Lên</label>
-                        <input type="file" id="se-file" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                        <input type="file" id="se-file" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer outline-none">
                     </div>
                 </div>
             </div>
             
             <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="closeModal('strict-equip-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
-                <button id="btn-save-strict" onclick="saveStrictEquip()" class="bg-red-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-red-700 shadow-md transition">Lưu Lại</button>
+                <button onclick="window.closeModal('strict-equip-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-save-strict" onclick="window.saveStrictEquip()" class="bg-red-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-red-700 shadow-md transition">Lưu Lại</button>
             </div>
         </div>
     </div>
 
-    <!-- KHỞI TẠO FIREBASE & LOGIC Ở DƯỚI CÙNG ĐỂ CHỐNG LỖI CHẠY ĐUA (RACE CONDITION) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // ANH DÁN LẠI KEY CỦA ANH VÀO ĐÂY (Tôi để tạm key cũ)
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -291,7 +304,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Đẩy hàm thư viện ra Windows để HTML gọi được
+        // Khai báo thư viện ra cửa sổ toàn cục
         window.db = db;
         window.collection = collection;
         window.getDocs = getDocs;
@@ -303,13 +316,35 @@
         window.where = where;
         window.orderBy = orderBy;
 
+        /* ================= TIỆN ÍCH GIAO DIỆN & HỖ TRỢ ================= */
+        window.showToast = function(message, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            toast.className = "fixed top-5 right-5 z-[300] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            if (type === "success") { toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl"; } 
+            else { toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl"; }
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-x-[150%]');
+            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
+        }
+
+        window.formatDateAndStatus = function(dateString) {
+            if (!dateString) return { html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[11px] font-bold border border-slate-200">Chưa có</span>` };
+            const expDate = new Date(dateString); const today = new Date(); today.setHours(0,0,0,0);
+            const formatted = expDate.toLocaleDateString('vi-VN');
+            if (expDate < today) return { html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold">Hết hạn (${formatted})</span>` };
+            return { html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold">Hợp lệ (${formatted})</span>` };
+        }
+
+        window.formatSimpleDate = function(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
+
         // Biến toàn cục
         window.isLoginMode = true;
         window.myCompany = localStorage.getItem("nt_company_name") || "";
         window.myPhone = localStorage.getItem("nt_phone") || "";
         window.currentTab = 'nhan-su';
-        
-        // KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP
+
+        /* ================= QUẢN LÝ TÀI KHOẢN VÀ ĐĂNG NHẬP ================= */
         window.checkAuth = function() {
             if (window.myCompany && window.myPhone) {
                 document.getElementById('login-screen').classList.add('hidden');
@@ -322,7 +357,23 @@
             }
         }
 
-        // HÀM ĐĂNG NHẬP / ĐĂNG KÝ
+        window.toggleMode = function() {
+            window.isLoginMode = !window.isLoginMode;
+            if (window.isLoginMode) {
+                document.getElementById('company-field').classList.add('hidden');
+                document.getElementById('btn-login').innerText = "Đăng nhập";
+                document.getElementById('toggle-text').innerText = "Nhà thầu mới?";
+                document.getElementById('btn-toggle').innerText = "Đăng ký tài khoản";
+                document.getElementById('form-subtitle').innerText = "Đăng nhập bằng Số điện thoại";
+            } else {
+                document.getElementById('company-field').classList.remove('hidden');
+                document.getElementById('btn-login').innerText = "Đăng ký & Đăng nhập";
+                document.getElementById('toggle-text').innerText = "Đã có tài khoản?";
+                document.getElementById('btn-toggle').innerText = "Đăng nhập ngay";
+                document.getElementById('form-subtitle').innerText = "Tạo tài khoản dành riêng cho Công ty bạn";
+            }
+        }
+
         window.handleLogin = async function() {
             const phone = document.getElementById('nt-phone').value.trim();
             const pass = document.getElementById('nt-pass').value.trim();
@@ -344,11 +395,8 @@
                         window.showToast("Số điện thoại đã tồn tại! Vui lòng Đăng nhập.", "error");
                         btn.disabled = false; btn.innerText = originalText; return;
                     }
-                    await window.addDoc(window.collection(window.db, "nha_thau_account"), {
-                        phone: phone, password: pass, company: company, created_at: new Date()
-                    });
-                    localStorage.setItem("nt_phone", phone);
-                    localStorage.setItem("nt_company_name", company);
+                    await window.addDoc(window.collection(window.db, "nha_thau_account"), { phone: phone, password: pass, company: company, created_at: new Date() });
+                    localStorage.setItem("nt_phone", phone); localStorage.setItem("nt_company_name", company);
                     window.showToast("Đăng ký thành công!");
                 } else {
                     const q = window.query(window.collection(window.db, "nha_thau_account"), window.where("phone", "==", phone), window.where("password", "==", pass));
@@ -357,275 +405,24 @@
                         window.showToast("Sai SĐT hoặc Mật khẩu!", "error");
                         btn.disabled = false; btn.innerText = originalText; return;
                     }
-                    let compName = "";
-                    snap.forEach(doc => { compName = doc.data().company; });
-                    localStorage.setItem("nt_phone", phone);
-                    localStorage.setItem("nt_company_name", compName);
+                    let compName = ""; snap.forEach(doc => { compName = doc.data().company; });
+                    localStorage.setItem("nt_phone", phone); localStorage.setItem("nt_company_name", compName);
                     window.showToast("Đăng nhập thành công!");
                 }
                 
-                window.myCompany = localStorage.getItem("nt_company_name");
-                window.myPhone = localStorage.getItem("nt_phone");
+                window.myCompany = localStorage.getItem("nt_company_name"); window.myPhone = localStorage.getItem("nt_phone");
                 window.checkAuth();
-            } catch (error) {
-                window.showToast("Lỗi hệ thống: " + error.message, "error");
-            } finally {
-                btn.disabled = false; btn.innerHTML = originalText;
-            }
-        }
-
-        // TẢI TOÀN BỘ DỮ LIỆU CỦA NHÀ THẦU (3 BẢNG)
-        window.loadData = async function() {
-            document.getElementById('loading-msg').classList.remove('hidden');
-            
-            try {
-                // Tải Nhân Sự
-                const qWorker = window.query(window.collection(window.db, "nha_thau_nhan_su"), window.where("cong_ty", "==", window.myCompany));
-                const snapWorker = await window.getDocs(qWorker);
-                let htmlWorker = ''; let sttW = 1;
-                snapWorker.forEach(doc => {
-                    const d = doc.data();
-                    const atldStatus = window.formatDateAndStatus(d.han_atld);
-                    let atldClass = d.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-700 border-blue-100";
-                    htmlWorker += `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4 text-center font-medium text-slate-500">${sttW++}</td>
-                            <td class="p-4 font-bold text-slate-800">${d.ho_ten}</td>
-                            <td class="p-4 text-slate-600">${window.formatSimpleDate(d.ngay_sinh)}</td>
-                            <td class="p-4 text-slate-600 font-mono text-sm">${d.cccd}</td>
-                            <td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${d.nhom_atld}</span></div>${atldStatus.html}</td>
-                            <td class="p-4 text-center">${window.formatDateAndStatus(d.han_bao_hiem).html}</td>
-                            <td class="p-4 text-center">${window.formatDateAndStatus(d.han_suc_khoe).html}</td>
-                            <td class="p-4 text-center whitespace-nowrap">
-                                <button onclick="editWorker('${doc.id}', '${d.ho_ten}', '${d.ngay_sinh||''}', '${d.cccd}', '${d.nhom_atld}', '${d.han_atld||''}', '${d.han_bao_hiem||''}', '${d.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                                <button onclick="deleteItem('nha_thau_nhan_su', '${doc.id}')" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                document.getElementById('worker-results').innerHTML = htmlWorker || `<tr><td colspan="8" class="p-8 text-center text-slate-400">Chưa khai báo nhân sự.</td></tr>`;
-
-                // Tải Vật tư (Bảng dùng chung tạm)
-                const qMat = window.query(window.collection(window.db, "nha_thau_vat_tu"), window.where("cong_ty", "==", window.myCompany));
-                const snapMat = await window.getDocs(qMat);
-                let htmlMat = ''; let sttM = 1;
-                snapMat.forEach(doc => {
-                    const d = doc.data();
-                    htmlMat += `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4 text-center font-medium text-slate-500">${sttM++}</td>
-                            <td class="p-4 font-bold text-slate-800">${d.ten_vat_tu}</td>
-                            <td class="p-4 text-center font-bold text-blue-600">${d.so_luong}</td>
-                            <td class="p-4 text-slate-600">${d.muc_dich || ''}</td>
-                            <td class="p-4 text-center whitespace-nowrap">
-                                <button onclick="editMaterial('${doc.id}', '${d.ten_vat_tu}', '${d.so_luong}', '${d.muc_dich||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                                <button onclick="deleteItem('nha_thau_vat_tu', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                document.getElementById('material-results').innerHTML = htmlMat || `<tr><td colspan="5" class="p-8 text-center text-slate-400">Chưa khai báo Hàng hóa/Vật tư.</td></tr>`;
-
-                // Tải Máy móc nghiêm ngặt
-                const qMac = window.query(window.collection(window.db, "nha_thau_may_moc"), window.where("cong_ty", "==", window.myCompany));
-                const snapMac = await window.getDocs(qMac);
-                let htmlMac = ''; let sttE = 1;
-                snapMac.forEach(doc => {
-                    const d = doc.data();
-                    let linkHtml = d.file_kiem_dinh ? `<a href="${d.file_kiem_dinh}" target="_blank" class="text-[11px] font-bold text-blue-600 border border-blue-200 bg-blue-50 px-2 py-1 rounded">Xem Giấy KĐ</a>` : '<span class="text-slate-400 text-xs">Không có</span>';
-                    htmlMac += `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="p-4 text-center font-medium text-slate-500">${sttE++}</td>
-                            <td class="p-4 font-bold text-slate-800">${d.ten_may}</td>
-                            <td class="p-4 font-mono text-sm">${d.bien_so || ''}</td>
-                            <td class="p-4 text-slate-600">${d.nguoi_van_hanh || ''}</td>
-                            <td class="p-4 text-center">${window.formatDateAndStatus(d.han_kiem_dinh).html}</td>
-                            <td class="p-4 text-center">${linkHtml}</td>
-                            <td class="p-4 text-center whitespace-nowrap">
-                                <button onclick="editMachine('${doc.id}', '${d.ten_may}', '${d.bien_so||''}', '${d.nguoi_van_hanh||''}', '${d.han_kiem_dinh||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                                <button onclick="deleteItem('nha_thau_may_moc', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                document.getElementById('machine-results').innerHTML = htmlMac || `<tr><td colspan="7" class="p-8 text-center text-slate-400">Chưa khai báo Máy móc.</td></tr>`;
-
-            } catch (error) {
-                console.error(error);
-                window.showToast("Lỗi tải dữ liệu: " + error.message, "error");
-            } finally {
-                document.getElementById('loading-msg').classList.add('hidden');
-            }
-        }
-
-        // CÁC HÀM LƯU DỮ LIỆU
-        window.saveWorker = async function() {
-            const id = document.getElementById('wk-doc-id').value;
-            const data = {
-                cong_ty: window.myCompany, ho_ten: document.getElementById('wk-ho-ten').value.trim(),
-                ngay_sinh: document.getElementById('wk-ngay-sinh').value, cccd: document.getElementById('wk-cccd').value.trim(),
-                nhom_atld: document.getElementById('wk-nhom-atld').value, han_atld: document.getElementById('wk-han-atld').value,
-                han_bao_hiem: document.getElementById('wk-han-bao-hiem').value, han_suc_khoe: document.getElementById('wk-han-suc-khoe').value, thoi_gian_cap_nhat: new Date()
-            };
-            if (!data.ho_ten || !data.cccd) return window.showToast("Nhập đủ Họ tên và CCCD!", "error");
-            await window.saveDataToFirebase("nha_thau_nhan_su", id, data, "btn-save-worker", "worker-modal");
-        }
-
-        window.saveMaterial = async function() {
-            const id = document.getElementById('mat-doc-id').value;
-            const data = {
-                cong_ty: window.myCompany, ten_vat_tu: document.getElementById('mat-name').value.trim(),
-                so_luong: document.getElementById('mat-qty').value.trim(), muc_dich: document.getElementById('mat-desc').value.trim(), thoi_gian_cap_nhat: new Date()
-            };
-            if (!data.ten_vat_tu || !data.so_luong) return window.showToast("Nhập đủ Tên và Số lượng!", "error");
-            await window.saveDataToFirebase("nha_thau_vat_tu", id, data, "btn-save-material", "material-modal");
-        }
-
-        window.saveStrictEquip = async function() {
-            const id = document.getElementById('se-doc-id').value;
-            const name = document.getElementById('se-name').value.trim();
-            const expire = document.getElementById('se-expire').value;
-            if (!name || !expire) return window.showToast("Nhập đủ Tên máy và Hạn KĐ!", "error");
-
-            const btn = document.getElementById('btn-save-strict');
-            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải ảnh...';
-
-            try {
-                let fileUrl = await window.uploadFileToImgBB('se-file');
-                const data = {
-                    cong_ty: window.myCompany, ten_may: name, bien_so: document.getElementById('se-plate').value.trim(),
-                    nguoi_van_hanh: document.getElementById('se-operator').value.trim(), han_kiem_dinh: expire, thoi_gian_cap_nhat: new Date()
-                };
-                if(fileUrl) data.file_kiem_dinh = fileUrl; // Nén và tải qua ImgBB
-
-                if(id) { await window.updateDoc(window.doc(window.db, "nha_thau_may_moc", id), data); window.showToast("Cập nhật thành công!"); }
-                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nha_thau_may_moc"), data); window.showToast("Khai báo máy móc thành công!"); }
-                
-                window.closeModal('strict-equip-modal');
-                window.loadData();
-            } catch(e) { window.showToast("Lỗi: " + e.message, "error"); }
-            finally { btn.disabled = false; btn.innerHTML = ogText; }
-        }
-
-        window.saveDataToFirebase = async function(collectionName, id, data, btnId, modalId) {
-            const btn = document.getElementById(btnId);
-            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...';
-            try {
-                if (id) { await window.updateDoc(window.doc(window.db, collectionName, id), data); window.showToast("Cập nhật thành công!"); } 
-                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, collectionName), data); window.showToast("Thêm mới thành công!"); }
-                window.closeModal(modalId); window.loadData();
-            } catch (error) { window.showToast("Lỗi: " + error.message, "error"); } 
-            finally { btn.disabled = false; btn.innerHTML = ogText; }
-        }
-
-        // =========================================================================
-        // HÀM TRÌNH PHÊ DUYỆT LÊN BẢNG ĐIỀU KHIỂN & BẮN PUSH NOTIFICATION
-        // =========================================================================
-        window.submitApproval = async function() {
-            if(!confirm("Bạn có chắc chắn muốn trình Ban Giám Đốc EHS xét duyệt không? Hồ sơ sẽ bị khóa để chờ duyệt.")) return;
-            
-            const btn = document.getElementById('btn-submit-approval');
-            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> ĐANG GỬI...';
-
-            try {
-                // 1. Tạo 1 Task giao cho Sếp Vượng / Admin
-                const taskData = {
-                    title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU: ${window.myCompany}`,
-                    category: 'An toàn',
-                    due_date: new Date().toISOString().split('T')[0], // Hạn chót duyệt ngay trong ngày
-                    assigner_id: window.myPhone,
-                    assigner_name: window.myCompany,
-                    assignee_id: '1951', // CHÚ Ý: Gắn cứng mã NV của Sếp (VD 1951 là anh Tư) hoặc mã chung
-                    assignee_name: 'Ban Giám Đốc EHS',
-                    progress: 0,
-                    status: 'Review',
-                    is_review_requested: true,
-                    reviewer_id: '1951',
-                    reviewer_name: 'Đặng Thế Tư',
-                    plan_steps: [
-                        {text: `Kiểm tra danh sách Nhân sự công ty ${window.myCompany}`, progress: 0},
-                        {text: "Kiểm tra danh mục Hàng hóa, Hóa chất mang vào", progress: 0},
-                        {text: "Kiểm tra Giấy kiểm định Máy móc nâng hạ", progress: 0}
-                    ],
-                    created_at: new Date()
-                };
-                await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
-                
-                // 2. Cập nhật giao diện (Giả lập khóa)
-                document.getElementById('approval-status-badge').innerHTML = '<i class="ph-bold ph-check-circle"></i> Đã trình duyệt, chờ kết quả...';
-                document.getElementById('approval-status-badge').className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-200";
-                
-                // 3. GỌI API BẮN THÔNG BÁO CHO SẾP TƯ / SẾP VƯỢNG
-                // ANH DÁN LẠI ĐƯỜNG LINK GOOGLE APPS SCRIPT VÀO ĐÂY NHÉ:
-                const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
-                
-                // Lấy FCM Token của anh Tư từ bảng nhân sự để bắn thẳng vào điện thoại anh
-                const qAdmin = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", "1951"));
-                const snapAdmin = await window.getDocs(qAdmin);
-                if (!snapAdmin.empty) {
-                    const adminToken = snapAdmin.docs[0].data().fcm_token;
-                    if(adminToken) {
-                        fetch(PUSH_API_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                fcmToken: adminToken,
-                                title: "🚨 CÓ HỒ SƠ NHÀ THẦU CẦN DUYỆT",
-                                body: `Công ty ${window.myCompany} vừa trình hồ sơ thi công. Vui lòng mở Bảng Điều Khiển để xét duyệt ngay.`
-                            })
-                        }).catch(e => console.log("Lỗi Push ngầm:", e));
-                    }
-                }
-
-                window.showToast("Đã gửi thông báo cho Ban Giám đốc EHS thành công!");
-            } catch(e) {
-                window.showToast("Lỗi gửi duyệt: " + e.message, "error");
-            } finally {
-                btn.disabled = false; btn.innerHTML = ogText;
-            }
-        }
-
-        // Chạy lúc load trang
-        window.checkAuth();
-    </script>
-
-    <!-- CÁC HÀM TIỆN ÍCH GIAO DIỆN (KHÔNG ĐỤNG FIREBASE) -->
-    <script>
-        window.showToast = function(message, type = "success") {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
-            if (type === "success") { toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl"; } 
-            else { toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl"; }
-            document.getElementById('toast-message').innerText = message;
-            toast.classList.remove('translate-x-[150%]');
-            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
-        }
-
-        window.toggleMode = function() {
-            window.isLoginMode = !window.isLoginMode;
-            if (window.isLoginMode) {
-                document.getElementById('company-field').classList.add('hidden');
-                document.getElementById('btn-login').innerText = "Đăng nhập";
-                document.getElementById('toggle-text').innerText = "Nhà thầu mới?";
-                document.getElementById('btn-toggle').innerText = "Đăng ký tài khoản";
-                document.getElementById('form-subtitle').innerText = "Đăng nhập bằng Số điện thoại";
-            } else {
-                document.getElementById('company-field').classList.remove('hidden');
-                document.getElementById('btn-login').innerText = "Đăng ký & Đăng nhập";
-                document.getElementById('toggle-text').innerText = "Đã có tài khoản?";
-                document.getElementById('btn-toggle').innerText = "Đăng nhập ngay";
-                document.getElementById('form-subtitle').innerText = "Tạo tài khoản dành riêng cho Công ty bạn";
-            }
+            } catch (error) { window.showToast("Lỗi hệ thống: " + error.message, "error"); } 
+            finally { btn.disabled = false; btn.innerHTML = originalText; }
         }
 
         window.handleLogout = function() {
             localStorage.removeItem("nt_phone"); localStorage.removeItem("nt_company_name");
-            window.myCompany = ""; window.myPhone = "";
-            document.getElementById('nt-pass').value = '';
-            window.checkAuth();
-            window.showToast("Đã đăng xuất an toàn!");
+            window.myCompany = ""; window.myPhone = ""; document.getElementById('nt-pass').value = '';
+            window.checkAuth(); window.showToast("Đã đăng xuất an toàn!");
         }
 
+        /* ================= CÁC HÀM XỬ LÝ GIAO DIỆN CHÍNH (TABS & MODALS) ================= */
         window.switchTab = function(tabId) {
             window.currentTab = tabId;
             const tabs = ['nhan-su', 'vat-tu', 'may-moc'];
@@ -650,56 +447,43 @@
 
         window.openCurrentModal = function() {
             if (window.currentTab === 'nhan-su') {
-                document.getElementById('modal-worker-title').innerText = 'Khai báo Nhân sự';
-                document.getElementById('wk-doc-id').value = '';
+                document.getElementById('modal-worker-title').innerText = 'Khai báo Nhân sự'; document.getElementById('wk-doc-id').value = '';
                 ['ho-ten', 'ngay-sinh', 'cccd', 'han-atld', 'han-bao-hiem', 'han-suc-khoe'].forEach(id => document.getElementById(`wk-${id}`).value = '');
-                document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo';
-                document.getElementById('worker-modal').classList.remove('hidden');
+                document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo'; document.getElementById('worker-modal').classList.remove('hidden');
             } else if (window.currentTab === 'vat-tu') {
-                document.getElementById('modal-material-title').innerText = 'Khai báo Hàng hóa / Vật tư';
-                document.getElementById('mat-doc-id').value = '';
-                ['name', 'qty', 'desc'].forEach(id => document.getElementById(`mat-${id}`).value = '');
-                document.getElementById('material-modal').classList.remove('hidden');
+                document.getElementById('modal-material-title').innerText = 'Khai báo Hàng hóa / Vật tư'; document.getElementById('mat-doc-id').value = '';
+                ['name', 'qty', 'desc'].forEach(id => document.getElementById(`mat-${id}`).value = ''); document.getElementById('material-modal').classList.remove('hidden');
             } else if (window.currentTab === 'may-moc') {
-                document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-warning-circle"></i> Máy Móc Yêu Cầu Nghiêm Ngặt';
-                document.getElementById('se-doc-id').value = '';
-                ['name', 'plate', 'operator', 'expire', 'file'].forEach(id => document.getElementById(`se-${id}`).value = '');
-                document.getElementById('strict-equip-modal').classList.remove('hidden');
+                document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-warning-circle"></i> Máy Móc Yêu Cầu Nghiêm Ngặt'; document.getElementById('se-doc-id').value = '';
+                ['name', 'plate', 'operator', 'expire', 'file'].forEach(id => document.getElementById(`se-${id}`).value = ''); document.getElementById('strict-equip-modal').classList.remove('hidden');
             }
-        }
-
-        // HÀM EDIT BẬT MODAL LÊN
-        window.editWorker = function(id, hoTen, ngaySinh, cccd, nhom, hanATLD, hanBH, hanSK) {
-            document.getElementById('modal-worker-title').innerText = 'Cập Nhật Nhân Sự';
-            document.getElementById('wk-doc-id').value = id; document.getElementById('wk-ho-ten').value = hoTen;
-            document.getElementById('wk-ngay-sinh').value = ngaySinh; document.getElementById('wk-cccd').value = cccd;
-            document.getElementById('wk-nhom-atld').value = nhom; document.getElementById('wk-han-atld').value = hanATLD;
-            document.getElementById('wk-han-bao-hiem').value = hanBH; document.getElementById('wk-han-suc-khoe').value = hanSK;
-            document.getElementById('worker-modal').classList.remove('hidden');
-        }
-        window.editMaterial = function(id, ten, sl, md) {
-            document.getElementById('modal-material-title').innerText = 'Cập Nhật Hàng Hóa';
-            document.getElementById('mat-doc-id').value = id; document.getElementById('mat-name').value = ten;
-            document.getElementById('mat-qty').value = sl; document.getElementById('mat-desc').value = md;
-            document.getElementById('material-modal').classList.remove('hidden');
-        }
-        window.editMachine = function(id, ten, bienso, taixe, hankd) {
-            document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-pencil-simple"></i> Cập Nhật Máy Móc';
-            document.getElementById('se-doc-id').value = id; document.getElementById('se-name').value = ten;
-            document.getElementById('se-plate').value = bienso; document.getElementById('se-operator').value = taixe;
-            document.getElementById('se-expire').value = hankd; document.getElementById('se-file').value = ''; // Không thể lấy lại value file do bảo mật browser
-            document.getElementById('strict-equip-modal').classList.remove('hidden');
         }
 
         window.closeModal = function(modalId) {
             if(modalId) document.getElementById(modalId).classList.add('hidden');
-            else {
-                document.getElementById('worker-modal').classList.add('hidden');
-                document.getElementById('material-modal').classList.add('hidden');
-                document.getElementById('strict-equip-modal').classList.add('hidden');
-            }
+            else { document.getElementById('worker-modal').classList.add('hidden'); document.getElementById('material-modal').classList.add('hidden'); document.getElementById('strict-equip-modal').classList.add('hidden'); }
         }
 
+        window.editWorker = function(id, hoTen, ngaySinh, cccd, nhom, hanATLD, hanBH, hanSK) {
+            document.getElementById('modal-worker-title').innerText = 'Cập Nhật Nhân Sự'; document.getElementById('wk-doc-id').value = id; 
+            document.getElementById('wk-ho-ten').value = hoTen; document.getElementById('wk-ngay-sinh').value = ngaySinh; 
+            document.getElementById('wk-cccd').value = cccd; document.getElementById('wk-nhom-atld').value = nhom; 
+            document.getElementById('wk-han-atld').value = hanATLD; document.getElementById('wk-han-bao-hiem').value = hanBH; 
+            document.getElementById('wk-han-suc-khoe').value = hanSK; document.getElementById('worker-modal').classList.remove('hidden');
+        }
+        window.editMaterial = function(id, ten, sl, md) {
+            document.getElementById('modal-material-title').innerText = 'Cập Nhật Hàng Hóa'; document.getElementById('mat-doc-id').value = id; 
+            document.getElementById('mat-name').value = ten; document.getElementById('mat-qty').value = sl; 
+            document.getElementById('mat-desc').value = md; document.getElementById('material-modal').classList.remove('hidden');
+        }
+        window.editMachine = function(id, ten, bienso, taixe, hankd) {
+            document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-pencil-simple"></i> Cập Nhật Máy Móc'; document.getElementById('se-doc-id').value = id; 
+            document.getElementById('se-name').value = ten; document.getElementById('se-plate').value = bienso; 
+            document.getElementById('se-operator').value = taixe; document.getElementById('se-expire').value = hankd; 
+            document.getElementById('se-file').value = ''; document.getElementById('strict-equip-modal').classList.remove('hidden');
+        }
+
+        /* ================= HÀM XÓA DỮ LIỆU CHUẨN MỰC ================= */
         let deleteCollection = "", deleteId = "";
         window.deleteItem = function(collectionName, docId) {
             deleteCollection = collectionName; deleteId = docId;
@@ -707,19 +491,142 @@
         }
         window.closeConfirmModal = function() { document.getElementById('confirm-modal').classList.add('hidden'); }
         
-        // Gán sự kiện cho Nút Xóa (Nằm ở HTML nhưng logic dính tới FB)
-        document.getElementById('btn-confirm-yes').addEventListener('click', async function() {
+        window.executeDelete = async function() {
             if(!deleteCollection || !deleteId) return;
-            const btn = this; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
+            const btn = document.getElementById('btn-confirm-yes');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
             try {
                 await window.deleteDoc(window.doc(window.db, deleteCollection, deleteId));
-                window.showToast("Xóa thành công!"); window.closeConfirmModal(); window.loadData();
-            } catch(e) { window.showToast("Lỗi xóa: " + e.message, "error"); }
-            finally { btn.innerHTML = 'Xóa'; }
-        });
+                window.showToast("Xóa thành công!"); 
+                window.closeConfirmModal(); 
+                window.loadData();
+            } catch(e) { 
+                window.showToast("Lỗi xóa: " + e.message, "error"); 
+            } finally { 
+                btn.innerHTML = ogText; 
+            }
+        };
 
-        // Hàm nén ảnh và tải lên ImgBB
-        window.uploadFileToImgBB = async (inputId) => {
+        /* ================= TẢI DỮ LIỆU TỪ MÁY CHỦ ================= */
+        window.loadData = async function() {
+            document.getElementById('loading-msg').classList.remove('hidden');
+            
+            try {
+                // Tải Nhân Sự
+                const qWorker = window.query(window.collection(window.db, "nha_thau_nhan_su"), window.where("cong_ty", "==", window.myCompany));
+                const snapWorker = await window.getDocs(qWorker);
+                let htmlWorker = ''; let sttW = 1;
+                snapWorker.forEach(doc => {
+                    const d = doc.data();
+                    const atldStatus = window.formatDateAndStatus(d.han_atld);
+                    let atldClass = d.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-700 border-blue-100";
+                    htmlWorker += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 text-center font-medium text-slate-500">${sttW++}</td>
+                            <td class="p-4 font-bold text-slate-800">${d.ho_ten}</td>
+                            <td class="p-4 text-slate-600">${window.formatSimpleDate(d.ngay_sinh)}</td>
+                            <td class="p-4 text-slate-600 font-mono text-sm">${d.cccd}</td>
+                            <td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${d.nhom_atld}</span></div>${atldStatus.html}</td>
+                            <td class="p-4 text-center">${window.formatDateAndStatus(d.han_bao_hiem).html}</td>
+                            <td class="p-4 text-center">${window.formatDateAndStatus(d.han_suc_khoe).html}</td>
+                            <td class="p-4 text-center whitespace-nowrap">
+                                <button onclick="window.editWorker('${doc.id}', '${d.ho_ten}', '${d.ngay_sinh||''}', '${d.cccd}', '${d.nhom_atld}', '${d.han_atld||''}', '${d.han_bao_hiem||''}', '${d.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                                <button onclick="window.deleteItem('nha_thau_nhan_su', '${doc.id}')" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('worker-results').innerHTML = htmlWorker || `<tr><td colspan="8" class="p-8 text-center text-slate-400">Chưa khai báo nhân sự.</td></tr>`;
+
+                // Tải Vật tư
+                const qMat = window.query(window.collection(window.db, "nha_thau_vat_tu"), window.where("cong_ty", "==", window.myCompany));
+                const snapMat = await window.getDocs(qMat);
+                let htmlMat = ''; let sttM = 1;
+                snapMat.forEach(doc => {
+                    const d = doc.data();
+                    htmlMat += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 text-center font-medium text-slate-500">${sttM++}</td>
+                            <td class="p-4 font-bold text-slate-800">${d.ten_vat_tu}</td>
+                            <td class="p-4 text-center font-bold text-blue-600">${d.so_luong}</td>
+                            <td class="p-4 text-slate-600">${d.muc_dich || ''}</td>
+                            <td class="p-4 text-center whitespace-nowrap">
+                                <button onclick="window.editMaterial('${doc.id}', '${d.ten_vat_tu}', '${d.so_luong}', '${d.muc_dich||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                                <button onclick="window.deleteItem('nha_thau_vat_tu', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('material-results').innerHTML = htmlMat || `<tr><td colspan="5" class="p-8 text-center text-slate-400">Chưa khai báo Hàng hóa/Vật tư.</td></tr>`;
+
+                // Tải Máy móc nghiêm ngặt
+                const qMac = window.query(window.collection(window.db, "nha_thau_may_moc"), window.where("cong_ty", "==", window.myCompany));
+                const snapMac = await window.getDocs(qMac);
+                let htmlMac = ''; let sttE = 1;
+                snapMac.forEach(doc => {
+                    const d = doc.data();
+                    let linkHtml = d.file_kiem_dinh ? `<a href="${d.file_kiem_dinh}" target="_blank" class="text-[11px] font-bold text-blue-600 border border-blue-200 bg-blue-50 px-2 py-1 rounded">Xem Giấy KĐ</a>` : '<span class="text-slate-400 text-xs">Không có</span>';
+                    htmlMac += `
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="p-4 text-center font-medium text-slate-500">${sttE++}</td>
+                            <td class="p-4 font-bold text-slate-800">${d.ten_may}</td>
+                            <td class="p-4 font-mono text-sm">${d.bien_so || ''}</td>
+                            <td class="p-4 text-slate-600">${d.nguoi_van_hanh || ''}</td>
+                            <td class="p-4 text-center">${window.formatDateAndStatus(d.han_kiem_dinh).html}</td>
+                            <td class="p-4 text-center">${linkHtml}</td>
+                            <td class="p-4 text-center whitespace-nowrap">
+                                <button onclick="window.editMachine('${doc.id}', '${d.ten_may}', '${d.bien_so||''}', '${d.nguoi_van_hanh||''}', '${d.han_kiem_dinh||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                                <button onclick="window.deleteItem('nha_thau_may_moc', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('machine-results').innerHTML = htmlMac || `<tr><td colspan="7" class="p-8 text-center text-slate-400">Chưa khai báo Máy móc.</td></tr>`;
+
+            } catch (error) {
+                console.error(error);
+                window.showToast("Lỗi tải dữ liệu: " + error.message, "error");
+            } finally {
+                document.getElementById('loading-msg').classList.add('hidden');
+            }
+        }
+
+        /* ================= CÁC HÀM LƯU DỮ LIỆU ================= */
+        window.saveDataToFirebase = async function(collectionName, id, data, btnId, modalId) {
+            const btn = document.getElementById(btnId);
+            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...';
+            try {
+                if (id) { await window.updateDoc(window.doc(window.db, collectionName, id), data); window.showToast("Cập nhật thành công!"); } 
+                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, collectionName), data); window.showToast("Thêm mới thành công!"); }
+                window.closeModal(modalId); window.loadData();
+            } catch (error) { window.showToast("Lỗi: " + error.message, "error"); } 
+            finally { btn.disabled = false; btn.innerHTML = ogText; }
+        }
+
+        window.saveWorker = async function() {
+            const id = document.getElementById('wk-doc-id').value;
+            const data = {
+                cong_ty: window.myCompany, ho_ten: document.getElementById('wk-ho-ten').value.trim(),
+                ngay_sinh: document.getElementById('wk-ngay-sinh').value, cccd: document.getElementById('wk-cccd').value.trim(),
+                nhom_atld: document.getElementById('wk-nhom-atld').value, han_atld: document.getElementById('wk-han-atld').value,
+                han_bao_hiem: document.getElementById('wk-han-bao-hiem').value, han_suc_khoe: document.getElementById('wk-han-suc-khoe').value, thoi_gian_cap_nhat: new Date()
+            };
+            if (!data.ho_ten || !data.cccd) return window.showToast("Nhập đủ Họ tên và CCCD!", "error");
+            await window.saveDataToFirebase("nha_thau_nhan_su", id, data, "btn-save-worker", "worker-modal");
+        }
+
+        window.saveMaterial = async function() {
+            const id = document.getElementById('mat-doc-id').value;
+            const data = {
+                cong_ty: window.myCompany, ten_vat_tu: document.getElementById('mat-name').value.trim(),
+                so_luong: document.getElementById('mat-qty').value.trim(), muc_dich: document.getElementById('mat-desc').value.trim(), thoi_gian_cap_nhat: new Date()
+            };
+            if (!data.ten_vat_tu || !data.so_luong) return window.showToast("Nhập đủ Tên và Số lượng!", "error");
+            await window.saveDataToFirebase("nha_thau_vat_tu", id, data, "btn-save-material", "material-modal");
+        }
+
+        window.uploadFileToImgBB = async function(inputId) {
             const fileInput = document.getElementById(inputId);
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
             const file = fileInput.files[0];
@@ -732,15 +639,102 @@
             throw new Error("Lỗi tải ảnh lên. Yêu cầu file JPG/PNG.");
         };
 
-        window.formatDateAndStatus = function(dateString) {
-            if (!dateString) return { html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[11px] font-bold">Chưa có</span>` };
-            const expDate = new Date(dateString); const today = new Date(); today.setHours(0,0,0,0);
-            const formatted = expDate.toLocaleDateString('vi-VN');
-            if (expDate < today) return { html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold">Hết hạn (${formatted})</span>` };
-            return { html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold">Hợp lệ (${formatted})</span>` };
-        }
-        window.formatSimpleDate = function(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
+        window.saveStrictEquip = async function() {
+            const id = document.getElementById('se-doc-id').value;
+            const name = document.getElementById('se-name').value.trim();
+            const expire = document.getElementById('se-expire').value;
+            if (!name || !expire) return window.showToast("Nhập đủ Tên máy và Hạn KĐ!", "error");
 
+            const btn = document.getElementById('btn-save-strict');
+            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải ảnh...';
+
+            try {
+                let fileUrl = await window.uploadFileToImgBB('se-file');
+                const data = {
+                    cong_ty: window.myCompany, ten_may: name, bien_so: document.getElementById('se-plate').value.trim(),
+                    nguoi_van_hanh: document.getElementById('se-operator').value.trim(), han_kiem_dinh: expire, thoi_gian_cap_nhat: new Date()
+                };
+                if(fileUrl) data.file_kiem_dinh = fileUrl;
+
+                if(id) { await window.updateDoc(window.doc(window.db, "nha_thau_may_moc", id), data); window.showToast("Cập nhật thành công!"); }
+                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nha_thau_may_moc"), data); window.showToast("Khai báo máy móc thành công!"); }
+                
+                window.closeModal('strict-equip-modal');
+                window.loadData();
+            } catch(e) { window.showToast("Lỗi: " + e.message, "error"); }
+            finally { btn.disabled = false; btn.innerHTML = ogText; }
+        }
+
+        /* ================= HÀM TRÌNH PHÊ DUYỆT & THÔNG BÁO PUSH ================= */
+        window.submitApproval = async function() {
+            if(!confirm("Bạn có chắc chắn muốn trình Ban Giám Đốc EHS xét duyệt không? Hồ sơ sẽ bị khóa để chờ duyệt.")) return;
+            
+            const btn = document.getElementById('btn-submit-approval');
+            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> ĐANG GỬI...';
+
+            try {
+                const taskData = {
+                    title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU: ${window.myCompany}`,
+                    category: 'An toàn',
+                    due_date: new Date().toISOString().split('T')[0],
+                    assigner_id: window.myPhone,
+                    assigner_name: window.myCompany,
+                    assignee_id: '1951', // ID cứng của Giám đốc
+                    assignee_name: 'Ban Giám Đốc EHS',
+                    progress: 0,
+                    status: 'Review',
+                    is_review_requested: true,
+                    reviewer_id: '1951',
+                    reviewer_name: 'Đặng Thế Tư',
+                    plan_steps: [
+                        {text: `Kiểm tra danh sách Nhân sự công ty ${window.myCompany}`, progress: 0},
+                        {text: "Kiểm tra danh mục Hàng hóa, Hóa chất mang vào", progress: 0},
+                        {text: "Kiểm tra Giấy kiểm định Máy móc nâng hạ", progress: 0}
+                    ],
+                    created_at: new Date()
+                };
+                await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
+                
+                document.getElementById('approval-status-badge').innerHTML = '<i class="ph-bold ph-check-circle"></i> Đã trình duyệt, chờ kết quả...';
+                document.getElementById('approval-status-badge').className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-200";
+                
+                // GỌI API BẮN THÔNG BÁO TỚI SẾP TƯ / VƯỢNG
+                const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
+                
+                const qAdmin = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", "1951"));
+                const snapAdmin = await window.getDocs(qAdmin);
+                if (!snapAdmin.empty) {
+                    const adminToken = snapAdmin.docs[0].data().fcm_token;
+                    if(adminToken) {
+                        fetch(PUSH_API_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                fcmToken: adminToken,
+                                title: "🚨 CÓ HỒ SƠ NHÀ THẦU CẦN DUYỆT",
+                                body: `Công ty ${window.myCompany} vừa trình hồ sơ thi công. Vui lòng mở Bảng Điều Khiển để xét duyệt ngay.`
+                            })
+                        }).catch(e => console.log("Lỗi Push ngầm:", e));
+                    }
+                }
+
+                window.showToast("Đã gửi thông báo cho Ban Giám đốc EHS thành công!");
+            } catch(e) {
+                window.showToast("Lỗi gửi duyệt: " + e.message, "error");
+            } finally {
+                btn.disabled = false; btn.innerHTML = ogText;
+            }
+        }
+
+        // Bắt sự kiện phím Enter ở màn hình đăng nhập
+        document.getElementById('nt-pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                window.handleLogin();
+            }
+        });
+
+        // Khởi chạy khi load trang
+        window.checkAuth();
     </script>
 </body>
 </html>
