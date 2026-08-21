@@ -4,9 +4,398 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cổng Quản lý Nhà thầu EHS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-4 md:p-8 text-slate-800 flex flex-col items-center relative">
+
+    <!-- NÚT ĐA NGÔN NGỮ ĐẶT Ở GÓC TRÊN CÙNG BÊN PHẢI -->
+    <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-[60]">
+        <div class="relative group">
+            <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 bg-white px-3 py-2 rounded-xl hover:bg-slate-50 transition border border-slate-200 shadow-sm">
+                <i class="ph-bold ph-translate"></i> <span id="current-lang-display">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs"></i>
+            </button>
+            <div class="absolute right-0 mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
+                <button onclick="window.changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700">Tiếng Việt</button>
+                <button onclick="window.changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">English</button>
+                <button onclick="window.changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">中文</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST & CONFIRM MODAL -->
+    <div id="toast" class="fixed top-5 right-5 z-[150] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+        <i id="toast-icon" class="text-2xl"></i>
+        <span id="toast-message"></span>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6 border-t-4 border-red-500">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4"><i class="ph-fill ph-warning-circle text-4xl"></i></div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2" data-i18n="confirm_del_title">Xác nhận xóa</h3>
+            <p class="text-slate-500 text-sm mb-6" id="confirm-message" data-i18n="confirm_del_desc">Bạn có chắc chắn muốn xóa?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="window.closeConfirmModal()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2" data-i18n="btn_cancel">Hủy</button>
+                <button id="btn-confirm-yes" class="bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-red-700 shadow-md w-1/2" data-i18n="btn_del">Xóa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-3xl shadow-xl border border-slate-200 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4"><i class="ph-fill ph-shield-check text-4xl"></i></div>
+        <h2 class="text-2xl font-bold text-slate-800 mb-2" data-i18n="login_title">Quản Trị Nhà Thầu</h2>
+        <p class="text-slate-500 text-sm mb-6" data-i18n="login_desc">Nhập mật khẩu cấp quản lý để truy cập thông tin dữ liệu.</p>
+        
+        <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-xl text-center tracking-[0.3em] font-mono text-xl focus:border-blue-500 outline-none mb-2 transition" placeholder="••••••••">
+        <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4" data-i18n="login_error">Sai mật khẩu! Vui lòng thử lại.</p>
+        
+        <button onclick="window.checkAdminPassword()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-md" data-i18n="btn_unlock">
+            Mở Khóa Dữ Liệu
+        </button>
+        <a href="index.html" class="block mt-4 text-sm font-semibold text-slate-500 hover:text-blue-600 transition" data-i18n="btn_back_home">Quay lại Trang chủ</a>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="main-content" class="w-full max-w-[1400px] bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-slate-200 hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-100 pb-4 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center">
+                    <i class="ph-fill ph-folders text-blue-600 text-3xl mr-3"></i>
+                    <span data-i18n="main_title">Cổng Quản Lý Nhà Thầu</span>
+                </h2>
+                <p class="text-slate-500 mt-1 font-medium" data-i18n="main_desc">Quản lý toàn diện nhân sự, thiết bị thi công và ra/vào cổng.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 sm:gap-3">
+                <a href="index.html" class="bg-slate-50 text-slate-600 px-4 py-2.5 rounded-xl font-bold hover:bg-slate-100 transition flex items-center gap-2 border border-slate-200">
+                    <i class="ph-bold ph-house text-lg"></i> <span data-i18n="btn_home">Trang chủ</span>
+                </a>
+                <a href="bao_ve.html" target="_blank" class="bg-indigo-50 text-indigo-700 px-4 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition flex items-center gap-2 border border-indigo-200 shadow-sm">
+                    <i class="ph-bold ph-shield-check text-lg"></i> <span data-i18n="btn_security">Trạm An Ninh</span>
+                </a>
+                <button onclick="window.exportToExcel()" class="bg-emerald-50 text-emerald-700 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-100 transition flex items-center gap-2 border border-emerald-200 shadow-sm">
+                    <i class="ph-bold ph-download-simple text-lg"></i> <span data-i18n="btn_export">Xuất Excel</span>
+                </button>
+                <button id="main-add-btn" onclick="window.openCurrentModal()" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition flex items-center gap-2 shadow-md">
+                    <i class="ph-bold ph-user-plus text-lg"></i> <span id="main-add-btn-text" data-i18n="btn_add_worker">Thêm Nhân sự</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABS ĐIỀU HƯỚNG -->
+        <div class="flex flex-wrap gap-2 mb-6 bg-slate-100 p-1 rounded-xl w-fit">
+            <button id="btn-tab-nhan-su" onclick="window.switchTab('nhan-su')" class="px-6 py-2.5 font-bold text-sm rounded-lg transition bg-white shadow text-blue-700" data-i18n="tab_worker">Quản lý Nhân sự</button>
+            <button id="btn-tab-may-moc" onclick="window.switchTab('may-moc')" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800" data-i18n="tab_machine">Máy móc Nghiêm ngặt</button>
+            <button id="btn-tab-giay-phep" onclick="window.switchTab('giay-phep')" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800 flex items-center gap-2"><i class="ph-fill ph-file-text text-amber-500 text-lg"></i> Giấy Phép (PTW)</button>
+            <button id="btn-tab-dao-tao" onclick="window.switchTab('dao-tao')" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800" data-i18n="tab_training">Hồ sơ Đào tạo</button>
+            <button id="btn-tab-cham-cong" onclick="window.switchTab('cham-cong')" class="px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800 flex items-center gap-1"><i class="ph-bold ph-clock"></i> <span data-i18n="tab_history">Lịch sử Ra/Vào</span></button>
+        </div>
+
+        <div id="loading-msg" class="text-center py-10 text-blue-600 font-medium hidden">
+            <i class="ph-bold ph-spinner animate-spin text-4xl mb-2"></i>
+            <p data-i18n="msg_loading">Đang đồng bộ dữ liệu từ máy chủ...</p>
+        </div>
+
+        <!-- TAB NHÂN SỰ -->
+        <div id="tab-nhan-su" class="tab-content active">
+            <div class="mb-4 relative max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i></div>
+                <input type="text" id="search-worker" onkeyup="window.filterWorkerTable()" class="w-full pl-11 pr-4 py-2.5 border border-slate-300 rounded-xl focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm font-medium bg-slate-50" placeholder="Tìm kiếm công ty, họ tên hoặc số CCCD..." data-i18n-placeholder="plc_search_worker">
+            </div>
+
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
+                <table class="w-full text-left border-collapse min-w-[1100px]">
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
+                            <th class="p-4 font-bold w-12 text-center">STT</th>
+                            <th class="p-4 font-bold" data-i18n="col_contractor">Tên Nhà Thầu</th>
+                            <th class="p-4 font-bold" data-i18n="col_name">Họ và Tên</th>
+                            <th class="p-4 font-bold" data-i18n="col_dob">Ngày Sinh</th>
+                            <th class="p-4 font-bold" data-i18n="col_id">Số CCCD</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_group">Nhóm ATLĐ</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_insurance">Bảo hiểm TN</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_health">Khám Sức Khỏe</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_action">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="worker-results-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB MÁY MÓC -->
+        <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
+            <table class="w-full text-left border-collapse min-w-[1000px]">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
+                        <th class="p-4 font-bold w-12 text-center">STT</th>
+                        <th class="p-4 font-bold" data-i18n="col_contractor">Tên Nhà Thầu</th>
+                        <th class="p-4 font-bold" data-i18n="col_machine_name">Tên Máy / Thiết Bị</th>
+                        <th class="p-4 font-bold" data-i18n="col_plate">Biển số</th>
+                        <th class="p-4 font-bold" data-i18n="col_operator">Người Vận Hành</th>
+                        <th class="p-4 font-bold text-center" data-i18n="col_expire">Hạn KĐ</th>
+                        <th class="p-4 font-bold text-center" data-i18n="col_doc">Hồ Sơ (Ảnh)</th>
+                        <th class="p-4 font-bold text-center" data-i18n="col_action">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="machine-results-body" class="text-sm divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+
+        <!-- TAB GIẤY PHÉP LÀM VIỆC (PTW) -->
+        <div id="tab-giay-phep" class="tab-content overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-slate-50">
+            <table class="w-full text-left border-collapse min-w-[1100px]">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
+                        <th class="p-4 font-bold w-12 text-center">STT</th>
+                        <th class="p-4 font-bold">Tên Nhà Thầu</th>
+                        <th class="p-4 font-bold">Loại Giấy Phép</th>
+                        <th class="p-4 font-bold">Khu Vực Thi Công</th>
+                        <th class="p-4 font-bold text-center">Thời gian thi công</th>
+                        <th class="p-4 font-bold text-center">Trạng Thái EHS</th>
+                        <th class="p-4 font-bold text-center">Kiểm duyệt</th>
+                    </tr>
+                </thead>
+                <tbody id="ptw-results-body" class="text-sm divide-y divide-slate-100 bg-white"></tbody>
+            </table>
+        </div>
+
+        <!-- TAB ĐÀO TẠO -->
+        <div id="tab-dao-tao" class="tab-content overflow-x-auto rounded-2xl border border-slate-200 shadow-sm custom-scrollbar bg-white">
+            <table class="w-full text-left border-collapse min-w-[900px]">
+                <thead>
+                    <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
+                        <th class="p-4 font-bold w-12 text-center">STT</th>
+                        <th class="p-4 font-bold" data-i18n="col_train_date">Ngày Đào Tạo</th>
+                        <th class="p-4 font-bold" data-i18n="col_train_topic">Chủ Đề Huấn Luyện</th>
+                        <th class="p-4 font-bold" data-i18n="col_contractor_attend">Tên Nhà Thầu Tham Gia</th>
+                        <th class="p-4 font-bold text-center" data-i18n="col_pass_count">Số HV Đạt</th>
+                        <th class="p-4 font-bold text-center" data-i18n="col_trainer">Trainer (EHS)</th>
+                        <th class="p-4 font-bold text-center" data-i18n="col_action">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="training-results-body" class="text-sm divide-y divide-slate-100"></tbody>
+            </table>
+        </div>
+
+        <!-- TAB CHẤM CÔNG -->
+        <div id="tab-cham-cong" class="tab-content rounded-2xl border border-slate-200 shadow-sm bg-white">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border-b border-slate-200 rounded-t-2xl" id="cham-cong-dashboard">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm text-center">
+                    <p class="text-xs text-slate-500 font-bold uppercase mb-1" data-i18n="lbl_view_date">Ngày đang xem</p>
+                    <input type="date" id="filter-date" onchange="window.loadChamCongData()" class="w-full text-sm font-bold text-center outline-none bg-slate-50 py-1 rounded">
+                </div>
+                <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 shadow-sm text-center">
+                    <p class="text-xs text-blue-600 font-bold uppercase mb-1" data-i18n="lbl_total_in">Đã vào xưởng (Lượt)</p>
+                    <p class="text-2xl font-black text-blue-800" id="stat-total-in">0</p>
+                </div>
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-100 shadow-sm text-center">
+                    <p class="text-xs text-emerald-600 font-bold uppercase mb-1" data-i18n="lbl_total_out">Đã hoàn thành (Lượt)</p>
+                    <p class="text-2xl font-black text-emerald-800" id="stat-total-out">0</p>
+                </div>
+                <div class="bg-amber-50 p-3 rounded-xl border border-amber-100 shadow-sm text-center">
+                    <p class="text-xs text-amber-600 font-bold uppercase mb-1" data-i18n="lbl_inside">Đang trong xưởng</p>
+                    <p class="text-2xl font-black text-amber-800" id="stat-inside">0</p>
+                </div>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <thead>
+                        <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
+                            <th class="p-4 font-bold w-12 text-center">STT</th>
+                            <th class="p-4 font-bold" data-i18n="col_contractor">Tên Nhà Thầu</th>
+                            <th class="p-4 font-bold" data-i18n="col_name_staff">Họ và Tên Nhân Sự</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_plant">Nhà Máy</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_time_in">Giờ Vào</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_time_out">Giờ Ra</th>
+                            <th class="p-4 font-bold text-center" data-i18n="col_status">Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cham-cong-results-body" class="text-sm divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NHÂN SỰ -->
+    <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="ph-fill ph-user-plus text-blue-600"></i> <span id="worker-modal-title">Thêm Nhân Sự Mới</span></h3>
+                <button onclick="window.closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar">
+                <input type="hidden" id="wk-doc-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="wk-cong-ty" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500 font-bold"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ Tên <span class="text-red-500">*</span></label><input type="text" id="wk-ho-ten" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500 font-bold"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Sinh</label><input type="date" id="wk-ngay-sinh" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">CCCD <span class="text-red-500">*</span></label><input type="text" id="wk-cccd" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500 font-mono font-bold"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Đào tạo ATLĐ</label>
+                        <select id="wk-nhom-atld" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500 bg-slate-50 font-bold text-slate-700">
+                            <option value="Chưa đào tạo">-- Chưa đào tạo --</option><option value="Nhóm 1">Nhóm 1 (Quản lý)</option><option value="Nhóm 2">Nhóm 2 (CB An toàn)</option><option value="Nhóm 3">Nhóm 3 (Nghiêm ngặt)</option><option value="Nhóm 4">Nhóm 4 (LĐ chung)</option><option value="Nhóm 5">Nhóm 5 (Y tế)</option><option value="Nhóm 6">Nhóm 6 (ATVSV)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-4 border-t border-slate-100">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Thẻ ATLĐ</label><input type="date" id="wk-han-atld" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Bảo Hiểm TN</label><input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Khám Sức Khỏe</label><input type="date" id="wk-han-suc-khoe" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-blue-500"></div>
+                </div>
+            </div>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl">
+                <button onclick="window.closeModal('worker-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-save-worker" onclick="window.saveWorker()" class="bg-blue-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-md transition flex items-center gap-2"><i class="ph-bold ph-floppy-disk"></i> Lưu Hồ Sơ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MÁY MÓC -->
+    <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh] border-t-4 border-amber-500">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-amber-50/50">
+                <h3 class="text-lg font-black text-amber-800 flex items-center gap-2"><i class="ph-fill ph-warning-circle"></i> <span id="machine-modal-title">Thêm Thiết Bị Cẩu/Nâng</span></h3>
+                <button onclick="window.closeModal('machine-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                <input type="hidden" id="mac-doc-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="mac-cong-ty" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-amber-500 font-bold"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên Máy <span class="text-red-500">*</span></label><input type="text" id="mac-ten-may" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-amber-500 font-bold" placeholder="VD: Xe Cẩu 10 tấn"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Biển Số / Mã Số</label><input type="text" id="mac-bien-so" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-amber-500 font-mono font-bold" placeholder="VD: 61H-123.45"></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-slate-100">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày KĐ Gần Nhất</label><input type="date" id="mac-ngay-kd" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hết Hạn Kiểm Định <span class="text-red-500">*</span></label><input type="date" id="mac-han-kd" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-red-500"></div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph-bold ph-image text-blue-500"></i> Ảnh Giấy Kiểm Định (Để làm bằng chứng)</label>
+                        <input type="file" id="mac-file-kiemdinh" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 outline-none cursor-pointer">
+                    </div>
+                </div>
+                <div class="p-4 bg-amber-50/50 rounded-2xl border border-amber-200 space-y-4">
+                    <div><label class="block text-xs font-black text-amber-800 uppercase mb-1">Tài xế / Người vận hành thiết bị này</label><input type="text" id="mac-operator" class="w-full px-4 py-2.5 border border-amber-300 rounded-xl outline-none focus:border-amber-500 font-bold" placeholder="Họ tên người vận hành..."></div>
+                    <div>
+                        <label class="block text-xs font-black text-amber-800 uppercase mb-1"><i class="ph-bold ph-image text-amber-600"></i> Ảnh Chứng Chỉ Hành Nghề Tài Xế</label>
+                        <input type="file" id="mac-file-chungchi" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 outline-none cursor-pointer">
+                    </div>
+                </div>
+            </div>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl">
+                <button onclick="window.closeModal('machine-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-save-machine" onclick="window.saveMachineData()" class="bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 shadow-md transition flex items-center gap-2"><i class="ph-bold ph-floppy-disk"></i> Lưu Hồ Sơ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL QR -->
+    <div id="qr-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8">
+            <h3 class="text-xl font-black text-slate-800 mb-1">Mã QR An Ninh</h3>
+            <p class="text-sm font-bold text-slate-500 mb-6" id="qr-machine-name">Tên máy móc</p>
+            <div class="bg-white p-4 rounded-2xl border-2 border-dashed border-slate-300 inline-block mb-6"><img id="qr-image" src="" alt="QR Code" class="w-48 h-48 object-contain"></div>
+            <p class="text-xs font-medium text-slate-400 mb-6">In mã này và dán lên kính xe. Bảo vệ sẽ quét để kiểm tra Giấy kiểm định & Chứng chỉ tài xế.</p>
+            <button onclick="window.closeQRModal()" class="w-full bg-slate-800 text-white font-bold py-3.5 rounded-xl hover:bg-slate-700 transition shadow-md">Đóng</button>
+        </div>
+    </div>
+
+    <!-- MODAL ĐÀO TẠO -->
+    <div id="training-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-lg font-black text-slate-800 flex items-center gap-2"><i class="ph-fill ph-chalkboard-teacher text-indigo-500"></i> <span id="training-modal-title">Lưu Hồ Sơ Đào Tạo</span></h3>
+                <button onclick="window.closeModal('training-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="tr-doc-id">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ Đề <span class="text-red-500">*</span></label><input type="text" id="tr-chu-de" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-indigo-500 font-bold"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty Tham Gia <span class="text-red-500">*</span></label><input type="text" id="tr-cong-ty" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-indigo-500 font-bold"></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Đào Tạo</label><input type="date" id="tr-ngay" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-indigo-500 font-bold text-slate-700 bg-slate-50"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số HV Đạt</label><input type="number" id="tr-so-luong" class="w-full px-4 py-2.5 border border-slate-300 rounded-xl outline-none focus:border-indigo-500 font-bold text-blue-700"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Trainer (Người dạy)</label><input type="text" id="tr-nguoi-day" class="w-full px-4 py-2.5 border border-slate-200 rounded-xl bg-slate-100 outline-none text-slate-500 font-medium" readonly></div>
+                </div>
+            </div>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-3xl">
+                <button onclick="window.closeModal('training-modal')" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
+                <button id="btn-save-training" onclick="window.saveTraining()" class="bg-indigo-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-indigo-700 shadow-md transition flex items-center gap-2"><i class="ph-bold ph-floppy-disk"></i> Lưu Hồ Sơ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL KIỂM DUYỆT GIẤY PHÉP LÀM VIỆC (PTW) DÀNH CHO PHÒNG EHS              -->
+    <!-- ========================================================================= -->
+    <div id="ptw-review-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[95vh] border-t-4 border-amber-500">
+            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-amber-50/50">
+                <h3 class="text-xl font-black text-amber-800 flex items-center gap-2">
+                    <i class="ph-fill ph-file-text text-3xl"></i> Phê Duyệt Giấy Phép Làm Việc
+                </h3>
+                <button onclick="window.closeModal('ptw-review-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6 custom-scrollbar bg-slate-50/50 flex-1">
+                <input type="hidden" id="rev-ptw-id">
+                
+                <!-- Bảng tóm tắt -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nhà thầu xin phép</p><p class="font-black text-blue-700 text-lg" id="rev-ptw-company">...</p></div>
+                        <div><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Loại giấy phép</p><p class="font-black text-amber-600 text-lg" id="rev-ptw-type">...</p></div>
+                        <div><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Khu vực thi công</p><p class="font-bold text-slate-800" id="rev-ptw-location">...</p></div>
+                        <div><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Thời gian thực hiện</p><p class="font-mono text-sm font-bold text-slate-600" id="rev-ptw-time">...</p></div>
+                        <div class="md:col-span-2"><p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nội dung công việc</p><p class="font-medium text-slate-700 bg-slate-50 p-4 rounded-xl border border-slate-100 mt-1" id="rev-ptw-desc">...</p></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <!-- Danh sách nhân sự -->
+                    <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+                        <p class="text-xs font-black text-blue-800 uppercase mb-3 flex items-center gap-2"><i class="ph-fill ph-users text-lg"></i> Danh sách Nhân sự thực hiện</p>
+                        <ul id="rev-ptw-workers" class="text-sm font-bold text-slate-700 space-y-2 list-inside list-decimal pl-2 max-h-48 overflow-y-auto custom-scrollbar"></ul>
+                    </div>
+                    <!-- Cam kết an toàn -->
+                    <div class="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-sm">
+                        <p class="text-xs font-black text-rose-800 uppercase mb-3 flex items-center gap-2"><i class="ph-fill ph-warning-circle text-lg"></i> Yêu cầu an toàn đã cam kết</p>
+                        <ul id="rev-ptw-rules" class="text-xs font-medium text-rose-900 space-y-2.5 list-none pl-1 max-h-48 overflow-y-auto custom-scrollbar"></ul>
+                    </div>
+                </div>
+
+                <!-- Khu vực ra quyết định của EHS -->
+                <div id="ptw-action-section" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mt-4">
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú của EHS (Bắt buộc nếu Từ chối)</label>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung..."></textarea>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3 mt-5">
+                        <button onclick="window.submitPTWReview('Từ chối')" class="w-full sm:w-1/3 bg-red-100 text-red-700 font-bold py-3.5 rounded-xl hover:bg-red-200 transition border border-red-200 flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI DUYỆT
+                        </button>
+                        <button onclick="window.submitPTWReview('Đã duyệt')" class="w-full sm:w-2/3 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-check-square-offset text-xl"></i> CHẤP THUẬN CẤP PHÉP
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TẢI FIREBASE SAU CÙNG -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -26,8 +415,10 @@
         window.db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Gắn biến ra global
-        window.collection = collection; window.getDocs = getDocs; window.addDoc = addDoc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; window.doc = doc; window.query = query; window.orderBy = orderBy; window.where = where;
+        // Gắn biến ra toàn cục để sử dụng
+        window.collection = collection; window.getDocs = getDocs; window.addDoc = addDoc; 
+        window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; window.doc = doc; 
+        window.query = query; window.orderBy = orderBy; window.where = where;
 
         window.checkAdminPassword = async function() {
             const btn = document.querySelector('#login-screen button');
@@ -48,313 +439,14 @@
                 btn.disabled = false;
             }
         };
-    </script>
-</head>
-<body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center relative">
 
-    <!-- NÚT ĐA NGÔN NGỮ ĐẶT Ở GÓC TRÊN CÙNG BÊN PHẢI -->
-    <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-[60]">
-        <div class="relative group">
-            <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 bg-white px-3 py-2 rounded-xl hover:bg-slate-50 transition border border-slate-200 shadow-sm">
-                <i class="ph-bold ph-translate"></i> <span id="current-lang-display">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs"></i>
-            </button>
-            <div class="absolute right-0 mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
-                <button onclick="window.changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700">Tiếng Việt</button>
-                <button onclick="window.changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">English</button>
-                <button onclick="window.changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">中文</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST & CONFIRM MODAL -->
-    <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
-        <i id="toast-icon" class="text-2xl"></i>
-        <span id="toast-message"></span>
-    </div>
-
-    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4"><i class="ph-fill ph-warning text-4xl"></i></div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2" data-i18n="confirm_del_title">Xác nhận xóa</h3>
-            <p class="text-slate-500 text-sm mb-6" id="confirm-message" data-i18n="confirm_del_desc">Bạn có chắc chắn muốn xóa?</p>
-            <div class="flex gap-3 justify-center">
-                <button onclick="window.closeConfirmModal()" class="px-6 py-2.5 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2" data-i18n="btn_cancel">Hủy</button>
-                <button id="btn-confirm-yes" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-red-700 shadow-md w-1/2" data-i18n="btn_del">Xóa</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MÀN HÌNH ĐĂNG NHẬP -->
-    <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-4"><i class="ph-fill ph-hard-hat text-4xl"></i></div>
-        <h2 class="text-2xl font-bold text-slate-800 mb-2" data-i18n="login_title">Hồ Sơ Nhà Thầu</h2>
-        <p class="text-slate-500 text-sm mb-6" data-i18n="login_desc">Nhập mật khẩu cấp quản lý để truy cập thông tin dữ liệu.</p>
-        
-        <input type="password" id="admin-pass" class="w-full px-4 py-3 border border-slate-300 rounded-lg text-center tracking-[0.3em] font-mono text-xl focus:ring-2 focus:ring-amber-500 outline-none mb-2" placeholder="••••••••">
-        <p id="pass-error" class="text-red-500 text-sm hidden font-medium mb-4" data-i18n="login_error">Sai mật khẩu! Vui lòng thử lại.</p>
-        
-        <button onclick="window.checkAdminPassword()" class="w-full bg-amber-600 text-white font-bold py-3 rounded-lg hover:bg-amber-700 transition shadow-md" data-i18n="btn_unlock">
-            Mở Khóa Dữ Liệu
-        </button>
-        <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-amber-600 hover:underline" data-i18n="btn_back_home">Quay lại Trang chủ</a>
-    </div>
-
-    <!-- MAIN DASHBOARD -->
-    <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4">
-            <div>
-                <h2 class="text-2xl font-bold text-slate-800 flex items-center">
-                    <i class="ph-fill ph-folders text-amber-600 text-3xl mr-3"></i>
-                    <span data-i18n="main_title">Cổng Quản Lý Nhà Thầu</span>
-                </h2>
-                <p class="text-slate-500 mt-1" data-i18n="main_desc">Quản lý toàn diện nhân sự, thiết bị thi công và ra/vào cổng.</p>
-            </div>
-            <div class="flex flex-wrap gap-3">
-                <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
-                    <i class="ph-bold ph-house"></i> <span data-i18n="btn_home">Trang chủ</span>
-                </a>
-                <a href="bao_ve.html" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-shield-check text-lg"></i> <span data-i18n="btn_security">Trạm Gác An Ninh</span>
-                </a>
-                <button onclick="window.exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-download-simple text-lg"></i> <span data-i18n="btn_export">Xuất Excel</span>
-                </button>
-                <button id="main-add-btn" onclick="window.openCurrentModal()" class="bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center gap-2 shadow-sm">
-                    <i class="ph-bold ph-user-plus"></i> <span data-i18n="btn_add_worker">Thêm Nhân sự</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-px">
-            <button id="btn-tab-nhan-su" onclick="window.switchTab('nhan-su')" class="px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition" data-i18n="tab_worker">Quản lý Nhân sự</button>
-            <button id="btn-tab-may-moc" onclick="window.switchTab('may-moc')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_machine">Máy móc - Thiết bị</button>
-            <button id="btn-tab-dao-tao" onclick="window.switchTab('dao-tao')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_training">Hồ sơ Đào tạo</button>
-            <button id="btn-tab-cham-cong" onclick="window.switchTab('cham-cong')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1"><i class="ph-bold ph-clock"></i> <span data-i18n="tab_history">Lịch sử Ra/Vào</span></button>
-        </div>
-
-        <div id="loading-msg" class="text-center py-10 text-amber-600 font-medium hidden">
-            <i class="ph-bold ph-spinner animate-spin text-3xl mb-2"></i>
-            <p data-i18n="msg_loading">Đang tải dữ liệu từ máy chủ...</p>
-        </div>
-
-        <!-- TAB NHÂN SỰ -->
-        <div id="tab-nhan-su" class="tab-content hidden">
-            <div class="mb-4 relative max-w-md">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i></div>
-                <input type="text" id="search-worker" onkeyup="window.filterWorkerTable()" class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="Tìm kiếm tên công ty, họ tên hoặc số CCCD..." data-i18n-placeholder="plc_search_worker">
-            </div>
-
-            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                <table class="w-full text-left border-collapse min-w-[1100px]">
-                    <thead>
-                        <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                            <th class="p-4 font-semibold w-12 text-center">STT</th>
-                            <th class="p-4 font-semibold" data-i18n="col_contractor">Tên Nhà Thầu</th>
-                            <th class="p-4 font-semibold" data-i18n="col_name">Họ và Tên</th>
-                            <th class="p-4 font-semibold" data-i18n="col_dob">Ngày Sinh</th>
-                            <th class="p-4 font-semibold" data-i18n="col_id">Số CCCD</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_group">Nhóm ATLĐ</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_insurance">Bảo hiểm TN</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_health">Khám Sức Khỏe</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_action">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="worker-results-body" class="text-sm divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- TAB MÁY MÓC -->
-        <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
-            <table class="w-full text-left border-collapse min-w-[1000px]">
-                <thead>
-                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                        <th class="p-4 font-semibold w-12 text-center">STT</th>
-                        <th class="p-4 font-semibold" data-i18n="col_contractor">Tên Nhà Thầu</th>
-                        <th class="p-4 font-semibold" data-i18n="col_machine_name">Tên Máy / Thiết Bị</th>
-                        <th class="p-4 font-semibold" data-i18n="col_plate">Biển số</th>
-                        <th class="p-4 font-semibold" data-i18n="col_operator">Người Vận Hành</th>
-                        <th class="p-4 font-semibold text-center" data-i18n="col_expire">Hạn KĐ</th>
-                        <th class="p-4 font-semibold text-center" data-i18n="col_doc">Hồ Sơ (Ảnh)</th>
-                        <th class="p-4 font-semibold text-center" data-i18n="col_action">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="machine-results-body" class="text-sm divide-y divide-slate-100"></tbody>
-            </table>
-        </div>
-
-        <!-- TAB ĐÀO TẠO -->
-        <div id="tab-dao-tao" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
-            <table class="w-full text-left border-collapse min-w-[900px]">
-                <thead>
-                    <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                        <th class="p-4 font-semibold w-12 text-center">STT</th>
-                        <th class="p-4 font-semibold" data-i18n="col_train_date">Ngày Đào Tạo</th>
-                        <th class="p-4 font-semibold" data-i18n="col_train_topic">Chủ Đề Huấn Luyện</th>
-                        <th class="p-4 font-semibold" data-i18n="col_contractor_attend">Tên Nhà Thầu Tham Gia</th>
-                        <th class="p-4 font-semibold text-center" data-i18n="col_pass_count">Số HV Đạt</th>
-                        <th class="p-4 font-semibold text-center" data-i18n="col_trainer">Trainer (EHS)</th>
-                        <th class="p-4 font-semibold text-center" data-i18n="col_action">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="training-results-body" class="text-sm divide-y divide-slate-100"></tbody>
-            </table>
-        </div>
-
-        <!-- TAB CHẤM CÔNG -->
-        <div id="tab-cham-cong" class="tab-content rounded-xl border border-slate-200 shadow-sm hidden">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border-b border-slate-200 rounded-t-xl" id="cham-cong-dashboard">
-                <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-center">
-                    <p class="text-xs text-slate-500 font-semibold uppercase mb-1" data-i18n="lbl_view_date">Ngày đang xem</p>
-                    <input type="date" id="filter-date" onchange="window.loadChamCongData()" class="w-full text-sm font-bold text-center outline-none border-b border-dashed border-slate-300">
-                </div>
-                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center">
-                    <p class="text-xs text-blue-600 font-semibold uppercase mb-1" data-i18n="lbl_total_in">Đã vào xưởng (Lượt)</p>
-                    <p class="text-xl font-black text-blue-800" id="stat-total-in">0</p>
-                </div>
-                <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100 shadow-sm text-center">
-                    <p class="text-xs text-emerald-600 font-semibold uppercase mb-1" data-i18n="lbl_total_out">Đã hoàn thành (Lượt)</p>
-                    <p class="text-xl font-black text-emerald-800" id="stat-total-out">0</p>
-                </div>
-                <div class="bg-amber-50 p-3 rounded-lg border border-amber-100 shadow-sm text-center">
-                    <p class="text-xs text-amber-600 font-semibold uppercase mb-1" data-i18n="lbl_inside">Đang trong xưởng</p>
-                    <p class="text-xl font-black text-amber-800" id="stat-inside">0</p>
-                </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse min-w-[1000px]">
-                    <thead>
-                        <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
-                            <th class="p-4 font-semibold w-12 text-center">STT</th>
-                            <th class="p-4 font-semibold" data-i18n="col_contractor">Tên Nhà Thầu</th>
-                            <th class="p-4 font-semibold" data-i18n="col_name_staff">Họ và Tên Nhân Sự</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_plant">Nhà Máy</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_time_in">Giờ Vào</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_time_out">Giờ Ra</th>
-                            <th class="p-4 font-semibold text-center" data-i18n="col_status">Trạng Thái</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cham-cong-results-body" class="text-sm divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL NHÂN SỰ -->
-    <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="worker-modal-title">Thêm Nhân Sự Mới</h3>
-                <button onclick="window.closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
-            </div>
-            <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar">
-                <input type="hidden" id="wk-doc-id">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="wk-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ Tên <span class="text-red-500">*</span></label><input type="text" id="wk-ho-ten" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Sinh</label><input type="date" id="wk-ngay-sinh" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">CCCD <span class="text-red-500">*</span></label><input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Đào tạo ATLĐ</label>
-                        <select id="wk-nhom-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500 bg-white">
-                            <option value="Chưa đào tạo">-- Chưa đào tạo --</option><option value="Nhóm 1">Nhóm 1 (Quản lý)</option><option value="Nhóm 2">Nhóm 2 (CB An toàn)</option><option value="Nhóm 3">Nhóm 3 (Nghiêm ngặt)</option><option value="Nhóm 4">Nhóm 4 (LĐ chung)</option><option value="Nhóm 5">Nhóm 5 (Y tế)</option><option value="Nhóm 6">Nhóm 6 (ATVSV)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Thẻ ATLĐ</label><input type="date" id="wk-han-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Bảo Hiểm TN</label><input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Khám Sức Khỏe</label><input type="date" id="wk-han-suc-khoe" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                </div>
-            </div>
-            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="window.closeModal('worker-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
-                <button id="btn-save-worker" onclick="window.saveWorker()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700 shadow-md">Lưu</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL MÁY MÓC -->
-    <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh]">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
-                <h3 class="text-lg font-bold text-slate-800" id="machine-modal-title">Thêm Thiết Bị Cẩu/Nâng</h3>
-                <button onclick="window.closeModal('machine-modal')" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
-            </div>
-            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
-                <input type="hidden" id="mac-doc-id">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="mac-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên Máy <span class="text-red-500">*</span></label><input type="text" id="mac-ten-may" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500" placeholder="VD: Xe Cẩu 10 tấn"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Biển Số / Mã Số</label><input type="text" id="mac-bien-so" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500" placeholder="VD: 61H-123.45"></div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày KĐ Gần Nhất</label><input type="date" id="mac-ngay-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Kiểm Định <span class="text-red-500">*</span></label><input type="date" id="mac-han-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-red-500"></div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph-bold ph-image text-blue-500"></i> Ảnh Giấy Kiểm Định (Để làm bằng chứng)</label>
-                        <input type="file" id="mac-file-kiemdinh" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 outline-none">
-                    </div>
-                </div>
-                <div class="p-4 bg-amber-50 rounded-xl border border-amber-100 space-y-4">
-                    <div><label class="block text-xs font-bold text-amber-800 uppercase mb-1">Tài xế / Người vận hành thiết bị này</label><input type="text" id="mac-operator" class="w-full px-4 py-2 border border-amber-300 rounded-lg outline-none focus:border-amber-500" placeholder="Họ tên người vận hành..."></div>
-                    <div>
-                        <label class="block text-xs font-bold text-amber-800 uppercase mb-1"><i class="ph-bold ph-image text-amber-600"></i> Ảnh Chứng Chỉ Hành Nghề Tài Xế</label>
-                        <input type="file" id="mac-file-chungchi" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 outline-none">
-                    </div>
-                </div>
-            </div>
-            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="window.closeModal('machine-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
-                <button id="btn-save-machine" onclick="window.saveMachineData()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700 shadow-md">Lưu</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL QR -->
-    <div id="qr-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8">
-            <h3 class="text-xl font-bold text-slate-800 mb-1">Mã QR An Ninh</h3>
-            <p class="text-sm text-slate-500 mb-6" id="qr-machine-name">Tên máy móc</p>
-            <div class="bg-white p-4 rounded-xl border-2 border-dashed border-slate-300 inline-block mb-6"><img id="qr-image" src="" alt="QR Code" class="w-48 h-48 object-contain"></div>
-            <p class="text-xs text-slate-400 mb-6">In mã này và dán lên kính xe. Bảo vệ sẽ quét để kiểm tra Giấy kiểm định & Chứng chỉ tài xế.</p>
-            <button onclick="window.closeQRModal()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition shadow-md">Đóng</button>
-        </div>
-    </div>
-
-    <!-- MODAL ĐÀO TẠO -->
-    <div id="training-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
-            <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
-                <h3 class="text-lg font-bold text-slate-800" id="training-modal-title">Lưu Hồ Sơ Đào Tạo</h3>
-                <button onclick="window.closeModal('training-modal')" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
-            </div>
-            <div class="p-6 space-y-4">
-                <input type="hidden" id="tr-doc-id">
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ Đề <span class="text-red-500">*</span></label><input type="text" id="tr-chu-de" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty Tham Gia <span class="text-red-500">*</span></label><input type="text" id="tr-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Đào Tạo</label><input type="date" id="tr-ngay" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số HV</label><input type="number" id="tr-so-luong" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Trainer</label><input type="text" id="tr-nguoi-day" class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100 outline-none" readonly></div>
-                </div>
-            </div>
-            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="window.closeModal('training-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
-                <button id="btn-save-training" onclick="window.saveTraining()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700 shadow-md">Lưu</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
         // DICTIONARY
         const translations = {
             "vi": {
-                login_title: "Hồ Sơ Nhà Thầu", login_desc: "Nhập mật khẩu cấp quản lý để truy cập.", login_error: "Sai mật khẩu!", btn_unlock: "Mở Khóa Dữ Liệu", btn_back_home: "Quay lại Trang chủ",
-                main_title: "Cổng Quản Lý Nhà Thầu", main_desc: "Quản lý toàn diện nhân sự, thiết bị thi công và ra/vào cổng.", btn_home: "Trang chủ", btn_security: "Trạm Gác An Ninh", btn_export: "Xuất Excel", btn_add_worker: "Thêm Nhân sự",
-                tab_worker: "Quản lý Nhân sự", tab_machine: "Máy móc - Thiết bị", tab_training: "Hồ sơ Đào tạo", tab_history: "Lịch sử Ra/Vào",
-                msg_loading: "Đang tải dữ liệu từ máy chủ...", plc_search_worker: "Tìm kiếm công ty, họ tên hoặc CCCD...",
+                login_title: "Quản Trị Nhà Thầu", login_desc: "Nhập mật khẩu cấp quản lý để truy cập.", login_error: "Sai mật khẩu!", btn_unlock: "Mở Khóa Dữ Liệu", btn_back_home: "Quay lại Trang chủ",
+                main_title: "Cổng Quản Lý Nhà Thầu", main_desc: "Quản lý toàn diện nhân sự, thiết bị thi công và ra/vào cổng.", btn_home: "Trang chủ", btn_security: "Trạm An Ninh", btn_export: "Xuất Excel", btn_add_worker: "Thêm Nhân sự",
+                tab_worker: "Quản lý Nhân sự", tab_machine: "Máy móc Nghiêm ngặt", tab_training: "Hồ sơ Đào tạo", tab_history: "Lịch sử Ra/Vào",
+                msg_loading: "Đang đồng bộ dữ liệu từ máy chủ...", plc_search_worker: "Tìm kiếm công ty, họ tên hoặc CCCD...",
                 col_contractor: "Tên Nhà Thầu", col_name: "Họ và Tên", col_dob: "Ngày Sinh", col_id: "Số CCCD", col_group: "Nhóm ATLĐ", col_insurance: "Bảo hiểm TN", col_health: "Khám Sức Khỏe", col_action: "Thao tác",
                 col_machine_name: "Tên Máy / Thiết Bị", col_plate: "Biển số", col_operator: "Người Vận Hành", col_expire: "Hạn KĐ", col_doc: "Hồ Sơ (Ảnh)",
                 col_train_date: "Ngày Đào Tạo", col_train_topic: "Chủ Đề", col_contractor_attend: "Nhà Thầu Tham Gia", col_pass_count: "Số HV Đạt", col_trainer: "Trainer (EHS)",
@@ -363,10 +455,10 @@
                 confirm_del_title: "Xác nhận xóa", confirm_del_desc: "Bạn có chắc chắn muốn xóa?", btn_cancel: "Hủy", btn_del: "Xóa"
             },
             "en": {
-                login_title: "Contractor Profiles", login_desc: "Enter admin password to access.", login_error: "Wrong password!", btn_unlock: "Unlock Data", btn_back_home: "Back to Home",
+                login_title: "Contractor Admin", login_desc: "Enter admin password to access.", login_error: "Wrong password!", btn_unlock: "Unlock Data", btn_back_home: "Back to Home",
                 main_title: "Contractor Management Portal", main_desc: "Comprehensive management of personnel and equipment.", btn_home: "Home", btn_security: "Security Station", btn_export: "Export Excel", btn_add_worker: "Add Personnel",
-                tab_worker: "Personnel", tab_machine: "Machinery", tab_training: "Training Records", tab_history: "Access History",
-                msg_loading: "Loading data...", plc_search_worker: "Search company, name, or ID...",
+                tab_worker: "Personnel", tab_machine: "Strict Machinery", tab_training: "Training Records", tab_history: "Access History",
+                msg_loading: "Syncing data from server...", plc_search_worker: "Search company, name, or ID...",
                 col_contractor: "Contractor", col_name: "Full Name", col_dob: "Date of Birth", col_id: "ID Number", col_group: "Safety Group", col_insurance: "Insurance", col_health: "Health Check", col_action: "Actions",
                 col_machine_name: "Machine/Equipment", col_plate: "License Plate", col_operator: "Operator", col_expire: "Inspection Exp.", col_doc: "Documents",
                 col_train_date: "Date", col_train_topic: "Topic", col_contractor_attend: "Participating Contractor", col_pass_count: "Passed", col_trainer: "Trainer",
@@ -375,10 +467,10 @@
                 confirm_del_title: "Confirm Delete", confirm_del_desc: "Are you sure you want to delete?", btn_cancel: "Cancel", btn_del: "Delete"
             },
             "zh": {
-                login_title: "承包商档案", login_desc: "输入管理员密码以访问。", login_error: "密码错误！", btn_unlock: "解锁数据", btn_back_home: "返回首页",
+                login_title: "承包商管理", login_desc: "输入管理员密码以访问。", login_error: "密码错误！", btn_unlock: "解锁数据", btn_back_home: "返回首页",
                 main_title: "承包商管理门户", main_desc: "全面管理人员和设备。", btn_home: "首页", btn_security: "安保站", btn_export: "导出 Excel", btn_add_worker: "添加人员",
-                tab_worker: "人员管理", tab_machine: "机械设备", tab_training: "培训记录", tab_history: "出入历史",
-                msg_loading: "正在加载数据...", plc_search_worker: "搜索公司、姓名或身份证号...",
+                tab_worker: "人员管理", tab_machine: "严格机械", tab_training: "培训记录", tab_history: "出入历史",
+                msg_loading: "正在从服务器同步数据...", plc_search_worker: "搜索公司、姓名或身份证号...",
                 col_contractor: "承包商名称", col_name: "姓名", col_dob: "出生日期", col_id: "身份证号", col_group: "安全组别", col_insurance: "保险", col_health: "体检", col_action: "操作",
                 col_machine_name: "机器/设备", col_plate: "车牌号", col_operator: "操作员", col_expire: "检查到期", col_doc: "文件",
                 col_train_date: "日期", col_train_topic: "主题", col_contractor_attend: "参与承包商", col_pass_count: "合格人数", col_trainer: "培训师",
@@ -409,7 +501,8 @@
             const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');
             const mm = String(today.getMonth() + 1).padStart(2, '0');
-            document.getElementById('filter-date').value = `${today.getFullYear()}-${mm}-${dd}`;
+            const dateInput = document.getElementById('filter-date');
+            if(dateInput) dateInput.value = `${today.getFullYear()}-${mm}-${dd}`;
         });
 
         let currentTab = 'nhan-su';
@@ -419,7 +512,7 @@
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
-            toast.className = "fixed top-5 right-5 z-[100] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
             if (type === "success") { toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl"; } 
             else { toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl"; }
             document.getElementById('toast-message').innerText = message;
@@ -465,25 +558,33 @@
 
         window.switchTab = function(tabId) {
             currentTab = tabId;
-            ['nhan-su', 'may-moc', 'dao-tao', 'cham-cong'].forEach(t => {
+            ['nhan-su', 'may-moc', 'dao-tao', 'cham-cong', 'giay-phep'].forEach(t => {
                 const btn = document.getElementById('btn-tab-' + t);
                 const content = document.getElementById('tab-' + t);
-                if (t === tabId) {
-                    btn.className = "px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition flex items-center gap-1";
-                    content.classList.remove('hidden');
-                } else {
-                    btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1";
-                    content.classList.add('hidden'); 
+                if (btn && content) {
+                    if (t === tabId) {
+                        if(t === 'giay-phep') btn.className = "px-6 py-2.5 font-bold text-sm rounded-lg transition bg-white shadow text-amber-600 flex items-center gap-2";
+                        else btn.className = "px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition flex items-center gap-1";
+                        content.classList.remove('hidden');
+                    } else {
+                        if(t === 'giay-phep') btn.className = "px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800 flex items-center gap-2";
+                        else btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1";
+                        content.classList.add('hidden'); 
+                    }
                 }
             });
 
             const addBtn = document.getElementById('main-add-btn');
-            if(tabId === 'cham-cong') { addBtn.classList.add('hidden'); window.loadChamCongData(); } 
+            if(tabId === 'cham-cong' || tabId === 'giay-phep') { 
+                addBtn.classList.add('hidden'); 
+                if(tabId === 'cham-cong') window.loadChamCongData(); 
+                if(tabId === 'giay-phep') window.loadPTWData();
+            } 
             else {
                 addBtn.classList.remove('hidden');
-                if (tabId === 'nhan-su') { addBtn.innerHTML = '<i class="ph-bold ph-user-plus"></i> Thêm Nhân sự'; window.loadWorkerData(); }
-                else if (tabId === 'may-moc') { addBtn.innerHTML = '<i class="ph-bold ph-truck"></i> Thêm Máy móc'; window.loadMachineData(); }
-                else if (tabId === 'dao-tao') { addBtn.innerHTML = '<i class="ph-bold ph-chalkboard-teacher"></i> Thêm Khóa học'; window.loadTrainingData(); }
+                if (tabId === 'nhan-su') { document.getElementById('main-add-btn-text').innerText = 'Thêm Nhân sự'; window.loadWorkerData(); }
+                else if (tabId === 'may-moc') { document.getElementById('main-add-btn-text').innerText = 'Thêm Máy móc'; window.loadMachineData(); }
+                else if (tabId === 'dao-tao') { document.getElementById('main-add-btn-text').innerText = 'Thêm Khóa học'; window.loadTrainingData(); }
             }
         }
 
@@ -509,7 +610,7 @@
             if(!confirm(`Xác nhận Hợp lệ (Pass) cho toàn bộ hồ sơ cũ của nhà thầu: ${companyName}?\nHệ thống sẽ tự động chốt hồ sơ mà không cần qua các bước trình duyệt.`)) return;
 
             try {
-                // Tạo một Task ảo đã hoàn thành 100% để "Hợp thức hóa" cho nhà thầu cũ
+                // Tạo một Task ảo đã hoàn thành 100% để "Hợp thức hóa"
                 const taskData = {
                     title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU (Dữ liệu cũ): ${companyName}`,
                     category: 'An toàn',
@@ -532,7 +633,7 @@
                 await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
                 window.showToast("Đã chốt hợp lệ hồ sơ cũ thành công!");
                 
-                // Tải lại dữ liệu để biểu tượng chuyển sang Xanh Lá
+                // Tải lại dữ liệu
                 if(currentTab === 'nhan-su') window.loadWorkerData();
                 else if(currentTab === 'may-moc') window.loadMachineData();
                 
@@ -545,7 +646,7 @@
         window.loadWorkerData = async function() {
             document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-nhan-su').classList.add('hidden');
             
-            // FETCH BẢNG DUYỆT TỪ FIREBASE TASKS (Lấy trạng thái duyệt nhà thầu)
+            // FETCH BẢNG DUYỆT TỪ FIREBASE TASKS
             try {
                 const taskSnap = await window.getDocs(window.query(window.collection(window.db, "ehs_tasks"), window.where("task_type", "==", "contractor_approval")));
                 window.globalApprovalMap = {};
@@ -560,7 +661,7 @@
             const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_nhan_su"), window.orderBy("thoi_gian_tao", "desc")));
             rawWorkerData = []; snap.forEach(doc => { rawWorkerData.push({ id: doc.id, ...doc.data() }); });
             
-            // TỰ ĐỘNG LẤY TỪ KHÓA TỪ URL NẾU SẾP BẤM "XEM HỒ SƠ" TỪ TRANG TASK
+            // TỰ ĐỘNG LẤY TỪ KHÓA TỪ URL NẾU BẤM TỪ TRANG KHÁC SANG
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('search');
             if(searchQuery) { document.getElementById('search-worker').value = searchQuery; }
@@ -583,37 +684,36 @@
             let stt = 1;
             filteredData.forEach(data => {
                 const atldStatus = window.formatDateAndStatus(data.han_atld);
-                let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700";
+                let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border border-red-200" : "bg-blue-50 text-blue-700 border border-blue-200";
                 
-                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT (CẬP NHẬT GIAO DIỆN NÚT DUYỆT NHANH)
+                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT (CÓ NÚT DUYỆT NHANH)
                 let compStatus = window.globalApprovalMap[data.cong_ty] ? window.globalApprovalMap[data.cong_ty].status : 'None';
                 let isApproved = (compStatus === 'Done');
                 let compBadge = '';
                 if (isApproved) {
-                    compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>`;
+                    compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-1"><i class="ph-fill ph-check-circle"></i> Đã Duyệt</div>`;
                 } else {
-                    // Nếu chưa duyệt, hiện thêm nút Duyệt nhanh màu xanh dương kế bên
                     compBadge = `
                         <div class="mt-1 flex items-center gap-1">
-                            <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
-                            <button onclick="window.verifyLegacyContractor('${data.cong_ty}')" class="text-[9px] bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-1.5 py-0.5 rounded font-bold transition whitespace-nowrap border border-blue-200" title="Chốt hồ sơ cũ bỏ qua trình duyệt"><i class="ph-bold ph-check"></i> Duyệt nhanh</button>
+                            <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-1 animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
+                            <button onclick="window.verifyLegacyContractor('${data.cong_ty}')" class="text-[9px] bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-2 py-0.5 rounded font-bold transition whitespace-nowrap border border-blue-200 shadow-sm" title="Chốt hồ sơ cũ bỏ qua trình duyệt"><i class="ph-bold ph-check"></i> Duyệt nhanh</button>
                         </div>
                     `;
                 }
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 text-center text-slate-500">${stt++}</td>
-                        <td class="p-4 font-bold text-slate-700 leading-tight">${data.cong_ty} <br> ${compBadge}</td>
+                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="p-4 font-black text-slate-700 leading-tight">${data.cong_ty} <br> ${compBadge}</td>
                         <td class="p-4 font-bold text-amber-700">${data.ho_ten}</td>
-                        <td class="p-4 text-slate-600">${window.formatSimpleDate(data.ngay_sinh)}</td>
-                        <td class="p-4 text-slate-600 font-mono">${data.cccd}</td>
-                        <td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></div>${atldStatus.html}</td>
+                        <td class="p-4 text-slate-600 font-medium">${window.formatSimpleDate(data.ngay_sinh)}</td>
+                        <td class="p-4 text-slate-600 font-mono text-sm">${data.cccd}</td>
+                        <td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></div>${atldStatus.html}</td>
                         <td class="p-4 text-center">${window.formatDateAndStatus(data.han_bao_hiem).html}</td>
                         <td class="p-4 text-center">${window.formatDateAndStatus(data.han_suc_khoe).html}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="window.editWorker('${data.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh||''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld||''}', '${data.han_bao_hiem||''}', '${data.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                            <button onclick="window.deleteDocItem('nha_thau_nhan_su', '${data.id}', '${data.ho_ten}', window.loadWorkerData)" class="text-red-500 hover:text-red-700 p-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                            <button onclick="window.editWorker('${data.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh||''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld||''}', '${data.han_bao_hiem||''}', '${data.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 bg-blue-50 p-1.5 rounded-lg border border-blue-100 transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="window.deleteDocItem('nha_thau_nhan_su', '${data.id}', '${data.ho_ten}', window.loadWorkerData)" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-lg border border-red-100 transition ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     </tr>`;
             });
@@ -635,7 +735,7 @@
             };
             if (!data.cong_ty || !data.ho_ten || !data.cccd) return window.showToast("Nhập đủ Cty, Tên, CCCD!", "error");
             
-            const btn = document.getElementById('btn-save-worker'); const og = btn.innerHTML; btn.innerHTML = 'Đang lưu...'; btn.disabled = true;
+            const btn = document.getElementById('btn-save-worker'); const og = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
             try {
                 if(document.getElementById('wk-doc-id').value) await window.updateDoc(window.doc(window.db, "nha_thau_nhan_su", document.getElementById('wk-doc-id').value), data);
                 else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nha_thau_nhan_su"), data); }
@@ -662,39 +762,37 @@
             snap.forEach(doc => {
                 const d = doc.data();
                 let fileLinks = '';
-                if(d.file_kiem_dinh) fileLinks += `<a href="${d.file_kiem_dinh}" target="_blank" class="text-blue-600 hover:underline text-[11px] block font-bold mb-1"><i class="ph-bold ph-link"></i> Xem Giấy KĐ</a>`;
-                if(d.file_chung_chi) fileLinks += `<a href="${d.file_chung_chi}" target="_blank" class="text-amber-600 hover:underline text-[11px] block font-bold"><i class="ph-bold ph-link"></i> Xem C.Chỉ Tài xế</a>`;
-                if(!fileLinks) fileLinks = '<span class="text-slate-400 text-xs">Chưa có ảnh</span>';
+                if(d.file_kiem_dinh) fileLinks += `<a href="${d.file_kiem_dinh}" target="_blank" class="text-blue-600 hover:text-blue-800 text-[11px] block font-bold mb-1.5 bg-blue-50 border border-blue-200 px-2 py-1 rounded inline-flex items-center gap-1"><i class="ph-bold ph-link"></i> Xem Giấy KĐ</a>`;
+                if(d.file_chung_chi) fileLinks += `<a href="${d.file_chung_chi}" target="_blank" class="text-amber-600 hover:text-amber-800 text-[11px] block font-bold bg-amber-50 border border-amber-200 px-2 py-1 rounded inline-flex items-center gap-1"><i class="ph-bold ph-link"></i> Chứng Chỉ TX</a>`;
+                if(!fileLinks) fileLinks = '<span class="text-slate-400 text-xs italic">Chưa tải ảnh</span>';
 
-                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT (CẬP NHẬT GIAO DIỆN NÚT DUYỆT NHANH)
                 let compStatus = window.globalApprovalMap[d.cong_ty] ? window.globalApprovalMap[d.cong_ty].status : 'None';
                 let isApproved = (compStatus === 'Done');
                 let compBadge = '';
                 if (isApproved) {
-                    compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>`;
+                    compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-1 whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>`;
                 } else {
-                    // Nếu chưa duyệt, hiện thêm nút Duyệt nhanh
                     compBadge = `
                         <div class="mt-1 flex items-center gap-1">
-                            <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
-                            <button onclick="window.verifyLegacyContractor('${d.cong_ty}')" class="text-[9px] bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-1.5 py-0.5 rounded font-bold transition whitespace-nowrap border border-blue-200" title="Chốt hồ sơ cũ bỏ qua trình duyệt"><i class="ph-bold ph-check"></i> Duyệt nhanh</button>
+                            <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold inline-flex items-center gap-1 whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
+                            <button onclick="window.verifyLegacyContractor('${d.cong_ty}')" class="text-[9px] bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-2 py-0.5 rounded font-bold transition whitespace-nowrap border border-blue-200 shadow-sm" title="Chốt hồ sơ cũ bỏ qua trình duyệt"><i class="ph-bold ph-check"></i> Duyệt nhanh</button>
                         </div>
                     `;
                 }
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 text-center">${stt++}</td>
-                        <td class="p-4 font-bold text-slate-700 leading-tight">${d.cong_ty} <br> ${compBadge}</td>
+                        <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                        <td class="p-4 font-black text-slate-700 leading-tight">${d.cong_ty} <br> ${compBadge}</td>
                         <td class="p-4 font-bold text-amber-700">${d.ten_may}</td>
-                        <td class="p-4">${d.bien_so||''}</td>
-                        <td class="p-4 font-bold text-indigo-700">${d.nguoi_van_hanh || '<span class="font-normal text-slate-400">N/A</span>'}</td>
+                        <td class="p-4 font-mono text-sm">${d.bien_so||''}</td>
+                        <td class="p-4 font-bold text-indigo-700">${d.nguoi_van_hanh || '<span class="font-normal text-slate-400 italic">Chưa nhập</span>'}</td>
                         <td class="p-4 text-center">${window.formatDateAndStatus(d.han_kiem_dinh).html}</td>
                         <td class="p-4 text-center">${fileLinks}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="window.showMachineQR('${doc.id}', '${d.ten_may}')" class="text-indigo-600 hover:text-indigo-800 p-1" title="Mã QR Ra Vào Cổng"><i class="ph-bold ph-qr-code text-xl"></i></button>
-                            <button onclick="window.editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}','${d.nguoi_van_hanh||''}')" class="text-blue-600 p-1 ml-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                            <button onclick="window.deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',window.loadMachineData)" class="text-red-500 p-1 ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
+                            <button onclick="window.showMachineQR('${doc.id}', '${d.ten_may}')" class="text-indigo-600 hover:text-indigo-800 bg-indigo-50 p-1.5 rounded-lg border border-indigo-100 transition" title="Mã QR Ra Vào Cổng"><i class="ph-bold ph-qr-code text-xl"></i></button>
+                            <button onclick="window.editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}','${d.nguoi_van_hanh||''}')" class="text-blue-600 hover:text-blue-800 bg-blue-50 p-1.5 rounded-lg border border-blue-100 transition ml-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="window.deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',window.loadMachineData)" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-lg border border-red-100 transition ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     </tr>`;
             });
@@ -738,7 +836,7 @@
             let stt = 1;
             snap.forEach(doc => {
                 const d = doc.data();
-                tbody.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-4 text-center">${stt++}</td><td class="p-4">${window.formatSimpleDate(d.ngay_dao_tao)}</td><td class="p-4 font-bold text-slate-800">${d.chu_de}</td><td class="p-4 font-bold text-amber-700">${d.cong_ty}</td><td class="p-4 text-center font-bold text-blue-600">${d.so_luong||0}</td><td class="p-4 text-center">${d.nguoi_day}</td><td class="p-4 text-center"><button onclick="window.deleteDocItem('nha_thau_dao_tao','${doc.id}','${d.chu_de}',window.loadTrainingData)" class="text-red-500 hover:text-red-700 p-1"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-4 text-center font-medium text-slate-500">${stt++}</td><td class="p-4 font-bold text-slate-700">${window.formatSimpleDate(d.ngay_dao_tao)}</td><td class="p-4 font-bold text-slate-800">${d.chu_de}</td><td class="p-4 font-black text-amber-700">${d.cong_ty}</td><td class="p-4 text-center font-black text-blue-600 text-lg">${d.so_luong||0}</td><td class="p-4 text-center text-slate-600">${d.nguoi_day}</td><td class="p-4 text-center"><button onclick="window.deleteDocItem('nha_thau_dao_tao','${doc.id}','${d.chu_de}',window.loadTrainingData)" class="text-red-500 hover:text-red-700 bg-red-50 p-1.5 rounded-lg border border-red-100 transition" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
             });
             document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-dao-tao').classList.remove('hidden');
         }
@@ -747,7 +845,7 @@
             const data = { chu_de: document.getElementById('tr-chu-de').value, cong_ty: document.getElementById('tr-cong-ty').value, ngay_dao_tao: document.getElementById('tr-ngay').value, so_luong: document.getElementById('tr-so-luong').value, nguoi_day: document.getElementById('tr-nguoi-day').value, thoi_gian_cap_nhat: new Date() };
             if (!data.chu_de || !data.cong_ty) return window.showToast("Nhập đủ Chủ đề và Cty!", "error");
             
-            const btn = document.getElementById('btn-save-training'); const og = btn.innerHTML; btn.innerHTML = 'Đang lưu...'; btn.disabled = true;
+            const btn = document.getElementById('btn-save-training'); const og = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
             try {
                 if(document.getElementById('tr-doc-id').value) await window.updateDoc(window.doc(window.db, "nha_thau_dao_tao", document.getElementById('tr-doc-id').value), data);
                 else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nha_thau_dao_tao"), data); }
@@ -798,18 +896,18 @@
                 allSessionsToRender.forEach(session => {
                     let statusHtml = ""; let timeInDisplay = session.gio_vao || '<span class="text-slate-300">-</span>'; let timeOutDisplay = session.gio_ra || '<span class="text-slate-300">-</span>';
                     if (session.gio_vao) totalIn++; if (session.gio_ra) totalOut++;
-                    if (session.gio_vao && session.gio_ra) { statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Xong lượt</span>`; } 
-                    else if (session.gio_vao && !session.gio_ra) { totalInside++; statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`; } 
-                    else if (!session.gio_vao && session.gio_ra) { statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-x-circle"></i> Lỗi (Chỉ có RA)</span>`; }
+                    if (session.gio_vao && session.gio_ra) { statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded-lg text-[11px] font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Xong lượt</span>`; } 
+                    else if (session.gio_vao && !session.gio_ra) { totalInside++; statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded-lg text-[11px] font-bold whitespace-nowrap"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`; } 
+                    else if (!session.gio_vao && session.gio_ra) { statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded-lg text-[11px] font-bold whitespace-nowrap"><i class="ph-bold ph-x-circle"></i> Lỗi (Chỉ có RA)</span>`; }
 
                     let displayPlant = session.nha_may; if(displayPlant === "1") displayPlant = "Nhà Máy 1"; if(displayPlant === "2") displayPlant = "Nhà Máy 2";
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
-                            <td class="p-4 font-bold text-slate-700">${session.cong_ty}</td>
+                            <td class="p-4 font-black text-slate-700">${session.cong_ty}</td>
                             <td class="p-4 font-bold text-blue-700">${session.ho_ten}</td>
-                            <td class="p-4 text-center font-bold text-purple-600">${displayPlant}</td>
+                            <td class="p-4 text-center font-bold text-purple-600 bg-purple-50/30">${displayPlant}</td>
                             <td class="p-4 text-center text-slate-600 font-mono font-semibold">${timeInDisplay}</td>
                             <td class="p-4 text-center text-slate-600 font-mono font-semibold">${timeOutDisplay}</td>
                             <td class="p-4 text-center">${statusHtml}</td>
@@ -817,7 +915,7 @@
                     `;
                 });
 
-                if (stt === 1) tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có lượt ra/vào nào trong ngày này.</td></tr>`;
+                if (stt === 1) tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-bold">Chưa có lượt ra/vào nào trong ngày này.</td></tr>`;
                 document.getElementById('stat-total-in').innerText = totalIn; document.getElementById('stat-total-out').innerText = totalOut; document.getElementById('stat-inside').innerText = totalInside;
 
             } catch (error) { tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${error.message}</td></tr>`; } 
@@ -830,16 +928,19 @@
             else if (currentTab === 'may-moc') { activeTableBodyId = 'tab-may-moc'; fileName = 'DS_MayMoc.csv'; }
             else if (currentTab === 'dao-tao') { activeTableBodyId = 'tab-dao-tao'; fileName = 'DS_DaoTao.csv'; }
             else if (currentTab === 'cham-cong') { const dateStr = document.getElementById('filter-date').value; activeTableBodyId = 'tab-cham-cong'; fileName = `Bao_Cao_Cham_Cong_Ngay_${dateStr}.csv`; }
+            else if (currentTab === 'giay-phep') { activeTableBodyId = 'tab-giay-phep'; fileName = 'DS_Giay_Phep.csv'; }
 
             const table = document.querySelector(`#${activeTableBodyId} table`); if(!table) return;
 
             let csv = []; let rows = table.querySelectorAll("tr"); let bom = "\uFEFF";
             for (let i = 0; i < rows.length; i++) {
-                let row = [], cols = rows[i].querySelectorAll("td, th"); let colCount = currentTab === 'cham-cong' ? cols.length : cols.length - 1;
+                let row = [], cols = rows[i].querySelectorAll("td, th"); let colCount = (currentTab === 'cham-cong' || currentTab === 'giay-phep') ? cols.length : cols.length - 1;
                 for (let j = 0; j < colCount; j++) {
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""').trim();
                     if(data.includes("Hợp lệ (")) data = data.replace("Hợp lệ (", "").replace(")", "");
                     if(data.includes("Hết hạn (")) data = data.replace("Hết hạn (", "").replace(")", "");
+                    if(data.includes("Đã Duyệt")) data = data.replace("Đã Duyệt", "Đã Duyệt");
+                    if(data.includes("Chờ EHS Duyệt")) data = data.replace("Chờ EHS Duyệt", "Chưa Duyệt").replace("Duyệt nhanh", "");
                     row.push('"' + data + '"');
                 }
                 csv.push(row.join(","));
@@ -847,6 +948,128 @@
             let csvFile = new Blob([bom + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
             let downloadLink = document.createElement("a"); downloadLink.download = fileName; downloadLink.href = window.URL.createObjectURL(csvFile);
             downloadLink.style.display = "none"; document.body.appendChild(downloadLink); downloadLink.click(); document.body.removeChild(downloadLink);
+        }
+
+        /* ================= GIẤY PHÉP LÀM VIỆC (PTW) ================= */
+        let rawPTWData = [];
+        window.loadPTWData = async function() {
+            const tbody = document.getElementById('ptw-results-body');
+            document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-giay-phep').classList.add('hidden'); tbody.innerHTML = '';
+            try {
+                // Tải danh sách giấy phép
+                const snap = await window.getDocs(window.query(window.collection(window.db, "giay_phep_lam_viec"), window.orderBy("ngay_tao", "desc")));
+                rawPTWData = [];
+                snap.forEach(doc => rawPTWData.push({ id: doc.id, ...doc.data() }));
+
+                if(rawPTWData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-bold">Chưa có giấy phép nào được trình.</td></tr>`;
+                } else {
+                    let stt = 1;
+                    rawPTWData.forEach(d => {
+                        let statusBadge = '';
+                        if(d.trang_thai === 'Chờ duyệt') statusBadge = `<span class="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full text-[11px] animate-pulse whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>`;
+                        else if(d.trang_thai === 'Đã duyệt') statusBadge = `<span class="bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-check-circle"></i> Đã Cấp Phép</span>`;
+                        else statusBadge = `<span class="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-x-circle"></i> Bị Từ Chối</span>`;
+
+                        const timeStr = `<div class="text-[11px] font-mono text-slate-600 font-medium whitespace-nowrap">Từ: <span class="text-indigo-600 font-bold">${window.formatSimpleDate(d.thoi_gian_bat_dau)} ${d.gio_bat_dau}</span><br>Đến: <span class="text-rose-600 font-bold">${window.formatSimpleDate(d.thoi_gian_ket_thuc)} ${d.gio_ket_thuc}</span></div>`;
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                                <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                                <td class="p-4 font-black text-slate-800">${d.cong_ty}</td>
+                                <td class="p-4 font-bold text-amber-700">${d.loai_giay_phep}</td>
+                                <td class="p-4 font-bold text-slate-700">${d.khu_vuc}</td>
+                                <td class="p-4 text-center bg-slate-50/50">${timeStr}</td>
+                                <td class="p-4 text-center">${statusBadge}</td>
+                                <td class="p-4 text-center whitespace-nowrap">
+                                    <button onclick="window.reviewPTW('${d.id}')" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1 mx-auto">
+                                        <i class="ph-bold ph-eye text-sm"></i> Xem & Duyệt
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch(e) { 
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${e.message}</td></tr>`; 
+            } finally {
+                document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-giay-phep').classList.remove('hidden');
+            }
+        }
+
+        window.reviewPTW = function(id) {
+            const p = rawPTWData.find(x => x.id === id);
+            if(!p) return;
+
+            document.getElementById('rev-ptw-id').value = p.id;
+            document.getElementById('rev-ptw-company').innerText = p.cong_ty;
+            document.getElementById('rev-ptw-type').innerText = p.loai_giay_phep;
+            document.getElementById('rev-ptw-location').innerText = p.khu_vuc;
+            document.getElementById('rev-ptw-time').innerHTML = `Từ <span class="text-indigo-600">${p.gio_bat_dau} (${window.formatSimpleDate(p.thoi_gian_bat_dau)})</span> đến <span class="text-rose-600">${p.gio_ket_thuc} (${window.formatSimpleDate(p.thoi_gian_ket_thuc)})</span>`;
+            document.getElementById('rev-ptw-desc').innerText = p.noi_dung;
+
+            const wList = document.getElementById('rev-ptw-workers');
+            wList.innerHTML = (p.danh_sach_nhan_su || []).map(w => `<li class="bg-blue-50/50 p-2 rounded-lg border border-blue-100">${w}</li>`).join('');
+
+            const rList = document.getElementById('rev-ptw-rules');
+            rList.innerHTML = (p.cam_ket || []).map(r => `<li><i class="ph-bold ph-caret-right text-rose-400 mr-1"></i> ${r}</li>`).join('');
+
+            document.getElementById('rev-ptw-note').value = p.ghi_chu_ehs || '';
+
+            // Nếu đã xử lý rồi thì khóa form duyệt
+            const actionSec = document.getElementById('ptw-action-section');
+            if(p.trang_thai !== 'Chờ duyệt') {
+                actionSec.innerHTML = `
+                    <div class="text-center p-4 rounded-xl border ${p.trang_thai === 'Đã duyệt' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}">
+                        <p class="font-black text-lg mb-1">${p.trang_thai === 'Đã duyệt' ? '<i class="ph-fill ph-check-circle"></i> Giấy phép này ĐÃ ĐƯỢC CẤP PHÉP' : '<i class="ph-fill ph-x-circle"></i> Giấy phép này ĐÃ BỊ TỪ CHỐI'}</p>
+                        <p class="text-sm font-medium">Ghi chú EHS: <b>${p.ghi_chu_ehs || 'Không có ghi chú thêm'}</b></p>
+                    </div>
+                `;
+            } else {
+                // Phục hồi lại form nếu nó bị ghi đè trước đó
+                actionSec.innerHTML = `
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú của EHS (Bắt buộc nếu Từ chối)</label>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung..."></textarea>
+                    
+                    <div class="flex flex-col sm:flex-row gap-3 mt-5">
+                        <button onclick="window.submitPTWReview('Từ chối')" class="w-full sm:w-1/3 bg-red-100 text-red-700 font-bold py-3.5 rounded-xl hover:bg-red-200 transition border border-red-200 flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI DUYỆT
+                        </button>
+                        <button onclick="window.submitPTWReview('Đã duyệt')" class="w-full sm:w-2/3 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-check-square-offset text-xl"></i> CHẤP THUẬN CẤP PHÉP
+                        </button>
+                    </div>
+                `;
+            }
+
+            document.getElementById('ptw-review-modal').classList.remove('hidden');
+        }
+
+        window.submitPTWReview = async function(action) {
+            const id = document.getElementById('rev-ptw-id').value;
+            const note = document.getElementById('rev-ptw-note').value.trim();
+
+            if (action === 'Từ chối' && !note) {
+                return window.showToast("Vui lòng nhập lý do từ chối để nhà thầu biết đường sửa!", "error");
+            }
+
+            if (!confirm(`Xác nhận ${action === 'Đã duyệt' ? 'CẤP PHÉP' : 'TỪ CHỐI'} cho giấy phép này?`)) return;
+
+            try {
+                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
+                    trang_thai: action,
+                    ghi_chu_ehs: note,
+                    nguoi_duyet: currentUser,
+                    thoi_gian_duyet: new Date()
+                });
+                window.showToast("Đã xử lý giấy phép thành công!");
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
+            } catch(e) {
+                window.showToast("Lỗi xử lý: " + e.message, "error");
+            }
         }
     </script>
 </body>
