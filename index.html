@@ -550,7 +550,9 @@
         // KIỂM TRA MÔI TRƯỜNG THÔNG BÁO (BẢO VỆ CHỐNG SẬP TRANG WEB)
         // =========================================================================
         let messaging = null;
-        const VAPID_KEY = "BNTDgWXyrg7X7cQBDOUHk_76XVK5pkNUAnycD4zNf4cd-FmDtn5epWr1L5cJaKFLfErqSuoOLD7D2G3puasks74";
+        
+        // ANH DÁN CÁI VAPID KEY ANH VỪA COPY Ở BƯỚC 1 VÀO GIỮA 2 DẤU NGOẶC KÉP NÀY NHÉ:
+        const VAPID_KEY = "BNTDgWXyrg7X7cQBDOUHk_76XVK5pkNUAnycD4zNF4cd-FmDtn5epWr1L5cJaKFLfErqSuoOLD7D2G3puasks74";
 
         isSupported().then((supported) => {
             if (supported) {
