@@ -343,6 +343,7 @@
         window.myCompany = localStorage.getItem("nt_company_name") || "";
         window.myPhone = localStorage.getItem("nt_phone") || "";
         window.currentTab = 'nhan-su';
+        window.deleteTarget = null; // Chứa thông tin đang cần xóa: { collection: '...', id: '...' }
 
         /* ================= QUẢN LÝ TÀI KHOẢN VÀ ĐĂNG NHẬP ================= */
         window.checkAuth = function() {
@@ -422,6 +423,14 @@
             window.checkAuth(); window.showToast("Đã đăng xuất an toàn!");
         }
 
+        // Bắt sự kiện phím Enter
+        document.getElementById('nt-pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                window.handleLogin();
+            }
+        });
+
         /* ================= CÁC HÀM XỬ LÝ GIAO DIỆN CHÍNH (TABS & MODALS) ================= */
         window.switchTab = function(tabId) {
             window.currentTab = tabId;
@@ -452,12 +461,72 @@
                 document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo'; document.getElementById('worker-modal').classList.remove('hidden');
             } else if (window.currentTab === 'vat-tu') {
                 document.getElementById('modal-material-title').innerText = 'Khai báo Hàng hóa / Vật tư'; document.getElementById('mat-doc-id').value = '';
-        function formatSimpleDate(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
+                ['name', 'qty', 'desc'].forEach(id => document.getElementById(`mat-${id}`).value = '');
+                document.getElementById('material-modal').classList.remove('hidden');
+            } else if (window.currentTab === 'may-moc') {
+                document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-warning-circle"></i> Máy Móc Yêu Cầu Nghiêm Ngặt'; document.getElementById('se-doc-id').value = '';
+                ['name', 'plate', 'operator', 'expire', 'file'].forEach(id => document.getElementById(`se-${id}`).value = '');
+                document.getElementById('strict-equip-modal').classList.remove('hidden');
+            }
+        }
 
-        // BỔ SUNG BIẾN TOÀN CỤC KIỂM TRA TRẠNG THÁI KHÓA
+        window.closeModal = function(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+
+        // ================= CƠ CHẾ XÓA CHUẨN MỰC =================
+        window.confirmDelete = function(collectionName, id, itemName) {
+            window.deleteTarget = { collection: collectionName, id: id };
+            document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn xóa: <b>${itemName}</b>?`;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        window.closeConfirmModal = function() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            window.deleteTarget = null;
+        }
+
+        window.executeDelete = async function() {
+            if(!window.deleteTarget) return;
+            const btn = document.getElementById('btn-confirm-yes');
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>'; btn.disabled = true;
+
+            try {
+                await window.deleteDoc(window.doc(window.db, window.deleteTarget.collection, window.deleteTarget.id));
+                window.showToast("Đã xóa thành công!");
+                window.closeConfirmModal();
+                window.loadData();
+            } catch (error) {
+                window.showToast("Lỗi xóa dữ liệu: " + error.message, "error");
+            } finally {
+                btn.innerHTML = 'Xóa'; btn.disabled = false;
+            }
+        }
+
+        /* ================= CÁC HÀM EDIT ================= */
+        window.editWorker = function(id, hoTen, ngaySinh, cccd, nhom, hanATLD, hanBH, hanSK) {
+            document.getElementById('wk-doc-id').value = id; document.getElementById('wk-ho-ten').value = hoTen;
+            document.getElementById('wk-ngay-sinh').value = ngaySinh; document.getElementById('wk-cccd').value = cccd;
+            document.getElementById('wk-nhom-atld').value = nhom; document.getElementById('wk-han-atld').value = hanATLD;
+            document.getElementById('wk-han-bao-hiem').value = hanBH; document.getElementById('wk-han-suc-khoe').value = hanSK;
+            document.getElementById('modal-worker-title').innerText = 'Sửa Hồ Sơ Nhân Sự'; document.getElementById('worker-modal').classList.remove('hidden');
+        }
+
+        window.editMaterial = function(id, name, qty, desc) {
+            document.getElementById('mat-doc-id').value = id; document.getElementById('mat-name').value = name;
+            document.getElementById('mat-qty').value = qty; document.getElementById('mat-desc').value = desc;
+            document.getElementById('modal-material-title').innerText = 'Sửa Hàng Hóa / Vật Tư'; document.getElementById('material-modal').classList.remove('hidden');
+        }
+
+        window.editMachine = function(id, name, plate, op, exp) {
+            document.getElementById('se-doc-id').value = id; document.getElementById('se-name').value = name;
+            document.getElementById('se-plate').value = plate; document.getElementById('se-operator').value = op;
+            document.getElementById('se-expire').value = exp; document.getElementById('se-file').value = '';
+            document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-warning-circle"></i> Cập Nhật Máy Móc'; document.getElementById('strict-equip-modal').classList.remove('hidden');
+        }
+
+        /* ================= TẢI DỮ LIỆU CHÍNH ================= */
         window.isLockedByApproval = false;
 
-        async function loadData() {
+        window.loadData = async function() {
             document.getElementById('loading-msg').classList.remove('hidden');
             
             try {
@@ -519,7 +588,7 @@
                     
                     let actionHtml = window.isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
                         <button onclick="window.editWorker('${doc.id}', '${d.ho_ten}', '${d.ngay_sinh||''}', '${d.cccd}', '${d.nhom_atld}', '${d.han_atld||''}', '${d.han_bao_hiem||''}', '${d.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                        <button onclick="window.deleteItem('nha_thau_nhan_su', '${doc.id}')" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                        <button onclick="window.confirmDelete('nha_thau_nhan_su', '${doc.id}', '${d.ho_ten}')" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
                     `;
 
                     htmlWorker += `
@@ -545,7 +614,7 @@
                     const d = doc.data();
                     let actionHtml = window.isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
                         <button onclick="window.editMaterial('${doc.id}', '${d.ten_vat_tu}', '${d.so_luong}', '${d.muc_dich||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                        <button onclick="window.deleteItem('nha_thau_vat_tu', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                        <button onclick="window.confirmDelete('nha_thau_vat_tu', '${doc.id}', '${d.ten_vat_tu}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
                     `;
                     htmlMat += `
                         <tr class="hover:bg-slate-50 transition-colors">
@@ -568,7 +637,7 @@
                     let linkHtml = d.file_kiem_dinh ? `<a href="${d.file_kiem_dinh}" target="_blank" class="text-[11px] font-bold text-blue-600 border border-blue-200 bg-blue-50 px-2 py-1 rounded">Xem Giấy KĐ</a>` : '<span class="text-slate-400 text-xs">Không có</span>';
                     let actionHtml = window.isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
                         <button onclick="window.editMachine('${doc.id}', '${d.ten_may}', '${d.bien_so||''}', '${d.nguoi_van_hanh||''}', '${d.han_kiem_dinh||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                        <button onclick="window.deleteItem('nha_thau_may_moc', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                        <button onclick="window.confirmDelete('nha_thau_may_moc', '${doc.id}', '${d.ten_may}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
                     `;
                     htmlMac += `
                         <tr class="hover:bg-slate-50 transition-colors">
@@ -665,7 +734,7 @@
             finally { btn.disabled = false; btn.innerHTML = ogText; }
         }
 
-        /* ================= HÀM TRÌNH PHÊ DUYỆT (ĐÃ NÂNG CẤP) ================= */
+        /* ================= HÀM TRÌNH PHÊ DUYỆT CẤP ĐỘ KHÓA (CHỈ CÓ THỂ ĐƯỢC DUYỆT BỞI ANH TƯ / SẾP VƯỢNG) ================= */
         window.submitApproval = async function() {
             if(!confirm("Bạn có chắc chắn muốn trình Ban Giám Đốc EHS xét duyệt không? Hồ sơ sẽ bị KHÓA LẠI không thể sửa chữa cho đến khi có kết quả.")) return;
             
@@ -673,7 +742,6 @@
             const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> ĐANG GỬI...';
 
             try {
-                // TÌM XEM ĐÃ CÓ TASK TRƯỚC ĐÓ CHƯA (NẾU BỊ TỪ CHỐI THÌ UPDATE LẠI)
                 const qTask = window.query(window.collection(window.db, "ehs_tasks"), 
                     window.where("assigner_name", "==", window.myCompany),
                     window.where("task_type", "==", "contractor_approval")
@@ -686,18 +754,18 @@
                     title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU: ${window.myCompany}`,
                     category: 'An toàn',
                     task_type: 'contractor_approval',
-                    approval_step: 1, // BƯỚC 1: Anh Tư duyệt
+                    approval_step: 1, 
                     due_date: new Date().toISOString().split('T')[0],
                     assigner_id: window.myPhone,
                     assigner_name: window.myCompany,
-                    assignee_id: '1951', // ID CỦA ANH TƯ
+                    assignee_id: '1951', // ID CỦA ANH TƯ 
                     assignee_name: 'Đặng Thế Tư (EHS)',
                     progress: 0,
-                    status: 'Review', // Đẩy vào trạng thái chờ duyệt
+                    status: 'Review',
                     is_review_requested: true,
                     reviewer_id: '1951',
                     reviewer_name: 'Đặng Thế Tư',
-                    evaluation: '', // Xóa trắng nhận xét cũ (nếu có)
+                    evaluation: '', 
                     plan_steps: [
                         {text: `Kiểm tra danh sách Nhân sự công ty ${window.myCompany}`, progress: 0},
                         {text: "Kiểm tra danh mục Hàng hóa, Hóa chất mang vào", progress: 0},
@@ -714,9 +782,8 @@
                 }
                 
                 window.showToast("Đã gửi hồ sơ cho EHS thành công!");
-                window.loadData(); // Tải lại trang để khóa nút
+                window.loadData(); 
 
-                // GỌI API BẮN THÔNG BÁO TỚI ANH TƯ
                 const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
                 const qAdmin = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", "1951"));
                 const snapAdmin = await window.getDocs(qAdmin);
@@ -740,15 +807,7 @@
             }
         }
 
-        // Bắt sự kiện phím Enter ở màn hình đăng nhập
-        document.getElementById('nt-pass').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                window.handleLogin();
-            }
-        });
-
-        // Khởi chạy khi load trang
+        // Khởi chạy
         window.checkAuth();
     </script>
 </body>
