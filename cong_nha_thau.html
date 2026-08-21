@@ -861,7 +861,13 @@
             try {
                 const snap = await window.getDocs(window.query(window.collection(window.db, "giay_phep_lam_viec"), window.where("cong_ty", "==", myCompany)));
                 let raw = []; snap.forEach(d => { raw.push({ id: d.id, ...d.data() }); });
-                raw.sort((a,b) => b.ngay_tao - a.ngay_tao);
+                
+                // VÁ LỖI TẠI ĐÂY: Sắp xếp thời gian chuẩn xác của Firebase
+                raw.sort((a,b) => {
+                    let timeA = a.ngay_tao ? (a.ngay_tao.toDate ? a.ngay_tao.toDate().getTime() : new Date(a.ngay_tao).getTime()) : 0;
+                    let timeB = b.ngay_tao ? (b.ngay_tao.toDate ? b.ngay_tao.toDate().getTime() : new Date(b.ngay_tao).getTime()) : 0;
+                    return timeB - timeA;
+                });
 
                 if(raw.length === 0) { tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400">Chưa xin giấy phép nào.</td></tr>`; return; }
 
@@ -889,7 +895,10 @@
                 });
                 tbody.innerHTML = html;
                 window.rawPermits = raw; // Lưu lại để dùng cho in ấn
-            } catch(e) { console.log(e); tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Lỗi tải dữ liệu.</td></tr>`; }
+            } catch(e) { 
+                console.log(e); 
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${e.message}</td></tr>`; 
+            }
         }
 
         window.openPermitModal = function() {
