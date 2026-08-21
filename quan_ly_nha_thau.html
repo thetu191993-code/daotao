@@ -132,11 +132,10 @@
             </div>
         </div>
 
-        <!-- CẬP NHẬT: THÊM TAB GIẤY PHÉP VÀO THANH MENU -->
         <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-px">
             <button id="btn-tab-nhan-su" onclick="window.switchTab('nhan-su')" class="px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition" data-i18n="tab_worker">Quản lý Nhân sự</button>
             <button id="btn-tab-may-moc" onclick="window.switchTab('may-moc')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_machine">Máy móc - Thiết bị</button>
-            <!-- TAB GIẤY PHÉP MỚI -->
+            <!-- TAB GIẤY PHÉP -->
             <button id="btn-tab-giay-phep" onclick="window.switchTab('giay-phep')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-2"><i class="ph-fill ph-file-text text-amber-500"></i> Giấy Phép (PTW)</button>
             
             <button id="btn-tab-dao-tao" onclick="window.switchTab('dao-tao')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_training">Hồ sơ Đào tạo</button>
@@ -194,7 +193,7 @@
             </table>
         </div>
 
-        <!-- TAB MỚI: GIẤY PHÉP LÀM VIỆC (PTW) -->
+        <!-- TAB GIẤY PHÉP LÀM VIỆC (PTW) -->
         <div id="tab-giay-phep" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden bg-slate-50">
             <table class="w-full text-left border-collapse min-w-[1100px]">
                 <thead>
@@ -269,7 +268,7 @@
         </div>
     </div>
 
-    <!-- MODAL NHÂN SỰ -->
+    <!-- CÁC MODAL NHẬP LIỆU CŨ -->
     <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -304,7 +303,6 @@
         </div>
     </div>
 
-    <!-- MODAL MÁY MÓC -->
     <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -341,7 +339,6 @@
         </div>
     </div>
 
-    <!-- MODAL QR -->
     <div id="qr-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8">
             <h3 class="text-xl font-bold text-slate-800 mb-1">Mã QR An Ninh</h3>
@@ -352,7 +349,6 @@
         </div>
     </div>
 
-    <!-- MODAL ĐÀO TẠO -->
     <div id="training-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
@@ -376,7 +372,7 @@
         </div>
     </div>
 
-    <!-- MỚI GIAI ĐOẠN 2: MODAL KIỂM DUYỆT GIẤY PHÉP LÀM VIỆC (PTW) DÀNH CHO EHS -->
+    <!-- MODAL KIỂM DUYỆT GIẤY PHÉP LÀM VIỆC (PTW) DÀNH CHO EHS -->
     <div id="ptw-review-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-4xl flex flex-col max-h-[95vh] border-t-4 border-amber-500">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-amber-50/50">
@@ -402,30 +398,33 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <!-- Danh sách nhân sự -->
-                    <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm">
+                    <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm flex flex-col">
                         <p class="text-xs font-black text-blue-800 uppercase mb-3 flex items-center gap-2"><i class="ph-fill ph-users text-lg"></i> Danh sách Nhân sự thực hiện</p>
                         <ul id="rev-ptw-workers" class="text-sm font-bold text-slate-700 space-y-2 list-inside list-decimal pl-2 max-h-48 overflow-y-auto custom-scrollbar"></ul>
                     </div>
-                    <!-- Cam kết an toàn -->
-                    <div class="bg-rose-50/50 p-5 rounded-2xl border border-rose-200 shadow-sm">
-                        <p class="text-xs font-black text-rose-800 uppercase mb-3 flex items-center gap-2"><i class="ph-fill ph-warning-circle text-lg"></i> Yêu cầu an toàn đã cam kết</p>
-                        <ul id="rev-ptw-rules" class="text-xs font-medium text-rose-900 space-y-2.5 list-none pl-1 max-h-48 overflow-y-auto custom-scrollbar"></ul>
+                    <!-- Cam kết an toàn & Ảnh 5S -->
+                    <div class="bg-white p-5 rounded-2xl border border-rose-200 shadow-sm flex flex-col h-full">
+                        <div class="flex-1">
+                            <p class="text-xs font-black text-rose-800 uppercase mb-3 flex items-center gap-2"><i class="ph-fill ph-warning-circle text-lg"></i> Yêu cầu an toàn đã cam kết</p>
+                            <ul id="rev-ptw-rules" class="text-xs font-medium text-rose-900 space-y-2.5 list-none pl-1 max-h-48 overflow-y-auto custom-scrollbar"></ul>
+                        </div>
+                        
+                        <!-- KHU VỰC HIỂN THỊ ẢNH NGHIỆM THU 5S (MỚI) -->
+                        <div id="rev-ptw-5s-section" class="mt-4 pt-4 border-t border-rose-100 hidden">
+                            <p class="text-xs font-black text-emerald-700 uppercase mb-2 flex items-center gap-2"><i class="ph-fill ph-image"></i> Ảnh nghiệm thu 5S</p>
+                            <div class="flex items-start gap-3">
+                                <a id="rev-ptw-5s-link" href="#" target="_blank" class="shrink-0">
+                                    <img id="rev-ptw-5s-img" src="" class="w-24 h-24 object-cover rounded-lg border-2 border-emerald-200 hover:opacity-80 transition cursor-pointer">
+                                </a>
+                                <p id="rev-ptw-5s-note" class="text-xs text-slate-600 font-medium italic bg-emerald-50 p-2 rounded-lg flex-1 border border-emerald-100"></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Khu vực ra quyết định của EHS -->
+                <!-- Khu vực ra quyết định của EHS (Bảng điều khiển động) -->
                 <div id="ptw-action-section" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mt-4">
-                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú của EHS (Bắt buộc nếu Từ chối)</label>
-                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung..."></textarea>
-                    
-                    <div class="flex flex-col sm:flex-row gap-3 mt-5">
-                        <button onclick="window.submitPTWReview('Từ chối')" class="w-full sm:w-1/3 bg-red-100 text-red-700 font-bold py-3.5 rounded-xl hover:bg-red-200 transition border border-red-200 flex items-center justify-center gap-2">
-                            <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI DUYỆT
-                        </button>
-                        <button onclick="window.submitPTWReview('Đã duyệt')" class="w-full sm:w-2/3 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2">
-                            <i class="ph-bold ph-check-square-offset text-xl"></i> CHẤP THUẬN CẤP PHÉP
-                        </button>
-                    </div>
+                    <!-- JS sẽ tự động chèn nút bấm tùy theo trạng thái của Giấy phép (Chờ duyệt, Đã duyệt, Chờ nghiệm thu...) -->
                 </div>
             </div>
         </div>
@@ -503,7 +502,7 @@
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
-            toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            toast.className = "fixed top-5 right-5 z-[100] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
             if (type === "success") { toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl"; } 
             else { toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl"; }
             document.getElementById('toast-message').innerText = message;
@@ -547,7 +546,9 @@
         }
         window.formatSimpleDate = function(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
 
-        // ĐÃ CHỮA LỖI GIAO DIỆN TẠI ĐÂY (CSS CHUYỂN TAB)
+        // ===============================================
+        // CHUYỂN TAB CÓ TAB GIẤY PHÉP
+        // ===============================================
         window.switchTab = function(tabId) {
             currentTab = tabId;
             const tabs = ['nhan-su', 'may-moc', 'dao-tao', 'cham-cong', 'giay-phep'];
@@ -558,25 +559,17 @@
                 
                 if (btn && content) {
                     if (t === tabId) {
-                        // Nút được chọn
                         if(t === 'giay-phep') btn.className = "px-6 py-2.5 font-bold text-sm rounded-lg transition bg-white shadow text-amber-600 flex items-center gap-2";
                         else btn.className = "px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition flex items-center gap-1";
-                        
-                        // Hiển thị nội dung
                         content.classList.remove('hidden');
-                        // Fix lỗi TailWind: Khi bỏ hidden thì content sẽ hiển thị theo css block tự động
                     } else {
-                        // Nút không được chọn
                         if(t === 'giay-phep') btn.className = "px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-500 hover:text-slate-800 flex items-center gap-2";
                         else btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1";
-                        
-                        // Ẩn nội dung
                         content.classList.add('hidden'); 
                     }
                 }
             });
 
-            // Ẩn / Hiện nút chức năng theo từng tab
             const addBtn = document.getElementById('main-add-btn');
             if(tabId === 'cham-cong' || tabId === 'giay-phep') { 
                 addBtn.classList.add('hidden'); 
@@ -613,7 +606,6 @@
             if(!confirm(`Xác nhận Hợp lệ (Pass) cho toàn bộ hồ sơ cũ của nhà thầu: ${companyName}?\nHệ thống sẽ tự động chốt hồ sơ mà không cần qua các bước trình duyệt.`)) return;
 
             try {
-                // Tạo một Task ảo đã hoàn thành 100% để "Hợp thức hóa" cho nhà thầu cũ
                 const taskData = {
                     title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU (Dữ liệu cũ): ${companyName}`,
                     category: 'An toàn',
@@ -636,7 +628,6 @@
                 await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
                 window.showToast("Đã chốt hợp lệ hồ sơ cũ thành công!");
                 
-                // Tải lại dữ liệu để biểu tượng chuyển sang Xanh Lá
                 if(currentTab === 'nhan-su') window.loadWorkerData();
                 else if(currentTab === 'may-moc') window.loadMachineData();
                 
@@ -651,7 +642,6 @@
             const tbody = document.getElementById('worker-results-body');
             tbody.innerHTML = '';
             
-            // FETCH BẢNG DUYỆT TỪ FIREBASE TASKS (Lấy trạng thái duyệt nhà thầu)
             try {
                 const taskSnap = await window.getDocs(window.query(window.collection(window.db, "ehs_tasks"), window.where("task_type", "==", "contractor_approval")));
                 window.globalApprovalMap = {};
@@ -666,7 +656,6 @@
             const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_nhan_su"), window.orderBy("thoi_gian_tao", "desc")));
             rawWorkerData = []; snap.forEach(doc => { rawWorkerData.push({ id: doc.id, ...doc.data() }); });
             
-            // TỰ ĐỘNG LẤY TỪ KHÓA TỪ URL NẾU SẾP BẤM "XEM HỒ SƠ" TỪ TRANG TASK
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('search');
             if(searchQuery) { document.getElementById('search-worker').value = searchQuery; }
@@ -691,14 +680,12 @@
                 const atldStatus = window.formatDateAndStatus(data.han_atld);
                 let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700";
                 
-                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT (CẬP NHẬT GIAO DIỆN NÚT DUYỆT NHANH)
                 let compStatus = window.globalApprovalMap[data.cong_ty] ? window.globalApprovalMap[data.cong_ty].status : 'None';
                 let isApproved = (compStatus === 'Done');
                 let compBadge = '';
                 if (isApproved) {
                     compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>`;
                 } else {
-                    // Nếu chưa duyệt, hiện thêm nút Duyệt nhanh màu xanh dương kế bên
                     compBadge = `
                         <div class="mt-1 flex items-center gap-1">
                             <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
@@ -772,14 +759,12 @@
                 if(d.file_chung_chi) fileLinks += `<a href="${d.file_chung_chi}" target="_blank" class="text-amber-600 hover:underline text-[11px] block font-bold"><i class="ph-bold ph-link"></i> Xem C.Chỉ Tài xế</a>`;
                 if(!fileLinks) fileLinks = '<span class="text-slate-400 text-xs">Chưa có ảnh</span>';
 
-                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT (CẬP NHẬT GIAO DIỆN NÚT DUYỆT NHANH)
                 let compStatus = window.globalApprovalMap[d.cong_ty] ? window.globalApprovalMap[d.cong_ty].status : 'None';
                 let isApproved = (compStatus === 'Done');
                 let compBadge = '';
                 if (isApproved) {
                     compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>`;
                 } else {
-                    // Nếu chưa duyệt, hiện thêm nút Duyệt nhanh
                     compBadge = `
                         <div class="mt-1 flex items-center gap-1">
                             <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
@@ -836,134 +821,6 @@
             document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`MACHINE:${id}`)}`;
             document.getElementById('qr-modal').classList.remove('hidden');
         }
-
-        // =========================================================================
-        // GIAI ĐOẠN 2: CHỨC NĂNG XEM VÀ PHÊ DUYỆT GIẤY PHÉP LÀM VIỆC (PTW) DÀNH CHO EHS
-        // =========================================================================
-        let rawPTWData = [];
-
-        window.loadPTWData = async function() {
-            const tbody = document.getElementById('ptw-results-body');
-            document.getElementById('loading-msg').classList.remove('hidden'); tbody.innerHTML = '';
-            
-            try {
-                const snap = await window.getDocs(window.query(window.collection(window.db, "giay_phep_lam_viec"), window.orderBy("ngay_tao", "desc")));
-                rawPTWData = [];
-                snap.forEach(doc => rawPTWData.push({ id: doc.id, ...doc.data() }));
-
-                if(rawPTWData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-bold">Chưa có giấy phép nào được trình.</td></tr>`;
-                } else {
-                    let stt = 1;
-                    rawPTWData.forEach(d => {
-                        let statusBadge = '';
-                        if(d.trang_thai === 'Chờ duyệt') statusBadge = `<span class="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full text-[11px] animate-pulse whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>`;
-                        else if(d.trang_thai === 'Đã duyệt') statusBadge = `<span class="bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-check-circle"></i> Đã Cấp Phép</span>`;
-                        else statusBadge = `<span class="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-x-circle"></i> Bị Từ Chối</span>`;
-
-                        const timeStr = `<div class="text-[11px] font-mono text-slate-600 font-medium whitespace-nowrap">Từ: <span class="text-indigo-600 font-bold">${window.formatSimpleDate(d.thoi_gian_bat_dau)} ${d.gio_bat_dau}</span><br>Đến: <span class="text-rose-600 font-bold">${window.formatSimpleDate(d.thoi_gian_ket_thuc)} ${d.gio_ket_thuc}</span></div>`;
-
-                        tbody.innerHTML += `
-                            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-                                <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
-                                <td class="p-4 font-black text-slate-800">${d.cong_ty}</td>
-                                <td class="p-4 font-bold text-amber-700">${d.loai_giay_phep}</td>
-                                <td class="p-4 font-bold text-slate-700">${d.khu_vuc}</td>
-                                <td class="p-4 text-center bg-slate-50/50">${timeStr}</td>
-                                <td class="p-4 text-center">${statusBadge}</td>
-                                <td class="p-4 text-center whitespace-nowrap">
-                                    <button onclick="window.reviewPTW('${d.id}')" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1 mx-auto">
-                                        <i class="ph-bold ph-eye text-sm"></i> Xem & Duyệt
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                }
-            } catch(e) { 
-                console.error(e);
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${e.message}</td></tr>`; 
-            } finally {
-                document.getElementById('loading-msg').classList.add('hidden');
-            }
-        }
-
-        window.reviewPTW = function(id) {
-            const p = rawPTWData.find(x => x.id === id);
-            if(!p) return;
-
-            document.getElementById('rev-ptw-id').value = p.id;
-            document.getElementById('rev-ptw-company').innerText = p.cong_ty;
-            document.getElementById('rev-ptw-type').innerText = p.loai_giay_phep;
-            document.getElementById('rev-ptw-location').innerText = p.khu_vuc;
-            document.getElementById('rev-ptw-time').innerHTML = `Từ <span class="text-indigo-600">${p.gio_bat_dau} (${window.formatSimpleDate(p.thoi_gian_bat_dau)})</span> đến <span class="text-rose-600">${p.gio_ket_thuc} (${window.formatSimpleDate(p.thoi_gian_ket_thuc)})</span>`;
-            document.getElementById('rev-ptw-desc').innerText = p.noi_dung;
-
-            // Đổ danh sách nhân sự
-            const wList = document.getElementById('rev-ptw-workers');
-            wList.innerHTML = (p.danh_sach_nhan_su || []).map(w => `<li class="bg-blue-50/50 p-2 rounded-lg border border-blue-100">${w}</li>`).join('');
-
-            // Đổ danh sách luật
-            const rList = document.getElementById('rev-ptw-rules');
-            rList.innerHTML = (p.cam_ket || []).map(r => `<li><i class="ph-bold ph-caret-right text-rose-400 mr-1"></i> ${r}</li>`).join('');
-
-            document.getElementById('rev-ptw-note').value = p.ghi_chu_ehs || '';
-
-            // Nếu đã xử lý rồi thì khóa form duyệt
-            const actionSec = document.getElementById('ptw-action-section');
-            if(p.trang_thai !== 'Chờ duyệt') {
-                actionSec.innerHTML = `
-                    <div class="text-center p-4 rounded-xl border ${p.trang_thai === 'Đã duyệt' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}">
-                        <p class="font-black text-lg mb-1">${p.trang_thai === 'Đã duyệt' ? '<i class="ph-fill ph-check-circle"></i> Giấy phép này ĐÃ ĐƯỢC CẤP PHÉP' : '<i class="ph-fill ph-x-circle"></i> Giấy phép này ĐÃ BỊ TỪ CHỐI'}</p>
-                        <p class="text-sm font-medium">Ghi chú EHS: <b>${p.ghi_chu_ehs || 'Không có ghi chú thêm'}</b></p>
-                    </div>
-                `;
-            } else {
-                // Phục hồi lại form nếu nó bị ghi đè trước đó
-                actionSec.innerHTML = `
-                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú của EHS (Bắt buộc nếu Từ chối)</label>
-                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung..."></textarea>
-                    
-                    <div class="flex flex-col sm:flex-row gap-3 mt-5">
-                        <button onclick="window.submitPTWReview('Từ chối')" class="w-full sm:w-1/3 bg-red-100 text-red-700 font-bold py-3.5 rounded-xl hover:bg-red-200 transition border border-red-200 flex items-center justify-center gap-2">
-                            <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI DUYỆT
-                        </button>
-                        <button onclick="window.submitPTWReview('Đã duyệt')" class="w-full sm:w-2/3 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2">
-                            <i class="ph-bold ph-check-square-offset text-xl"></i> CHẤP THUẬN CẤP PHÉP
-                        </button>
-                    </div>
-                `;
-            }
-
-            document.getElementById('ptw-review-modal').classList.remove('hidden');
-        }
-
-        window.submitPTWReview = async function(action) {
-            const id = document.getElementById('rev-ptw-id').value;
-            const note = document.getElementById('rev-ptw-note').value.trim();
-
-            if (action === 'Từ chối' && !note) {
-                return window.showToast("Vui lòng nhập lý do từ chối để nhà thầu biết đường sửa!", "error");
-            }
-
-            if (!confirm(`Xác nhận ${action === 'Đã duyệt' ? 'CẤP PHÉP' : 'TỪ CHỐI'} cho giấy phép này?`)) return;
-
-            try {
-                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
-                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
-                    trang_thai: action,
-                    ghi_chu_ehs: note,
-                    nguoi_duyet: currentUser,
-                    thoi_gian_duyet: new Date()
-                });
-                window.showToast("Đã xử lý giấy phép thành công!");
-                window.closeModal('ptw-review-modal');
-                window.loadPTWData();
-            } catch(e) {
-                window.showToast("Lỗi xử lý: " + e.message, "error");
-            }
-        }
-        // =========================================================================
 
         window.loadTrainingData = async function() {
             const tbody = document.getElementById('training-results-body');
@@ -1063,16 +920,13 @@
             if (currentTab === 'nhan-su') { activeTableBodyId = 'tab-nhan-su'; fileName = 'DS_NhanSu.csv'; }
             else if (currentTab === 'may-moc') { activeTableBodyId = 'tab-may-moc'; fileName = 'DS_MayMoc.csv'; }
             else if (currentTab === 'dao-tao') { activeTableBodyId = 'tab-dao-tao'; fileName = 'DS_DaoTao.csv'; }
-            else if (currentTab === 'giay-phep') { activeTableBodyId = 'tab-giay-phep'; fileName = 'DS_Giay_Phep.csv'; }
             else if (currentTab === 'cham-cong') { const dateStr = document.getElementById('filter-date').value; activeTableBodyId = 'tab-cham-cong'; fileName = `Bao_Cao_Cham_Cong_Ngay_${dateStr}.csv`; }
 
             const table = document.querySelector(`#${activeTableBodyId} table`); if(!table) return;
 
             let csv = []; let rows = table.querySelectorAll("tr"); let bom = "\uFEFF";
             for (let i = 0; i < rows.length; i++) {
-                let row = [], cols = rows[i].querySelectorAll("td, th"); 
-                // Fix xuất excel cho các tab có số cột khác nhau
-                let colCount = (currentTab === 'cham-cong' || currentTab === 'giay-phep') ? cols.length : cols.length - 1;
+                let row = [], cols = rows[i].querySelectorAll("td, th"); let colCount = currentTab === 'cham-cong' ? cols.length : cols.length - 1;
                 for (let j = 0; j < colCount; j++) {
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""').trim();
                     if(data.includes("Hợp lệ (")) data = data.replace("Hợp lệ (", "").replace(")", "");
@@ -1085,6 +939,231 @@
             let downloadLink = document.createElement("a"); downloadLink.download = fileName; downloadLink.href = window.URL.createObjectURL(csvFile);
             downloadLink.style.display = "none"; document.body.appendChild(downloadLink); downloadLink.click(); document.body.removeChild(downloadLink);
         }
+
+        // =========================================================================
+        // GIAI ĐOẠN 2: CHỨC NĂNG XEM VÀ PHÊ DUYỆT GIẤY PHÉP LÀM VIỆC (PTW) DÀNH CHO EHS
+        // =========================================================================
+        let rawPTWData = [];
+
+        window.loadPTWData = async function() {
+            const tbody = document.getElementById('ptw-results-body');
+            document.getElementById('loading-msg').classList.remove('hidden'); tbody.innerHTML = '';
+            
+            try {
+                const snap = await window.getDocs(window.query(window.collection(window.db, "giay_phep_lam_viec"), window.orderBy("ngay_tao", "desc")));
+                rawPTWData = [];
+                snap.forEach(doc => rawPTWData.push({ id: doc.id, ...doc.data() }));
+
+                if(rawPTWData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-bold">Chưa có giấy phép nào được trình.</td></tr>`;
+                } else {
+                    let stt = 1;
+                    rawPTWData.forEach(d => {
+                        let statusBadge = '';
+                        if(d.trang_thai === 'Chờ duyệt') statusBadge = `<span class="bg-amber-100 text-amber-700 font-bold px-3 py-1 rounded-full text-[11px] animate-pulse whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>`;
+                        else if(d.trang_thai === 'Đã duyệt') statusBadge = `<span class="bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-play"></i> Đang thi công</span>`;
+                        else if(d.trang_thai === 'Chờ nghiệm thu') statusBadge = `<span class="bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-broom"></i> Chờ nghiệm thu</span>`;
+                        else if(d.trang_thai === 'Đã đóng') statusBadge = `<span class="bg-slate-200 text-slate-600 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-lock-key"></i> Đã đóng</span>`;
+                        else if(d.trang_thai === 'Bị đình chỉ') statusBadge = `<span class="bg-red-600 text-white font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-warning-octagon"></i> Bị Đình Chỉ</span>`;
+                        else statusBadge = `<span class="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-x-circle"></i> Bị Từ Chối</span>`;
+
+                        const timeStr = `<div class="text-[11px] font-mono text-slate-600 font-medium whitespace-nowrap">Từ: <span class="text-indigo-600 font-bold">${window.formatSimpleDate(d.thoi_gian_bat_dau)} ${d.gio_bat_dau}</span><br>Đến: <span class="text-rose-600 font-bold">${window.formatSimpleDate(d.thoi_gian_ket_thuc)} ${d.gio_ket_thuc}</span></div>`;
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                                <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
+                                <td class="p-4 font-black text-slate-800">${d.cong_ty}</td>
+                                <td class="p-4 font-bold text-amber-700">${d.loai_giay_phep}</td>
+                                <td class="p-4 font-bold text-slate-700">${d.khu_vuc}</td>
+                                <td class="p-4 text-center bg-slate-50/50">${timeStr}</td>
+                                <td class="p-4 text-center">${statusBadge}</td>
+                                <td class="p-4 text-center whitespace-nowrap">
+                                    <button onclick="window.reviewPTW('${d.id}')" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-1 mx-auto">
+                                        <i class="ph-bold ph-eye text-sm"></i> Xem & Xử Lý
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+            } catch(e) { 
+                console.error(e);
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${e.message}</td></tr>`; 
+            } finally {
+                document.getElementById('loading-msg').classList.add('hidden');
+            }
+        }
+
+        window.reviewPTW = function(id) {
+            const p = rawPTWData.find(x => x.id === id);
+            if(!p) return;
+
+            document.getElementById('rev-ptw-id').value = p.id;
+            document.getElementById('rev-ptw-company').innerText = p.cong_ty;
+            document.getElementById('rev-ptw-type').innerText = p.loai_giay_phep;
+            document.getElementById('rev-ptw-location').innerText = p.khu_vuc;
+            document.getElementById('rev-ptw-time').innerHTML = `Từ <span class="text-indigo-600">${p.gio_bat_dau} (${window.formatSimpleDate(p.thoi_gian_bat_dau)})</span> đến <span class="text-rose-600">${p.gio_ket_thuc} (${window.formatSimpleDate(p.thoi_gian_ket_thuc)})</span>`;
+            document.getElementById('rev-ptw-desc').innerText = p.noi_dung;
+
+            // Đổ danh sách nhân sự
+            const wList = document.getElementById('rev-ptw-workers');
+            wList.innerHTML = (p.danh_sach_nhan_su || []).map(w => `<li class="bg-blue-50/50 p-2 rounded-lg border border-blue-100">${w}</li>`).join('');
+
+            // Đổ danh sách luật
+            const rList = document.getElementById('rev-ptw-rules');
+            rList.innerHTML = (p.cam_ket || []).map(r => `<li><i class="ph-bold ph-caret-right text-rose-400 mr-1"></i> ${r}</li>`).join('');
+
+            // Xử lý Ghi chú EHS
+            document.getElementById('rev-ptw-note').value = p.ghi_chu_ehs || '';
+            document.getElementById('rev-ptw-note').readOnly = (p.trang_thai === 'Đã đóng' || p.trang_thai === 'Bị đình chỉ' || p.trang_thai === 'Từ chối');
+
+            // Xử lý Ảnh 5S (Nếu có)
+            const imgSection = document.getElementById('rev-ptw-5s-section');
+            if (p.anh_5s) {
+                document.getElementById('rev-ptw-5s-img').src = p.anh_5s;
+                document.getElementById('rev-ptw-5s-link').href = p.anh_5s;
+                document.getElementById('rev-ptw-5s-note').innerText = p.ghi_chu_5s ? `"${p.ghi_chu_5s}"` : "Không có ghi chú.";
+                imgSection.classList.remove('hidden');
+            } else {
+                imgSection.classList.add('hidden');
+            }
+
+            // GIAO DIỆN NÚT BẤM ĐỘNG THEO TRẠNG THÁI
+            const actionSec = document.getElementById('ptw-action-section');
+            let actionHtml = '';
+
+            if (p.trang_thai === 'Chờ duyệt') {
+                actionHtml = `
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú của EHS (Bắt buộc nếu Từ chối)</label>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung..."></textarea>
+                    <div class="flex flex-col sm:flex-row gap-3 mt-5">
+                        <button onclick="window.submitPTWReview('Từ chối')" class="w-full sm:w-1/3 bg-red-100 text-red-700 font-bold py-3.5 rounded-xl hover:bg-red-200 transition border border-red-200 flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI
+                        </button>
+                        <button onclick="window.submitPTWReview('Đã duyệt')" class="w-full sm:w-2/3 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-check-square-offset text-xl"></i> CẤP PHÉP THI CÔNG
+                        </button>
+                    </div>
+                `;
+            } else if (p.trang_thai === 'Đã duyệt') {
+                actionHtml = `
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-amber-800 text-sm font-medium mb-4">
+                        Nhà thầu đang trong quá trình thi công. Nút ĐÌNH CHỈ KHẨN CẤP dùng để thu hồi ngay lập tức Giấy phép nếu phát hiện vi phạm nghiêm trọng tại hiện trường. Hãy ghi rõ lý do đình chỉ.
+                    </div>
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Lý do đình chỉ <span class="text-red-500">*</span></label>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-red-300 rounded-xl px-4 py-3 outline-none focus:border-red-500 font-medium text-sm custom-scrollbar resize-none bg-red-50" placeholder="Lý do thu hồi giấy phép..."></textarea>
+                    <div class="mt-4">
+                        <button onclick="window.submitPTWSuspension()" class="w-full bg-red-600 text-white font-bold py-3.5 rounded-xl hover:bg-red-700 shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-warning-octagon text-xl"></i> ĐÌNH CHỈ KHẨN CẤP
+                        </button>
+                    </div>
+                `;
+            } else if (p.trang_thai === 'Chờ nghiệm thu') {
+                actionHtml = `
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 text-blue-800 text-sm font-medium mb-4">
+                        Nhà thầu đã gửi báo cáo hoàn thành. Vui lòng xem ảnh chụp 5S ở trên. Nếu chưa đạt, hãy ghi rõ yêu cầu ở phần ghi chú và bắt nhà thầu dọn lại.
+                    </div>
+                    <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú Nghiệm thu</label>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50" placeholder="Ghi chú đánh giá 5S (nếu có)..."></textarea>
+                    <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                        <button onclick="window.submitPTWClosure('Từ chối nghiệm thu')" class="w-full sm:w-1/3 bg-orange-100 text-orange-700 font-bold py-3.5 rounded-xl hover:bg-orange-200 transition border border-orange-200 flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-broom text-xl"></i> YÊU CẦU DỌN LẠI
+                        </button>
+                        <button onclick="window.submitPTWClosure('Đã đóng')" class="w-full sm:w-2/3 bg-slate-800 text-white font-bold py-3.5 rounded-xl hover:bg-slate-700 shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-lock-key text-xl"></i> NGHIỆM THU & ĐÓNG GIẤY PHÉP
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Các trạng thái đã đóng băng (Đã đóng, Bị từ chối, Bị đình chỉ)
+                actionHtml = `
+                    <div class="text-center p-4 rounded-xl border bg-slate-100 border-slate-200">
+                        <p class="font-black text-lg mb-1 text-slate-700">Giấy phép đã kết thúc quy trình.</p>
+                        <p class="text-sm font-medium text-slate-500">Ghi chú EHS: <b>${p.ghi_chu_ehs || 'Không có ghi chú.'}</b></p>
+                    </div>
+                `;
+            }
+
+            actionSec.innerHTML = actionHtml;
+            document.getElementById('ptw-review-modal').classList.remove('hidden');
+        }
+
+        // HÀM: PHÊ DUYỆT HOẶC TỪ CHỐI (LÚC XIN PHÉP)
+        window.submitPTWReview = async function(action) {
+            const id = document.getElementById('rev-ptw-id').value;
+            const note = document.getElementById('rev-ptw-note').value.trim();
+
+            if (action === 'Từ chối' && !note) {
+                return window.showToast("Vui lòng nhập lý do từ chối để nhà thầu biết đường sửa!", "error");
+            }
+
+            if (!confirm(`Xác nhận ${action === 'Đã duyệt' ? 'CẤP PHÉP' : 'TỪ CHỐI'} cho giấy phép này?`)) return;
+
+            try {
+                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
+                    trang_thai: action,
+                    ghi_chu_ehs: note,
+                    nguoi_duyet: currentUser,
+                    thoi_gian_duyet: new Date()
+                });
+                window.showToast("Đã xử lý giấy phép thành công!");
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
+            } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
+        }
+
+        // HÀM: ĐÌNH CHỈ KHẨN CẤP
+        window.submitPTWSuspension = async function() {
+            const id = document.getElementById('rev-ptw-id').value;
+            const note = document.getElementById('rev-ptw-note').value.trim();
+
+            if (!note) return window.showToast("Bắt buộc phải ghi rõ lý do đình chỉ khẩn cấp!", "error");
+            if (!confirm("CẢNH BÁO: Đình chỉ Giấy phép sẽ lập tức vô hiệu hóa thẻ làm việc của nhà thầu. Bạn chắc chắn chứ?")) return;
+
+            try {
+                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
+                    trang_thai: 'Bị đình chỉ',
+                    ghi_chu_ehs: note,
+                    nguoi_dinh_chi: currentUser,
+                    thoi_gian_dinh_chi: new Date()
+                });
+                window.showToast("Đã ĐÌNH CHỈ KHẨN CẤP giấy phép thi công!");
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
+            } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
+        }
+
+        // HÀM: NGHIỆM THU ĐÓNG GIẤY PHÉP HOẶC TỪ CHỐI (BẮT DỌN LẠI)
+        window.submitPTWClosure = async function(action) {
+            const id = document.getElementById('rev-ptw-id').value;
+            const note = document.getElementById('rev-ptw-note').value.trim();
+
+            if (action === 'Từ chối nghiệm thu' && !note) {
+                return window.showToast("Bắt buộc phải ghi rõ cần phải dọn dẹp lại chỗ nào!", "error");
+            }
+
+            if (!confirm(`Xác nhận ${action === 'Đã đóng' ? 'NGHIỆM THU & ĐÓNG' : 'TỪ CHỐI (Bắt dọn lại 5S)'}?`)) return;
+
+            try {
+                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
+                
+                // Nếu bắt dọn lại thì trả trạng thái về "Đã duyệt" để nhà thầu thấy lại nút nộp báo cáo
+                const newStatus = action === 'Từ chối nghiệm thu' ? 'Đã duyệt' : 'Đã đóng';
+
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
+                    trang_thai: newStatus,
+                    ghi_chu_ehs: note,
+                    nguoi_nghiem_thu: currentUser,
+                    thoi_gian_nghiem_thu: new Date()
+                });
+                window.showToast(action === 'Đã đóng' ? "Đã đóng Giấy phép an toàn!" : "Đã trả lại báo cáo, yêu cầu dọn dẹp thêm!");
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
+            } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
+        }
+
     </script>
 </body>
 </html>
