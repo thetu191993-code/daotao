@@ -526,49 +526,82 @@
                     const workbook = XLSX.read(data, {type: 'binary'});
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonArr = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+                    
+                    // THUẬT TOÁN ĐỌC EXCEL NÂNG CẤP (Xuyên thủng các dòng Title thừa)
+                    // Đọc file dưới dạng mảng 2 chiều (array of arrays) thay vì object
+                    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
 
-                    if(jsonArr.length === 0) return window.showToast("File Excel rỗng!", "error");
+                    if(rawData.length === 0) return window.showToast("File Excel rỗng!", "error");
 
                     // Bật loading
                     document.getElementById('loader').classList.remove('hidden');
                     document.getElementById('table-container').classList.add('hidden');
+
+                    let headerRowIndex = -1;
+                    let colMap = { maNV: -1, hoTen: -1, phanLoai: -1, ghiChu: -1, ngayKham: -1, height: -1, weight: -1, blood: -1 };
+
+                    // 1. Quét Radar từ trên xuống dưới để tìm dòng Tiêu đề cột thực sự
+                    for (let i = 0; i < rawData.length; i++) {
+                        const row = rawData[i];
+                        // Tìm vị trí cột chứa chữ Tên, Name, hoặc Họ
+                        let foundTen = row.findIndex(cell => /Tên|Name|Họ/i.test(String(cell)));
+                        
+                        if (foundTen !== -1) { // Nếu tìm thấy cột Họ Tên -> Chốt dòng này là Header
+                            headerRowIndex = i;
+                            colMap.hoTen = foundTen;
+                            colMap.maNV = row.findIndex(cell => /Mã|MNV|ID|Code/i.test(String(cell)));
+                            colMap.phanLoai = row.findIndex(cell => /Loại|Sức.*khỏe|SK|Xếp/i.test(String(cell)));
+                            colMap.ghiChu = row.findIndex(cell => /Ghi.*chú|Kết.*luận|Bệnh/i.test(String(cell)));
+                            colMap.ngayKham = row.findIndex(cell => /Ngày/i.test(String(cell)));
+                            colMap.height = row.findIndex(cell => /Cao/i.test(String(cell)));
+                            colMap.weight = row.findIndex(cell => /Nặng/i.test(String(cell)));
+                            colMap.blood = row.findIndex(cell => /Huyết|HA/i.test(String(cell)));
+                            break; // Đã tìm thấy header, thoát vòng lặp quét
+                        }
+                    }
+
+                    if (headerRowIndex === -1) {
+                        document.getElementById('loader').classList.add('hidden');
+                        document.getElementById('table-container').classList.remove('hidden');
+                        return window.showToast("Lỗi: Không tìm thấy cột 'Họ Tên' trong file Excel!", "error");
+                    }
 
                     let successCount = 0;
                     const batchLimit = 400; // Firebase batch limit là 500
                     let currentBatch = writeBatch(db);
                     let opsInBatch = 0;
 
-                    for (let i = 0; i < jsonArr.length; i++) {
-                        const row = jsonArr[i];
+                    // 2. Xử lý dữ liệu từ dòng ngay bên dưới Header
+                    for (let i = headerRowIndex + 1; i < rawData.length; i++) {
+                        const row = rawData[i];
                         
-                        // THUẬT TOÁN ĐỌC CỘT THÔNG MINH (Fuzzy Matching)
-                        let maNV = findValueByRegex(row, /Mã/i) || findValueByRegex(row, /MNV/i) || findValueByRegex(row, /ID/i);
-                        let hoTen = findValueByRegex(row, /Họ.tên/i) || findValueByRegex(row, /Name/i);
-                        let phanLoai = findValueByRegex(row, /Loại/i) || findValueByRegex(row, /Sức khỏe/i) || findValueByRegex(row, /Xếp/i);
-                        let ghiChu = findValueByRegex(row, /Ghi.chú/i) || findValueByRegex(row, /Kết luận/i) || findValueByRegex(row, /Bệnh/i);
-                        let ngayKham = findValueByRegex(row, /Ngày/i) || new Date().toISOString().split('T')[0]; // Mặc định hôm nay nếu không có
-                        
-                        let height = findValueByRegex(row, /Chiều.cao/i) || "";
-                        let weight = findValueByRegex(row, /Cân.nặng/i) || "";
-                        let blood = findValueByRegex(row, /Huyết.áp/i) || findValueByRegex(row, /HA/i) || "";
+                        let hoTen = colMap.hoTen !== -1 ? row[colMap.hoTen] : "";
+                        let maNV = colMap.maNV !== -1 ? row[colMap.maNV] : "";
+                        let phanLoai = colMap.phanLoai !== -1 ? row[colMap.phanLoai] : "Loại I";
+                        let ghiChu = colMap.ghiChu !== -1 ? row[colMap.ghiChu] : "";
+                        let ngayKham = colMap.ngayKham !== -1 ? row[colMap.ngayKham] : "";
+                        let height = colMap.height !== -1 ? row[colMap.height] : "";
+                        let weight = colMap.weight !== -1 ? row[colMap.weight] : "";
+                        let blood = colMap.blood !== -1 ? row[colMap.blood] : "";
 
-                        // Bỏ qua dòng trống hoặc tiêu đề lặp
-                        if(!maNV && !hoTen) continue;
+                        // Bỏ qua dòng trống
+                        if(!hoTen && !maNV) continue;
                         maNV = maNV.toString().trim().toUpperCase();
 
                         // Xử lý chuẩn hóa ngày tháng (Nếu Excel xuất ra số Serial của ngày)
                         if (typeof ngayKham === 'number') {
                             let dateObj = new Date(Math.round((ngayKham - 25569)*86400*1000));
                             ngayKham = dateObj.toISOString().split('T')[0];
-                        } else if (ngayKham && ngayKham.includes('/')) {
+                        } else if (ngayKham && String(ngayKham).includes('/')) {
                             // Chuyển DD/MM/YYYY sang YYYY-MM-DD
-                            let parts = ngayKham.split('/');
+                            let parts = String(ngayKham).split('/');
                             if(parts.length === 3) ngayKham = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+                        } else {
+                            ngayKham = new Date().toISOString().split('T')[0]; // Mặc định hôm nay
                         }
 
                         // Xử lý chuẩn hóa Loại Sức khỏe
-                        phanLoai = phanLoai.toString().toUpperCase().trim();
+                        phanLoai = String(phanLoai).toUpperCase().trim();
                         let finalType = "Loại I";
                         if(phanLoai.includes("V") || phanLoai === "5") finalType = "Loại V";
                         else if(phanLoai.includes("IV") || phanLoai === "4") finalType = "Loại IV";
@@ -578,13 +611,13 @@
                         const docRef = doc(collection(db, "suc_khoe_noi_bo"));
                         currentBatch.set(docRef, {
                             ma_nv: maNV,
-                            ho_ten: hoTen.toString().trim(),
+                            ho_ten: String(hoTen).trim(),
                             phan_loai: finalType,
                             ngay_kham: ngayKham,
-                            chieu_cao: height.toString().trim(),
-                            can_nang: weight.toString().trim(),
-                            huyet_ap: blood.toString().trim(),
-                            ghi_chu: ghiChu.toString().trim(),
+                            chieu_cao: String(height).trim(),
+                            can_nang: String(weight).trim(),
+                            huyet_ap: String(blood).trim(),
+                            ghi_chu: String(ghiChu).trim(),
                             thoi_gian_nhap: new Date()
                         });
 
