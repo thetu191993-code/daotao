@@ -396,7 +396,7 @@
             const dateFilter = document.getElementById('filter-date').value;
 
             let filtered = window.allHealthData.filter(item => {
-                let matchType = typeFilter === 'all' || item.phan_loai.includes(typeFilter);
+                let matchType = typeFilter === 'all' || item.phan_loai === typeFilter;
                 let matchDate = dateFilter === 'all' || item.ngay_kham === dateFilter;
                 let matchKw = !kw || 
                               item.ho_ten.toLowerCase().includes(kw) || 
@@ -429,10 +429,10 @@
                 // Format Badge Phân Loại SK
                 let badgeClass = "bg-slate-100 text-slate-600";
                 let icon = "ph-activity";
-                if(d.phan_loai.includes("I") && !d.phan_loai.includes("II") && !d.phan_loai.includes("IV")) { badgeClass = "bg-emerald-100 text-emerald-700"; icon = "ph-heart"; }
-                else if(d.phan_loai.includes("II") && !d.phan_loai.includes("III")) { badgeClass = "bg-emerald-50 border border-emerald-200 text-emerald-600"; icon = "ph-heart"; }
-                else if(d.phan_loai.includes("III")) { badgeClass = "bg-amber-100 text-amber-700"; icon = "ph-warning"; }
-                else if(d.phan_loai.includes("IV") || d.phan_loai.includes("V")) { badgeClass = "bg-rose-100 text-rose-700 animate-pulse border border-rose-300 shadow-sm"; icon = "ph-first-aid"; }
+                if(d.phan_loai === "Loại I") { badgeClass = "bg-emerald-100 text-emerald-700"; icon = "ph-heart"; }
+                else if(d.phan_loai === "Loại II") { badgeClass = "bg-emerald-50 border border-emerald-200 text-emerald-600"; icon = "ph-heart"; }
+                else if(d.phan_loai === "Loại III") { badgeClass = "bg-amber-100 text-amber-700"; icon = "ph-warning"; }
+                else if(d.phan_loai === "Loại IV" || d.phan_loai === "Loại V") { badgeClass = "bg-rose-100 text-rose-700 animate-pulse border border-rose-300 shadow-sm"; icon = "ph-first-aid"; }
 
                 const displayDate = d.ngay_kham ? d.ngay_kham.split('-').reverse().join('/') : '-';
 
@@ -465,18 +465,18 @@
             dataArray.forEach(d => {
                 let loai = d.phan_loai.toUpperCase().trim();
                 
-                // Gom nhóm cho Dashboard con số
-                if(loai.includes("I") && !loai.includes("II") && !loai.includes("IV")) t12++; // Loại I
-                else if(loai.includes("II") && !loai.includes("III")) t12++; // Loại II
-                else if(loai.includes("III")) t3++; // Loại III
-                else if(loai.includes("IV") || loai.includes("V")) t45++; // Loại IV, V
+                // Gom nhóm cho Dashboard con số (So sánh chính xác tuyệt đối)
+                if(loai === "LOẠI I" || loai === "LOẠI II") t12++;
+                else if(loai === "LOẠI III") t3++;
+                else if(loai === "LOẠI IV" || loai === "LOẠI V") t45++;
+                else t12++; // Fallback mặc định
 
                 // Gom nhóm chính xác cho Biểu đồ
-                if(loai.includes("III")) countObj["Loại III"]++;
-                else if(loai.includes("IV")) countObj["Loại IV"]++;
-                else if(loai.includes("VII") || loai.includes("V")) countObj["Loại V"]++;
-                else if(loai.includes("II")) countObj["Loại II"]++;
-                else if(loai.includes("I")) countObj["Loại I"]++;
+                if(loai === "LOẠI III") countObj["Loại III"]++;
+                else if(loai === "LOẠI IV") countObj["Loại IV"]++;
+                else if(loai === "LOẠI V") countObj["Loại V"]++;
+                else if(loai === "LOẠI II") countObj["Loại II"]++;
+                else countObj["Loại I"]++;
             });
 
             document.getElementById('stat-total').innerText = dataArray.length;
@@ -602,11 +602,16 @@
 
                         // Xử lý chuẩn hóa Loại Sức khỏe
                         phanLoai = String(phanLoai).toUpperCase().trim();
+                        // Bóc tách hẳn chữ "LOẠI" ra để tránh việc chữ I trong chữ LOẠI gây nhiễu
+                        let cleanPhanLoai = phanLoai.replace(/LOẠI/g, "").replace(/LỌAI/g, "").trim();
                         let finalType = "Loại I";
-                        if(phanLoai.includes("V") || phanLoai === "5") finalType = "Loại V";
-                        else if(phanLoai.includes("IV") || phanLoai === "4") finalType = "Loại IV";
-                        else if(phanLoai.includes("III") || phanLoai === "3") finalType = "Loại III";
-                        else if(phanLoai.includes("II") || phanLoai === "2") finalType = "Loại II";
+                        
+                        // Quét theo thứ tự từ lớn đến nhỏ để tránh bị trùng lặp (VD: IV bị bắt nhầm thành V)
+                        if(cleanPhanLoai.includes("IV") || cleanPhanLoai.includes("4")) finalType = "Loại IV";
+                        else if(cleanPhanLoai.includes("III") || cleanPhanLoai.includes("3")) finalType = "Loại III";
+                        else if(cleanPhanLoai.includes("II") || cleanPhanLoai.includes("2")) finalType = "Loại II";
+                        else if(cleanPhanLoai.includes("V") || cleanPhanLoai.includes("5")) finalType = "Loại V";
+                        else if(cleanPhanLoai.includes("I") || cleanPhanLoai.includes("1")) finalType = "Loại I";
 
                         const docRef = doc(collection(db, "suc_khoe_noi_bo"));
                         currentBatch.set(docRef, {
