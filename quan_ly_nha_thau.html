@@ -504,6 +504,44 @@
             }
         }
 
+        /* ================= TÍNH NĂNG VÉ VỚT DÀNH CHO HỒ SƠ CŨ (LEGACY DATA) ================= */
+        window.verifyLegacyContractor = async function(companyName) {
+            if(!confirm(`Xác nhận Hợp lệ (Pass) cho toàn bộ hồ sơ cũ của nhà thầu: ${companyName}?\nHệ thống sẽ tự động chốt hồ sơ mà không cần qua các bước trình duyệt.`)) return;
+
+            try {
+                // Tạo một Task ảo đã hoàn thành 100% để "Hợp thức hóa" cho nhà thầu cũ
+                const taskData = {
+                    title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU (Dữ liệu cũ): ${companyName}`,
+                    category: 'An toàn',
+                    task_type: 'contractor_approval',
+                    approval_step: 2, 
+                    due_date: new Date().toISOString().split('T')[0],
+                    assigner_id: "admin_legacy",
+                    assigner_name: companyName,
+                    assignee_id: "030", // Mã Sếp Vượng
+                    assignee_name: "Bùi Văn Vượng (GĐ EHS)",
+                    progress: 100,
+                    status: 'Done',
+                    is_review_requested: false,
+                    evaluation: 'Được EHS xác nhận hợp lệ từ hệ thống dữ liệu cũ (Legacy Data Verify).', 
+                    plan_steps: [{text: `Kiểm tra danh sách Nhân sự & Máy móc công ty ${companyName}`, progress: 100}],
+                    created_at: new Date(),
+                    thoi_gian_cap_nhat: new Date()
+                };
+
+                await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
+                window.showToast("Đã chốt hợp lệ hồ sơ cũ thành công!");
+                
+                // Tải lại dữ liệu để biểu tượng chuyển sang Xanh Lá
+                if(currentTab === 'nhan-su') window.loadWorkerData();
+                else if(currentTab === 'may-moc') window.loadMachineData();
+                
+            } catch(e) {
+                window.showToast("Lỗi chốt hồ sơ: " + e.message, "error");
+            }
+        }
+        /* =================================================================================== */
+
         window.loadWorkerData = async function() {
             document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-nhan-su').classList.add('hidden');
             
@@ -547,12 +585,21 @@
                 const atldStatus = window.formatDateAndStatus(data.han_atld);
                 let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700";
                 
-                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT
+                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT (CẬP NHẬT GIAO DIỆN NÚT DUYỆT NHANH)
                 let compStatus = window.globalApprovalMap[data.cong_ty] ? window.globalApprovalMap[data.cong_ty].status : 'None';
                 let isApproved = (compStatus === 'Done');
-                let compBadge = isApproved ? 
-                    `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>` : 
-                    `<div class="mt-1 text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</div>`;
+                let compBadge = '';
+                if (isApproved) {
+                    compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>`;
+                } else {
+                    // Nếu chưa duyệt, hiện thêm nút Duyệt nhanh màu xanh dương kế bên
+                    compBadge = `
+                        <div class="mt-1 flex items-center gap-1">
+                            <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
+                            <button onclick="window.verifyLegacyContractor('${data.cong_ty}')" class="text-[9px] bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-1.5 py-0.5 rounded font-bold transition whitespace-nowrap border border-blue-200" title="Chốt hồ sơ cũ bỏ qua trình duyệt"><i class="ph-bold ph-check"></i> Duyệt nhanh</button>
+                        </div>
+                    `;
+                }
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
@@ -619,11 +666,21 @@
                 if(d.file_chung_chi) fileLinks += `<a href="${d.file_chung_chi}" target="_blank" class="text-amber-600 hover:underline text-[11px] block font-bold"><i class="ph-bold ph-link"></i> Xem C.Chỉ Tài xế</a>`;
                 if(!fileLinks) fileLinks = '<span class="text-slate-400 text-xs">Chưa có ảnh</span>';
 
+                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT (CẬP NHẬT GIAO DIỆN NÚT DUYỆT NHANH)
                 let compStatus = window.globalApprovalMap[d.cong_ty] ? window.globalApprovalMap[d.cong_ty].status : 'None';
                 let isApproved = (compStatus === 'Done');
-                let compBadge = isApproved ? 
-                    `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>` : 
-                    `<div class="mt-1 text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</div>`;
+                let compBadge = '';
+                if (isApproved) {
+                    compBadge = `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>`;
+                } else {
+                    // Nếu chưa duyệt, hiện thêm nút Duyệt nhanh
+                    compBadge = `
+                        <div class="mt-1 flex items-center gap-1">
+                            <span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</span>
+                            <button onclick="window.verifyLegacyContractor('${d.cong_ty}')" class="text-[9px] bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white px-1.5 py-0.5 rounded font-bold transition whitespace-nowrap border border-blue-200" title="Chốt hồ sơ cũ bỏ qua trình duyệt"><i class="ph-bold ph-check"></i> Duyệt nhanh</button>
+                        </div>
+                    `;
+                }
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
