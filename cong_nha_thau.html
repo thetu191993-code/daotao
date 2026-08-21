@@ -452,68 +452,63 @@
                 document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo'; document.getElementById('worker-modal').classList.remove('hidden');
             } else if (window.currentTab === 'vat-tu') {
                 document.getElementById('modal-material-title').innerText = 'Khai báo Hàng hóa / Vật tư'; document.getElementById('mat-doc-id').value = '';
-                ['name', 'qty', 'desc'].forEach(id => document.getElementById(`mat-${id}`).value = ''); document.getElementById('material-modal').classList.remove('hidden');
-            } else if (window.currentTab === 'may-moc') {
-                document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-warning-circle"></i> Máy Móc Yêu Cầu Nghiêm Ngặt'; document.getElementById('se-doc-id').value = '';
-                ['name', 'plate', 'operator', 'expire', 'file'].forEach(id => document.getElementById(`se-${id}`).value = ''); document.getElementById('strict-equip-modal').classList.remove('hidden');
-            }
-        }
+        function formatSimpleDate(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
 
-        window.closeModal = function(modalId) {
-            if(modalId) document.getElementById(modalId).classList.add('hidden');
-            else { document.getElementById('worker-modal').classList.add('hidden'); document.getElementById('material-modal').classList.add('hidden'); document.getElementById('strict-equip-modal').classList.add('hidden'); }
-        }
+        // BỔ SUNG BIẾN TOÀN CỤC KIỂM TRA TRẠNG THÁI KHÓA
+        window.isLockedByApproval = false;
 
-        window.editWorker = function(id, hoTen, ngaySinh, cccd, nhom, hanATLD, hanBH, hanSK) {
-            document.getElementById('modal-worker-title').innerText = 'Cập Nhật Nhân Sự'; document.getElementById('wk-doc-id').value = id; 
-            document.getElementById('wk-ho-ten').value = hoTen; document.getElementById('wk-ngay-sinh').value = ngaySinh; 
-            document.getElementById('wk-cccd').value = cccd; document.getElementById('wk-nhom-atld').value = nhom; 
-            document.getElementById('wk-han-atld').value = hanATLD; document.getElementById('wk-han-bao-hiem').value = hanBH; 
-            document.getElementById('wk-han-suc-khoe').value = hanSK; document.getElementById('worker-modal').classList.remove('hidden');
-        }
-        window.editMaterial = function(id, ten, sl, md) {
-            document.getElementById('modal-material-title').innerText = 'Cập Nhật Hàng Hóa'; document.getElementById('mat-doc-id').value = id; 
-            document.getElementById('mat-name').value = ten; document.getElementById('mat-qty').value = sl; 
-            document.getElementById('mat-desc').value = md; document.getElementById('material-modal').classList.remove('hidden');
-        }
-        window.editMachine = function(id, ten, bienso, taixe, hankd) {
-            document.getElementById('modal-strict-title').innerHTML = '<i class="ph-fill ph-pencil-simple"></i> Cập Nhật Máy Móc'; document.getElementById('se-doc-id').value = id; 
-            document.getElementById('se-name').value = ten; document.getElementById('se-plate').value = bienso; 
-            document.getElementById('se-operator').value = taixe; document.getElementById('se-expire').value = hankd; 
-            document.getElementById('se-file').value = ''; document.getElementById('strict-equip-modal').classList.remove('hidden');
-        }
-
-        /* ================= HÀM XÓA DỮ LIỆU CHUẨN MỰC ================= */
-        let deleteCollection = "", deleteId = "";
-        window.deleteItem = function(collectionName, docId) {
-            deleteCollection = collectionName; deleteId = docId;
-            document.getElementById('confirm-modal').classList.remove('hidden');
-        }
-        window.closeConfirmModal = function() { document.getElementById('confirm-modal').classList.add('hidden'); }
-        
-        window.executeDelete = async function() {
-            if(!deleteCollection || !deleteId) return;
-            const btn = document.getElementById('btn-confirm-yes');
-            const ogText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>';
-            try {
-                await window.deleteDoc(window.doc(window.db, deleteCollection, deleteId));
-                window.showToast("Xóa thành công!"); 
-                window.closeConfirmModal(); 
-                window.loadData();
-            } catch(e) { 
-                window.showToast("Lỗi xóa: " + e.message, "error"); 
-            } finally { 
-                btn.innerHTML = ogText; 
-            }
-        };
-
-        /* ================= TẢI DỮ LIỆU TỪ MÁY CHỦ ================= */
-        window.loadData = async function() {
+        async function loadData() {
             document.getElementById('loading-msg').classList.remove('hidden');
             
             try {
-                // Tải Nhân Sự
+                // 1. KIỂM TRA TRẠNG THÁI PHÊ DUYỆT TỪ FIREBASE TASKS
+                const qTask = window.query(window.collection(window.db, "ehs_tasks"), 
+                    window.where("assigner_name", "==", window.myCompany),
+                    window.where("task_type", "==", "contractor_approval")
+                );
+                const taskSnap = await window.getDocs(qTask);
+                
+                let latestTask = null;
+                taskSnap.forEach(doc => {
+                    let t = { id: doc.id, ...doc.data() };
+                    if (!latestTask || t.created_at > latestTask.created_at) latestTask = t;
+                });
+
+                const badge = document.getElementById('approval-status-badge');
+                const btnSubmit = document.getElementById('btn-submit-approval');
+                window.isLockedByApproval = false;
+
+                if (latestTask) {
+                    if (latestTask.status === 'Review' || latestTask.status === 'In Progress') {
+                        badge.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang chờ Ban Giám đốc EHS phê duyệt...';
+                        badge.className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-200";
+                        btnSubmit.parentElement.classList.add('hidden'); // Ẩn khu vực nộp
+                        window.isLockedByApproval = true; // Khóa Thêm/Sửa/Xóa
+                    } 
+                    else if (latestTask.status === 'Done') {
+                        badge.innerHTML = '<i class="ph-bold ph-check-circle"></i> Hồ sơ đã được PHÊ DUYỆT hợp lệ';
+                        badge.className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200";
+                        btnSubmit.parentElement.classList.add('hidden');
+                        window.isLockedByApproval = true; // Khóa Thêm/Sửa/Xóa
+                    }
+                    else if (latestTask.status === 'Rejected') {
+                        badge.innerHTML = `<i class="ph-bold ph-x-circle"></i> Bị từ chối: ${latestTask.evaluation || 'Vui lòng bổ sung hồ sơ'}`;
+                        badge.className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-700 border border-red-200";
+                        btnSubmit.parentElement.classList.remove('hidden');
+                        btnSubmit.innerHTML = '<i class="ph-bold ph-arrow-counter-clockwise text-xl"></i> TRÌNH LẠI HỒ SƠ';
+                    }
+                } else {
+                    badge.innerHTML = '<i class="ph-bold ph-info"></i> Hồ sơ chưa được trình duyệt';
+                    badge.className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200";
+                    btnSubmit.parentElement.classList.remove('hidden');
+                }
+
+                // Ẩn/Hiện nút Thêm mới tùy trạng thái khóa
+                const addBtn = document.getElementById('main-add-btn');
+                if (window.isLockedByApproval) addBtn.classList.add('hidden');
+                else addBtn.classList.remove('hidden');
+
+                // TẢI NHÂN SỰ
                 const qWorker = window.query(window.collection(window.db, "nha_thau_nhan_su"), window.where("cong_ty", "==", window.myCompany));
                 const snapWorker = await window.getDocs(qWorker);
                 let htmlWorker = ''; let sttW = 1;
@@ -521,6 +516,12 @@
                     const d = doc.data();
                     const atldStatus = window.formatDateAndStatus(d.han_atld);
                     let atldClass = d.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600 border-red-100" : "bg-blue-50 text-blue-700 border-blue-100";
+                    
+                    let actionHtml = window.isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
+                        <button onclick="window.editWorker('${doc.id}', '${d.ho_ten}', '${d.ngay_sinh||''}', '${d.cccd}', '${d.nhom_atld}', '${d.han_atld||''}', '${d.han_bao_hiem||''}', '${d.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                        <button onclick="window.deleteItem('nha_thau_nhan_su', '${doc.id}')" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                    `;
+
                     htmlWorker += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="p-4 text-center font-medium text-slate-500">${sttW++}</td>
@@ -530,43 +531,45 @@
                             <td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${d.nhom_atld}</span></div>${atldStatus.html}</td>
                             <td class="p-4 text-center">${window.formatDateAndStatus(d.han_bao_hiem).html}</td>
                             <td class="p-4 text-center">${window.formatDateAndStatus(d.han_suc_khoe).html}</td>
-                            <td class="p-4 text-center whitespace-nowrap">
-                                <button onclick="window.editWorker('${doc.id}', '${d.ho_ten}', '${d.ngay_sinh||''}', '${d.cccd}', '${d.nhom_atld}', '${d.han_atld||''}', '${d.han_bao_hiem||''}', '${d.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                                <button onclick="window.deleteItem('nha_thau_nhan_su', '${doc.id}')" class="text-red-500 hover:text-red-700 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
-                            </td>
+                            <td class="p-4 text-center whitespace-nowrap">${actionHtml}</td>
                         </tr>
                     `;
                 });
                 document.getElementById('worker-results').innerHTML = htmlWorker || `<tr><td colspan="8" class="p-8 text-center text-slate-400">Chưa khai báo nhân sự.</td></tr>`;
 
-                // Tải Vật tư
+                // TẢI VẬT TƯ
                 const qMat = window.query(window.collection(window.db, "nha_thau_vat_tu"), window.where("cong_ty", "==", window.myCompany));
                 const snapMat = await window.getDocs(qMat);
                 let htmlMat = ''; let sttM = 1;
                 snapMat.forEach(doc => {
                     const d = doc.data();
+                    let actionHtml = window.isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
+                        <button onclick="window.editMaterial('${doc.id}', '${d.ten_vat_tu}', '${d.so_luong}', '${d.muc_dich||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                        <button onclick="window.deleteItem('nha_thau_vat_tu', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                    `;
                     htmlMat += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="p-4 text-center font-medium text-slate-500">${sttM++}</td>
                             <td class="p-4 font-bold text-slate-800">${d.ten_vat_tu}</td>
                             <td class="p-4 text-center font-bold text-blue-600">${d.so_luong}</td>
                             <td class="p-4 text-slate-600">${d.muc_dich || ''}</td>
-                            <td class="p-4 text-center whitespace-nowrap">
-                                <button onclick="window.editMaterial('${doc.id}', '${d.ten_vat_tu}', '${d.so_luong}', '${d.muc_dich||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                                <button onclick="window.deleteItem('nha_thau_vat_tu', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
-                            </td>
+                            <td class="p-4 text-center whitespace-nowrap">${actionHtml}</td>
                         </tr>
                     `;
                 });
                 document.getElementById('material-results').innerHTML = htmlMat || `<tr><td colspan="5" class="p-8 text-center text-slate-400">Chưa khai báo Hàng hóa/Vật tư.</td></tr>`;
 
-                // Tải Máy móc nghiêm ngặt
+                // TẢI MÁY MÓC
                 const qMac = window.query(window.collection(window.db, "nha_thau_may_moc"), window.where("cong_ty", "==", window.myCompany));
                 const snapMac = await window.getDocs(qMac);
                 let htmlMac = ''; let sttE = 1;
                 snapMac.forEach(doc => {
                     const d = doc.data();
                     let linkHtml = d.file_kiem_dinh ? `<a href="${d.file_kiem_dinh}" target="_blank" class="text-[11px] font-bold text-blue-600 border border-blue-200 bg-blue-50 px-2 py-1 rounded">Xem Giấy KĐ</a>` : '<span class="text-slate-400 text-xs">Không có</span>';
+                    let actionHtml = window.isLockedByApproval ? `<span class="text-xs text-slate-400"><i class="ph-bold ph-lock-key"></i> Đã khóa</span>` : `
+                        <button onclick="window.editMachine('${doc.id}', '${d.ten_may}', '${d.bien_so||''}', '${d.nguoi_van_hanh||''}', '${d.han_kiem_dinh||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                        <button onclick="window.deleteItem('nha_thau_may_moc', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                    `;
                     htmlMac += `
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="p-4 text-center font-medium text-slate-500">${sttE++}</td>
@@ -575,10 +578,7 @@
                             <td class="p-4 text-slate-600">${d.nguoi_van_hanh || ''}</td>
                             <td class="p-4 text-center">${window.formatDateAndStatus(d.han_kiem_dinh).html}</td>
                             <td class="p-4 text-center">${linkHtml}</td>
-                            <td class="p-4 text-center whitespace-nowrap">
-                                <button onclick="window.editMachine('${doc.id}', '${d.ten_may}', '${d.bien_so||''}', '${d.nguoi_van_hanh||''}', '${d.han_kiem_dinh||''}')" class="text-blue-600 p-1 mx-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                                <button onclick="window.deleteItem('nha_thau_may_moc', '${doc.id}')" class="text-red-500 p-1 mx-1"><i class="ph-bold ph-trash text-lg"></i></button>
-                            </td>
+                            <td class="p-4 text-center whitespace-nowrap">${actionHtml}</td>
                         </tr>
                     `;
                 });
@@ -665,42 +665,59 @@
             finally { btn.disabled = false; btn.innerHTML = ogText; }
         }
 
-        /* ================= HÀM TRÌNH PHÊ DUYỆT & THÔNG BÁO PUSH ================= */
+        /* ================= HÀM TRÌNH PHÊ DUYỆT (ĐÃ NÂNG CẤP) ================= */
         window.submitApproval = async function() {
-            if(!confirm("Bạn có chắc chắn muốn trình Ban Giám Đốc EHS xét duyệt không? Hồ sơ sẽ bị khóa để chờ duyệt.")) return;
+            if(!confirm("Bạn có chắc chắn muốn trình Ban Giám Đốc EHS xét duyệt không? Hồ sơ sẽ bị KHÓA LẠI không thể sửa chữa cho đến khi có kết quả.")) return;
             
             const btn = document.getElementById('btn-submit-approval');
             const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> ĐANG GỬI...';
 
             try {
+                // TÌM XEM ĐÃ CÓ TASK TRƯỚC ĐÓ CHƯA (NẾU BỊ TỪ CHỐI THÌ UPDATE LẠI)
+                const qTask = window.query(window.collection(window.db, "ehs_tasks"), 
+                    window.where("assigner_name", "==", window.myCompany),
+                    window.where("task_type", "==", "contractor_approval")
+                );
+                const taskSnap = await window.getDocs(qTask);
+                let existingTaskId = null;
+                taskSnap.forEach(doc => { existingTaskId = doc.id; });
+
                 const taskData = {
                     title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU: ${window.myCompany}`,
                     category: 'An toàn',
+                    task_type: 'contractor_approval',
+                    approval_step: 1, // BƯỚC 1: Anh Tư duyệt
                     due_date: new Date().toISOString().split('T')[0],
                     assigner_id: window.myPhone,
                     assigner_name: window.myCompany,
-                    assignee_id: '1951', // ID cứng của Giám đốc
-                    assignee_name: 'Ban Giám Đốc EHS',
+                    assignee_id: '1951', // ID CỦA ANH TƯ
+                    assignee_name: 'Đặng Thế Tư (EHS)',
                     progress: 0,
-                    status: 'Review',
+                    status: 'Review', // Đẩy vào trạng thái chờ duyệt
                     is_review_requested: true,
                     reviewer_id: '1951',
                     reviewer_name: 'Đặng Thế Tư',
+                    evaluation: '', // Xóa trắng nhận xét cũ (nếu có)
                     plan_steps: [
                         {text: `Kiểm tra danh sách Nhân sự công ty ${window.myCompany}`, progress: 0},
                         {text: "Kiểm tra danh mục Hàng hóa, Hóa chất mang vào", progress: 0},
                         {text: "Kiểm tra Giấy kiểm định Máy móc nâng hạ", progress: 0}
                     ],
-                    created_at: new Date()
+                    thoi_gian_cap_nhat: new Date()
                 };
-                await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
+
+                if (existingTaskId) {
+                    await window.updateDoc(window.doc(window.db, "ehs_tasks", existingTaskId), taskData);
+                } else {
+                    taskData.created_at = new Date();
+                    await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
+                }
                 
-                document.getElementById('approval-status-badge').innerHTML = '<i class="ph-bold ph-check-circle"></i> Đã trình duyệt, chờ kết quả...';
-                document.getElementById('approval-status-badge').className = "mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-200";
-                
-                // GỌI API BẮN THÔNG BÁO TỚI SẾP TƯ / VƯỢNG
+                window.showToast("Đã gửi hồ sơ cho EHS thành công!");
+                window.loadData(); // Tải lại trang để khóa nút
+
+                // GỌI API BẮN THÔNG BÁO TỚI ANH TƯ
                 const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
-                
                 const qAdmin = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", "1951"));
                 const snapAdmin = await window.getDocs(qAdmin);
                 if (!snapAdmin.empty) {
@@ -716,8 +733,6 @@
                         }).catch(e => console.log("Lỗi Push ngầm:", e));
                     }
                 }
-
-                window.showToast("Đã gửi thông báo cho Ban Giám đốc EHS thành công!");
             } catch(e) {
                 window.showToast("Lỗi gửi duyệt: " + e.message, "error");
             } finally {
