@@ -1013,10 +1013,6 @@
             const rList = document.getElementById('rev-ptw-rules');
             rList.innerHTML = (p.cam_ket || []).map(r => `<li><i class="ph-bold ph-caret-right text-rose-400 mr-1"></i> ${r}</li>`).join('');
 
-            // Xử lý Ghi chú EHS
-            document.getElementById('rev-ptw-note').value = p.ghi_chu_ehs || '';
-            document.getElementById('rev-ptw-note').readOnly = (p.trang_thai === 'Đã đóng' || p.trang_thai === 'Bị đình chỉ' || p.trang_thai === 'Từ chối');
-
             // Xử lý Ảnh 5S (Nếu có)
             const imgSection = document.getElementById('rev-ptw-5s-section');
             if (p.anh_5s) {
@@ -1028,14 +1024,14 @@
                 imgSection.classList.add('hidden');
             }
 
-            // GIAO DIỆN NÚT BẤM ĐỘNG THEO TRẠNG THÁI
+            // GIAO DIỆN NÚT BẤM ĐỘNG THEO TRẠNG THÁI (Đã gỡ lỗi nhét thẳng text vào textarea)
             const actionSec = document.getElementById('ptw-action-section');
             let actionHtml = '';
 
             if (p.trang_thai === 'Chờ duyệt') {
                 actionHtml = `
                     <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú của EHS (Bắt buộc nếu Từ chối)</label>
-                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung..."></textarea>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung...">${p.ghi_chu_ehs || ''}</textarea>
                     <div class="flex flex-col sm:flex-row gap-3 mt-5">
                         <button onclick="window.submitPTWReview('Từ chối')" class="w-full sm:w-1/3 bg-red-100 text-red-700 font-bold py-3.5 rounded-xl hover:bg-red-200 transition border border-red-200 flex items-center justify-center gap-2">
                             <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI
@@ -1051,7 +1047,7 @@
                         Nhà thầu đang trong quá trình thi công. Nút ĐÌNH CHỈ KHẨN CẤP dùng để thu hồi ngay lập tức Giấy phép nếu phát hiện vi phạm nghiêm trọng tại hiện trường. Hãy ghi rõ lý do đình chỉ.
                     </div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-2">Lý do đình chỉ <span class="text-red-500">*</span></label>
-                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-red-300 rounded-xl px-4 py-3 outline-none focus:border-red-500 font-medium text-sm custom-scrollbar resize-none bg-red-50" placeholder="Lý do thu hồi giấy phép..."></textarea>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-red-300 rounded-xl px-4 py-3 outline-none focus:border-red-500 font-medium text-sm custom-scrollbar resize-none bg-red-50" placeholder="Lý do thu hồi giấy phép...">${p.ghi_chu_ehs || ''}</textarea>
                     <div class="mt-4">
                         <button onclick="window.submitPTWSuspension()" class="w-full bg-red-600 text-white font-bold py-3.5 rounded-xl hover:bg-red-700 shadow-md transition flex items-center justify-center gap-2">
                             <i class="ph-bold ph-warning-octagon text-xl"></i> ĐÌNH CHỈ KHẨN CẤP
@@ -1064,7 +1060,7 @@
                         Nhà thầu đã gửi báo cáo hoàn thành. Vui lòng xem ảnh chụp 5S ở trên. Nếu chưa đạt, hãy ghi rõ yêu cầu ở phần ghi chú và bắt nhà thầu dọn lại.
                     </div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú Nghiệm thu</label>
-                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50" placeholder="Ghi chú đánh giá 5S (nếu có)..."></textarea>
+                    <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50" placeholder="Ghi chú đánh giá 5S (nếu có)...">${p.ghi_chu_ehs || ''}</textarea>
                     <div class="flex flex-col sm:flex-row gap-3 mt-4">
                         <button onclick="window.submitPTWClosure('Từ chối nghiệm thu')" class="w-full sm:w-1/3 bg-orange-100 text-orange-700 font-bold py-3.5 rounded-xl hover:bg-orange-200 transition border border-orange-200 flex items-center justify-center gap-2">
                             <i class="ph-bold ph-broom text-xl"></i> YÊU CẦU DỌN LẠI
