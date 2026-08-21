@@ -75,7 +75,11 @@
             <a href="quan_ly_nhan_su.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
                 <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_personnel">Hồ sơ Nhân sự Nội bộ</span>
             </a>
-
+            <!-- THÊM MENU Y TẾ VÀO SIDEBAR CHỖ NÀY -->
+            <a href="quan_ly_suc_khoe.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
+                <span class="w-1 h-1 rounded-full bg-rose-400 dark:bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span> <span class="font-bold text-rose-600 dark:text-rose-400">Y Tế & Sức Khỏe</span>
+            </a>
+            
             <!-- Nhóm 2 -->
             <div class="pt-4 pb-1 px-3">
                 <p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2" data-i18n="group_management">
@@ -282,9 +286,39 @@
                         <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-1" data-i18n="card6_title">Toolbox Meeting</h3>
                         <p class="text-xs text-slate-500 dark:text-dark-muted font-medium" data-i18n="card6_desc">Tổ chức họp, lấy ý kiến & điểm danh</p>
                     </a>
-
+                    <!-- THÊM THẺ Y TẾ VÀO MÀN HÌNH CHÍNH CHỖ NÀY -->
+                    <a href="quan_ly_suc_khoe.html" class="group bg-white dark:bg-dark-card rounded-2xl p-6 border border-rose-100 dark:border-rose-900/30 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center flex flex-col items-center relative overflow-hidden">
+                        <div class="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-4 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                            <i class="ph-fill ph-stethoscope text-3xl"></i>
+                        </div>
+                        <h3 class="font-bold text-slate-800 dark:text-white text-lg mb-1">Y Tế & Sức Khỏe</h3>
+                        <p class="text-xs text-slate-500 dark:text-dark-muted font-medium">Hồ sơ khám sức khỏe & Bệnh lý</p>
+                    </a>
+                    
                 </div>
-            </div>
+                <!-- GIAI ĐOẠN 3: WIDGET HIỂN THỊ GIẤY PHÉP THI CÔNG TRỰC TIẾP -->
+                <div class="mb-12">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center rounded-xl shadow-sm border border-amber-200 dark:border-amber-800">
+                            <i class="ph-fill ph-warning-circle text-2xl animate-pulse"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-black text-xl text-slate-800 dark:text-white leading-tight uppercase tracking-tight">HOẠT ĐỘNG THI CÔNG HIỆN TẠI (PTW LIVE)</h3>
+                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Danh sách các Giấy phép đang có hiệu lực trong ngày hôm nay tại nhà máy.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="live-ptw-loader" class="bg-white dark:bg-slate-800 p-8 rounded-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center justify-center">
+                        <i class="ph-bold ph-spinner animate-spin text-4xl text-amber-500 mb-2"></i>
+                        <p class="font-bold text-slate-500 dark:text-slate-400">Đang đồng bộ máy chủ...</p>
+                    </div>
+
+                    <div id="live-ptw-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 hidden">
+                        <!-- Javascript nạp dữ liệu Giấy phép vào đây -->
+                    </div>
+                </div>
+
+              </div>
         </div>
     </main>
 
@@ -545,7 +579,92 @@
         window.updatePassword = updatePassword; window.signInWithEmailAndPassword = signInWithEmailAndPassword;
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
+        
+        // GIAI ĐOẠN 3: TẢI DANH SÁCH PTW LIVE LÊN BẢNG ĐIỀU KHIỂN
+        window.fetchLivePTW = async function() {
+            const loader = document.getElementById('live-ptw-loader');
+            const grid = document.getElementById('live-ptw-grid');
+            
+            try {
+                // Lấy tất cả giấy phép ĐÃ DUYỆT
+                const q = query(collection(db, "giay_phep_lam_viec"), where("trang_thai", "==", "Đã duyệt"));
+                const snap = await getDocs(q);
+                
+                const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+                let validPermits = [];
 
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    // So sánh ngày: Nếu Giấy phép có Ngày bắt đầu <= Hôm nay <= Ngày kết thúc
+                    if(p.thoi_gian_bat_dau <= todayStr && p.thoi_gian_ket_thuc >= todayStr) {
+                        validPermits.push({id: doc.id, ...p});
+                    }
+                });
+
+                if(validPermits.length === 0) {
+                    loader.innerHTML = `<i class="ph-fill ph-check-circle text-4xl text-emerald-500 mb-2"></i><p class="font-bold text-slate-500 dark:text-slate-400">Tuyệt vời! Hiện tại không có hoạt động thi công đặc biệt nào.</p>`;
+                    return;
+                }
+
+                validPermits.sort((a,b) => a.gio_bat_dau.localeCompare(b.gio_bat_dau));
+                
+                let html = '';
+                validPermits.forEach(p => {
+                    // Cảnh báo màu sắc theo mức độ rủi ro (Giống y hệt bên Bảo vệ)
+                    let colorClass = "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800";
+                    let textClass = "text-slate-800 dark:text-white";
+                    let icon = "ph-file-text";
+
+                    if(p.loai_giay_phep.includes("Hàn") || p.loai_giay_phep.includes("Không gian")) {
+                        colorClass = "border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-900/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]";
+                        textClass = "text-red-700 dark:text-red-400";
+                        icon = "ph-fire";
+                    } else if (p.loai_giay_phep.includes("Trên cao")) {
+                        colorClass = "border-amber-300 dark:border-amber-500/50 bg-amber-50 dark:bg-amber-900/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]";
+                        textClass = "text-amber-700 dark:text-amber-400";
+                        icon = "ph-steps";
+                    }
+
+                    const workersCount = (p.danh_sach_nhan_su || []).length;
+
+                    html += `
+                        <div class="p-5 rounded-2xl border ${colorClass} transition-all shadow-sm">
+                            <div class="flex justify-between items-start mb-3 border-b border-slate-200 dark:border-slate-700/50 pb-3">
+                                <div>
+                                    <h3 class="font-black text-lg ${textClass} flex items-center gap-1.5"><i class="ph-fill ${icon}"></i> ${p.loai_giay_phep.toUpperCase()}</h3>
+                                    <p class="font-bold text-slate-500 dark:text-slate-300 text-sm">${p.cong_ty}</p>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-emerald-200 dark:border-emerald-500/30">Hợp Lệ</span>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-3 text-xs mb-3">
+                                <div class="bg-white/50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <p class="text-slate-500 font-bold uppercase mb-0.5">Khu Vực</p>
+                                    <p class="font-bold text-slate-800 dark:text-white">${p.khu_vuc}</p>
+                                </div>
+                                <div class="bg-white/50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <p class="text-slate-500 font-bold uppercase mb-0.5">Thời Gian Hôm Nay</p>
+                                    <p class="font-bold text-sky-600 dark:text-sky-400 font-mono">${p.gio_bat_dau} - ${p.gio_ket_thuc}</p>
+                                </div>
+                            </div>
+                            
+                            <p class="text-xs text-slate-500 font-bold uppercase mt-auto"><i class="ph-fill ph-users"></i> ${workersCount} Nhân sự thi công</p>
+                        </div>
+                    `;
+                });
+                
+                grid.innerHTML = html;
+                loader.classList.add('hidden');
+                grid.classList.remove('hidden');
+
+            } catch(e) {
+                console.error("Lỗi tải Live PTW:", e);
+                loader.innerHTML = `<div class="p-4 text-red-500 font-bold">Lỗi mạng: ${e.message}</div>`;
+            }
+        };
+        
         // =========================================================================
         // KIỂM TRA MÔI TRƯỜNG THÔNG BÁO (BẢO VỆ CHỐNG SẬP TRANG WEB)
         // =========================================================================
