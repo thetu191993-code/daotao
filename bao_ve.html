@@ -51,7 +51,6 @@
     <!-- MAIN APP CONTAINER -->
     <div id="main-app" class="hidden flex-col h-full w-full">
         
-        <!-- HEADER -->
         <header class="bg-slate-900 border-b border-slate-800 p-4 shrink-0 flex flex-col md:flex-row justify-between items-center shadow-md z-10 gap-4">
             <div class="flex items-center gap-4 w-full md:w-auto">
                 <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-[0_0_15px_rgba(37,99,235,0.5)] shrink-0">
@@ -63,7 +62,6 @@
                 </div>
             </div>
 
-            <!-- TABS ĐIỀU HƯỚNG -->
             <div class="flex bg-slate-800 p-1 rounded-xl w-full lg:w-auto overflow-x-auto custom-scrollbar gap-1">
                 <button onclick="window.switchGuardTab('truc-ban')" id="btn-tab-truc-ban" class="shrink-0 px-5 py-2.5 font-bold text-sm rounded-lg transition bg-blue-600 text-white shadow flex items-center justify-center gap-2">
                     <i class="ph-bold ph-scan"></i> Cửa Kiểm Soát
@@ -84,15 +82,13 @@
 
         <main class="flex-1 overflow-hidden relative">
             
-            <!-- TAB 1: CỬA KIỂM SOÁT -->
             <div id="tab-truc-ban" class="guard-tab active h-full flex-col lg:flex-row w-full">
-                <!-- CỘT TRÁI: KIỂM SOÁT VÀO RA -->
                 <div class="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col h-full border-r border-slate-800">
                     <h2 class="font-black text-xl text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-fingerprint text-blue-500"></i> QUÉT NHÂN SỰ VÀO/RA</h2>
                     
                     <div class="relative mb-6 shrink-0">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="ph-bold ph-magnifying-glass text-slate-400 text-2xl"></i></div>
-                        <input type="text" id="search-input" oninput="window.searchWorker()" class="w-full pl-12 pr-4 py-4 bg-slate-800 border border-slate-700 rounded-2xl text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-lg font-bold transition shadow-inner" placeholder="Quét mã vạch, CCCD hoặc Tên...">
+                        <input type="text" id="search-input" onkeyup="window.searchWorker()" class="w-full pl-12 pr-4 py-4 bg-slate-800 border border-slate-700 rounded-2xl text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-lg font-bold transition shadow-inner" placeholder="Quét mã vạch, CCCD hoặc Tên...">
                     </div>
 
                     <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-900/50 rounded-2xl border border-slate-800 p-2 space-y-3" id="search-results">
@@ -103,7 +99,6 @@
                     </div>
                 </div>
 
-                <!-- CỘT PHẢI: GIẤY PHÉP (PTW) -->
                 <div class="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col h-full bg-slate-900/30 relative">
                     <div id="ptw-loader" class="absolute inset-0 bg-slate-900/80 z-10 flex flex-col items-center justify-center hidden">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-amber-500 mb-2"></i>
@@ -118,23 +113,19 @@
                     </div>
 
                     <div class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2" id="ptw-list">
-                        <!-- Javascript nạp thẻ giấy phép vào đây -->
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 2: LỊCH SỬ RA VÀO VÀ THỐNG KÊ (ĐÃ FIX DATE PICKER) -->
             <div id="tab-theo-doi" class="guard-tab h-full flex-col p-4 sm:p-6 bg-slate-900/30 overflow-hidden w-full">
                 
                 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6 shrink-0">
                     
-                    <!-- BỘ LỌC NGÀY THÁNG -->
                     <div class="col-span-2 lg:col-span-1 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm flex flex-col justify-center">
                         <p class="text-[11px] text-slate-400 font-bold uppercase mb-2">Ngày giám sát</p>
                         <input type="date" id="filter-date" onchange="window.startLiveTracking()" class="w-full text-sm font-bold outline-none border-b border-dashed border-slate-600 pb-1 text-white bg-transparent cursor-pointer [color-scheme:dark]">
                     </div>
 
-                    <!-- BỘ LỌC NHÀ MÁY -->
                     <div class="col-span-2 lg:col-span-1 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm flex flex-col justify-center">
                         <p class="text-[11px] text-slate-400 font-bold uppercase mb-2">Khu vực kiểm soát</p>
                         <select id="filter-plant" onchange="window.renderTrackingTable()" class="w-full text-sm font-bold outline-none border-b border-slate-600 pb-1 text-blue-400 bg-transparent cursor-pointer">
@@ -180,11 +171,10 @@
                 </div>
             </div>
 
-            <!-- TAB 3: DANH SÁCH CẤP PHÉP -->
             <div id="tab-danh-sach" class="guard-tab h-full flex-col p-4 sm:p-6 bg-slate-900/30 overflow-hidden w-full">
                 <div class="relative mb-6 shrink-0">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="ph-bold ph-magnifying-glass text-slate-400 text-xl"></i></div>
-                    <input type="text" id="ds-search-input" oninput="window.filterApprovedList()" class="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm font-bold transition shadow-inner" placeholder="Nhập tên nhà thầu, họ tên, CCCD để tìm kiếm nhân sự...">
+                    <input type="text" id="ds-search-input" onkeyup="window.filterApprovedList()" class="w-full pl-12 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-sm font-bold transition shadow-inner" placeholder="Nhập tên nhà thầu, họ tên, CCCD để tìm kiếm nhân sự...">
                 </div>
                 
                 <div class="w-full bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden flex-1 flex flex-col">
@@ -208,7 +198,6 @@
         </main>
     </div>
 
-    <!-- FIREBASE & LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -235,14 +224,12 @@
         let liveTrackingData = [];
         let trackingUnsubscribe = null;
 
-        // Khởi tạo ngày hôm nay cho Date Picker
         const today = new Date();
         const dd = String(today.getDate()).padStart(2, '0');
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const yyyy = today.getFullYear();
         document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
 
-        // ĐỒNG HỒ LIVE
         function updateClock() {
             const now = new Date();
             document.getElementById('live-time').innerText = now.toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
@@ -250,7 +237,6 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // HIỂN THỊ THÔNG BÁO
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -261,9 +247,6 @@
             setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         }
 
-        // ============================================================================
-        // HỆ THỐNG XÁC THỰC
-        // ============================================================================
         window.checkGuardPassword = async function() {
             const pass = document.getElementById('guard-pass').value;
             const btn = document.querySelector('#login-screen button');
@@ -272,7 +255,6 @@
 
             try {
                 await signInWithEmailAndPassword(auth, "baove@ehs.com", pass);
-                // Giao diện sẽ tự chuyển trong onAuthStateChanged
             } catch (error) {
                 document.getElementById('pass-error').classList.remove('hidden');
                 btn.innerHTML = ogText; btn.disabled = false;
@@ -283,7 +265,6 @@
             if (e.key === 'Enter') window.checkGuardPassword();
         });
 
-        // Tự động kiểm tra đăng nhập
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('login-screen').classList.add('hidden');
@@ -324,9 +305,6 @@
             return expDate >= today;
         }
 
-        // ============================================================================
-        // TÍNH NĂNG 1: TÌM KIẾM & CHẤM CÔNG VÀO RA
-        // ============================================================================
         async function loadWorkersData() {
             try {
                 const taskSnap = await getDocs(query(collection(db, "ehs_tasks"), where("task_type", "==", "contractor_approval")));
@@ -390,7 +368,6 @@
                         </div>
                         
                         <div class="flex flex-col sm:flex-row gap-2 mt-2 pt-3 border-t border-slate-700/50">
-                            <!-- CHỌN TRỰC TIẾP NHÀ MÁY Ở ĐÂY -->
                             <select id="plant-select-${w.id}" class="w-full sm:w-1/3 bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-lg px-2 py-2 outline-none focus:border-blue-500" ${!isFullyApproved ? 'disabled' : ''}>
                                 <option value="Nhà máy Can">Nhà máy Can</option>
                                 <option value="Nhà máy End">Nhà máy End</option>
@@ -426,9 +403,6 @@
             } catch(e) { window.showToast("Lỗi mạng: " + e.message, "error"); }
         }
 
-        // ============================================================================
-        // TÍNH NĂNG 2: GIẤY PHÉP PTW & BÁO ĐỘNG HẾT HẠN
-        // ============================================================================
         window.loadTodayPTW = async function() {
             const ptwLoader = document.getElementById('ptw-loader');
             if(ptwLoader) ptwLoader.classList.remove('hidden');
@@ -451,10 +425,6 @@
                     }
                 });
 
-                if(document.getElementById('ptw-count')) {
-                    document.getElementById('ptw-count').innerText = `${validPermits.length} Giấy phép`;
-                }
-
                 if(validPermits.length === 0) {
                     ptwList.innerHTML = `<div class="p-8 text-center text-slate-500 font-bold bg-slate-800/50 rounded-2xl border border-slate-800 border-dashed"><i class="ph-fill ph-shield-check text-5xl mb-2 opacity-30"></i><br>Hôm nay không có hoạt động thi công đặc biệt.</div>`;
                     if(ptwLoader) ptwLoader.classList.add('hidden');
@@ -465,7 +435,6 @@
                 let html = '';
 
                 validPermits.forEach(p => {
-                    // LOGIC KIỂM TRA HẾT HẠN THEO GIỜ
                     let isExpired = false;
                     if (p.thoi_gian_ket_thuc < todayStr || (p.thoi_gian_ket_thuc === todayStr && currentTimeStr > p.gio_ket_thuc)) {
                         isExpired = true;
@@ -476,7 +445,6 @@
                     let badgeHtml = `<span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-emerald-500/30"><i class="ph-bold ph-check"></i> Đang hiệu lực</span>`;
 
                     if (isExpired) {
-                        // Làm mờ và đổi màu cảnh báo
                         colorClass = "border-slate-700 bg-slate-900/50 opacity-60 grayscale";
                         textClass = "text-slate-400";
                         badgeHtml = `<span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-red-500/30"><i class="ph-bold ph-x"></i> HẾT HIỆU LỰC</span>`;
@@ -523,12 +491,8 @@
                 if(ptwLoader) ptwLoader.classList.add('hidden');
             }
         }
+        setInterval(window.loadTodayPTW, 60000); 
 
-        setInterval(window.loadTodayPTW, 60000); // Reload mỗi 1 phút để cập nhật trạng thái Hết Hạn
-
-        // ============================================================================
-        // TÍNH NĂNG 3: BẢNG LỊCH SỬ VÀ THEO DÕI LIVE
-        // ============================================================================
         window.startLiveTracking = function() {
             const filterDateStr = document.getElementById('filter-date').value;
             if(!filterDateStr) return;
@@ -597,7 +561,12 @@
             let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
 
             allSessions.forEach(session => {
-                if (filterPlant === "Tất cả" || session.nha_may === filterPlant) {
+                // NORMALIZING LEGACY PLANT NAMES
+                let normalizedPlant = session.nha_may;
+                if (normalizedPlant === "1" || normalizedPlant === "Nhà Máy 1") normalizedPlant = "Nhà máy Can";
+                if (normalizedPlant === "2" || normalizedPlant === "Nhà Máy 2") normalizedPlant = "Nhà máy End";
+
+                if (filterPlant === "Tất cả" || normalizedPlant === filterPlant) {
                     
                     let statusHtml = "";
                     let timeInDisplay = session.gio_vao || '<span class="text-slate-600">-</span>';
@@ -615,15 +584,12 @@
                         statusHtml = `<span class="px-2 py-1 bg-red-900/30 text-red-400 rounded text-[10px] font-bold whitespace-nowrap border border-red-900/50">Lỗi (Chỉ có RA)</span>`;
                     }
 
-                    // HIỂN THỊ CHUẨN TÊN NHÀ MÁY
-                    let displayPlant = session.nha_may; 
-
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-800/50 transition-colors border-b border-slate-700/50">
                             <td class="p-3 text-center text-slate-500 font-mono">${stt++}</td>
                             <td class="p-3 font-bold text-slate-400 text-xs">${session.cong_ty}</td>
                             <td class="p-3 font-bold text-blue-400">${session.ho_ten}</td>
-                            <td class="p-3 text-center font-bold text-purple-400 text-xs">${displayPlant}</td>
+                            <td class="p-3 text-center font-bold text-purple-400 text-xs">${normalizedPlant}</td>
                             <td class="p-3 text-center text-slate-300 font-mono font-bold">${timeInDisplay}</td>
                             <td class="p-3 text-center text-slate-300 font-mono font-bold">${timeOutDisplay}</td>
                             <td class="p-3 text-center">${statusHtml}</td>
@@ -639,9 +605,6 @@
             document.getElementById('stat-inside').innerText = totalInside;
         };
 
-        // ============================================================================
-        // TÍNH NĂNG 4: DANH SÁCH ĐÃ CẤP PHÉP (DÀNH CHO BẢO VỆ ĐỐI CHIẾU)
-        // ============================================================================
         window.loadApprovedList = async function() {
             const tbody = document.getElementById('approved-list-body');
             tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-emerald-500"><i class="ph-bold ph-spinner animate-spin text-3xl mb-2 block mx-auto"></i> Đang đồng bộ danh sách...</td></tr>';
