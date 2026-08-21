@@ -902,8 +902,8 @@
                 `;
                 evalSec.appendChild(approvalUI);
                 
-                // Khóa nút nếu không đúng quyền
-                if (t.assignee_id !== currentUserId) {
+                // Khóa nút nếu không đúng quyền (ĐÃ CẬP NHẬT LOGIC NHẬN DIỆN MÃ 030 CỦA SẾP VƯỢNG)
+                if (t.assignee_id !== currentUserId && !(t.approval_step === 2 && currentUserId === "030")) {
                     approvalUI.innerHTML = `<div class="w-full text-center text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại: ${t.assignee_name}</div>`;
                 }
                 if (t.status === 'Done') {
@@ -989,8 +989,8 @@
 
             if(!confirm(`Xác nhận ${action === 'approve' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} hồ sơ nhà thầu này?`)) return;
 
-            // ANH ĐIỀN MÃ NHÂN VIÊN CỦA ANH VƯỢNG VÀ TÊN VÀO ĐÂY NHÉ:
-            const ID_SEP_VUONG = "MA_NV_CUA_SEP_VUONG"; 
+            // ĐÃ CẬP NHẬT CHÍNH XÁC MÃ NV CỦA SẾP VƯỢNG CHO CÁC HỒ SƠ TƯƠNG LAI
+            const ID_SEP_VUONG = "030"; 
             const TEN_SEP_VUONG = "Bùi Văn Vượng (GĐ EHS)";
 
             let updateData = {
