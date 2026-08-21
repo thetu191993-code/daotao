@@ -9,7 +9,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -26,14 +26,8 @@
         window.db = getFirestore(app);
         const auth = getAuth(app);
 
-        window.collection = collection;
-        window.getDocs = getDocs;
-        window.addDoc = addDoc;
-        window.updateDoc = updateDoc;
-        window.deleteDoc = deleteDoc;
-        window.doc = doc;
-        window.query = query;
-        window.orderBy = orderBy;
+        // Gắn biến ra global
+        window.collection = collection; window.getDocs = getDocs; window.addDoc = addDoc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; window.doc = doc; window.query = query; window.orderBy = orderBy; window.where = where;
 
         window.checkAdminPassword = async function() {
             const btn = document.querySelector('#login-screen button');
@@ -58,20 +52,21 @@
 </head>
 <body class="bg-slate-100 min-h-screen p-4 md:p-8 font-sans text-slate-800 flex flex-col items-center relative">
 
-    <!-- CÔNG TẮC ĐA NGÔN NGỮ ĐẶT Ở GÓC TRÊN CÙNG BÊN PHẢI TRANG WEB -->
+    <!-- NÚT ĐA NGÔN NGỮ ĐẶT Ở GÓC TRÊN CÙNG BÊN PHẢI -->
     <div class="absolute top-4 right-4 sm:top-8 sm:right-8 z-[60]">
         <div class="relative group">
             <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 bg-white px-3 py-2 rounded-xl hover:bg-slate-50 transition border border-slate-200 shadow-sm">
                 <i class="ph-bold ph-translate"></i> <span id="current-lang-display">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs"></i>
             </button>
             <div class="absolute right-0 mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
-                <button onclick="changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700">Tiếng Việt</button>
-                <button onclick="changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">English</button>
-                <button onclick="changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">中文</button>
+                <button onclick="window.changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700">Tiếng Việt</button>
+                <button onclick="window.changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">English</button>
+                <button onclick="window.changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 text-slate-700 border-t border-slate-100">中文</button>
             </div>
         </div>
     </div>
 
+    <!-- TOAST & CONFIRM MODAL -->
     <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-message"></span>
@@ -79,22 +74,19 @@
 
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
-                <i class="ph-fill ph-warning text-4xl"></i>
-            </div>
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4"><i class="ph-fill ph-warning text-4xl"></i></div>
             <h3 class="text-xl font-bold text-slate-800 mb-2" data-i18n="confirm_del_title">Xác nhận xóa</h3>
             <p class="text-slate-500 text-sm mb-6" id="confirm-message" data-i18n="confirm_del_desc">Bạn có chắc chắn muốn xóa?</p>
             <div class="flex gap-3 justify-center">
-                <button onclick="closeConfirmModal()" class="px-6 py-2.5 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2" data-i18n="btn_cancel">Hủy</button>
+                <button onclick="window.closeConfirmModal()" class="px-6 py-2.5 rounded-lg font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition w-1/2" data-i18n="btn_cancel">Hủy</button>
                 <button id="btn-confirm-yes" class="bg-red-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-red-700 shadow-md w-1/2" data-i18n="btn_del">Xóa</button>
             </div>
         </div>
     </div>
 
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
     <div id="login-screen" class="w-full max-w-md mt-20 bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-4">
-            <i class="ph-fill ph-hard-hat text-4xl"></i>
-        </div>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-4"><i class="ph-fill ph-hard-hat text-4xl"></i></div>
         <h2 class="text-2xl font-bold text-slate-800 mb-2" data-i18n="login_title">Hồ Sơ Nhà Thầu</h2>
         <p class="text-slate-500 text-sm mb-6" data-i18n="login_desc">Nhập mật khẩu cấp quản lý để truy cập thông tin dữ liệu.</p>
         
@@ -107,8 +99,8 @@
         <a href="index.html" class="block mt-4 text-sm text-slate-500 hover:text-amber-600 hover:underline" data-i18n="btn_back_home">Quay lại Trang chủ</a>
     </div>
 
+    <!-- MAIN DASHBOARD -->
     <div id="main-content" class="w-full max-w-7xl bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 hidden">
-        
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-slate-800 flex items-center">
@@ -121,26 +113,23 @@
                 <a href="index.html" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-semibold hover:bg-slate-200 transition flex items-center gap-2 border border-slate-200">
                     <i class="ph-bold ph-house"></i> <span data-i18n="btn_home">Trang chủ</span>
                 </a>
-                
                 <a href="bao_ve.html" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-shield-check text-lg"></i> <span data-i18n="btn_security">Trạm Gác An Ninh</span>
                 </a>
-
-                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
+                <button onclick="window.exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-download-simple text-lg"></i> <span data-i18n="btn_export">Xuất Excel</span>
                 </button>
-
-                <button id="main-add-btn" onclick="openCurrentModal()" class="bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center gap-2 shadow-sm">
+                <button id="main-add-btn" onclick="window.openCurrentModal()" class="bg-amber-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-amber-700 transition flex items-center gap-2 shadow-sm">
                     <i class="ph-bold ph-user-plus"></i> <span data-i18n="btn_add_worker">Thêm Nhân sự</span>
                 </button>
             </div>
         </div>
 
         <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-px">
-            <button id="btn-tab-nhan-su" onclick="switchTab('nhan-su')" class="px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition" data-i18n="tab_worker">Quản lý Nhân sự</button>
-            <button id="btn-tab-may-moc" onclick="switchTab('may-moc')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_machine">Máy móc - Thiết bị</button>
-            <button id="btn-tab-dao-tao" onclick="switchTab('dao-tao')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_training">Hồ sơ Đào tạo</button>
-            <button id="btn-tab-cham-cong" onclick="switchTab('cham-cong')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1"><i class="ph-bold ph-clock"></i> <span data-i18n="tab_history">Lịch sử Ra/Vào</span></button>
+            <button id="btn-tab-nhan-su" onclick="window.switchTab('nhan-su')" class="px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition" data-i18n="tab_worker">Quản lý Nhân sự</button>
+            <button id="btn-tab-may-moc" onclick="window.switchTab('may-moc')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_machine">Máy móc - Thiết bị</button>
+            <button id="btn-tab-dao-tao" onclick="window.switchTab('dao-tao')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_training">Hồ sơ Đào tạo</button>
+            <button id="btn-tab-cham-cong" onclick="window.switchTab('cham-cong')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1"><i class="ph-bold ph-clock"></i> <span data-i18n="tab_history">Lịch sử Ra/Vào</span></button>
         </div>
 
         <div id="loading-msg" class="text-center py-10 text-amber-600 font-medium hidden">
@@ -148,12 +137,11 @@
             <p data-i18n="msg_loading">Đang tải dữ liệu từ máy chủ...</p>
         </div>
 
+        <!-- TAB NHÂN SỰ -->
         <div id="tab-nhan-su" class="tab-content hidden">
             <div class="mb-4 relative max-w-md">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i>
-                </div>
-                <input type="text" id="search-worker" onkeyup="filterWorkerTable()" class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="Tìm kiếm tên công ty, họ tên hoặc số CCCD..." data-i18n-placeholder="plc_search_worker">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="ph-bold ph-magnifying-glass text-slate-400 text-lg"></i></div>
+                <input type="text" id="search-worker" onkeyup="window.filterWorkerTable()" class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none text-sm" placeholder="Tìm kiếm tên công ty, họ tên hoặc số CCCD..." data-i18n-placeholder="plc_search_worker">
             </div>
 
             <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
@@ -176,6 +164,7 @@
             </div>
         </div>
 
+        <!-- TAB MÁY MÓC -->
         <div id="tab-may-moc" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
             <table class="w-full text-left border-collapse min-w-[1000px]">
                 <thead>
@@ -194,6 +183,7 @@
             </table>
         </div>
 
+        <!-- TAB ĐÀO TẠO -->
         <div id="tab-dao-tao" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden">
             <table class="w-full text-left border-collapse min-w-[900px]">
                 <thead>
@@ -211,11 +201,12 @@
             </table>
         </div>
 
+        <!-- TAB CHẤM CÔNG -->
         <div id="tab-cham-cong" class="tab-content rounded-xl border border-slate-200 shadow-sm hidden">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border-b border-slate-200 rounded-t-xl" id="cham-cong-dashboard">
                 <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-xs text-slate-500 font-semibold uppercase mb-1" data-i18n="lbl_view_date">Ngày đang xem</p>
-                    <input type="date" id="filter-date" onchange="loadChamCongData()" class="w-full text-sm font-bold text-center outline-none border-b border-dashed border-slate-300">
+                    <input type="date" id="filter-date" onchange="window.loadChamCongData()" class="w-full text-sm font-bold text-center outline-none border-b border-dashed border-slate-300">
                 </div>
                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center">
                     <p class="text-xs text-blue-600 font-semibold uppercase mb-1" data-i18n="lbl_total_in">Đã vào xưởng (Lượt)</p>
@@ -230,7 +221,6 @@
                     <p class="text-xl font-black text-amber-800" id="stat-inside">0</p>
                 </div>
             </div>
-
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
@@ -250,375 +240,183 @@
         </div>
     </div>
 
+    <!-- MODAL NHÂN SỰ -->
     <div id="worker-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden max-h-[95vh] flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2" id="worker-modal-title">Thêm Nhân Sự Mới</h3>
-                <button onclick="closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="window.closeModal('worker-modal')" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4">
+            <div class="p-6 overflow-y-auto space-y-4 custom-scrollbar">
                 <input type="hidden" id="wk-doc-id">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="wk-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ Tên <span class="text-red-500">*</span></label><input type="text" id="wk-ho-ten" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="wk-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Họ Tên <span class="text-red-500">*</span></label><input type="text" id="wk-ho-ten" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Sinh</label><input type="date" id="wk-ngay-sinh" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">CCCD <span class="text-red-500">*</span></label><input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Sinh</label><input type="date" id="wk-ngay-sinh" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">CCCD <span class="text-red-500">*</span></label><input type="text" id="wk-cccd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Đào tạo ATLĐ</label>
-                        <select id="wk-nhom-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-white">
+                        <select id="wk-nhom-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500 bg-white">
                             <option value="Chưa đào tạo">-- Chưa đào tạo --</option><option value="Nhóm 1">Nhóm 1 (Quản lý)</option><option value="Nhóm 2">Nhóm 2 (CB An toàn)</option><option value="Nhóm 3">Nhóm 3 (Nghiêm ngặt)</option><option value="Nhóm 4">Nhóm 4 (LĐ chung)</option><option value="Nhóm 5">Nhóm 5 (Y tế)</option><option value="Nhóm 6">Nhóm 6 (ATVSV)</option>
                         </select>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Thẻ ATLĐ</label><input type="date" id="wk-han-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Bảo Hiểm TN</label><input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Khám Sức Khỏe</label><input type="date" id="wk-han-suc-khoe" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Thẻ ATLĐ</label><input type="date" id="wk-han-atld" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Bảo Hiểm TN</label><input type="date" id="wk-han-bao-hiem" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Khám Sức Khỏe</label><input type="date" id="wk-han-suc-khoe" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
                 </div>
             </div>
-            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                <button onclick="closeModal('worker-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
-                <button id="btn-save-worker" onclick="saveWorker()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700">Lưu</button>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="window.closeModal('worker-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
+                <button id="btn-save-worker" onclick="window.saveWorker()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700 shadow-md">Lưu</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL MÁY MÓC -->
     <div id="machine-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-lg font-bold text-slate-800" id="machine-modal-title">Thêm Thiết Bị Cẩu/Nâng</h3>
-                <button onclick="closeModal('machine-modal')" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="window.closeModal('machine-modal')" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
-            <div class="p-6 space-y-4 overflow-y-auto">
+            <div class="p-6 space-y-4 overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="mac-doc-id">
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="mac-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên Máy <span class="text-red-500">*</span></label><input type="text" id="mac-ten-may" class="w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="VD: Xe Cẩu 10 tấn"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Biển Số / Mã Số</label><input type="text" id="mac-bien-so" class="w-full px-4 py-2 border border-slate-300 rounded-lg" placeholder="VD: 61H-123.45"></div>
+                    <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty <span class="text-red-500">*</span></label><input type="text" id="mac-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tên Máy <span class="text-red-500">*</span></label><input type="text" id="mac-ten-may" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500" placeholder="VD: Xe Cẩu 10 tấn"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Biển Số / Mã Số</label><input type="text" id="mac-bien-so" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500" placeholder="VD: 61H-123.45"></div>
                 </div>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày KĐ Gần Nhất</label><input type="date" id="mac-ngay-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày KĐ Gần Nhất</label><input type="date" id="mac-ngay-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
                     <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hạn Kiểm Định <span class="text-red-500">*</span></label><input type="date" id="mac-han-kd" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-red-500"></div>
                     <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><i class="ph-bold ph-image text-blue-500"></i> Ảnh Giấy Kiểm Định (Để làm bằng chứng)</label>
-                        <input type="file" id="mac-file-kiemdinh" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <input type="file" id="mac-file-kiemdinh" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 outline-none">
                     </div>
                 </div>
-
                 <div class="p-4 bg-amber-50 rounded-xl border border-amber-100 space-y-4">
-                    <div><label class="block text-xs font-bold text-amber-800 uppercase mb-1">Tài xế / Người vận hành thiết bị này</label><input type="text" id="mac-operator" class="w-full px-4 py-2 border border-amber-300 rounded-lg" placeholder="Họ tên người vận hành..."></div>
+                    <div><label class="block text-xs font-bold text-amber-800 uppercase mb-1">Tài xế / Người vận hành thiết bị này</label><input type="text" id="mac-operator" class="w-full px-4 py-2 border border-amber-300 rounded-lg outline-none focus:border-amber-500" placeholder="Họ tên người vận hành..."></div>
                     <div>
                         <label class="block text-xs font-bold text-amber-800 uppercase mb-1"><i class="ph-bold ph-image text-amber-600"></i> Ảnh Chứng Chỉ Hành Nghề Tài Xế</label>
-                        <input type="file" id="mac-file-chungchi" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                        <input type="file" id="mac-file-chungchi" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 outline-none">
                     </div>
                 </div>
             </div>
-            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                <button onclick="closeModal('machine-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
-                <button id="btn-save-machine" onclick="saveMachineData()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700">Lưu</button>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="window.closeModal('machine-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
+                <button id="btn-save-machine" onclick="window.saveMachineData()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700 shadow-md">Lưu</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL QR -->
     <div id="qr-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden text-center p-8">
             <h3 class="text-xl font-bold text-slate-800 mb-1">Mã QR An Ninh</h3>
             <p class="text-sm text-slate-500 mb-6" id="qr-machine-name">Tên máy móc</p>
-            
-            <div class="bg-white p-4 rounded-xl border-2 border-dashed border-slate-300 inline-block mb-6">
-                <img id="qr-image" src="" alt="QR Code" class="w-48 h-48 object-contain">
-            </div>
-            
+            <div class="bg-white p-4 rounded-xl border-2 border-dashed border-slate-300 inline-block mb-6"><img id="qr-image" src="" alt="QR Code" class="w-48 h-48 object-contain"></div>
             <p class="text-xs text-slate-400 mb-6">In mã này và dán lên kính xe. Bảo vệ sẽ quét để kiểm tra Giấy kiểm định & Chứng chỉ tài xế.</p>
-            
-            <button onclick="closeQRModal()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition shadow-md">Đóng</button>
+            <button onclick="window.closeQRModal()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition shadow-md">Đóng</button>
         </div>
     </div>
 
+    <!-- MODAL ĐÀO TẠO -->
     <div id="training-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col">
             <div class="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50">
                 <h3 class="text-lg font-bold text-slate-800" id="training-modal-title">Lưu Hồ Sơ Đào Tạo</h3>
-                <button onclick="closeModal('training-modal')" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
+                <button onclick="window.closeModal('training-modal')" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-2xl"></i></button>
             </div>
             <div class="p-6 space-y-4">
                 <input type="hidden" id="tr-doc-id">
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ Đề <span class="text-red-500">*</span></label><input type="text" id="tr-chu-de" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty Tham Gia <span class="text-red-500">*</span></label><input type="text" id="tr-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chủ Đề <span class="text-red-500">*</span></label><input type="text" id="tr-chu-de" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Công Ty Tham Gia <span class="text-red-500">*</span></label><input type="text" id="tr-cong-ty" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Đào Tạo</label><input type="date" id="tr-ngay" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số HV</label><input type="number" id="tr-so-luong" class="w-full px-4 py-2 border border-slate-300 rounded-lg"></div>
-                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Trainer</label><input type="text" id="tr-nguoi-day" class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100" readonly></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Ngày Đào Tạo</label><input type="date" id="tr-ngay" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Số HV</label><input type="number" id="tr-so-luong" class="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:border-amber-500"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Trainer</label><input type="text" id="tr-nguoi-day" class="w-full px-4 py-2 border border-slate-300 rounded-lg bg-slate-100 outline-none" readonly></div>
                 </div>
             </div>
-            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
-                <button onclick="closeModal('training-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
-                <button id="btn-save-training" onclick="saveTraining()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700">Lưu</button>
+            <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="window.closeModal('training-modal')" class="px-6 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-200">Hủy</button>
+                <button id="btn-save-training" onclick="window.saveTraining()" class="bg-amber-600 text-white px-8 py-2 rounded-lg font-bold hover:bg-amber-700 shadow-md">Lưu</button>
             </div>
         </div>
     </div>
 
     <script>
-        // TỪ ĐIỂN ĐA NGÔN NGỮ
+        // DICTIONARY
         const translations = {
             "vi": {
-                login_title: "Hồ Sơ Nhà Thầu",
-                login_desc: "Nhập mật khẩu cấp quản lý để truy cập thông tin dữ liệu.",
-                login_error: "Sai mật khẩu! Vui lòng thử lại.",
-                btn_unlock: "Mở Khóa Dữ Liệu",
-                btn_back_home: "Quay lại Trang chủ",
-                
-                main_title: "Cổng Quản Lý Nhà Thầu",
-                main_desc: "Quản lý toàn diện nhân sự, thiết bị thi công và ra/vào cổng.",
-                btn_home: "Trang chủ",
-                btn_security: "Trạm Gác An Ninh",
-                btn_export: "Xuất Excel",
-                btn_add_worker: "Thêm Nhân sự",
-                
-                tab_worker: "Quản lý Nhân sự",
-                tab_machine: "Máy móc - Thiết bị",
-                tab_training: "Hồ sơ Đào tạo",
-                tab_history: "Lịch sử Ra/Vào",
-                
-                msg_loading: "Đang tải dữ liệu từ máy chủ...",
-                plc_search_worker: "Tìm kiếm tên công ty, họ tên hoặc số CCCD...",
-                
-                col_contractor: "Tên Nhà Thầu",
-                col_name: "Họ và Tên",
-                col_dob: "Ngày Sinh",
-                col_id: "Số CCCD",
-                col_group: "Nhóm ATLĐ",
-                col_insurance: "Bảo hiểm TN",
-                col_health: "Khám Sức Khỏe",
-                col_action: "Thao tác",
-                
-                col_machine_name: "Tên Máy / Thiết Bị",
-                col_plate: "Biển số",
-                col_operator: "Người Vận Hành",
-                col_expire: "Hạn KĐ",
-                col_doc: "Hồ Sơ (Ảnh)",
-                
-                col_train_date: "Ngày Đào Tạo",
-                col_train_topic: "Chủ Đề Huấn Luyện",
-                col_contractor_attend: "Tên Nhà Thầu Tham Gia",
-                col_pass_count: "Số HV Đạt",
-                col_trainer: "Trainer (EHS)",
-                
-                lbl_view_date: "Ngày đang xem",
-                lbl_total_in: "Đã vào xưởng (Lượt)",
-                lbl_total_out: "Đã hoàn thành (Lượt)",
-                lbl_inside: "Đang trong xưởng",
-                
-                col_name_staff: "Họ và Tên Nhân Sự",
-                col_plant: "Nhà Máy",
-                col_time_in: "Giờ Vào",
-                col_time_out: "Giờ Ra",
-                col_status: "Trạng Thái",
-                
-                confirm_del_title: "Xác nhận xóa",
-                confirm_del_desc: "Bạn có chắc chắn muốn xóa?",
-                btn_cancel: "Hủy",
-                btn_del: "Xóa"
+                login_title: "Hồ Sơ Nhà Thầu", login_desc: "Nhập mật khẩu cấp quản lý để truy cập.", login_error: "Sai mật khẩu!", btn_unlock: "Mở Khóa Dữ Liệu", btn_back_home: "Quay lại Trang chủ",
+                main_title: "Cổng Quản Lý Nhà Thầu", main_desc: "Quản lý toàn diện nhân sự, thiết bị thi công và ra/vào cổng.", btn_home: "Trang chủ", btn_security: "Trạm Gác An Ninh", btn_export: "Xuất Excel", btn_add_worker: "Thêm Nhân sự",
+                tab_worker: "Quản lý Nhân sự", tab_machine: "Máy móc - Thiết bị", tab_training: "Hồ sơ Đào tạo", tab_history: "Lịch sử Ra/Vào",
+                msg_loading: "Đang tải dữ liệu từ máy chủ...", plc_search_worker: "Tìm kiếm công ty, họ tên hoặc CCCD...",
+                col_contractor: "Tên Nhà Thầu", col_name: "Họ và Tên", col_dob: "Ngày Sinh", col_id: "Số CCCD", col_group: "Nhóm ATLĐ", col_insurance: "Bảo hiểm TN", col_health: "Khám Sức Khỏe", col_action: "Thao tác",
+                col_machine_name: "Tên Máy / Thiết Bị", col_plate: "Biển số", col_operator: "Người Vận Hành", col_expire: "Hạn KĐ", col_doc: "Hồ Sơ (Ảnh)",
+                col_train_date: "Ngày Đào Tạo", col_train_topic: "Chủ Đề", col_contractor_attend: "Nhà Thầu Tham Gia", col_pass_count: "Số HV Đạt", col_trainer: "Trainer (EHS)",
+                lbl_view_date: "Ngày đang xem", lbl_total_in: "Đã vào xưởng", lbl_total_out: "Đã hoàn thành", lbl_inside: "Đang trong xưởng",
+                col_name_staff: "Họ và Tên", col_plant: "Nhà Máy", col_time_in: "Giờ Vào", col_time_out: "Giờ Ra", col_status: "Trạng Thái",
+                confirm_del_title: "Xác nhận xóa", confirm_del_desc: "Bạn có chắc chắn muốn xóa?", btn_cancel: "Hủy", btn_del: "Xóa"
             },
             "en": {
-                login_title: "Contractor Profiles",
-                login_desc: "Enter admin password to access data.",
-                login_error: "Wrong password! Please try again.",
-                btn_unlock: "Unlock Data",
-                btn_back_home: "Back to Home",
-                
-                main_title: "Contractor Management Portal",
-                main_desc: "Comprehensive management of personnel, equipment, and access control.",
-                btn_home: "Home",
-                btn_security: "Security Station",
-                btn_export: "Export Excel",
-                btn_add_worker: "Add Personnel",
-                
-                tab_worker: "Personnel Management",
-                tab_machine: "Machinery & Equipment",
-                tab_training: "Training Records",
-                tab_history: "Access History",
-                
-                msg_loading: "Loading data from server...",
-                plc_search_worker: "Search company, name, or ID...",
-                
-                col_contractor: "Contractor Name",
-                col_name: "Full Name",
-                col_dob: "Date of Birth",
-                col_id: "ID Number",
-                col_group: "Safety Group",
-                col_insurance: "Insurance",
-                col_health: "Health Check",
-                col_action: "Actions",
-                
-                col_machine_name: "Machine/Equipment Name",
-                col_plate: "License Plate",
-                col_operator: "Operator",
-                col_expire: "Inspection Exp.",
-                col_doc: "Documents (Photos)",
-                
-                col_train_date: "Training Date",
-                col_train_topic: "Training Topic",
-                col_contractor_attend: "Participating Contractor",
-                col_pass_count: "Passed Trainees",
-                col_trainer: "Trainer (EHS)",
-                
-                lbl_view_date: "Viewing Date",
-                lbl_total_in: "Entered (Count)",
-                lbl_total_out: "Completed (Count)",
-                lbl_inside: "Currently Inside",
-                
-                col_name_staff: "Personnel Name",
-                col_plant: "Plant",
-                col_time_in: "Time In",
-                col_time_out: "Time Out",
-                col_status: "Status",
-                
-                confirm_del_title: "Confirm Delete",
-                confirm_del_desc: "Are you sure you want to delete?",
-                btn_cancel: "Cancel",
-                btn_del: "Delete"
+                login_title: "Contractor Profiles", login_desc: "Enter admin password to access.", login_error: "Wrong password!", btn_unlock: "Unlock Data", btn_back_home: "Back to Home",
+                main_title: "Contractor Management Portal", main_desc: "Comprehensive management of personnel and equipment.", btn_home: "Home", btn_security: "Security Station", btn_export: "Export Excel", btn_add_worker: "Add Personnel",
+                tab_worker: "Personnel", tab_machine: "Machinery", tab_training: "Training Records", tab_history: "Access History",
+                msg_loading: "Loading data...", plc_search_worker: "Search company, name, or ID...",
+                col_contractor: "Contractor", col_name: "Full Name", col_dob: "Date of Birth", col_id: "ID Number", col_group: "Safety Group", col_insurance: "Insurance", col_health: "Health Check", col_action: "Actions",
+                col_machine_name: "Machine/Equipment", col_plate: "License Plate", col_operator: "Operator", col_expire: "Inspection Exp.", col_doc: "Documents",
+                col_train_date: "Date", col_train_topic: "Topic", col_contractor_attend: "Participating Contractor", col_pass_count: "Passed", col_trainer: "Trainer",
+                lbl_view_date: "Viewing Date", lbl_total_in: "Entered", lbl_total_out: "Completed", lbl_inside: "Currently Inside",
+                col_name_staff: "Personnel Name", col_plant: "Plant", col_time_in: "Time In", col_time_out: "Time Out", col_status: "Status",
+                confirm_del_title: "Confirm Delete", confirm_del_desc: "Are you sure you want to delete?", btn_cancel: "Cancel", btn_del: "Delete"
             },
             "zh": {
-                login_title: "承包商档案",
-                login_desc: "输入管理员密码以访问数据。",
-                login_error: "密码错误！请重试。",
-                btn_unlock: "解锁数据",
-                btn_back_home: "返回首页",
-                
-                main_title: "承包商管理门户",
-                main_desc: "全面管理人员、设备和出入控制。",
-                btn_home: "首页",
-                btn_security: "安保站",
-                btn_export: "导出 Excel",
-                btn_add_worker: "添加人员",
-                
-                tab_worker: "人员管理",
-                tab_machine: "机械与设备",
-                tab_training: "培训记录",
-                tab_history: "出入历史",
-                
-                msg_loading: "正在从服务器加载数据...",
-                plc_search_worker: "搜索公司、姓名或身份证号...",
-                
-                col_contractor: "承包商名称",
-                col_name: "姓名",
-                col_dob: "出生日期",
-                col_id: "身份证号",
-                col_group: "安全组别",
-                col_insurance: "保险",
-                col_health: "体检",
-                col_action: "操作",
-                
-                col_machine_name: "机器/设备名称",
-                col_plate: "车牌号",
-                col_operator: "操作员",
-                col_expire: "检查到期",
-                col_doc: "文件 (照片)",
-                
-                col_train_date: "培训日期",
-                col_train_topic: "培训主题",
-                col_contractor_attend: "参与承包商",
-                col_pass_count: "合格人数",
-                col_trainer: "培训师 (EHS)",
-                
-                lbl_view_date: "查看日期",
-                lbl_total_in: "已进入 (人次)",
-                lbl_total_out: "已完成 (人次)",
-                lbl_inside: "厂内人员",
-                
-                col_name_staff: "人员姓名",
-                col_plant: "工厂",
-                col_time_in: "进入时间",
-                col_time_out: "离开时间",
-                col_status: "状态",
-                
-                confirm_del_title: "确认删除",
-                confirm_del_desc: "您确定要删除吗？",
-                btn_cancel: "取消",
-                btn_del: "删除"
+                login_title: "承包商档案", login_desc: "输入管理员密码以访问。", login_error: "密码错误！", btn_unlock: "解锁数据", btn_back_home: "返回首页",
+                main_title: "承包商管理门户", main_desc: "全面管理人员和设备。", btn_home: "首页", btn_security: "安保站", btn_export: "导出 Excel", btn_add_worker: "添加人员",
+                tab_worker: "人员管理", tab_machine: "机械设备", tab_training: "培训记录", tab_history: "出入历史",
+                msg_loading: "正在加载数据...", plc_search_worker: "搜索公司、姓名或身份证号...",
+                col_contractor: "承包商名称", col_name: "姓名", col_dob: "出生日期", col_id: "身份证号", col_group: "安全组别", col_insurance: "保险", col_health: "体检", col_action: "操作",
+                col_machine_name: "机器/设备", col_plate: "车牌号", col_operator: "操作员", col_expire: "检查到期", col_doc: "文件",
+                col_train_date: "日期", col_train_topic: "主题", col_contractor_attend: "参与承包商", col_pass_count: "合格人数", col_trainer: "培训师",
+                lbl_view_date: "查看日期", lbl_total_in: "已进入", lbl_total_out: "已完成", lbl_inside: "厂内人员",
+                col_name_staff: "人员姓名", col_plant: "工厂", col_time_in: "进入时间", col_time_out: "离开时间", col_status: "状态",
+                confirm_del_title: "确认删除", confirm_del_desc: "您确定要删除吗？", btn_cancel: "取消", btn_del: "删除"
             }
         };
 
         let currentLang = localStorage.getItem('ehs_lang') || 'vi';
-
         window.changeLanguage = function(lang) {
-            currentLang = lang;
-            localStorage.setItem('ehs_lang', lang);
+            currentLang = lang; localStorage.setItem('ehs_lang', lang);
             const langNames = { 'vi': 'Tiếng Việt', 'en': 'English', 'zh': '中文' };
             document.getElementById('current-lang-display').innerText = langNames[lang];
-            
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang] && translations[lang][key]) {
-                    el.innerHTML = translations[lang][key]; 
-                }
-            });
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-i18n-placeholder');
-                if (translations[lang] && translations[lang][key]) {
-                    el.placeholder = translations[lang][key];
-                }
-            });
+            document.querySelectorAll('[data-i18n]').forEach(el => { const key = el.getAttribute('data-i18n'); if (translations[lang][key]) el.innerHTML = translations[lang][key]; });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.getAttribute('data-i18n-placeholder'); if (translations[lang][key]) el.placeholder = translations[lang][key]; });
         };
 
-        // KHI TRANG LOAD XONG
         document.addEventListener('DOMContentLoaded', () => {
-            changeLanguage(currentLang);
-            
-            // XỬ LÝ BẤM PHÍM ENTER ĐỂ ĐĂNG NHẬP
+            window.changeLanguage(currentLang);
             const passInput = document.getElementById('admin-pass');
             if(passInput) {
                 passInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault(); // Ngăn chặn hành vi mặc định
-                        window.checkAdminPassword(); // Gọi hàm đăng nhập
-                    }
+                    if (e.key === 'Enter') { e.preventDefault(); window.checkAdminPassword(); }
                 });
             }
-        });
 
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const yyyy = today.getFullYear();
-        document.getElementById('filter-date').value = `${yyyy}-${mm}-${dd}`;
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('filter-date').value = `${today.getFullYear()}-${mm}-${dd}`;
+        });
 
         let currentTab = 'nhan-su';
         let rawWorkerData = []; 
+        window.globalApprovalMap = {};
 
-        window.switchTab = function(tabId) {
-            currentTab = tabId;
-            const tabs = ['nhan-su', 'may-moc', 'dao-tao', 'cham-cong'];
-            const addBtn = document.getElementById('main-add-btn');
-
-            tabs.forEach(t => {
-                const btn = document.getElementById('btn-tab-' + t);
-                const content = document.getElementById('tab-' + t);
-                if (t === tabId) {
-                    btn.className = "px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition flex items-center gap-1";
-                    content.classList.remove('hidden');
-                } else {
-                    btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1";
-                    content.classList.add('hidden'); 
-                }
-            });
-
-            if(tabId === 'cham-cong') {
-                addBtn.classList.add('hidden');
-                window.loadChamCongData();
-            } else {
-                addBtn.classList.remove('hidden');
-                if (tabId === 'nhan-su') { addBtn.innerHTML = `<i class="ph-bold ph-user-plus"></i> <span data-i18n="btn_add_worker">${translations[currentLang].btn_add_worker || 'Thêm Nhân sự'}</span>`; window.loadWorkerData(); }
-                else if (tabId === 'may-moc') { addBtn.innerHTML = '<i class="ph-bold ph-truck"></i> Thêm Máy móc'; window.loadMachineData(); }
-                else if (tabId === 'dao-tao') { addBtn.innerHTML = '<i class="ph-bold ph-chalkboard-teacher"></i> Thêm Khóa học'; window.loadTrainingData(); }
-            }
-        }
-
-        function showToast(message, type = "success") {
+        window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
             toast.className = "fixed top-5 right-5 z-[100] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
@@ -632,21 +430,30 @@
         window.closeModal = function(modalId) { document.getElementById(modalId).classList.add('hidden'); }
         window.closeConfirmModal = function() { document.getElementById('confirm-modal').classList.add('hidden'); }
         window.closeQRModal = function() { document.getElementById('qr-modal').classList.add('hidden'); }
-        
-        window.deleteDocItem = async function(collectionName, id, itemName, reloadFunc) {
+
+        let deleteTarget = null;
+        let deleteReloadFunc = null;
+        window.deleteDocItem = function(collectionName, id, itemName, reloadFunc) {
+            deleteTarget = { collectionName, id };
+            deleteReloadFunc = reloadFunc;
             document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn XÓA: <b>${itemName}</b>?`;
             document.getElementById('confirm-modal').classList.remove('hidden');
-            document.getElementById('btn-confirm-yes').onclick = async function() {
-                try {
-                    await window.deleteDoc(window.doc(window.db, collectionName, id));
-                    showToast("Xóa thành công!");
-                    window.closeConfirmModal();
-                    reloadFunc();
-                } catch (error) { showToast("Lỗi xóa: " + error.message, "error"); }
-            };
         }
 
-        function formatDateAndStatus(dateString) {
+        document.getElementById('btn-confirm-yes').addEventListener('click', async function() {
+            if(!deleteTarget) return;
+            const btn = document.getElementById('btn-confirm-yes');
+            const ogText = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>'; btn.disabled = true;
+            try {
+                await window.deleteDoc(window.doc(window.db, deleteTarget.collectionName, deleteTarget.id));
+                window.showToast("Xóa thành công!");
+                window.closeConfirmModal();
+                if(deleteReloadFunc) deleteReloadFunc();
+            } catch (error) { window.showToast("Lỗi xóa: " + error.message, "error"); }
+            finally { btn.innerHTML = ogText; btn.disabled = false; deleteTarget = null; }
+        });
+
+        window.formatDateAndStatus = function(dateString) {
             if (!dateString) return { html: `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded text-[11px] font-bold">Chưa có</span>` };
             const expDate = new Date(dateString);
             const today = new Date(); today.setHours(0,0,0,0);
@@ -654,58 +461,74 @@
             if (expDate < today) return { html: `<span class="bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded text-[11px] font-bold">Hết hạn (${formatted})</span>` };
             return { html: `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-1 rounded text-[11px] font-bold">Hợp lệ (${formatted})</span>` };
         }
-        function formatSimpleDate(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
+        window.formatSimpleDate = function(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
 
-        async function saveDataToFirebase(collectionName, id, data, btnId, modalId, reloadFunc) {
-            const btn = document.getElementById(btnId);
-            const ogText = btn.innerHTML; btn.disabled = true; btn.innerHTML = 'Đang lưu...';
-            try {
-                if (id) { await window.updateDoc(window.doc(window.db, collectionName, id), data); showToast("Cập nhật thành công!"); } 
-                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, collectionName), data); showToast("Thêm mới thành công!"); }
-                window.closeModal(modalId); reloadFunc();
-            } catch (error) { showToast("Lỗi: " + error.message, "error"); } 
-            finally { btn.disabled = false; btn.innerHTML = ogText; }
+        window.switchTab = function(tabId) {
+            currentTab = tabId;
+            ['nhan-su', 'may-moc', 'dao-tao', 'cham-cong'].forEach(t => {
+                const btn = document.getElementById('btn-tab-' + t);
+                const content = document.getElementById('tab-' + t);
+                if (t === tabId) {
+                    btn.className = "px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition flex items-center gap-1";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1";
+                    content.classList.add('hidden'); 
+                }
+            });
+
+            const addBtn = document.getElementById('main-add-btn');
+            if(tabId === 'cham-cong') { addBtn.classList.add('hidden'); window.loadChamCongData(); } 
+            else {
+                addBtn.classList.remove('hidden');
+                if (tabId === 'nhan-su') { addBtn.innerHTML = '<i class="ph-bold ph-user-plus"></i> Thêm Nhân sự'; window.loadWorkerData(); }
+                else if (tabId === 'may-moc') { addBtn.innerHTML = '<i class="ph-bold ph-truck"></i> Thêm Máy móc'; window.loadMachineData(); }
+                else if (tabId === 'dao-tao') { addBtn.innerHTML = '<i class="ph-bold ph-chalkboard-teacher"></i> Thêm Khóa học'; window.loadTrainingData(); }
+            }
         }
 
         window.openCurrentModal = function() {
             if (currentTab === 'nhan-su') {
-                document.getElementById('worker-modal-title').innerText = 'Thêm Nhân Sự Mới';
-                document.getElementById('wk-doc-id').value = '';
+                document.getElementById('worker-modal-title').innerText = 'Thêm Nhân Sự Mới'; document.getElementById('wk-doc-id').value = '';
                 ['cong-ty', 'ho-ten', 'ngay-sinh', 'cccd', 'han-atld', 'han-bao-hiem', 'han-suc-khoe'].forEach(id => document.getElementById(`wk-${id}`).value = '');
-                document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo';
-                document.getElementById('worker-modal').classList.remove('hidden');
+                document.getElementById('wk-nhom-atld').value = 'Chưa đào tạo'; document.getElementById('worker-modal').classList.remove('hidden');
             } else if (currentTab === 'may-moc') {
-                document.getElementById('machine-modal-title').innerText = 'Thêm Thiết Bị Mới';
-                document.getElementById('mac-doc-id').value = '';
+                document.getElementById('machine-modal-title').innerText = 'Thêm Thiết Bị Mới'; document.getElementById('mac-doc-id').value = '';
                 ['cong-ty', 'ten-may', 'bien-so', 'ngay-kd', 'han-kd', 'operator', 'file-kiemdinh', 'file-chungchi'].forEach(id => document.getElementById(`mac-${id}`).value = '');
                 document.getElementById('machine-modal').classList.remove('hidden');
             } else if (currentTab === 'dao-tao') {
-                document.getElementById('training-modal-title').innerText = 'Lưu Hồ Sơ Đào Tạo';
-                document.getElementById('tr-doc-id').value = '';
+                document.getElementById('training-modal-title').innerText = 'Lưu Hồ Sơ Đào Tạo'; document.getElementById('tr-doc-id').value = '';
                 ['chu-de', 'cong-ty', 'so-luong'].forEach(id => document.getElementById(`tr-${id}`).value = '');
                 document.getElementById('tr-ngay').value = new Date().toISOString().split('T')[0];
-                document.getElementById('tr-nguoi-day').value = localStorage.getItem("ehs_user_name") || 'Admin EHS';
-                document.getElementById('training-modal').classList.remove('hidden');
+                document.getElementById('tr-nguoi-day').value = localStorage.getItem("ehs_user_name") || 'Admin EHS'; document.getElementById('training-modal').classList.remove('hidden');
             }
         }
 
         window.loadWorkerData = async function() {
-            document.getElementById('loading-msg').classList.remove('hidden');
-            document.getElementById('tab-nhan-su').classList.add('hidden');
+            document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-nhan-su').classList.add('hidden');
             
-            const q = window.query(window.collection(window.db, "nha_thau_nhan_su"), window.orderBy("thoi_gian_tao", "desc"));
-            const snap = await window.getDocs(q);
+            // FETCH BẢNG DUYỆT TỪ FIREBASE TASKS (Lấy trạng thái duyệt nhà thầu)
+            try {
+                const taskSnap = await window.getDocs(window.query(window.collection(window.db, "ehs_tasks"), window.where("task_type", "==", "contractor_approval")));
+                window.globalApprovalMap = {};
+                taskSnap.forEach(doc => {
+                    const t = doc.data();
+                    if (!window.globalApprovalMap[t.assigner_name] || t.created_at > window.globalApprovalMap[t.assigner_name].time) {
+                        window.globalApprovalMap[t.assigner_name] = { status: t.status, time: t.created_at };
+                    }
+                });
+            } catch(e) { console.log(e); }
+
+            const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_nhan_su"), window.orderBy("thoi_gian_tao", "desc")));
+            rawWorkerData = []; snap.forEach(doc => { rawWorkerData.push({ id: doc.id, ...doc.data() }); });
             
-            rawWorkerData = [];
-            snap.forEach(doc => {
-                rawWorkerData.push({ id: doc.id, ...doc.data() });
-            });
+            // TỰ ĐỘNG LẤY TỪ KHÓA TỪ URL NẾU SẾP BẤM "XEM HỒ SƠ" TỪ TRANG TASK
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            if(searchQuery) { document.getElementById('search-worker').value = searchQuery; }
             
-            document.getElementById('search-worker').value = ""; 
-            renderWorkerTable(rawWorkerData);
-            
-            document.getElementById('loading-msg').classList.add('hidden');
-            document.getElementById('tab-nhan-su').classList.remove('hidden');
+            window.filterWorkerTable();
+            document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-nhan-su').classList.remove('hidden');
         }
 
         window.filterWorkerTable = function() {
@@ -715,130 +538,106 @@
                 (item.ho_ten && item.ho_ten.toLowerCase().includes(keyword)) ||
                 (item.cccd && item.cccd.toLowerCase().includes(keyword))
             );
-            renderWorkerTable(filteredData);
-        }
-
-        function renderWorkerTable(dataArray) {
-            const tbody = document.getElementById('worker-results-body');
-            tbody.innerHTML = '';
-            let stt = 1;
-
-            if(dataArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-500 font-bold">Không tìm thấy dữ liệu.</td></tr>`;
-                return;
-            }
             
-            dataArray.forEach(data => {
-                const atldStatus = formatDateAndStatus(data.han_atld);
+            const tbody = document.getElementById('worker-results-body'); tbody.innerHTML = '';
+            if(filteredData.length === 0) { tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-500 font-bold">Không tìm thấy dữ liệu.</td></tr>`; return; }
+            
+            let stt = 1;
+            filteredData.forEach(data => {
+                const atldStatus = window.formatDateAndStatus(data.han_atld);
                 let atldClass = data.nhom_atld === "Chưa đào tạo" ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-700";
                 
+                // DÁN NHÃN TRẠNG THÁI PHÊ DUYỆT
+                let compStatus = window.globalApprovalMap[data.cong_ty] ? window.globalApprovalMap[data.cong_ty].status : 'None';
+                let isApproved = (compStatus === 'Done');
+                let compBadge = isApproved ? 
+                    `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>` : 
+                    `<div class="mt-1 text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</div>`;
+
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
+                    <tr class="hover:bg-slate-50 transition">
                         <td class="p-4 text-center text-slate-500">${stt++}</td>
-                        <td class="p-4 font-bold text-slate-700">${data.cong_ty}</td>
+                        <td class="p-4 font-bold text-slate-700 leading-tight">${data.cong_ty} <br> ${compBadge}</td>
                         <td class="p-4 font-bold text-amber-700">${data.ho_ten}</td>
-                        <td class="p-4 text-slate-600">${formatSimpleDate(data.ngay_sinh)}</td>
+                        <td class="p-4 text-slate-600">${window.formatSimpleDate(data.ngay_sinh)}</td>
                         <td class="p-4 text-slate-600 font-mono">${data.cccd}</td>
-                        <td class="p-4 text-center">
-                            <div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></div>
-                            ${atldStatus.html}
-                        </td>
-                        <td class="p-4 text-center">${formatDateAndStatus(data.han_bao_hiem).html}</td>
-                        <td class="p-4 text-center">${formatDateAndStatus(data.han_suc_khoe).html}</td>
+                        <td class="p-4 text-center"><div class="mb-1"><span class="px-2 py-1 border rounded text-[11px] font-bold whitespace-nowrap ${atldClass}">${data.nhom_atld}</span></div>${atldStatus.html}</td>
+                        <td class="p-4 text-center">${window.formatDateAndStatus(data.han_bao_hiem).html}</td>
+                        <td class="p-4 text-center">${window.formatDateAndStatus(data.han_suc_khoe).html}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="editWorker('${data.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh||''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld||''}', '${data.han_bao_hiem||''}', '${data.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                            <button onclick="deleteDocItem('nha_thau_nhan_su', '${data.id}', '${data.ho_ten}', window.loadWorkerData)" class="text-red-500 hover:text-red-700 p-1"><i class="ph-bold ph-trash text-lg"></i></button>
+                            <button onclick="window.editWorker('${data.id}', '${data.cong_ty}', '${data.ho_ten}', '${data.ngay_sinh||''}', '${data.cccd}', '${data.nhom_atld}', '${data.han_atld||''}', '${data.han_bao_hiem||''}', '${data.han_suc_khoe||''}')" class="text-blue-600 hover:text-blue-800 p-1"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="window.deleteDocItem('nha_thau_nhan_su', '${data.id}', '${data.ho_ten}', window.loadWorkerData)" class="text-red-500 hover:text-red-700 p-1"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     </tr>`;
             });
         }
 
         window.editWorker = function(id, congTy, hoTen, ngaySinh, cccd, nhom, hanATLD, hanBH, hanSK) {
-            document.getElementById('wk-doc-id').value = id;
-            document.getElementById('wk-cong-ty').value = congTy; 
-            document.getElementById('wk-ho-ten').value = hoTen;
-            document.getElementById('wk-ngay-sinh').value = ngaySinh; 
-            document.getElementById('wk-cccd').value = cccd;
-            document.getElementById('wk-nhom-atld').value = nhom; 
-            document.getElementById('wk-han-atld').value = hanATLD;
-            document.getElementById('wk-han-bao-hiem').value = hanBH;
-            document.getElementById('wk-han-suc-khoe').value = hanSK;
-            document.getElementById('worker-modal-title').innerText = 'Cập Nhật Hồ Sơ';
-            document.getElementById('worker-modal').classList.remove('hidden');
+            document.getElementById('wk-doc-id').value = id; document.getElementById('wk-cong-ty').value = congTy; document.getElementById('wk-ho-ten').value = hoTen;
+            document.getElementById('wk-ngay-sinh').value = ngaySinh; document.getElementById('wk-cccd').value = cccd; document.getElementById('wk-nhom-atld').value = nhom; 
+            document.getElementById('wk-han-atld').value = hanATLD; document.getElementById('wk-han-bao-hiem').value = hanBH; document.getElementById('wk-han-suc-khoe').value = hanSK;
+            document.getElementById('worker-modal-title').innerText = 'Cập Nhật Hồ Sơ'; document.getElementById('worker-modal').classList.remove('hidden');
         }
 
         window.saveWorker = async function() {
             const data = {
-                cong_ty: document.getElementById('wk-cong-ty').value.trim(), 
-                ho_ten: document.getElementById('wk-ho-ten').value.trim(),
-                ngay_sinh: document.getElementById('wk-ngay-sinh').value, 
-                cccd: document.getElementById('wk-cccd').value.trim(),
-                nhom_atld: document.getElementById('wk-nhom-atld').value, 
-                han_atld: document.getElementById('wk-han-atld').value,
-                han_bao_hiem: document.getElementById('wk-han-bao-hiem').value,
-                han_suc_khoe: document.getElementById('wk-han-suc-khoe').value, 
-                thoi_gian_cap_nhat: new Date()
+                cong_ty: document.getElementById('wk-cong-ty').value.trim(), ho_ten: document.getElementById('wk-ho-ten').value.trim(),
+                ngay_sinh: document.getElementById('wk-ngay-sinh').value, cccd: document.getElementById('wk-cccd').value.trim(),
+                nhom_atld: document.getElementById('wk-nhom-atld').value, han_atld: document.getElementById('wk-han-atld').value,
+                han_bao_hiem: document.getElementById('wk-han-bao-hiem').value, han_suc_khoe: document.getElementById('wk-han-suc-khoe').value, thoi_gian_cap_nhat: new Date()
             };
-            if (!data.cong_ty || !data.ho_ten || !data.cccd) return showToast("Nhập đủ Cty, Tên, CCCD!", "error");
-            await saveDataToFirebase("nha_thau_nhan_su", document.getElementById('wk-doc-id').value, data, "btn-save-worker", "worker-modal", window.loadWorkerData);
+            if (!data.cong_ty || !data.ho_ten || !data.cccd) return window.showToast("Nhập đủ Cty, Tên, CCCD!", "error");
+            
+            const btn = document.getElementById('btn-save-worker'); const og = btn.innerHTML; btn.innerHTML = 'Đang lưu...'; btn.disabled = true;
+            try {
+                if(document.getElementById('wk-doc-id').value) await window.updateDoc(window.doc(window.db, "nha_thau_nhan_su", document.getElementById('wk-doc-id').value), data);
+                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nha_thau_nhan_su"), data); }
+                window.showToast("Lưu thành công!"); window.closeModal('worker-modal'); window.loadWorkerData();
+            } catch(e) { window.showToast(e.message, "error"); } finally { btn.innerHTML = og; btn.disabled = false; }
         }
 
         window.uploadFileToImgBB = async (inputId) => {
             const fileInput = document.getElementById(inputId);
             if (!fileInput || !fileInput.files || fileInput.files.length === 0) return null;
-
-            const file = fileInput.files[0];
-            const formData = new FormData();
-            formData.append("image", file);
-
-            // BƯỚC QUAN TRỌNG: Dán API Key ImgBB miễn phí của anh vào đây!
-            const IMGBB_API_KEY = "6193096d9989e38412da2d277a2a6b9c";
-
+            const formData = new FormData(); formData.append("image", fileInput.files[0]);
             try {
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: "POST",
-                    body: formData
-                });
-                const result = await response.json();
-                if (result.success) {
-                    return result.data.url; // Lấy link ảnh trực tiếp
-                } else {
-                    throw new Error("Lỗi tải ảnh lên ImgBB");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Không thể tải ảnh lên. Vui lòng đảm bảo đúng file JPG/PNG và có mạng Internet.");
-                return null;
-            }
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=6193096d9989e38412da2d277a2a6b9c`, { method: "POST", body: formData });
+                const result = await response.json(); return result.success ? result.data.url : null;
+            } catch (error) { return null; }
         };
 
         window.loadMachineData = async function() {
             const tbody = document.getElementById('machine-results-body');
             document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-may-moc').classList.add('hidden'); tbody.innerHTML = '';
+            
             const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_may_moc"), window.orderBy("thoi_gian_tao", "desc")));
             let stt = 1;
             snap.forEach(doc => {
                 const d = doc.data();
-                
-                // Xử lý link ảnh bằng chứng
                 let fileLinks = '';
                 if(d.file_kiem_dinh) fileLinks += `<a href="${d.file_kiem_dinh}" target="_blank" class="text-blue-600 hover:underline text-[11px] block font-bold mb-1"><i class="ph-bold ph-link"></i> Xem Giấy KĐ</a>`;
                 if(d.file_chung_chi) fileLinks += `<a href="${d.file_chung_chi}" target="_blank" class="text-amber-600 hover:underline text-[11px] block font-bold"><i class="ph-bold ph-link"></i> Xem C.Chỉ Tài xế</a>`;
                 if(!fileLinks) fileLinks = '<span class="text-slate-400 text-xs">Chưa có ảnh</span>';
 
+                let compStatus = window.globalApprovalMap[d.cong_ty] ? window.globalApprovalMap[d.cong_ty].status : 'None';
+                let isApproved = (compStatus === 'Done');
+                let compBadge = isApproved ? 
+                    `<div class="mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded inline-block whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Đã Duyệt</div>` : 
+                    `<div class="mt-1 text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded inline-block whitespace-nowrap animate-pulse"><i class="ph-bold ph-spinner"></i> Chờ EHS Duyệt</div>`;
+
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
+                    <tr class="hover:bg-slate-50 transition">
                         <td class="p-4 text-center">${stt++}</td>
-                        <td class="p-4 font-bold text-slate-700">${d.cong_ty}</td>
+                        <td class="p-4 font-bold text-slate-700 leading-tight">${d.cong_ty} <br> ${compBadge}</td>
                         <td class="p-4 font-bold text-amber-700">${d.ten_may}</td>
                         <td class="p-4">${d.bien_so||''}</td>
                         <td class="p-4 font-bold text-indigo-700">${d.nguoi_van_hanh || '<span class="font-normal text-slate-400">N/A</span>'}</td>
-                        <td class="p-4 text-center">${formatDateAndStatus(d.han_kiem_dinh).html}</td>
+                        <td class="p-4 text-center">${window.formatDateAndStatus(d.han_kiem_dinh).html}</td>
                         <td class="p-4 text-center">${fileLinks}</td>
                         <td class="p-4 text-center whitespace-nowrap">
-                            <button onclick="showMachineQR('${doc.id}', '${d.ten_may}')" class="text-indigo-600 hover:text-indigo-800 p-1" title="Mã QR Ra Vào Cổng"><i class="ph-bold ph-qr-code text-xl"></i></button>
-                            <button onclick="editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}','${d.nguoi_van_hanh||''}')" class="text-blue-600 p-1 ml-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
-                            <button onclick="deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',window.loadMachineData)" class="text-red-500 p-1 ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
+                            <button onclick="window.showMachineQR('${doc.id}', '${d.ten_may}')" class="text-indigo-600 hover:text-indigo-800 p-1" title="Mã QR Ra Vào Cổng"><i class="ph-bold ph-qr-code text-xl"></i></button>
+                            <button onclick="window.editMachine('${doc.id}','${d.cong_ty}','${d.ten_may}','${d.bien_so||''}','${d.ngay_kiem_dinh||''}','${d.han_kiem_dinh||''}','${d.nguoi_van_hanh||''}')" class="text-blue-600 p-1 ml-1" title="Sửa"><i class="ph-bold ph-pencil-simple text-lg"></i></button>
+                            <button onclick="window.deleteDocItem('nha_thau_may_moc','${doc.id}','${d.ten_may}',window.loadMachineData)" class="text-red-500 p-1 ml-1" title="Xóa"><i class="ph-bold ph-trash text-lg"></i></button>
                         </td>
                     </tr>`;
             });
@@ -846,69 +645,32 @@
         }
 
         window.editMachine = function(id, cty, ten, bs, ng, han, operator) {
-            document.getElementById('mac-doc-id').value = id; 
-            document.getElementById('mac-cong-ty').value = cty; 
-            document.getElementById('mac-ten-may').value = ten;
-            document.getElementById('mac-bien-so').value = bs; 
-            document.getElementById('mac-ngay-kd').value = ng; 
-            document.getElementById('mac-han-kd').value = han;
-            document.getElementById('mac-operator').value = operator;
-            document.getElementById('mac-file-kiemdinh').value = ''; // Browser security prevents auto-fill file
-            document.getElementById('mac-file-chungchi').value = ''; 
+            document.getElementById('mac-doc-id').value = id; document.getElementById('mac-cong-ty').value = cty; document.getElementById('mac-ten-may').value = ten;
+            document.getElementById('mac-bien-so').value = bs; document.getElementById('mac-ngay-kd').value = ng; document.getElementById('mac-han-kd').value = han;
+            document.getElementById('mac-operator').value = operator; document.getElementById('mac-file-kiemdinh').value = ''; document.getElementById('mac-file-chungchi').value = ''; 
             document.getElementById('machine-modal').classList.remove('hidden');
         }
 
         window.saveMachineData = async function() {
-            const cty = document.getElementById('mac-cong-ty').value.trim();
-            const ten = document.getElementById('mac-ten-may').value.trim();
-            const han = document.getElementById('mac-han-kd').value;
-            if (!cty || !ten || !han) return showToast("Nhập đủ Cty, Tên máy và Hạn KĐ!", "error");
+            const cty = document.getElementById('mac-cong-ty').value.trim(); const ten = document.getElementById('mac-ten-may').value.trim(); const han = document.getElementById('mac-han-kd').value;
+            if (!cty || !ten || !han) return window.showToast("Nhập đủ Cty, Tên máy và Hạn KĐ!", "error");
 
-            const btn = document.getElementById('btn-save-machine');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải file lên...'; btn.disabled = true;
-
+            const btn = document.getElementById('btn-save-machine'); const ogText = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải file lên...'; btn.disabled = true;
             try {
-                // Tải ảnh lên trước
-                let linkKiemDinh = await window.uploadFileToImgBB('mac-file-kiemdinh');
-                let linkChungChi = await window.uploadFileToImgBB('mac-file-chungchi');
-
-                const data = { 
-                    cong_ty: cty, 
-                    ten_may: ten, 
-                    bien_so: document.getElementById('mac-bien-so').value.trim(), 
-                    ngay_kiem_dinh: document.getElementById('mac-ngay-kd').value, 
-                    han_kiem_dinh: han,
-                    nguoi_van_hanh: document.getElementById('mac-operator').value.trim(),
-                    thoi_gian_cap_nhat: new Date() 
-                };
-
-                // Chỉ ghi đè nếu có ảnh mới
-                if (linkKiemDinh) data.file_kiem_dinh = linkKiemDinh;
-                if (linkChungChi) data.file_chung_chi = linkChungChi;
+                let linkKiemDinh = await window.uploadFileToImgBB('mac-file-kiemdinh'); let linkChungChi = await window.uploadFileToImgBB('mac-file-chungchi');
+                const data = { cong_ty: cty, ten_may: ten, bien_so: document.getElementById('mac-bien-so').value.trim(), ngay_kiem_dinh: document.getElementById('mac-ngay-kd').value, han_kiem_dinh: han, nguoi_van_hanh: document.getElementById('mac-operator').value.trim(), thoi_gian_cap_nhat: new Date() };
+                if (linkKiemDinh) data.file_kiem_dinh = linkKiemDinh; if (linkChungChi) data.file_chung_chi = linkChungChi;
 
                 const docId = document.getElementById('mac-doc-id').value;
-                if (docId) { 
-                    await window.updateDoc(window.doc(window.db, "nha_thau_may_moc", docId), data); 
-                    showToast("Cập nhật thành công!"); 
-                } else { 
-                    data.thoi_gian_tao = new Date(); 
-                    await window.addDoc(window.collection(window.db, "nha_thau_may_moc"), data); 
-                    showToast("Thêm mới thành công!"); 
-                }
-                window.closeModal('machine-modal'); 
-                window.loadMachineData();
-            } catch (error) {
-                showToast("Lỗi: " + error.message, "error");
-            } finally {
-                btn.innerHTML = 'Lưu'; btn.disabled = false;
-            }
+                if (docId) { await window.updateDoc(window.doc(window.db, "nha_thau_may_moc", docId), data); window.showToast("Cập nhật thành công!"); } 
+                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nha_thau_may_moc"), data); window.showToast("Thêm mới thành công!"); }
+                window.closeModal('machine-modal'); window.loadMachineData();
+            } catch (error) { window.showToast("Lỗi: " + error.message, "error"); } finally { btn.innerHTML = ogText; btn.disabled = false; }
         }
 
         window.showMachineQR = function(id, name) {
             document.getElementById('qr-machine-name').innerText = name;
-            // Dùng API miễn phí để tạo QR code trỏ về chuỗi định dạng an ninh
-            const qrData = encodeURIComponent(`MACHINE:${id}`);
-            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${qrData}`;
+            document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`MACHINE:${id}`)}`;
             document.getElementById('qr-modal').classList.remove('hidden');
         }
 
@@ -919,41 +681,36 @@
             let stt = 1;
             snap.forEach(doc => {
                 const d = doc.data();
-                tbody.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-4 text-center">${stt++}</td><td class="p-4">${formatSimpleDate(d.ngay_dao_tao)}</td><td class="p-4 font-bold text-slate-800">${d.chu_de}</td><td class="p-4 font-bold text-amber-700">${d.cong_ty}</td><td class="p-4 text-center font-bold text-blue-600">${d.so_luong||0}</td><td class="p-4 text-center">${d.nguoi_day}</td><td class="p-4 text-center"><button onclick="deleteDocItem('nha_thau_dao_tao','${doc.id}','${d.chu_de}',window.loadTrainingData)" class="text-red-500 p-1"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="p-4 text-center">${stt++}</td><td class="p-4">${window.formatSimpleDate(d.ngay_dao_tao)}</td><td class="p-4 font-bold text-slate-800">${d.chu_de}</td><td class="p-4 font-bold text-amber-700">${d.cong_ty}</td><td class="p-4 text-center font-bold text-blue-600">${d.so_luong||0}</td><td class="p-4 text-center">${d.nguoi_day}</td><td class="p-4 text-center"><button onclick="window.deleteDocItem('nha_thau_dao_tao','${doc.id}','${d.chu_de}',window.loadTrainingData)" class="text-red-500 hover:text-red-700 p-1"><i class="ph-bold ph-trash text-lg"></i></button></td></tr>`;
             });
             document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-dao-tao').classList.remove('hidden');
         }
 
         window.saveTraining = async function() {
             const data = { chu_de: document.getElementById('tr-chu-de').value, cong_ty: document.getElementById('tr-cong-ty').value, ngay_dao_tao: document.getElementById('tr-ngay').value, so_luong: document.getElementById('tr-so-luong').value, nguoi_day: document.getElementById('tr-nguoi-day').value, thoi_gian_cap_nhat: new Date() };
-            if (!data.chu_de || !data.cong_ty) return showToast("Nhập đủ Chủ đề và Cty!", "error");
-            await saveDataToFirebase("nha_thau_dao_tao", document.getElementById('tr-doc-id').value, data, "btn-save-training", "training-modal", window.loadTrainingData);
+            if (!data.chu_de || !data.cong_ty) return window.showToast("Nhập đủ Chủ đề và Cty!", "error");
+            
+            const btn = document.getElementById('btn-save-training'); const og = btn.innerHTML; btn.innerHTML = 'Đang lưu...'; btn.disabled = true;
+            try {
+                if(document.getElementById('tr-doc-id').value) await window.updateDoc(window.doc(window.db, "nha_thau_dao_tao", document.getElementById('tr-doc-id').value), data);
+                else { data.thoi_gian_tao = new Date(); await window.addDoc(window.collection(window.db, "nha_thau_dao_tao"), data); }
+                window.showToast("Lưu thành công!"); window.closeModal('training-modal'); window.loadTrainingData();
+            } catch(e) { window.showToast(e.message, "error"); } finally { btn.innerHTML = og; btn.disabled = false; }
         }
 
         window.loadChamCongData = async function() {
             const tbody = document.getElementById('cham-cong-results-body');
-            document.getElementById('loading-msg').classList.remove('hidden');
-            document.getElementById('tab-cham-cong').classList.add('hidden');
-            tbody.innerHTML = '';
+            document.getElementById('loading-msg').classList.remove('hidden'); document.getElementById('tab-cham-cong').classList.add('hidden'); tbody.innerHTML = '';
 
             try {
-                const q = window.query(window.collection(window.db, "nha_thau_cham_cong"), window.orderBy("thoi_gian", "asc"));
-                const snap = await window.getDocs(q);
+                const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_cham_cong"), window.orderBy("thoi_gian", "asc")));
                 const filterDateStr = document.getElementById('filter-date').value;
-                
                 let personSessions = {}; 
 
-                // Gom nhóm các sự kiện theo từng người trong ngày được chọn
                 snap.forEach(doc => {
-                    const data = doc.data();
-                    if (!data.thoi_gian) return;
-                    
+                    const data = doc.data(); if (!data.thoi_gian) return;
                     const dateObj = data.thoi_gian.toDate();
-                    const dd = String(dateObj.getDate()).padStart(2, '0');
-                    const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                    const yyyy = dateObj.getFullYear();
-                    const recordDateStr = `${yyyy}-${mm}-${dd}`;
-
+                    const recordDateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
                     if (recordDateStr === filterDateStr) {
                         const pKey = `${data.cong_ty}_${data.ho_ten}`;
                         if (!personSessions[pKey]) personSessions[pKey] = [];
@@ -962,67 +719,33 @@
                 });
 
                 let allSessionsToRender = [];
-
                 for (let key in personSessions) {
-                    let events = personSessions[key];
-                    events.sort((a, b) => a.thoi_gian.toDate().getTime() - b.thoi_gian.toDate().getTime());
-
+                    let events = personSessions[key]; events.sort((a, b) => a.thoi_gian.toDate().getTime() - b.thoi_gian.toDate().getTime());
                     let currentSession = null;
-
                     events.forEach(ev => {
                         let timeStr = ev.thoi_gian.toDate().toLocaleTimeString('vi-VN');
                         if (ev.trang_thai === 'VÀO') {
-                            if (currentSession) {
-                                allSessionsToRender.push(currentSession); 
-                            }
-                            currentSession = {
-                                cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: ev.nha_may || "Chưa xác định",
-                                gio_vao: timeStr, gio_ra: null, timestamp: ev.thoi_gian.toDate().getTime()
-                            };
+                            if (currentSession) allSessionsToRender.push(currentSession); 
+                            currentSession = { cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: ev.nha_may || "Chưa xác định", gio_vao: timeStr, gio_ra: null, timestamp: ev.thoi_gian.toDate().getTime() };
                         } else if (ev.trang_thai === 'RA') {
-                            if (currentSession) {
-                                currentSession.gio_ra = timeStr;
-                                allSessionsToRender.push(currentSession);
-                                currentSession = null;
-                            } else {
-                                allSessionsToRender.push({
-                                    cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: ev.nha_may || "Chưa xác định",
-                                    gio_vao: null, gio_ra: timeStr, timestamp: ev.thoi_gian.toDate().getTime()
-                                });
-                            }
+                            if (currentSession) { currentSession.gio_ra = timeStr; allSessionsToRender.push(currentSession); currentSession = null; } 
+                            else { allSessionsToRender.push({ cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: ev.nha_may || "Chưa xác định", gio_vao: null, gio_ra: timeStr, timestamp: ev.thoi_gian.toDate().getTime() }); }
                         }
                     });
-                    
-                    if (currentSession) {
-                        allSessionsToRender.push(currentSession); 
-                    }
+                    if (currentSession) allSessionsToRender.push(currentSession); 
                 }
 
                 allSessionsToRender.sort((a,b) => b.timestamp - a.timestamp);
-
-                let totalIn = 0; let totalOut = 0; let totalInside = 0;
-                let stt = 1;
+                let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
 
                 allSessionsToRender.forEach(session => {
-                    let statusHtml = "";
-                    let timeInDisplay = session.gio_vao || '<span class="text-slate-300">-</span>';
-                    let timeOutDisplay = session.gio_ra || '<span class="text-slate-300">-</span>';
+                    let statusHtml = ""; let timeInDisplay = session.gio_vao || '<span class="text-slate-300">-</span>'; let timeOutDisplay = session.gio_ra || '<span class="text-slate-300">-</span>';
+                    if (session.gio_vao) totalIn++; if (session.gio_ra) totalOut++;
+                    if (session.gio_vao && session.gio_ra) { statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Xong lượt</span>`; } 
+                    else if (session.gio_vao && !session.gio_ra) { totalInside++; statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`; } 
+                    else if (!session.gio_vao && session.gio_ra) { statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-x-circle"></i> Lỗi (Chỉ có RA)</span>`; }
 
-                    if (session.gio_vao) totalIn++;
-                    if (session.gio_ra) totalOut++;
-
-                    if (session.gio_vao && session.gio_ra) {
-                        statusHtml = `<span class="px-3 py-1 border border-emerald-200 bg-emerald-50 text-emerald-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-check-circle"></i> Xong lượt</span>`;
-                    } else if (session.gio_vao && !session.gio_ra) {
-                        totalInside++;
-                        statusHtml = `<span class="px-3 py-1 border border-amber-200 bg-amber-50 text-amber-700 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-warning-circle"></i> Đang trong xưởng</span>`;
-                    } else if (!session.gio_vao && session.gio_ra) {
-                        statusHtml = `<span class="px-3 py-1 border border-red-200 bg-red-50 text-red-600 rounded text-xs font-bold whitespace-nowrap"><i class="ph-bold ph-x-circle"></i> Lỗi (Chỉ có RA)</span>`;
-                    }
-
-                    let displayPlant = session.nha_may;
-                    if(displayPlant === "1") displayPlant = "Nhà Máy 1";
-                    if(displayPlant === "2") displayPlant = "Nhà Máy 2";
+                    let displayPlant = session.nha_may; if(displayPlant === "1") displayPlant = "Nhà Máy 1"; if(displayPlant === "2") displayPlant = "Nhà Máy 2";
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-slate-50 transition-colors">
@@ -1038,17 +761,10 @@
                 });
 
                 if (stt === 1) tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có lượt ra/vào nào trong ngày này.</td></tr>`;
-                
-                document.getElementById('stat-total-in').innerText = totalIn;
-                document.getElementById('stat-total-out').innerText = totalOut;
-                document.getElementById('stat-inside').innerText = totalInside;
+                document.getElementById('stat-total-in').innerText = totalIn; document.getElementById('stat-total-out').innerText = totalOut; document.getElementById('stat-inside').innerText = totalInside;
 
-            } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${error.message}</td></tr>`;
-            } finally {
-                document.getElementById('loading-msg').classList.add('hidden');
-                document.getElementById('tab-cham-cong').classList.remove('hidden');
-            }
+            } catch (error) { tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${error.message}</td></tr>`; } 
+            finally { document.getElementById('loading-msg').classList.add('hidden'); document.getElementById('tab-cham-cong').classList.remove('hidden'); }
         }
 
         window.exportToExcel = function() {
@@ -1056,20 +772,13 @@
             if (currentTab === 'nhan-su') { activeTableBodyId = 'tab-nhan-su'; fileName = 'DS_NhanSu.csv'; }
             else if (currentTab === 'may-moc') { activeTableBodyId = 'tab-may-moc'; fileName = 'DS_MayMoc.csv'; }
             else if (currentTab === 'dao-tao') { activeTableBodyId = 'tab-dao-tao'; fileName = 'DS_DaoTao.csv'; }
-            else if (currentTab === 'cham-cong') { 
-                const dateStr = document.getElementById('filter-date').value;
-                activeTableBodyId = 'tab-cham-cong'; 
-                fileName = `Bao_Cao_Cham_Cong_Ngay_${dateStr}.csv`; 
-            }
+            else if (currentTab === 'cham-cong') { const dateStr = document.getElementById('filter-date').value; activeTableBodyId = 'tab-cham-cong'; fileName = `Bao_Cao_Cham_Cong_Ngay_${dateStr}.csv`; }
 
-            const table = document.querySelector(`#${activeTableBodyId} table`);
-            if(!table) return;
+            const table = document.querySelector(`#${activeTableBodyId} table`); if(!table) return;
 
             let csv = []; let rows = table.querySelectorAll("tr"); let bom = "\uFEFF";
             for (let i = 0; i < rows.length; i++) {
-                let row = [], cols = rows[i].querySelectorAll("td, th");
-                let colCount = currentTab === 'cham-cong' ? cols.length : cols.length - 1;
-                
+                let row = [], cols = rows[i].querySelectorAll("td, th"); let colCount = currentTab === 'cham-cong' ? cols.length : cols.length - 1;
                 for (let j = 0; j < colCount; j++) {
                     let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/"/g, '""').trim();
                     if(data.includes("Hợp lệ (")) data = data.replace("Hợp lệ (", "").replace(")", "");
@@ -1079,10 +788,8 @@
                 csv.push(row.join(","));
             }
             let csvFile = new Blob([bom + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
-            let downloadLink = document.createElement("a");
-            downloadLink.download = fileName; downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = "none"; document.body.appendChild(downloadLink);
-            downloadLink.click(); document.body.removeChild(downloadLink);
+            let downloadLink = document.createElement("a"); downloadLink.download = fileName; downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none"; document.body.appendChild(downloadLink); downloadLink.click(); document.body.removeChild(downloadLink);
         }
     </script>
 </body>
