@@ -294,8 +294,9 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // CẤU HÌNH FIREBASE
         const firebaseConfig = {
-          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+          apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
           authDomain: "ehs-training-app.firebaseapp.com",
           projectId: "ehs-training-app",
           storageBucket: "ehs-training-app.firebasestorage.app",
@@ -319,6 +320,7 @@
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
         let globalUserDeptMap = {}; 
+        let globalUserEmailMap = {}; // Thêm biến lưu token
         let upTaskId = "";
         let deleteTaskId = "";
 
@@ -627,6 +629,7 @@
             if(isChecked) container.classList.remove('hidden'); else container.classList.add('hidden');
         };
 
+        // LOAD DANH SÁCH NHÂN VIÊN VÀ TOKEN (ĐỂ BẮN PUSH)
         async function loadUsersDropdown() {
             const ul = document.getElementById('assignee-list');
             const revUl = document.getElementById('reviewer-list');
@@ -634,12 +637,19 @@
                 const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
                 let html = `<li onclick="window.selectAssignee('${currentUserId}', '${currentUserName}')" class="assignee-item p-3 mb-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg cursor-pointer transition font-black text-blue-700 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">🌟 ${translations[currentLang].self_task}</li>`;
                 let revHtml = ``;
-                globalUserDeptMap = {}; let currentUserRole = "";
+                
+                globalUserDeptMap = {}; 
+                globalUserEmailMap = {}; // Dùng Map này để chứa Token
+                let currentUserRole = "";
 
                 snap.forEach(doc => {
                     const data = doc.data();
                     if(data.ma_nv) {
                         globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
+                        // LƯU FCM TOKEN CỦA TỪNG NGƯỜI VÀO MAP ĐỂ LÁT NỮA GỌI
+                        if (data.fcm_token) {
+                            globalUserEmailMap[data.ma_nv] = data.fcm_token;
+                        }
                     }
                     if(data.ma_nv === currentUserId) currentUserRole = (data.vi_tri || "") + " " + (data.bo_phan || "");
 
@@ -856,68 +866,165 @@
             document.getElementById('disp-deadline').innerText = new Date(t.due_date).toLocaleDateString('vi-VN');
             
             const container = document.getElementById('modal-checklist-container');
-            container.innerHTML = '';
-            let steps = t.plan_steps || [];
-
-            if (steps.length === 0) {
-                container.innerHTML = '<p class="text-sm text-slate-500 italic">Không có bước chi tiết.</p>';
-            } else {
-                steps.forEach((step, idx) => {
-                    let text = typeof step === 'string' ? step : step.text;
-                    let stepProg = typeof step === 'object' && step.progress !== undefined ? step.progress : (step.done ? 100 : 0);
-                    let isDoneClass = stepProg === 100 ? 'line-through text-emerald-600' : 'text-slate-700 dark:text-slate-200';
-                    let accentClass = stepProg === 100 ? 'accent-emerald-500' : 'accent-blue-600';
-
-                    container.innerHTML += `
-                        <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                            <div class="flex justify-between items-start mb-2 gap-2">
-                                <span id="step-title-${idx}" class="text-sm font-bold ${isDoneClass} transition-colors">${text}</span>
-                                <span id="step-val-${idx}" class="text-xs font-black text-blue-600 bg-blue-100 px-2 py-0.5 rounded shrink-0">${stepProg}%</span>
-                            </div>
-                            <input type="range" min="0" max="100" value="${stepProg}" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer modal-step-slider ${accentClass}" data-idx="${idx}" oninput="window.updateStepProg(this)">
-                        </div>
-                    `;
-                });
-            }
-
-            window.recalcProgress();
-            
-            const isSelfAssigned = (t.assignee_id === t.assigner_id);
+            const progSection = document.getElementById('checklist-progress-section');
             const evalSec = document.getElementById('eval-section');
             const reqReviewSec = document.getElementById('request-review-section');
-            const reqReviewCheck = document.getElementById('task-request-review');
-            const evalInput = document.getElementById('task-eval');
-            const doneCheck = document.getElementById('task-done');
+            const btnSaveUpdate = document.getElementById('btn-update-task');
             
-            if (evalInput) evalInput.value = t.evaluation || "";
-            reqReviewSec.classList.add('hidden');
-            
-            if (currentTab === 'my-tasks') {
-                evalSec.classList.add('hidden');
-                document.getElementById('update-modal-title').innerText = translations[currentLang].modal_update_title;
+            // XÓA CÁC NÚT PHÊ DUYỆT CŨ NẾU CÓ ĐỂ TRÁNH TRÙNG LẶP
+            const oldContractorDiv = document.getElementById('contractor-approval-ui');
+            if (oldContractorDiv) oldContractorDiv.remove();
+
+            // KIỂM TRA NẾU LÀ TASK DUYỆT NHÀ THẦU
+            if (t.task_type === 'contractor_approval') {
+                progSection.classList.add('hidden'); // Ẩn kéo thanh %
+                reqReviewSec.classList.add('hidden');
+                btnSaveUpdate.classList.add('hidden'); // Ẩn nút Lưu bình thường
                 
-                if (isSelfAssigned) {
-                    reqReviewSec.classList.remove('hidden');
-                    reqReviewCheck.checked = !!t.is_review_requested;
-                    window.toggleReviewerSelect();
-                    
-                    if(t.reviewer_id) {
-                        document.getElementById('task-reviewer').value = `${t.reviewer_id}|${t.reviewer_name}`;
-                        document.getElementById('reviewer-display-text').innerText = `${t.reviewer_name}`;
-                    } else {
-                        document.getElementById('task-reviewer').value = "";
-                        document.getElementById('reviewer-display-text').innerText = translations[currentLang].msg_select_leader;
-                    }
-                }
-            } else {
                 evalSec.classList.remove('hidden');
-                if (doneCheck) doneCheck.checked = (t.status === 'Done');
-                document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-crown text-amber-500"></i> ${translations[currentLang].tab_leader}`;
+                document.getElementById('task-done').parentElement.classList.add('hidden'); // Ẩn nút đóng việc
+                document.getElementById('task-eval').value = t.evaluation || "";
+                document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> Phê Duyệt Nhà Thầu`;
+
+                // TẠO 2 NÚT PHÊ DUYỆT & TỪ CHỐI DÀNH RIÊNG CHO CHUYÊN GIA EHS
+                let approveText = t.approval_step === 1 ? "Duyệt Sơ Bộ (Chuyển GĐ Vượng)" : "Giám Đốc Duyệt (Chốt Hồ Sơ)";
+                
+                const approvalUI = document.createElement('div');
+                approvalUI.id = 'contractor-approval-ui';
+                approvalUI.className = "flex gap-3 mt-6";
+                approvalUI.innerHTML = `
+                    <button onclick="window.processContractorApproval('reject')" class="w-1/3 bg-red-100 text-red-700 hover:bg-red-200 border border-red-300 font-bold py-3.5 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI
+                    </button>
+                    <button onclick="window.processContractorApproval('approve')" class="w-2/3 bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-check-square-offset text-xl"></i> ${approveText}
+                    </button>
+                `;
+                evalSec.appendChild(approvalUI);
+                
+                // Khóa nút nếu không đúng quyền
+                if (t.assignee_id !== currentUserId) {
+                    approvalUI.innerHTML = `<div class="w-full text-center text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại: ${t.assignee_name}</div>`;
+                }
+                if (t.status === 'Done') {
+                    approvalUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-200">Hồ sơ đã được phê duyệt chốt.</div>`;
+                    document.getElementById('task-eval').readOnly = true;
+                }
+
+            } else {
+                // ==========================================
+                // LÀ CÔNG VIỆC BÌNH THƯỜNG - HIỆN THANH KÉO
+                // ==========================================
+                progSection.classList.remove('hidden');
+                btnSaveUpdate.classList.remove('hidden');
+                document.getElementById('task-done').parentElement.classList.remove('hidden');
+                document.getElementById('task-eval').readOnly = false;
+                
+                container.innerHTML = '';
+                let steps = t.plan_steps || [];
+                if (steps.length === 0) {
+                    container.innerHTML = '<p class="text-sm text-slate-500 italic">Không có bước chi tiết.</p>';
+                } else {
+                    steps.forEach((step, idx) => {
+                        let text = typeof step === 'string' ? step : step.text;
+                        let stepProg = typeof step === 'object' && step.progress !== undefined ? step.progress : (step.done ? 100 : 0);
+                        let isDoneClass = stepProg === 100 ? 'line-through text-emerald-600' : 'text-slate-700 dark:text-slate-200';
+                        let accentClass = stepProg === 100 ? 'accent-emerald-500' : 'accent-blue-600';
+
+                        container.innerHTML += `
+                            <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div class="flex justify-between items-start mb-2 gap-2">
+                                    <span id="step-title-${idx}" class="text-sm font-bold ${isDoneClass} transition-colors">${text}</span>
+                                    <span id="step-val-${idx}" class="text-xs font-black text-blue-600 bg-blue-100 px-2 py-0.5 rounded shrink-0">${stepProg}%</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="${stepProg}" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer modal-step-slider ${accentClass}" data-idx="${idx}" oninput="window.updateStepProg(this)">
+                            </div>
+                        `;
+                    });
+                }
+                window.recalcProgress();
+                
+                const isSelfAssigned = (t.assignee_id === t.assigner_id);
+                const reqReviewCheck = document.getElementById('task-request-review');
+                const evalInput = document.getElementById('task-eval');
+                const doneCheck = document.getElementById('task-done');
+                
+                if (evalInput) evalInput.value = t.evaluation || "";
+                reqReviewSec.classList.add('hidden');
+                
+                if (currentTab === 'my-tasks') {
+                    evalSec.classList.add('hidden');
+                    document.getElementById('update-modal-title').innerText = translations[currentLang].modal_update_title;
+                    if (isSelfAssigned) {
+                        reqReviewSec.classList.remove('hidden');
+                        reqReviewCheck.checked = !!t.is_review_requested;
+                        window.toggleReviewerSelect();
+                        if(t.reviewer_id) {
+                            document.getElementById('task-reviewer').value = `${t.reviewer_id}|${t.reviewer_name}`;
+                            document.getElementById('reviewer-display-text').innerText = `${t.reviewer_name}`;
+                        } else {
+                            document.getElementById('task-reviewer').value = "";
+                            document.getElementById('reviewer-display-text').innerText = translations[currentLang].msg_select_leader;
+                        }
+                    }
+                } else {
+                    evalSec.classList.remove('hidden');
+                    if (doneCheck) doneCheck.checked = (t.status === 'Done');
+                    document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-crown text-amber-500"></i> ${translations[currentLang].tab_leader}`;
+                }
             }
 
             document.getElementById('update-modal').classList.remove('hidden');
-            document.getElementById('btn-update-task').innerHTML = translations[currentLang].btn_save_update;
-            document.getElementById('btn-update-task').disabled = false;
+        };
+
+        // HÀM XỬ LÝ DUYỆT 2 CẤP DÀNH RIÊNG CHO NHÀ THẦU
+        window.processContractorApproval = async function(action) {
+            const t = rawTasksData.find(x => x.id === upTaskId);
+            const evalNote = document.getElementById('task-eval').value.trim();
+            
+            if (action === 'reject' && !evalNote) {
+                window.showToast("Bắt buộc phải nhập Lý do (Đánh giá) khi Từ chối hồ sơ!", "error");
+                return;
+            }
+
+            if(!confirm(`Xác nhận ${action === 'approve' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} hồ sơ nhà thầu này?`)) return;
+
+            // ANH ĐIỀN MÃ NHÂN VIÊN CỦA ANH VƯỢNG VÀ TÊN VÀO ĐÂY NHÉ:
+            const ID_SEP_VUONG = "MA_NV_CUA_SEP_VUONG"; 
+            const TEN_SEP_VUONG = "Bùi Văn Vượng (GĐ EHS)";
+
+            let updateData = {
+                evaluation: evalNote,
+                thoi_gian_cap_nhat: new Date()
+            };
+
+            if (action === 'reject') {
+                updateData.status = 'Rejected';
+                updateData.progress = 0;
+            } else if (action === 'approve') {
+                if (t.approval_step === 1) {
+                    // Bước 1: Tư duyệt xong -> Chuyển cho Sếp Vượng
+                    updateData.approval_step = 2;
+                    updateData.assignee_id = ID_SEP_VUONG;
+                    updateData.assignee_name = TEN_SEP_VUONG;
+                    updateData.progress = 50;
+                    updateData.status = 'Review'; // Vẫn tiếp tục Review
+                } else if (t.approval_step === 2) {
+                    // Bước 2: Sếp Vượng duyệt -> Chốt hồ sơ
+                    updateData.status = 'Done';
+                    updateData.progress = 100;
+                    updateData.plan_steps = t.plan_steps.map(s => ({...s, progress: 100}));
+                }
+            }
+
+            try {
+                await window.updateDoc(window.doc(window.db, "ehs_tasks", upTaskId), updateData);
+                window.closeUpdateModal(); 
+                window.showToast("Xử lý hồ sơ thành công!");
+                await window.fetchAllTasks(); 
+            } catch(e) {
+                window.showToast("Lỗi cập nhật: " + e.message, "error"); 
+            }
         };
 
         window.closeUpdateModal = function() { document.getElementById('update-modal').classList.add('hidden'); };
@@ -976,34 +1083,37 @@
                         reviewer_id: "", reviewer_name: "", created_at: new Date()
                     };
                     await addDoc(collection(db, "ehs_tasks"), newTask);
-                    showToast("Đã phát hành kế hoạch thành công!");
                     
                     // ===============================================================
-                    // KÍCH HOẠT BẮN THÔNG BÁO ĐẨY LÊN ĐIỆN THOẠI CỦA NGƯỜI NHẬN
+                    // BẮN THÔNG BÁO QUA GOOGLE APPS SCRIPT (TRẠM PHÁT SÓNG)
                     // ===============================================================
                     try {
-                        const qUser = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", assignee_id));
-                        const snapUser = await window.getDocs(qUser);
-                        // Chỉ gửi nếu người dùng đã có Token trong hồ sơ
-                        if(!snapUser.empty && snapUser.docs[0].data().fcm_token) {
-                            const fcmToken = snapUser.docs[0].data().fcm_token;
+                        // Tìm xem nhân viên này có FCM Token không
+                        const assigneeToken = globalUserEmailMap[assignee_id]; 
+                        
+                        if (assigneeToken) {
+                            // DÁN ĐƯỜNG LINK GOOGLE APPS SCRIPT ANH LẤY Ở BƯỚC TRƯỚC VÀO ĐÂY:
+                            const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
                             
-                            // ANH DÁN LINK GOOGLE APPS SCRIPT VỪA TRIỂN KHAI VÀO ĐÂY:
-                            const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbwRPJ6N66lilgaEGVoBXQ2FO3OaLLy-UhohtBFUXBEBUkrJSWrqTyhdIxe_lvAcUjgQ/exec";
+                            // Ngày tháng định dạng việt nam
+                            const deadlineVN = deadline.split('-').reverse().join('/');
                             
+                            // Gửi lệnh bắn ngầm
                             fetch(PUSH_API_URL, {
                                 method: 'POST',
                                 body: JSON.stringify({
-                                    fcmToken: fcmToken,
-                                    title: "🔔 EHS: NHIỆM VỤ MỚI",
-                                    body: `${currentUserName} vừa giao cho bạn: ${title}. Hạn chót: ${deadline.split('-').reverse().join('/')}`
+                                    fcmToken: assigneeToken,
+                                    title: "🔔 EHS: CÓ NHIỆM VỤ MỚI",
+                                    body: `${currentUserName} vừa giao cho bạn: ${title}. Hạn chót: ${deadlineVN}`
                                 })
                             }).catch(e => console.log("Gửi Push ngầm thất bại:", e));
                         }
                     } catch(pushErr) {
-                        console.log("Không thể lấy token để bắn push:", pushErr);
+                        console.log("Lỗi luồng gửi thông báo:", pushErr);
                     }
                     // ===============================================================
+
+                    showToast("Đã phát hành kế hoạch thành công!");
                 }
 
                 window.closeTaskModal();
