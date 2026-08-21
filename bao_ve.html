@@ -10,82 +10,174 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; } /* Giao diện tối cho phòng bảo vệ */
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; } /* Giao diện tối */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .guard-tab { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .guard-tab.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="text-slate-200 h-screen flex flex-col overflow-hidden">
 
-    <!-- TOAST -->
-    <div id="toast" class="fixed top-5 right-5 z-[200] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white bg-slate-800 border border-slate-700">
+    <!-- TOAST THÔNG BÁO -->
+    <div id="toast" class="fixed top-5 right-5 z-[300] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white bg-slate-800 border border-slate-700">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-message"></span>
     </div>
 
-    <!-- HEADER -->
-    <header class="bg-slate-900 border-b border-slate-800 p-4 shrink-0 flex justify-between items-center shadow-md z-10">
-        <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-[0_0_15px_rgba(37,99,235,0.5)]">
-                <i class="ph-fill ph-shield-check text-3xl"></i>
+    <!-- MÀN HÌNH ĐĂNG NHẬP DÀNH CHO BẢO VỆ -->
+    <div id="login-screen" class="absolute inset-0 z-[200] bg-[#0f172a] flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-slate-900 p-8 rounded-2xl shadow-2xl border border-slate-800 text-center">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-900/50 text-blue-500 mb-4 shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                <i class="ph-fill ph-shield-check text-5xl"></i>
             </div>
-            <div>
-                <h1 class="font-black text-2xl text-white tracking-tight">TRẠM GÁC AN NINH</h1>
-                <p class="text-blue-400 font-bold text-sm tracking-widest uppercase">EHS Security Checkpoint</p>
-            </div>
-        </div>
-        <div class="text-right">
-            <p id="live-time" class="text-3xl font-black text-white font-mono tracking-wider"></p>
-            <p id="live-date" class="text-slate-400 font-bold text-sm"></p>
-        </div>
-    </header>
-
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        
-        <!-- CỘT TRÁI: KIỂM SOÁT VÀO RA -->
-        <div class="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col h-full border-r border-slate-800">
-            <h2 class="font-black text-xl text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-fingerprint text-blue-500"></i> KIỂM SOÁT NHÂN SỰ VÀO/RA</h2>
+            <h2 class="text-2xl font-black text-white mb-2 tracking-tight">TRẠM GÁC AN NINH</h2>
+            <p class="text-slate-400 text-sm mb-8 font-medium">Hệ thống kiểm soát ra vào & Giấy phép PTW</p>
             
-            <div class="relative mb-6 shrink-0">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="ph-bold ph-magnifying-glass text-slate-400 text-2xl"></i></div>
-                <input type="text" id="search-input" onkeyup="window.searchWorker()" class="w-full pl-12 pr-4 py-4 bg-slate-800 border border-slate-700 rounded-2xl text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-lg font-bold transition shadow-inner" placeholder="Quét mã vạch hoặc nhập CCCD / Tên...">
+            <div class="relative mb-4">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="ph-bold ph-lock-key text-slate-500 text-xl"></i></div>
+                <input type="password" id="guard-pass" class="w-full pl-12 pr-4 py-4 bg-slate-800 border border-slate-700 rounded-xl text-center tracking-[0.3em] font-mono text-xl text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition" placeholder="••••••••">
             </div>
+            <p id="pass-error" class="text-red-400 text-sm hidden font-bold mb-4 bg-red-900/20 py-2 rounded border border-red-900/50">Sai mật khẩu truy cập!</p>
+            
+            <button onclick="window.checkGuardPassword()" class="w-full bg-blue-600 text-white font-black py-4 rounded-xl hover:bg-blue-700 transition shadow-[0_0_15px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2">
+                MỞ CHỐT KIỂM SOÁT <i class="ph-bold ph-arrow-right"></i>
+            </button>
+        </div>
+    </div>
 
-            <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-900/50 rounded-2xl border border-slate-800 p-2 space-y-2" id="search-results">
-                <div class="h-full flex flex-col items-center justify-center text-slate-600">
-                    <i class="ph-fill ph-scan text-6xl mb-2 opacity-50"></i>
-                    <p class="font-bold">Nhập thông tin để tìm kiếm nhân sự</p>
+    <!-- MAIN APP CONTAINER -->
+    <div id="main-app" class="hidden flex-col h-full w-full">
+        
+        <!-- HEADER -->
+        <header class="bg-slate-900 border-b border-slate-800 p-4 shrink-0 flex flex-col md:flex-row justify-between items-center shadow-md z-10 gap-4">
+            <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-[0_0_15px_rgba(37,99,235,0.5)] shrink-0">
+                    <i class="ph-fill ph-shield-check text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-black text-2xl text-white tracking-tight leading-tight">TRẠM GÁC AN NINH</h1>
+                    <p class="text-blue-400 font-bold text-xs tracking-widest uppercase">EHS Security Checkpoint</p>
                 </div>
             </div>
-        </div>
 
-        <!-- CỘT PHẢI: BẢNG TIN GIẤY PHÉP (PTW) -->
-        <div class="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col h-full bg-slate-900/30 relative">
-            <!-- Loader -->
-            <div id="ptw-loader" class="absolute inset-0 bg-slate-900/80 z-10 flex flex-col items-center justify-center hidden">
-                <i class="ph-bold ph-spinner animate-spin text-4xl text-amber-500 mb-2"></i>
-                <p class="font-bold text-slate-300">Đang đồng bộ Giấy Phép...</p>
+            <!-- TABS ĐIỀU HƯỚNG MỚI -->
+            <div class="flex bg-slate-800 p-1 rounded-xl w-full md:w-auto overflow-hidden">
+                <button onclick="window.switchGuardTab('truc-ban')" id="btn-tab-truc-ban" class="flex-1 md:flex-none px-6 py-2.5 font-bold text-sm rounded-lg transition bg-blue-600 text-white shadow flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-scan"></i> Cửa Kiểm Soát
+                </button>
+                <button onclick="window.switchGuardTab('theo-doi')" id="btn-tab-theo-doi" class="flex-1 md:flex-none px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-clock-counter-clockwise"></i> Lịch sử Ra/Vào
+                </button>
             </div>
 
-            <div class="flex justify-between items-center mb-4 shrink-0">
-                <h2 class="font-black text-xl text-white flex items-center gap-2">
-                    <i class="ph-fill ph-warning-circle text-amber-500 animate-pulse"></i> GIẤY PHÉP THI CÔNG (HÔM NAY)
-                </h2>
-                <span id="ptw-count" class="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-lg font-black text-sm border border-amber-500/30">0 Giấy phép</span>
+            <div class="text-right hidden md:block">
+                <p id="live-time" class="text-3xl font-black text-white font-mono tracking-wider"></p>
+                <p id="live-date" class="text-slate-400 font-bold text-sm"></p>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-hidden relative">
+            
+            <!-- TAB 1: CỬA KIỂM SOÁT (CHIA 2 CỘT) -->
+            <div id="tab-truc-ban" class="guard-tab active h-full flex-col lg:flex-row w-full">
+                <!-- CỘT TRÁI: KIỂM SOÁT VÀO RA -->
+                <div class="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col h-full border-r border-slate-800">
+                    <h2 class="font-black text-xl text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-fingerprint text-blue-500"></i> QUÉT NHÂN SỰ VÀO/RA</h2>
+                    
+                    <div class="relative mb-6 shrink-0">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="ph-bold ph-magnifying-glass text-slate-400 text-2xl"></i></div>
+                        <input type="text" id="search-input" onkeyup="window.searchWorker()" class="w-full pl-12 pr-4 py-4 bg-slate-800 border border-slate-700 rounded-2xl text-white placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-lg font-bold transition shadow-inner" placeholder="Quét mã vạch, CCCD hoặc Tên...">
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto custom-scrollbar bg-slate-900/50 rounded-2xl border border-slate-800 p-2 space-y-3" id="search-results">
+                        <div class="h-full flex flex-col items-center justify-center text-slate-600">
+                            <i class="ph-fill ph-scan text-6xl mb-2 opacity-50"></i>
+                            <p class="font-bold">Nhập thông tin để tìm kiếm nhân sự</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI: BẢNG TIN GIẤY PHÉP (PTW) -->
+                <div class="w-full lg:w-1/2 p-4 sm:p-6 flex flex-col h-full bg-slate-900/30 relative">
+                    <div id="ptw-loader" class="absolute inset-0 bg-slate-900/80 z-10 flex flex-col items-center justify-center hidden">
+                        <i class="ph-bold ph-spinner animate-spin text-4xl text-amber-500 mb-2"></i>
+                        <p class="font-bold text-slate-300 mt-2">Đang đồng bộ Giấy Phép...</p>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-4 shrink-0">
+                        <h2 class="font-black text-xl text-white flex items-center gap-2">
+                            <i class="ph-fill ph-warning-circle text-amber-500 animate-pulse text-2xl"></i> GIẤY PHÉP THI CÔNG HÔM NAY
+                        </h2>
+                        <span id="ptw-count" class="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-lg font-black text-sm border border-amber-500/30">0 Giấy phép</span>
+                    </div>
+
+                    <div class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2" id="ptw-list">
+                        <!-- Javascript nạp thẻ giấy phép vào đây -->
+                    </div>
+                </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-2" id="ptw-list">
-                <!-- Javascript sẽ nạp thẻ giấy phép vào đây -->
+            <!-- TAB 2: LỊCH SỬ RA VÀO VÀ THỐNG KÊ (PHỤC HỒI) -->
+            <div id="tab-theo-doi" class="guard-tab h-full flex-col p-4 sm:p-6 bg-slate-900/30 overflow-y-auto custom-scrollbar w-full">
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 shrink-0">
+                    <div class="col-span-2 md:col-span-1 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm flex flex-col justify-center">
+                        <p class="text-xs text-slate-400 font-bold uppercase mb-2">Khu vực kiểm soát</p>
+                        <select id="filter-plant" onchange="window.renderTrackingTable()" class="w-full text-base font-bold outline-none border-b border-slate-600 pb-1 text-blue-400 bg-transparent cursor-pointer">
+                            <option value="Tất cả" class="bg-slate-800">Tất cả nhà máy</option>
+                            <option value="Nhà máy Can" class="bg-slate-800">Nhà máy Can</option>
+                            <option value="Nhà máy End" class="bg-slate-800">Nhà máy End</option>
+                        </select>
+                    </div>
+
+                    <div class="col-span-1 bg-emerald-900/20 p-4 rounded-xl border border-emerald-500/30 shadow-sm text-center flex flex-col justify-center">
+                        <p class="text-[11px] text-emerald-400 font-bold uppercase mb-1">Tổng đã vào</p>
+                        <p class="text-3xl font-black text-emerald-500" id="stat-total-in">0</p>
+                    </div>
+                    
+                    <div class="col-span-1 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm text-center flex flex-col justify-center">
+                        <p class="text-[11px] text-slate-400 font-bold uppercase mb-1">Đã ra ngoài</p>
+                        <p class="text-3xl font-black text-slate-300" id="stat-total-out">0</p>
+                    </div>
+                    
+                    <div class="col-span-2 md:col-span-1 bg-amber-900/20 p-4 rounded-xl border border-amber-500/30 shadow-sm text-center relative overflow-hidden flex flex-col justify-center">
+                        <p class="text-[11px] text-amber-500 font-bold uppercase mb-1 relative z-10">Đang ở trong xưởng</p>
+                        <p class="text-4xl font-black text-amber-500 relative z-10" id="stat-inside">0</p>
+                    </div>
+                </div>
+
+                <div class="w-full bg-slate-800 rounded-xl border border-slate-700 shadow-sm overflow-hidden flex-1 flex flex-col">
+                    <div class="overflow-y-auto custom-scrollbar flex-1">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="sticky top-0 bg-slate-900 z-10">
+                                <tr class="text-slate-300 text-xs uppercase tracking-wider border-b border-slate-700">
+                                    <th class="p-4 font-bold w-12 text-center">STT</th>
+                                    <th class="p-4 font-bold">Nhà Thầu</th>
+                                    <th class="p-4 font-bold">Nhân Sự</th>
+                                    <th class="p-4 font-bold text-center">Khu Vực</th>
+                                    <th class="p-4 font-bold text-center">Giờ Vào</th>
+                                    <th class="p-4 font-bold text-center">Giờ Ra</th>
+                                    <th class="p-4 font-bold text-center">Trạng Thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="live-tracking-body" class="text-sm divide-y divide-slate-700/50">
+                                <!-- Dữ liệu Tracking Live -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-        </div>
-    </main>
+        </main>
+    </div>
 
     <!-- FIREBASE & LOGIC -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -93,11 +185,13 @@
             projectId: "ehs-training-app",
             storageBucket: "ehs-training-app.firebasestorage.app",
             messagingSenderId: "354083430003",
-            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+            measurementId: "G-74ETHWTJCW"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         // ĐỒNG HỒ LIVE
         function updateClock() {
@@ -111,22 +205,67 @@
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
-            if (type === "success") { toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-emerald-400 bg-slate-800 border border-emerald-900"; icon.className = "ph-fill ph-check-circle text-2xl text-emerald-500"; } 
-            else { toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-red-400 bg-slate-800 border border-red-900"; icon.className = "ph-fill ph-warning-circle text-2xl text-red-500"; }
+            if (type === "success") { toast.className = "fixed top-5 right-5 z-[300] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-emerald-400 bg-slate-800 border border-emerald-900"; icon.className = "ph-fill ph-check-circle text-2xl text-emerald-500"; } 
+            else { toast.className = "fixed top-5 right-5 z-[300] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-red-400 bg-slate-800 border border-red-900"; icon.className = "ph-fill ph-warning-circle text-2xl text-red-500"; }
             document.getElementById('toast-message').innerText = message;
             toast.classList.remove('translate-x-[150%]');
             setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
         }
 
         // ============================================================================
-        // 1. TÍNH NĂNG TÌM KIẾM VÀ CHẤM CÔNG NHÂN SỰ
+        // HỆ THỐNG XÁC THỰC VÀ CHUYỂN TAB
+        // ============================================================================
+        window.checkGuardPassword = async function() {
+            const pass = document.getElementById('guard-pass').value;
+            const btn = document.querySelector('#login-screen button');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> ĐANG KẾT NỐI...'; btn.disabled = true;
+
+            try {
+                await signInWithEmailAndPassword(auth, "baove@ehs.com", pass);
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('main-app').classList.add('flex');
+                
+                // Khởi động các luồng dữ liệu sau khi đăng nhập thành công
+                loadWorkersData();
+                loadTodayPTW();
+                startLiveTracking();
+            } catch (error) {
+                document.getElementById('pass-error').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = ogText; btn.disabled = false;
+            }
+        };
+
+        // Bắt Enter cho màn hình đăng nhập
+        document.getElementById('guard-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') window.checkGuardPassword();
+        });
+
+        window.switchGuardTab = function(tabId) {
+            ['truc-ban', 'theo-doi'].forEach(t => {
+                const btn = document.getElementById('btn-tab-' + t);
+                const content = document.getElementById('tab-' + t);
+                if (t === tabId) {
+                    btn.className = "flex-1 md:flex-none px-6 py-2.5 font-bold text-sm rounded-lg transition bg-blue-600 text-white shadow flex items-center justify-center gap-2";
+                    content.classList.add('active');
+                } else {
+                    btn.className = "flex-1 md:flex-none px-6 py-2.5 font-bold text-sm rounded-lg transition text-slate-400 hover:text-white flex items-center justify-center gap-2";
+                    content.classList.remove('active'); 
+                }
+            });
+            if(tabId === 'theo-doi') window.renderTrackingTable();
+        }
+
+        // ============================================================================
+        // TÍNH NĂNG 1: TÌM KIẾM & CHẤM CÔNG VÀO RA (TAB 1 TRÁI)
         // ============================================================================
         let rawWorkers = [];
         let globalApprovalMap = {};
 
         async function loadWorkersData() {
             try {
-                // Lấy trạng thái phê duyệt của công ty
                 const taskSnap = await getDocs(query(collection(db, "ehs_tasks"), where("task_type", "==", "contractor_approval")));
                 globalApprovalMap = {};
                 taskSnap.forEach(doc => {
@@ -136,7 +275,6 @@
                     }
                 });
 
-                // Lấy danh sách nhân sự
                 const snap = await getDocs(collection(db, "nha_thau_nhan_su"));
                 rawWorkers = [];
                 snap.forEach(doc => rawWorkers.push({ id: doc.id, ...doc.data() }));
@@ -155,7 +293,7 @@
             const filtered = rawWorkers.filter(w => (w.ho_ten && w.ho_ten.toLowerCase().includes(kw)) || (w.cccd && w.cccd.toLowerCase().includes(kw)) || (w.cong_ty && w.cong_ty.toLowerCase().includes(kw)));
 
             if(filtered.length === 0) {
-                resDiv.innerHTML = `<div class="p-8 text-center text-red-400 font-bold bg-red-900/20 rounded-xl border border-red-900/50"><i class="ph-fill ph-warning text-3xl mb-2"></i><br>Không tìm thấy nhân sự này trong hệ thống.</div>`;
+                resDiv.innerHTML = `<div class="p-8 text-center text-red-400 font-bold bg-red-900/20 rounded-xl border border-red-900/50"><i class="ph-fill ph-warning text-3xl mb-2"></i><br>Không tìm thấy nhân sự này.</div>`;
                 return;
             }
 
@@ -165,26 +303,33 @@
                 let isApproved = (compStatus === 'Done');
                 
                 let statusBadge = isApproved 
-                    ? `<span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs font-black border border-emerald-500/30"><i class="ph-bold ph-check"></i> Hợp lệ</span>`
-                    : `<span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-xs font-black border border-red-500/30 animate-pulse"><i class="ph-bold ph-x"></i> CÔNG TY CHƯA ĐƯỢC DUYỆT</span>`;
+                    ? `<span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-emerald-500/30"><i class="ph-bold ph-check"></i> Hợp lệ</span>`
+                    : `<span class="bg-red-500/20 text-red-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-red-500/30 animate-pulse"><i class="ph-bold ph-x"></i> CHƯA ĐƯỢC DUYỆT</span>`;
 
+                // CẢI TIẾN: Chọn nhà máy trực tiếp trên thẻ, không dùng Popup (prompt)
                 html += `
-                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <div class="w-full sm:w-auto">
-                            <h3 class="font-black text-white text-lg">${w.ho_ten}</h3>
-                            <p class="text-sm font-bold text-blue-400 mb-1">${w.cong_ty}</p>
-                            <div class="flex gap-3 text-xs text-slate-400 mb-2 font-medium">
-                                <span><i class="ph-bold ph-identification-card"></i> CCCD: ${w.cccd}</span>
-                                <span><i class="ph-bold ph-shield-plus"></i> ${w.nhom_atld}</span>
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md flex flex-col justify-between gap-3">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-black text-white text-lg leading-tight">${w.ho_ten}</h3>
+                                <p class="text-xs font-bold text-blue-400 mb-1">${w.cong_ty}</p>
+                                <p class="text-[11px] text-slate-400 font-mono"><i class="ph-bold ph-identification-card"></i> CCCD: ${w.cccd}</p>
                             </div>
-                            ${statusBadge}
+                            <div class="text-right">${statusBadge}</div>
                         </div>
-                        <div class="flex flex-row sm:flex-col gap-2 w-full sm:w-auto shrink-0">
-                            <button onclick="window.recordEntry('${w.cong_ty.replace(/'/g, "\\'")}', '${w.ho_ten.replace(/'/g, "\\'")}', 'VÀO')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 sm:py-2 px-6 rounded-xl shadow-[0_0_15px_rgba(5,150,105,0.4)] transition flex items-center justify-center gap-2 ${!isApproved ? 'opacity-50 cursor-not-allowed' : ''}" ${!isApproved ? 'disabled' : ''}>
-                                <i class="ph-bold ph-sign-in text-xl"></i> CHO VÀO
+                        
+                        <div class="flex flex-col sm:flex-row gap-2 mt-2 pt-3 border-t border-slate-700/50">
+                            <select id="plant-select-${w.id}" class="w-full sm:w-1/3 bg-slate-900 border border-slate-600 text-slate-300 text-xs font-bold rounded-lg px-2 py-2 outline-none focus:border-blue-500" ${!isApproved ? 'disabled' : ''}>
+                                <option value="Nhà máy Can">Nhà máy Can</option>
+                                <option value="Nhà máy End">Nhà máy End</option>
+                            </select>
+                            
+                            <button onclick="window.recordEntry('${w.id}', '${w.cong_ty.replace(/'/g, "\\'")}', '${w.ho_ten.replace(/'/g, "\\'")}', 'VÀO')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2 px-2 rounded-lg shadow-[0_0_10px_rgba(5,150,105,0.3)] transition flex items-center justify-center gap-1 text-sm ${!isApproved ? 'opacity-50 cursor-not-allowed' : ''}" ${!isApproved ? 'disabled' : ''}>
+                                <i class="ph-bold ph-sign-in text-lg"></i> CHO VÀO
                             </button>
-                            <button onclick="window.recordEntry('${w.cong_ty.replace(/'/g, "\\'")}', '${w.ho_ten.replace(/'/g, "\\'")}', 'RA')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 sm:py-2 px-6 rounded-xl transition flex items-center justify-center gap-2 border border-slate-600">
-                                <i class="ph-bold ph-sign-out text-xl"></i> CHO RA
+                            
+                            <button onclick="window.recordEntry('${w.id}', '${w.cong_ty.replace(/'/g, "\\'")}', '${w.ho_ten.replace(/'/g, "\\'")}', 'RA')" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 px-2 rounded-lg transition flex items-center justify-center gap-1 border border-slate-600 text-sm">
+                                <i class="ph-bold ph-sign-out text-lg"></i> CHO RA
                             </button>
                         </div>
                     </div>
@@ -193,26 +338,25 @@
             resDiv.innerHTML = html;
         }
 
-        window.recordEntry = async function(congTy, hoTen, loai) {
-            const nhaMay = prompt(`Nhập khu vực / Nhà máy mà [${hoTen}] vào làm việc:\n(Gõ 1 cho NM Can, 2 cho NM End, hoặc tên khu vực)`);
-            if(nhaMay === null) return; // Hủy
+        window.recordEntry = async function(workerId, congTy, hoTen, loai) {
+            const nhaMaySelect = document.getElementById(`plant-select-${workerId}`);
+            let nhaMay = nhaMaySelect ? nhaMaySelect.value : 'Không rõ';
+
+            // Ghi nhận ra ngoài thì không quan trọng nhà máy nào
+            if(loai === 'RA') nhaMay = 'Ra khỏi cổng';
 
             try {
                 await addDoc(collection(db, "nha_thau_cham_cong"), {
-                    cong_ty: congTy,
-                    ho_ten: hoTen,
-                    nha_may: nhaMay || 'Không rõ',
-                    trang_thai: loai,
-                    thoi_gian: new Date()
+                    cong_ty: congTy, ho_ten: hoTen, nha_may: nhaMay, trang_thai: loai, thoi_gian: new Date()
                 });
-                window.showToast(`Ghi nhận ${hoTen} [${loai}] thành công!`);
+                window.showToast(`Đã quét thẻ: ${hoTen} [${loai}]`);
                 document.getElementById('search-input').value = '';
                 document.getElementById('search-results').innerHTML = `<div class="h-full flex flex-col items-center justify-center text-emerald-500"><i class="ph-fill ph-check-circle text-6xl mb-2"></i><p class="font-bold">Đã lưu thông tin ra/vào</p></div>`;
-            } catch(e) { window.showToast("Lỗi: " + e.message, "error"); }
+            } catch(e) { window.showToast("Lỗi mạng: " + e.message, "error"); }
         }
 
         // ============================================================================
-        // 2. GIAI ĐOẠN 3: TẢI DANH SÁCH GIẤY PHÉP PTW HÔM NAY (ĐÃ DUYỆT)
+        // TÍNH NĂNG 2: TẢI DANH SÁCH GIẤY PHÉP PTW HÔM NAY (TAB 1 PHẢI)
         // ============================================================================
         async function loadTodayPTW() {
             document.getElementById('ptw-loader').classList.remove('hidden');
@@ -220,16 +364,13 @@
             ptwList.innerHTML = '';
             
             try {
-                // Lấy tất cả giấy phép ĐÃ DUYỆT
                 const q = query(collection(db, "giay_phep_lam_viec"), where("trang_thai", "==", "Đã duyệt"));
                 const snap = await getDocs(q);
-                
-                const todayStr = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+                const todayStr = new Date().toISOString().split('T')[0]; 
                 let validPermits = [];
 
                 snap.forEach(doc => {
                     const p = doc.data();
-                    // So sánh ngày: Nếu Giấy phép có Ngày bắt đầu <= Hôm nay <= Ngày kết thúc
                     if(p.thoi_gian_bat_dau <= todayStr && p.thoi_gian_ket_thuc >= todayStr) {
                         validPermits.push({id: doc.id, ...p});
                     }
@@ -238,75 +379,174 @@
                 document.getElementById('ptw-count').innerText = `${validPermits.length} Giấy phép`;
 
                 if(validPermits.length === 0) {
-                    ptwList.innerHTML = `<div class="p-8 text-center text-slate-500 font-bold bg-slate-800/50 rounded-2xl border border-slate-800 border-dashed"><i class="ph-fill ph-shield-check text-5xl mb-2 opacity-30"></i><br>Hôm nay không có thi công đặc biệt nào.</div>`;
+                    ptwList.innerHTML = `<div class="p-8 text-center text-slate-500 font-bold bg-slate-800/50 rounded-2xl border border-slate-800 border-dashed"><i class="ph-fill ph-shield-check text-5xl mb-2 opacity-30"></i><br>Hôm nay không có hoạt động thi công đặc biệt.</div>`;
                     return;
                 }
 
                 validPermits.sort((a,b) => a.gio_bat_dau.localeCompare(b.gio_bat_dau));
 
                 validPermits.forEach(p => {
-                    // Cảnh báo màu sắc theo mức độ rủi ro
                     let colorClass = "border-slate-700 bg-slate-800";
-                    let textClass = "text-white";
-                    let icon = "ph-file-text";
+                    let textClass = "text-white"; let icon = "ph-file-text";
 
                     if(p.loai_giay_phep.includes("Hàn") || p.loai_giay_phep.includes("Không gian")) {
                         colorClass = "border-red-500/50 bg-red-900/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]";
-                        textClass = "text-red-400";
-                        icon = "ph-fire";
+                        textClass = "text-red-400"; icon = "ph-fire";
                     } else if (p.loai_giay_phep.includes("Trên cao")) {
                         colorClass = "border-amber-500/50 bg-amber-900/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]";
-                        textClass = "text-amber-400";
-                        icon = "ph-steps";
+                        textClass = "text-amber-400"; icon = "ph-steps";
                     }
 
-                    const workersHtml = (p.danh_sach_nhan_su || []).map(w => `<span class="inline-block bg-slate-900 border border-slate-700 text-slate-300 text-[10px] px-2 py-0.5 rounded mr-1 mb-1">${w}</span>`).join('');
+                    const workersCount = (p.danh_sach_nhan_su || []).length;
 
                     ptwList.innerHTML += `
                         <div class="p-4 rounded-2xl border ${colorClass} transition-all">
-                            <div class="flex justify-between items-start mb-2 border-b border-slate-700/50 pb-2">
+                            <div class="flex justify-between items-start mb-3 border-b border-slate-700/50 pb-3">
                                 <div>
                                     <h3 class="font-black text-lg ${textClass} flex items-center gap-1.5"><i class="ph-fill ${icon}"></i> ${p.loai_giay_phep.toUpperCase()}</h3>
                                     <p class="font-bold text-slate-300 text-sm">${p.cong_ty}</p>
                                 </div>
-                                <div class="text-right">
-                                    <span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-emerald-500/30"><i class="ph-bold ph-check"></i> EHS Cấp Phép</span>
+                                <div class="text-right shrink-0">
+                                    <span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-emerald-500/30"><i class="ph-bold ph-check"></i> Hợp Lệ</span>
                                 </div>
                             </div>
-                            
                             <div class="grid grid-cols-2 gap-3 text-xs mb-3">
-                                <div class="bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                                <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
                                     <p class="text-slate-500 font-bold uppercase mb-0.5">Khu Vực</p>
                                     <p class="font-bold text-white">${p.khu_vuc}</p>
                                 </div>
-                                <div class="bg-slate-900/50 p-2 rounded-lg border border-slate-800">
+                                <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800">
                                     <p class="text-slate-500 font-bold uppercase mb-0.5">Thời Gian Hôm Nay</p>
                                     <p class="font-bold text-sky-400 font-mono">${p.gio_bat_dau} - ${p.gio_ket_thuc}</p>
                                 </div>
                             </div>
-                            
-                            <div class="text-xs">
-                                <p class="text-slate-500 font-bold uppercase mb-1">Nhân sự thực hiện:</p>
-                                <div>${workersHtml}</div>
-                            </div>
+                            <p class="text-xs text-slate-400 font-bold uppercase mt-auto"><i class="ph-fill ph-users"></i> ${workersCount} Nhân sự thi công</p>
                         </div>
                     `;
                 });
-
             } catch(e) {
-                console.error("Lỗi tải PTW:", e);
                 ptwList.innerHTML = `<div class="p-4 text-red-400 font-bold">Lỗi mạng: ${e.message}</div>`;
             } finally {
                 document.getElementById('ptw-loader').classList.add('hidden');
             }
         }
 
-        // INIT
-        loadWorkersData();
-        loadTodayPTW();
-
-        // Tự động làm mới danh sách giấy phép mỗi 5 phút để bảo vệ luôn có bản mới nhất
+        // Tự động làm mới PTW mỗi 5 phút
         setInterval(loadTodayPTW, 300000); 
+
+
+        // ============================================================================
+        // TÍNH NĂNG 3: BẢNG THEO DÕI LIVE HIỆN TRƯỜNG (TAB 2)
+        // ============================================================================
+        let liveTrackingData = [];
+        let trackingUnsubscribe = null;
+
+        function startLiveTracking() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const startOfDay = new Date(todayStr + "T00:00:00");
+            const endOfDay = new Date(todayStr + "T23:59:59");
+
+            // Chỉ lắng nghe dữ liệu chấm công của ngày hôm nay để tránh nặng máy
+            const q = query(
+                collection(db, "nha_thau_cham_cong"),
+                where("thoi_gian", ">=", startOfDay),
+                where("thoi_gian", "<=", endOfDay)
+            );
+
+            trackingUnsubscribe = onSnapshot(q, (snapshot) => {
+                liveTrackingData = [];
+                snapshot.forEach(doc => { liveTrackingData.push(doc.data()); });
+                if(window.currentGuardTab === 'theo-doi') window.renderTrackingTable();
+            });
+        }
+
+        window.renderTrackingTable = function() {
+            const tbody = document.getElementById('live-tracking-body');
+            const filterPlant = document.getElementById('filter-plant').value;
+            tbody.innerHTML = '';
+            
+            let personSessions = {}; 
+
+            // Phân loại data theo từng người
+            liveTrackingData.forEach(data => {
+                if (!data.thoi_gian) return;
+                const pKey = `${data.cong_ty}_${data.ho_ten}`;
+                if (!personSessions[pKey]) personSessions[pKey] = [];
+                personSessions[pKey].push(data);
+            });
+
+            let allSessions = [];
+
+            // Xây dựng phiên làm việc (Cặp Vào - Ra)
+            for (let key in personSessions) {
+                let events = personSessions[key];
+                events.sort((a, b) => a.thoi_gian.toDate().getTime() - b.thoi_gian.toDate().getTime());
+
+                let currentSession = null;
+                events.forEach(ev => {
+                    let timeStr = ev.thoi_gian.toDate().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+                    if (ev.trang_thai === 'VÀO') {
+                        if (currentSession) allSessions.push(currentSession); 
+                        currentSession = { cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: ev.nha_may || "N/A", gio_vao: timeStr, gio_ra: null, timestamp: ev.thoi_gian.toDate().getTime() };
+                    } else if (ev.trang_thai === 'RA') {
+                        if (currentSession) {
+                            currentSession.gio_ra = timeStr;
+                            allSessions.push(currentSession); 
+                            currentSession = null;
+                        } else {
+                            allSessions.push({ cong_ty: ev.cong_ty, ho_ten: ev.ho_ten, nha_may: "N/A", gio_vao: null, gio_ra: timeStr, timestamp: ev.thoi_gian.toDate().getTime() });
+                        }
+                    }
+                });
+                if (currentSession) allSessions.push(currentSession); 
+            }
+
+            // Sắp xếp mới nhất lên đầu
+            allSessions.sort((a,b) => b.timestamp - a.timestamp);
+
+            let totalIn = 0; let totalOut = 0; let totalInside = 0; let stt = 1;
+
+            allSessions.forEach(session => {
+                if (filterPlant === "Tất cả" || session.nha_may === filterPlant) {
+                    
+                    let statusHtml = "";
+                    let timeInDisplay = session.gio_vao || '<span class="text-slate-600">-</span>';
+                    let timeOutDisplay = session.gio_ra || '<span class="text-slate-600">-</span>';
+
+                    if (session.gio_vao) totalIn++;
+                    if (session.gio_ra) totalOut++;
+
+                    if (session.gio_vao && session.gio_ra) {
+                        statusHtml = `<span class="px-2 py-1 bg-slate-800 text-slate-400 rounded text-[10px] font-bold whitespace-nowrap border border-slate-700">Đã hoàn thành</span>`;
+                    } else if (session.gio_vao && !session.gio_ra) {
+                        totalInside++;
+                        statusHtml = `<span class="px-2 py-1 bg-amber-500/20 text-amber-500 rounded text-[10px] font-bold whitespace-nowrap border border-amber-500/30 animate-pulse">Đang ở trong</span>`;
+                    } else if (!session.gio_vao && session.gio_ra) {
+                        statusHtml = `<span class="px-2 py-1 bg-red-900/30 text-red-400 rounded text-[10px] font-bold whitespace-nowrap border border-red-900/50">Lỗi (Chỉ có RA)</span>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition-colors border-b border-slate-700/50">
+                            <td class="p-3 text-center text-slate-500 font-mono">${stt++}</td>
+                            <td class="p-3 font-bold text-slate-400 text-xs">${session.cong_ty}</td>
+                            <td class="p-3 font-bold text-blue-400">${session.ho_ten}</td>
+                            <td class="p-3 text-center font-bold text-purple-400 text-xs">${session.nha_may}</td>
+                            <td class="p-3 text-center text-slate-300 font-mono font-bold">${timeInDisplay}</td>
+                            <td class="p-3 text-center text-slate-300 font-mono font-bold">${timeOutDisplay}</td>
+                            <td class="p-3 text-center">${statusHtml}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            if (stt === 1) tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Chưa có ai vào/ra khu vực này trong hôm nay.</td></tr>`;
+            
+            // Cập nhật thống kê
+            document.getElementById('stat-total-in').innerText = totalIn;
+            document.getElementById('stat-total-out').innerText = totalOut;
+            document.getElementById('stat-inside').innerText = totalInside;
+        };
+
     </script>
 </body>
 </html>
