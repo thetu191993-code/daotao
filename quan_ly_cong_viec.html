@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản Lý Công Việc & Tiến Độ</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>EHS - Quản Lý Công Việc</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -27,27 +24,16 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         body { font-family: 'Inter', sans-serif; }
+        .tab-btn.active { background-color: white; color: #4338ca; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .dark .tab-btn.active { background-color: #475569; color: white; }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
     <!-- Toast Thông báo -->
-    <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
+    <div id="toast" class="fixed top-5 right-5 z-[250] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-message">Thành công!</span>
-    </div>
-
-    <!-- Confirm Modal Xóa -->
-    <div id="custom-confirm" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border-t-4 border-red-500">
-            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-warning-circle text-4xl"></i></div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-2" data-i18n="confirm_del_title">Xác nhận xóa</h3>
-            <p id="confirm-msg" class="text-slate-500 dark:text-slate-400 text-sm mb-6" data-i18n="confirm_del_desc">Bạn có chắc chắn muốn xóa hạng mục này?</p>
-            <div class="flex gap-3 justify-center">
-                <button onclick="window.closeConfirmDelete()" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition" data-i18n="btn_cancel">Hủy bỏ</button>
-                <button onclick="window.executeDeleteTask()" class="px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-md transition" data-i18n="btn_agree_del">Đồng ý Xóa</button>
-            </div>
-        </div>
     </div>
 
     <!-- HEADER -->
@@ -56,25 +42,24 @@
             <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
                 <i class="ph-bold ph-arrow-left text-lg"></i>
             </a>
-            <div>
-                <h1 class="font-black text-xl leading-tight text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                    <i class="ph-fill ph-kanban"></i> <span data-i18n="header_title">Quản Lý Tiến Độ</span>
-                </h1>
-            </div>
+            <h1 class="font-black text-xl leading-tight text-indigo-700 dark:text-indigo-400 flex items-center gap-2">
+                <i class="ph-fill ph-kanban"></i> <span data-i18n="page_title">Quản Lý Kế Hoạch & Tiến Độ</span>
+            </h1>
         </div>
         <div class="flex items-center gap-2 sm:gap-3">
             <div class="text-sm font-bold bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg hidden sm:block" id="header-user-name">Đang tải...</div>
             
-            <!-- Bộ chọn Đa ngôn ngữ -->
+            <!-- Đa ngôn ngữ Dropdown -->
             <div class="relative group z-50">
                 <button class="flex items-center gap-1.5 text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition border border-slate-200 dark:border-slate-700 h-9">
                     <i class="ph-bold ph-translate"></i> <span id="current-lang-display" class="hidden sm:inline">Tiếng Việt</span> <i class="ph-bold ph-caret-down text-xs hidden sm:inline"></i>
                 </button>
-                <div class="absolute right-0 mt-1 w-36 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
-                    <button onclick="window.changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200">Tiếng Việt</button>
-                    <button onclick="window.changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200 border-t border-slate-100 dark:border-slate-800">English</button>
-                    <button onclick="window.changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200 border-t border-slate-100 dark:border-slate-800">中文</button>
-                    <button onclick="window.changeLanguage('es')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200 border-t border-slate-100 dark:border-slate-800">Español</button>
+                <div class="absolute right-0 top-full pt-1 w-36 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
+                    <div class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-xl shadow-lg flex flex-col overflow-hidden">
+                        <button onclick="window.changeLanguage('vi')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200">Tiếng Việt</button>
+                        <button onclick="window.changeLanguage('en')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200 border-t border-slate-100 dark:border-slate-800">English</button>
+                        <button onclick="window.changeLanguage('zh')" class="w-full text-left px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-200 border-t border-slate-100 dark:border-slate-800">中文</button>
+                    </div>
                 </div>
             </div>
 
@@ -88,377 +73,314 @@
     <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
         <div class="max-w-7xl mx-auto space-y-6">
             
-            <!-- TÌM KIẾM & BỘ LỌC -->
-            <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-2 relative">
-                    <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-box" onkeyup="window.renderTasks()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:border-blue-500 font-medium" placeholder="Tìm tên công việc, người nhận, người giao..." data-i18n-placeholder="search_placeholder">
+            <!-- Controls -->
+            <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border flex flex-col md:flex-row justify-between gap-4 items-center">
+                <div class="flex flex-wrap bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full md:w-auto">
+                    <button onclick="window.switchTab('my-tasks')" id="tab-my-tasks" class="tab-btn active flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 transition" data-i18n="tab_my_tasks">Việc tôi phải làm</button>
+                    <button onclick="window.switchTab('assigned-tasks')" id="tab-assigned-tasks" class="tab-btn flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 transition" data-i18n="tab_assigned">Việc tôi đã giao</button>
+                    <button onclick="window.switchTab('leader-corner')" id="tab-leader-corner" class="tab-btn flex-1 md:flex-none px-6 py-2 rounded-lg font-bold text-sm text-amber-600 dark:text-amber-500 transition flex items-center gap-1 justify-center"><i class="ph-fill ph-crown"></i> <span data-i18n="tab_leader">Góc Lãnh Đạo</span></button>
                 </div>
-                <div>
-                    <select id="filter-category" onchange="window.renderTasks()" class="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300 appearance-none">
-                        <option value="all" data-i18n="filter_all">Tất cả mảng công việc</option>
-                        <option value="An toàn" data-i18n="filter_safe">An toàn</option>
-                        <option value="Môi trường" data-i18n="filter_env">Môi trường</option>
-                        <option value="Sức khỏe" data-i18n="filter_health">Sức khỏe</option>
-                        <option value="PCCC" data-i18n="filter_fire">Mảng PCCC</option>
-                        <option value="ATVSV" data-i18n="filter_atvsv">Mạng lưới ATVSV</option>
-                        <option value="Khác" data-i18n="filter_other">Mảng Khác</option>
-                    </select>
-                </div>
-                <div>
-                    <button onclick="window.openTaskModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-plus"></i> <span data-i18n="btn_create_task">Tạo Công Việc</span>
+                
+                <div class="flex gap-2 w-full md:w-auto">
+                    <div class="relative flex-1 md:w-64">
+                        <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search-box" onkeyup="window.renderTasks()" class="w-full pl-9 pr-4 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-medium outline-none focus:border-indigo-500 dark:text-white" placeholder="Tìm kiếm công việc..." data-i18n-placeholder="search_plc">
+                    </div>
+                    <button onclick="window.openCreateModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-2 whitespace-nowrap shrink-0">
+                        <i class="ph-bold ph-plus"></i> <span data-i18n="btn_create">Tạo Việc</span>
                     </button>
                 </div>
             </div>
 
-            <!-- TABS -->
-            <div class="flex flex-wrap bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
-                <button onclick="window.switchTab('my-tasks')" id="tab-my-tasks" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition" data-i18n="tab_my_tasks">Việc tôi phải làm</button>
-                <button onclick="window.switchTab('assigned-tasks')" id="tab-assigned" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tab_assigned">Việc tôi đã giao</button>
-                <button onclick="window.switchTab('all-tasks')" id="tab-all" class="hidden px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition items-center gap-1"><i class="ph-fill ph-crown text-amber-500"></i> <span data-i18n="tab_leader">Góc Lãnh Đạo</span></button>
-            </div>
-
-            <div id="loader" class="flex flex-col items-center justify-center py-20 text-blue-500">
+            <div id="loader" class="flex flex-col items-center justify-center py-20 text-indigo-500">
                 <i class="ph-bold ph-spinner animate-spin text-4xl mb-4"></i>
-                <p class="font-bold text-slate-500 dark:text-dark-muted" id="loader-text" data-i18n="msg_loading">Đang kết nối hệ thống và xác thực người dùng...</p>
+                <p class="font-bold text-slate-500 dark:text-dark-muted" data-i18n="msg_loading">Đang tải dữ liệu công việc...</p>
             </div>
 
-            <!-- BẢNG TIẾN ĐỘ NHÂN VIÊN (DÀNH CHO LÃNH ĐẠO) -->
-            <div id="leaderboard-container" class="hidden mb-6 bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border"></div>
-
-            <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden"></div>
+            <!-- Task Grid -->
+            <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
             
             <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
-                <i class="ph-fill ph-clipboard-text text-6xl mb-4 opacity-50"></i>
-                <p class="font-bold text-lg" data-i18n="msg_empty">Chưa có công việc nào trong mục này.</p>
+                <i class="ph-fill ph-kanban text-6xl mb-4 opacity-50"></i>
+                <p class="font-bold text-lg" data-i18n="msg_empty">Tuyệt vời! Không có công việc nào tồn đọng.</p>
             </div>
-
         </div>
     </main>
 
-    <!-- MODAL GIAO VIỆC & LẬP KẾ HOẠCH (DÙNG CHUNG CHO SỬA) -->
-    <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <!-- MODAL TẠO CÔNG VIỆC -->
+    <div id="create-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
                 <h2 class="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
-                    <i class="ph-fill ph-clipboard-text text-blue-600"></i> <span id="modal-task-title" data-i18n="modal_task_title">Lập Kế Hoạch & Giao Việc</span>
+                    <i class="ph-fill ph-plus-circle text-indigo-600"></i> <span data-i18n="modal_create_title">Khởi Tạo Kế Hoạch / Giao Việc</span>
                 </h2>
-                <button onclick="window.closeTaskModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
+                <button onclick="window.closeCreateModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5">
-                <input type="hidden" id="edit-task-id" value=""> <!-- ID ẩn để phân biệt Tạo mới hay Sửa -->
-                
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="label_task_name">Tên công việc / Dự án</label>
-                    <input type="text" id="task-title" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-3 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500" placeholder="VD: Hoàn thiện báo cáo...">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><span data-i18n="lbl_task_title">Tiêu đề công việc</span> <span class="text-red-500">*</span></label>
+                    <input type="text" id="c-title" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-2.5 font-bold outline-none focus:border-indigo-500 dark:text-white">
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="label_category">Phân loại Mảng</label>
-                        <select id="task-category" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-3 font-semibold text-slate-700 dark:text-slate-300 outline-none focus:border-blue-500">
-                            <option value="An toàn" data-i18n="filter_safe">An toàn</option>
-                            <option value="Môi trường" data-i18n="filter_env">Môi trường</option>
-                            <option value="Sức khỏe" data-i18n="filter_health">Sức khỏe</option>
-                            <option value="PCCC" data-i18n="filter_fire">PCCC</option>
-                            <option value="ATVSV" data-i18n="filter_atvsv">ATVSV</option>
-                            <option value="Khác" data-i18n="filter_other">Khác</option>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1" data-i18n="lbl_category">Nhóm mảng</label>
+                        <select id="c-category" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-2.5 font-bold outline-none focus:border-indigo-500 dark:text-white">
+                            <option value="An toàn">An toàn (Safety)</option>
+                            <option value="Môi trường">Môi trường (Env)</option>
+                            <option value="Sức khỏe">Sức khỏe (Health)</option>
+                            <option value="PCCC">Phòng cháy chữa cháy</option>
+                            <option value="Hành chánh">Hành chánh - Khác</option>
                         </select>
                     </div>
-
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="label_assignee">Giao cho ai?</label>
-                        <div class="relative" id="assignee-wrapper">
-                            <input type="hidden" id="task-assignee" value="">
-                            <button type="button" onclick="window.toggleDropdown()" id="assignee-display" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl px-3 py-3 font-bold text-blue-700 dark:text-blue-400 outline-none flex justify-between items-center text-sm shadow-sm transition h-[46px]">
-                                <span class="truncate" data-i18n="msg_loading">-- Đang tải... --</span>
-                                <i class="ph-bold ph-caret-down shrink-0"></i>
-                            </button>
-                            <div id="assignee-menu" class="absolute z-[100] w-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl hidden flex-col max-h-64 overflow-hidden">
-                                <div class="p-2 border-b border-slate-100 dark:border-slate-700 shrink-0">
-                                    <input type="text" id="assignee-search" onkeyup="window.filterAssignee()" class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500 dark:text-white" placeholder="🔍 Tìm tên, mã NV...">
-                                </div>
-                                <ul id="assignee-list" class="overflow-y-auto custom-scrollbar p-1"></ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="sm:col-span-1">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="label_deadline">Deadline (Hạn chót)</label>
-                        <input type="date" id="task-deadline" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-3 py-3 font-bold text-slate-800 dark:text-white outline-none focus:border-red-500 text-sm h-[46px]">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><span data-i18n="lbl_deadline">Hạn chót (Deadline)</span> <span class="text-red-500">*</span></label>
+                        <input type="date" id="c-deadline" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-2.5 font-bold outline-none focus:border-indigo-500 dark:text-white">
                     </div>
                 </div>
 
-                <div class="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-4 rounded-xl relative">
-                    <div class="flex justify-between items-center mb-3">
-                        <label class="block text-xs font-black text-indigo-700 dark:text-indigo-400 uppercase flex items-center gap-1" data-i18n="label_steps">
-                            <i class="ph-fill ph-list-numbers"></i> Kế hoạch chi tiết theo từng bước
-                        </label>
-                    </div>
-                    <div id="plan-steps-wrapper" class="space-y-2"></div>
-                    <button onclick="window.addPlanStep()" class="mt-3 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 flex items-center gap-1 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-700 shadow-sm transition">
-                        <i class="ph-bold ph-plus"></i> <span data-i18n="btn_add_step">Thêm bước thực hiện</span>
-                    </button>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1"><span data-i18n="lbl_assignee">Người nhận việc (Assignee)</span> <span class="text-red-500">*</span></label>
+                    <select id="c-assignee" class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl px-4 py-2.5 font-bold outline-none focus:border-indigo-500 dark:text-white">
+                        <option value="">-- Loading --</option>
+                    </select>
                 </div>
             </div>
 
-            <div class="p-5 border-t border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3 rounded-b-2xl">
-                <button onclick="window.closeTaskModal()" class="px-6 py-2.5 font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition" data-i18n="btn_cancel">Hủy</button>
-                <button id="btn-save-task" onclick="window.saveTask()" class="bg-blue-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition flex items-center gap-2">
-                    <i class="ph-bold ph-floppy-disk text-lg"></i> <span id="btn-save-task-text" data-i18n="btn_publish">Phát Hành Kế Hoạch</span>
+            <div class="p-5 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 rounded-b-2xl">
+                <button onclick="window.closeCreateModal()" class="px-6 py-2.5 font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 rounded-xl transition" data-i18n="btn_cancel">Hủy</button>
+                <button id="btn-save-task" onclick="window.saveTask()" class="bg-indigo-600 text-white px-8 py-2.5 font-bold rounded-xl shadow-md hover:bg-indigo-700 transition flex items-center gap-2">
+                    <i class="ph-bold ph-paper-plane-tilt"></i> <span data-i18n="btn_publish">Phát Hành Kế Hoạch</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL CẬP NHẬT TIẾN ĐỘ & ĐÁNH GIÁ CỦA LÃNH ĐẠO -->
+    <!-- MODAL CẬP NHẬT TIẾN ĐỘ / PHÊ DUYỆT -->
     <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
-                <h2 class="text-lg font-black text-slate-800 dark:text-white" id="update-modal-title" data-i18n="modal_update_title">Cập nhật Tiến độ</h2>
+        <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg flex flex-col">
+            <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center rounded-t-2xl">
+                <h2 class="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2" id="update-modal-title">
+                    <i class="ph-fill ph-pencil-simple text-blue-600"></i> Cập Nhật Tiến Độ
+                </h2>
                 <button onclick="window.closeUpdateModal()" class="text-slate-400 hover:text-red-500"><i class="ph-bold ph-x text-xl"></i></button>
             </div>
             
-            <div class="p-6 overflow-y-auto custom-scrollbar space-y-5">
-                <input type="hidden" id="up-task-id">
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="u-task-id">
                 
-                <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h3 id="disp-title" class="font-bold text-lg text-slate-800 dark:text-white mb-1">...</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400"><i class="ph-fill ph-calendar"></i> Deadline: <span id="disp-deadline" class="font-mono font-bold text-red-500">...</span></p>
+                <div class="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 p-4 rounded-xl">
+                    <h3 id="u-task-title" class="font-bold text-slate-800 dark:text-white uppercase">Tên công việc...</h3>
+                    <p class="text-xs text-slate-500 mt-2"><i class="ph-fill ph-calendar-blank"></i> Deadline: <span id="u-task-deadline" class="font-bold text-red-500"></span></p>
                 </div>
 
-                <div id="checklist-progress-section" class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-100 dark:border-slate-700 shadow-sm space-y-3">
-                    <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3 mb-2">
-                        <span class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase" data-i18n="label_update_step">Cập nhật tiến độ từng bước</span>
-                        <div class="text-right">
-                            <span class="text-[10px] font-bold text-slate-400 block uppercase" data-i18n="label_total_prog">Tổng tiến độ</span>
-                            <span id="prog-val" class="font-black text-3xl text-blue-600">0%</span>
-                        </div>
-                    </div>
-                    <div id="modal-checklist-container" class="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2"></div>
-                    <input type="hidden" id="task-progress" value="0">
-                </div>
-
-                <div id="request-review-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700">
-                    <label class="flex items-start gap-3 cursor-pointer p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl transition hover:bg-purple-100 dark:hover:bg-purple-900/40">
-                        <input type="checkbox" id="task-request-review" class="w-6 h-6 text-purple-600 rounded mt-0.5 cursor-pointer" onchange="window.toggleReviewerSelect()">
-                        <div class="flex-1">
-                            <span class="font-black text-purple-700 dark:text-purple-400 text-base block" data-i18n="btn_submit_review">Trình Lãnh Đạo Xem Xét</span>
-                            <span class="text-xs text-purple-600/70 dark:text-purple-300/70 font-medium block mt-1" data-i18n="desc_submit_review">Bật công tắc này để báo cáo việc hoàn thành lên Góc Lãnh Đạo.</span>
-                            
-                            <div id="reviewer-select-container" class="mt-3 hidden" onclick="event.stopPropagation()">
-                                <label class="block text-[11px] font-bold text-purple-800 dark:text-purple-300 uppercase mb-1" data-i18n="label_select_leader">Đích danh Sếp duyệt <span class="text-red-500">*</span></label>
-                                <div class="relative" id="reviewer-wrapper">
-                                    <input type="hidden" id="task-reviewer" value="">
-                                    <button type="button" onclick="window.toggleReviewerDropdown()" id="reviewer-display" class="w-full border border-purple-300 dark:border-purple-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2.5 font-bold text-purple-900 dark:text-purple-100 outline-none flex justify-between items-center text-sm shadow-sm transition">
-                                        <span class="truncate" id="reviewer-display-text" data-i18n="msg_select_leader">-- Chọn Sếp đánh giá --</span>
-                                        <i class="ph-bold ph-caret-down shrink-0"></i>
-                                    </button>
-                                    <div id="reviewer-menu" class="absolute z-[100] w-full mt-1 bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 rounded-xl shadow-xl hidden flex-col max-h-60 overflow-hidden">
-                                        <div class="p-2 border-b border-purple-100 dark:border-purple-700 shrink-0 bg-purple-50/50 dark:bg-slate-900/50">
-                                            <input type="text" id="reviewer-search" onkeyup="window.filterReviewerList()" class="w-full bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-purple-500 dark:text-white" placeholder="🔍 Gõ tên sếp..." data-i18n-placeholder="search_leader">
-                                        </div>
-                                        <ul id="reviewer-list" class="overflow-y-auto custom-scrollbar p-1"></ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div id="progress-section">
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 flex justify-between">
+                        <span data-i18n="lbl_progress">Cập nhật phần trăm hoàn thành</span> <span id="u-progress-val" class="text-blue-600 font-black text-base">0%</span>
                     </label>
+                    <input type="range" id="u-progress" min="0" max="100" step="10" value="0" oninput="document.getElementById('u-progress-val').innerText = this.value + '%'" class="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer">
                 </div>
 
-                <div id="eval-section" class="hidden pt-4 border-t border-slate-200 dark:border-slate-700 space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-amber-600 uppercase mb-2"><i class="ph-fill ph-chat-centered-text"></i> <span data-i18n="label_evaluation">Đánh giá & Yêu cầu (Dành cho Lãnh đạo)</span></label>
-                        <textarea id="task-eval" class="w-full border border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-900/10 rounded-xl px-4 py-3 text-sm outline-none focus:border-amber-500 custom-scrollbar resize-none dark:text-slate-200" rows="3" data-i18n-placeholder="desc_eval_placeholder"></textarea>
-                    </div>
-                    <label class="flex items-center gap-3 cursor-pointer p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl transition hover:bg-emerald-100">
-                        <input type="checkbox" id="task-done" class="w-6 h-6 text-emerald-600 rounded">
+                <div id="eval-section">
+                    <label class="block text-xs font-bold text-amber-600 uppercase mb-2"><i class="ph-fill ph-chat-text"></i> <span data-i18n="lbl_eval">Đánh giá & Yêu cầu</span></label>
+                    <textarea id="task-eval" rows="3" class="w-full border border-amber-300 bg-amber-50 dark:bg-slate-900 rounded-xl p-3 text-sm font-medium outline-none focus:border-amber-500 dark:text-white" data-i18n-placeholder="plc_eval" placeholder="Nhận xét tiến độ hoặc yêu cầu sửa chữa..."></textarea>
+                </div>
+
+                <div id="normal-action-section">
+                    <label class="flex items-center gap-3 p-4 border border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl cursor-pointer hover:bg-emerald-100 transition">
+                        <input type="checkbox" id="u-status-done" class="w-5 h-5 text-emerald-600 rounded">
                         <div>
-                            <span class="font-black text-emerald-700 dark:text-emerald-400 text-base block" data-i18n="btn_close_task">Nghiệm thu Đóng việc</span>
-                            <span class="text-xs text-emerald-600/70 font-medium" data-i18n="desc_close_task">Xác nhận công việc đã hoàn thành 100%.</span>
+                            <p class="font-bold text-emerald-800 dark:text-emerald-400 text-sm" data-i18n="lbl_done">Nghiệm thu Đóng việc</p>
+                            <p class="text-xs text-emerald-600 dark:text-emerald-500" data-i18n="desc_done">Xác nhận công việc đã hoàn thành 100%.</p>
                         </div>
                     </label>
+                    <button id="btn-update-task" onclick="window.saveUpdate()" class="w-full mt-4 bg-blue-600 text-white px-8 py-3.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition" data-i18n="btn_save_update">
+                        Lưu Cập Nhật Tiến Độ
+                    </button>
                 </div>
-            </div>
-
-            <div class="p-5 border-t border-slate-200 dark:border-dark-border flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/50">
-                <button id="btn-update-task" onclick="window.saveUpdate()" class="w-full bg-blue-600 text-white py-3.5 font-bold rounded-xl shadow-md hover:bg-blue-700 transition text-lg" data-i18n="btn_save_update">Lưu Cập Nhật Tiến Độ</button>
             </div>
         </div>
     </div>
 
     <script type="module">
+        // MODULE: SETUP & FIREBASE INIT
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, updateDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CẤU HÌNH FIREBASE
         const firebaseConfig = {
-          apiKey: "AIzaSyC7iFVmgouL-sW3UlzMVOrlNQYugFiw2uA",
-          authDomain: "ehs-training-app.firebaseapp.com",
-          projectId: "ehs-training-app",
-          storageBucket: "ehs-training-app.firebasestorage.app",
-          messagingSenderId: "354083430003",
-          appId: "1:354083430003:web:059953b7b9c1a9470a5406",
-          measurementId: "G-74ETHWTJCW"
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
         };
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
-        window.db = db;
 
-        let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
-        let currentUserId = localStorage.getItem("ehs_user_id");
-        let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
-        let userDept = localStorage.getItem("ehs_user_dept") || "";
-        
-        let isLeader = false;
-        let isGlobalLeader = false;
-
-        let currentTab = 'my-tasks'; 
-        let rawTasksData = [];
-        let globalUserDeptMap = {}; 
-        let globalUserEmailMap = {}; // Thêm biến lưu token
-        let upTaskId = "";
-        let deleteTaskId = "";
-
-        // TỪ ĐIỂN ĐA NGÔN NGỮ
+        // MODULE: TRANSLATIONS (ĐA NGÔN NGỮ)
         const translations = {
-            "vi": {
-                header_title: "Quản Lý Tiến Độ",
-                search_placeholder: "Tìm tên công việc, người nhận, người giao...",
-                filter_all: "Tất cả mảng công việc",
-                filter_safe: "An toàn", filter_env: "Môi trường", filter_health: "Sức khỏe", filter_fire: "PCCC", filter_atvsv: "Mạng lưới ATVSV", filter_other: "Khác",
-                btn_create_task: "Tạo Công Việc",
-                tab_my_tasks: "Việc tôi phải làm", tab_assigned: "Việc tôi đã giao", tab_leader: "Góc Lãnh Đạo",
-                msg_loading: "Đang tải dữ liệu...", msg_empty: "Chưa có công việc nào trong mục này.",
-                modal_task_title: "Lập Kế Hoạch & Giao Việc",
-                label_task_name: "Tên công việc / Dự án", label_category: "Phân loại Mảng", label_assignee: "Giao cho ai?", label_deadline: "Deadline (Hạn chót)",
-                label_steps: "Kế hoạch chi tiết theo từng bước", btn_add_step: "Thêm bước thực hiện", btn_cancel: "Hủy bỏ", btn_publish: "Phát Hành Kế Hoạch", btn_save_edit: "Lưu Chỉnh Sửa",
-                modal_update_title: "Cập nhật Tiến độ",
-                label_update_step: "Cập nhật tiến độ từng bước", label_total_prog: "Tổng tiến độ",
-                btn_submit_review: "Trình Lãnh Đạo Xem Xét", desc_submit_review: "Bật công tắc này để báo cáo việc hoàn thành lên Góc Lãnh Đạo.",
-                label_select_leader: "Đích danh Sếp duyệt", msg_select_leader: "-- Chọn Sếp đánh giá --", search_leader: "Gõ tìm tên sếp...",
-                label_evaluation: "Đánh giá & Yêu cầu (Dành cho Lãnh đạo)", desc_eval_placeholder: "Lãnh đạo nhập nhận xét hoặc yêu cầu...",
-                btn_close_task: "Nghiệm thu Đóng việc", desc_close_task: "Xác nhận công việc đã hoàn thành 100%.",
+            vi: {
+                page_title: "Quản Lý Kế Hoạch & Tiến Độ",
+                tab_my_tasks: "Việc tôi phải làm",
+                tab_assigned: "Việc tôi đã giao",
+                tab_leader: "Góc Lãnh Đạo",
+                search_plc: "Tìm kiếm công việc...",
+                btn_create: "Tạo Việc",
+                msg_loading: "Đang tải dữ liệu công việc...",
+                msg_empty: "Tuyệt vời! Không có công việc nào tồn đọng.",
+                modal_create_title: "Khởi Tạo Kế Hoạch / Giao Việc",
+                lbl_task_title: "Tiêu đề công việc",
+                lbl_category: "Nhóm mảng",
+                lbl_deadline: "Hạn chót (Deadline)",
+                lbl_assignee: "Người nhận việc (Assignee)",
+                btn_cancel: "Hủy",
+                btn_publish: "Phát Hành Kế Hoạch",
+                modal_update_title: "Cập Nhật Tiến Độ",
+                lbl_progress: "Cập nhật phần trăm hoàn thành",
+                lbl_eval: "Đánh giá & Yêu cầu (Dành cho người duyệt / lãnh đạo)",
+                plc_eval: "Nhận xét tiến độ hoặc yêu cầu sửa chữa...",
+                lbl_done: "Nghiệm thu Đóng việc",
+                desc_done: "Xác nhận công việc đã hoàn thành 100%.",
                 btn_save_update: "Lưu Cập Nhật Tiến Độ",
-                status_done: "Hoàn thành", status_overdue: "Quá hạn", status_review: "Chờ duyệt", status_wait_accept: "Chờ nghiệm thu", status_doing: "Đang làm", status_new: "Mới giao",
-                confirm_del_title: "Xác nhận xóa", confirm_del_desc: "Bạn có chắc chắn muốn xóa hạng mục này?", btn_agree_del: "Đồng ý Xóa",
-                self_task: "Việc cá nhân của tôi", self_tracking: "Công việc tự theo dõi", sent_to: "Đã trình:", rcv: "Nhận:", assign: "Giao:", steps_lbl: "Các bước thực hiện:"
+                status_done: "Hoàn Thành",
+                status_review: "Chờ Duyệt",
+                status_overdue: "Trễ Hạn",
+                status_progress: "Đang Xử Lý",
+                txt_receive: "Nhận",
+                txt_assign: "Giao",
+                txt_total_progress: "TỔNG TIẾN ĐỘ",
+                btn_update_approve: "Cập nhật / Phê duyệt",
+                modal_approve_title: "Phê Duyệt Nhà Thầu",
+                btn_view_profile: "XEM HỒ SƠ KIỂM CHỨNG TẠI ĐÂY",
+                btn_reject: "TỪ CHỐI",
+                btn_approve_s1: "Duyệt Sơ Bộ (Chuyển GĐ Vượng)",
+                btn_approve_s2: "Giám Đốc Duyệt (Chốt Hồ Sơ)",
+                msg_no_permission: "Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại:"
             },
-            "en": {
-                header_title: "Progress Management",
-                search_placeholder: "Search task, assignee, assigner...",
-                filter_all: "All categories",
-                filter_safe: "Safety", filter_env: "Environment", filter_health: "Health", filter_fire: "Fire Safety", filter_atvsv: "Safety Network", filter_other: "Others",
-                btn_create_task: "Create Task",
-                tab_my_tasks: "My Tasks", tab_assigned: "Assigned Tasks", tab_leader: "Leader View",
-                msg_loading: "Loading data...", msg_empty: "No tasks found in this section.",
-                modal_task_title: "Task Planning & Assignment",
-                label_task_name: "Task / Project Name", label_category: "Category", label_assignee: "Assign to", label_deadline: "Deadline",
-                label_steps: "Detailed Steps", btn_add_step: "Add Step", btn_cancel: "Cancel", btn_publish: "Publish Task", btn_save_edit: "Save Changes",
+            en: {
+                page_title: "Task & Progress Management",
+                tab_my_tasks: "My Tasks",
+                tab_assigned: "Assigned by Me",
+                tab_leader: "Leader Corner",
+                search_plc: "Search tasks...",
+                btn_create: "Create Task",
+                msg_loading: "Loading task data...",
+                msg_empty: "Awesome! No pending tasks.",
+                modal_create_title: "Create Plan / Assign Task",
+                lbl_task_title: "Task Title",
+                lbl_category: "Category",
+                lbl_deadline: "Deadline",
+                lbl_assignee: "Assignee",
+                btn_cancel: "Cancel",
+                btn_publish: "Publish Plan",
                 modal_update_title: "Update Progress",
-                label_update_step: "Update step progress", label_total_prog: "Total Progress",
-                btn_submit_review: "Submit for Review", desc_submit_review: "Turn on to submit the completion to the Leader View.",
-                label_select_leader: "Select Leader", msg_select_leader: "-- Select Reviewer --", search_leader: "Search leader name...",
-                label_evaluation: "Evaluation & Request (Leader only)", desc_eval_placeholder: "Leader enters comments or requests...",
-                btn_close_task: "Accept & Close Task", desc_close_task: "Confirm task is 100% completed.",
+                lbl_progress: "Update completion percentage",
+                lbl_eval: "Evaluation & Requirements",
+                plc_eval: "Comment on progress or request changes...",
+                lbl_done: "Mark as Done",
+                desc_done: "Confirm task is 100% completed.",
                 btn_save_update: "Save Progress",
-                status_done: "Done", status_overdue: "Overdue", status_review: "Reviewing", status_wait_accept: "Waiting Accept", status_doing: "Doing", status_new: "New",
-                confirm_del_title: "Confirm Delete", confirm_del_desc: "Are you sure you want to delete this task?", btn_agree_del: "Delete",
-                self_task: "My personal task", self_tracking: "Self-tracking task", sent_to: "Submitted to:", rcv: "To:", assign: "From:", steps_lbl: "Action steps:"
+                status_done: "Done",
+                status_review: "Pending Review",
+                status_overdue: "Overdue",
+                status_progress: "In Progress",
+                txt_receive: "To",
+                txt_assign: "From",
+                txt_total_progress: "TOTAL PROGRESS",
+                btn_update_approve: "Update / Approve",
+                modal_approve_title: "Contractor Approval",
+                btn_view_profile: "VIEW PROFILE EVIDENCE HERE",
+                btn_reject: "REJECT",
+                btn_approve_s1: "Preliminary Approval (To Director)",
+                btn_approve_s2: "Director Approval (Final)",
+                msg_no_permission: "You do not have permission at this step. Current reviewer:"
             },
-            "zh": {
-                header_title: "进度管理",
-                search_placeholder: "搜索任务、接收人、分配人...",
-                filter_all: "所有类别",
-                filter_safe: "安全", filter_env: "环境", filter_health: "健康", filter_fire: "消防", filter_atvsv: "安全网络", filter_other: "其他",
-                btn_create_task: "创建任务",
-                tab_my_tasks: "我的任务", tab_assigned: "已分配任务", tab_leader: "领导视图",
-                msg_loading: "正在加载数据...", msg_empty: "此部分没有任务。",
-                modal_task_title: "任务计划与分配",
-                label_task_name: "任务/项目名称", label_category: "类别", label_assignee: "分配给", label_deadline: "截止日期",
-                label_steps: "详细步骤", btn_add_step: "添加步骤", btn_cancel: "取消", btn_publish: "发布任务", btn_save_edit: "保存更改",
+            zh: {
+                page_title: "任务与进度管理",
+                tab_my_tasks: "我的任务",
+                tab_assigned: "我分配的",
+                tab_leader: "领导角",
+                search_plc: "搜索任务...",
+                btn_create: "创建任务",
+                msg_loading: "正在加载任务数据...",
+                msg_empty: "太棒了！没有待处理的任务。",
+                modal_create_title: "创建计划/分配任务",
+                lbl_task_title: "任务标题",
+                lbl_category: "类别",
+                lbl_deadline: "截止日期",
+                lbl_assignee: "接收人",
+                btn_cancel: "取消",
+                btn_publish: "发布计划",
                 modal_update_title: "更新进度",
-                label_update_step: "更新步骤进度", label_total_prog: "总进度",
-                btn_submit_review: "提交审核", desc_submit_review: "开启以将完成情况提交至领导视图。",
-                label_select_leader: "选择领导", msg_select_leader: "-- 选择审核人 --", search_leader: "搜索领导姓名...",
-                label_evaluation: "评估和要求 (仅限领导)", desc_eval_placeholder: "领导输入评论或要求...",
-                btn_close_task: "验收并关闭任务", desc_close_task: "确认任务已 100% 完成。",
+                lbl_progress: "更新完成百分比",
+                lbl_eval: "评估与要求",
+                plc_eval: "评论进度或请求修改...",
+                lbl_done: "标记为完成",
+                desc_done: "确认任务已 100% 完成。",
                 btn_save_update: "保存进度",
-                status_done: "已完成", status_overdue: "逾期", status_review: "审核中", status_wait_accept: "待验收", status_doing: "进行中", status_new: "新任务",
-                confirm_del_title: "确认删除", confirm_del_desc: "您确定要删除此任务吗？", btn_agree_del: "删除",
-                self_task: "我的个人任务", self_tracking: "自我跟踪任务", sent_to: "提交给:", rcv: "收件人:", assign: "发件人:", steps_lbl: "执行步骤:"
-            },
-            "es": {
-                header_title: "Gestión de Progreso",
-                search_placeholder: "Buscar tarea, asignado, asignador...",
-                filter_all: "Todas las categorías",
-                filter_safe: "Seguridad", filter_env: "Medio Ambiente", filter_health: "Salud", filter_fire: "Bomberos", filter_atvsv: "Red Seguridad", filter_other: "Otros",
-                btn_create_task: "Crear Tarea",
-                tab_my_tasks: "Mis Tareas", tab_assigned: "Tareas Asignadas", tab_leader: "Vista de Líder",
-                msg_loading: "Cargando datos...", msg_empty: "No hay tareas en esta sección.",
-                modal_task_title: "Planificación de Tareas",
-                label_task_name: "Nombre de Tarea", label_category: "Categoría", label_assignee: "Asignar a", label_deadline: "Fecha límite",
-                label_steps: "Pasos Detallados", btn_add_step: "Añadir Paso", btn_cancel: "Cancelar", btn_publish: "Publicar", btn_save_edit: "Guardar",
-                modal_update_title: "Actualizar Progreso",
-                label_update_step: "Progreso por paso", label_total_prog: "Progreso Total",
-                btn_submit_review: "Enviar para Revisión", desc_submit_review: "Activar para enviar al Líder.",
-                label_select_leader: "Seleccionar Líder", msg_select_leader: "-- Seleccione --", search_leader: "Buscar líder...",
-                label_evaluation: "Evaluación (Líder)", desc_eval_placeholder: "Comentarios del líder...",
-                btn_close_task: "Aceptar y Cerrar", desc_close_task: "Confirmar 100% completado.",
-                btn_save_update: "Guardar Progreso",
-                status_done: "Hecho", status_overdue: "Atrasado", status_review: "Revisando", status_wait_accept: "Esperando", status_doing: "Haciendo", status_new: "Nuevo",
-                confirm_del_title: "Confirmar", confirm_del_desc: "¿Seguro que quieres borrar?", btn_agree_del: "Borrar",
-                self_task: "Mi tarea", self_tracking: "Tarea personal", sent_to: "Enviado a:", rcv: "Para:", assign: "De:", steps_lbl: "Pasos:"
+                status_done: "已完成",
+                status_review: "待审核",
+                status_overdue: "已逾期",
+                status_progress: "进行中",
+                txt_receive: "接收",
+                txt_assign: "分配",
+                txt_total_progress: "总进度",
+                btn_update_approve: "更新 / 批准",
+                modal_approve_title: "承包商批准",
+                btn_view_profile: "在此处查看档案证据",
+                btn_reject: "拒绝",
+                btn_approve_s1: "初步批准 (转交总监)",
+                btn_approve_s2: "总监批准 (最终)",
+                msg_no_permission: "您在此步骤没有权限。当前审核人："
             }
         };
 
         let currentLang = localStorage.getItem('ehs_lang') || 'vi';
-
+        
         window.changeLanguage = function(lang) {
             currentLang = lang;
             localStorage.setItem('ehs_lang', lang);
-            const langNames = { 'vi': 'Tiếng Việt', 'en': 'English', 'zh': '中文', 'es': 'Español' };
-            document.getElementById('current-lang-display').innerText = langNames[lang];
             
+            const langNames = { 'vi': 'Tiếng Việt', 'en': 'English', 'zh': '中文' };
+            document.getElementById('current-lang-display').innerText = langNames[lang];
+
             document.querySelectorAll('[data-i18n]').forEach(el => {
                 const key = el.getAttribute('data-i18n');
-                if (translations[lang] && translations[lang][key]) {
-                    el.innerHTML = translations[lang][key]; 
-                }
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
             });
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
                 const key = el.getAttribute('data-i18n-placeholder');
-                if (translations[lang] && translations[lang][key]) {
-                    el.placeholder = translations[lang][key];
-                }
+                if (translations[lang][key]) el.placeholder = translations[lang][key];
             });
-            window.renderTasks(); 
+            if(rawTasksData.length > 0) window.renderTasks();
         };
 
+        // MODULE: STATE & CONSTANTS
+        let currentUserId = localStorage.getItem("ehs_user_id");
+        let currentUserName = localStorage.getItem("ehs_user_name") || "Lãnh đạo EHS";
+        let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
+        let rawTasksData = [];
+        let allUsers = [];
+        let currentTab = 'my-tasks';
+
+        // KHAI BÁO MÃ NHÂN VIÊN CỦA SẾP VƯỢNG Ở ĐÂY
+        const ID_SEP_VUONG = "030"; 
+
+        // MODULE: UTILS
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
-            toast.className = "fixed top-5 right-5 z-[200] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
-            if (type === "success") {
-                toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl";
-            } else {
-                toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl";
-            }
+            toast.className = "fixed top-5 right-5 z-[250] transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white";
+            if (type === "success") { toast.classList.add('bg-emerald-600'); icon.className = "ph-fill ph-check-circle text-2xl"; } 
+            else { toast.classList.add('bg-red-600'); icon.className = "ph-fill ph-warning-circle text-2xl"; }
             document.getElementById('toast-message').innerText = message;
             toast.classList.remove('translate-x-[150%]');
-            setTimeout(() => { toast.classList.add('translate-x-[150%]'); }, 3000);
+            setTimeout(() => toast.classList.add('translate-x-[150%]'), 3000);
         }
 
-        window.toggleDarkMode = function() {
-            isDarkMode = !isDarkMode; 
-            localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light'); 
-            applyTheme();
-        };
-
+        window.toggleDarkMode = function() { isDarkMode = !isDarkMode; localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light'); applyTheme(); };
         function applyTheme() {
             if (isDarkMode) { document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = "ph-fill ph-sun text-amber-400"; } 
             else { document.documentElement.classList.remove('dark'); document.getElementById('theme-icon').className = "ph-bold ph-moon text-slate-600"; }
@@ -466,765 +388,352 @@
 
         window.switchTab = function(tab) {
             currentTab = tab;
-            const btnMy = document.getElementById('tab-my-tasks');
-            const btnAssigned = document.getElementById('tab-assigned');
-            const btnAll = document.getElementById('tab-all');
-            
-            const activeClass = "px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition";
-            const inactiveClass = "px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition";
-            
-            btnMy.className = (tab === 'my-tasks') ? activeClass : inactiveClass;
-            btnAssigned.className = (tab === 'assigned-tasks') ? activeClass : inactiveClass;
-            if(isLeader) {
-                btnAll.className = (tab === 'all-tasks') ? activeClass + " flex items-center gap-1" : inactiveClass + " flex items-center gap-1";
-            }
+            ['my-tasks', 'assigned-tasks', 'leader-corner'].forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if(t === tab) btn.classList.add('active'); else btn.classList.remove('active');
+            });
             window.renderTasks();
-        };
-
-        // Hàm chung cho Modal Tạo/Sửa
-        window.openTaskModal = function() { 
-            document.getElementById('edit-task-id').value = '';
-            document.getElementById('task-title').value = '';
-            document.getElementById('plan-steps-wrapper').innerHTML = '';
-            document.getElementById('task-deadline').value = '';
-            document.getElementById('task-assignee').value = '';
-            document.getElementById('assignee-display').innerHTML = `<span>-- Chọn nhân sự --</span> <i class="ph-bold ph-caret-down shrink-0"></i>`;
-            
-            document.getElementById('modal-task-title').innerText = translations[currentLang].modal_task_title;
-            document.getElementById('btn-save-task-text').innerText = translations[currentLang].btn_publish;
-            
-            window.addPlanStep();
-            document.getElementById('task-modal').classList.remove('hidden'); 
-        };
-        
-        window.closeTaskModal = function() { document.getElementById('task-modal').classList.add('hidden'); };
-
-        // Nút Edit
-        window.editTaskInfo = function(taskId) {
-            const t = rawTasksData.find(x => x.id === taskId);
-            if(!t) return;
-            
-            document.getElementById('edit-task-id').value = t.id;
-            document.getElementById('task-title').value = t.title;
-            document.getElementById('task-category').value = t.category || 'Khác';
-            document.getElementById('task-deadline').value = t.due_date;
-            
-            document.getElementById('task-assignee').value = `${t.assignee_id}|${t.assignee_name}`;
-            document.getElementById('assignee-display').innerHTML = `<span class="truncate font-black">${t.assignee_name}</span> <i class="ph-bold ph-caret-down shrink-0"></i>`;
-            
-            const wrapper = document.getElementById('plan-steps-wrapper');
-            wrapper.innerHTML = '';
-            if (t.plan_steps && t.plan_steps.length > 0) {
-                t.plan_steps.forEach(step => {
-                    let text = typeof step === 'string' ? step : step.text;
-                    let prog = typeof step === 'object' && step.progress !== undefined ? step.progress : 0;
-                    window.addPlanStep(text, prog);
-                });
-            } else {
-                window.addPlanStep();
-            }
-
-            document.getElementById('modal-task-title').innerText = translations[currentLang].btn_save_edit || 'Sửa công việc';
-            document.getElementById('btn-save-task-text').innerText = translations[currentLang].btn_save_edit || 'Lưu Chỉnh Sửa';
-            document.getElementById('task-modal').classList.remove('hidden');
-        };
-
-        // Nút Xóa
-        window.deleteTaskInfo = function(taskId) {
-            deleteTaskId = taskId;
-            document.getElementById('custom-confirm').classList.remove('hidden');
-        };
-        window.closeConfirmDelete = function() {
-            deleteTaskId = "";
-            document.getElementById('custom-confirm').classList.add('hidden');
-        };
-        window.executeDeleteTask = async function() {
-            if(!deleteTaskId) return;
-            try {
-                await deleteDoc(doc(db, "ehs_tasks", deleteTaskId));
-                showToast("Đã xóa công việc thành công!");
-                window.closeConfirmDelete();
-                await fetchAllTasks();
-            } catch(e) {
-                showToast("Lỗi xóa: " + e.message, "error");
-            }
-        };
-
-        window.updateStepProg = function(el) {
-            const idx = el.getAttribute('data-idx');
-            const val = el.value;
-            document.getElementById(`step-val-${idx}`).innerText = val + '%';
-            if(val === "100") {
-                el.classList.add('accent-emerald-500'); el.classList.remove('accent-blue-600');
-                document.getElementById(`step-title-${idx}`).classList.add('line-through', 'text-emerald-600');
-            } else {
-                el.classList.add('accent-blue-600'); el.classList.remove('accent-emerald-500');
-                document.getElementById(`step-title-${idx}`).classList.remove('line-through', 'text-emerald-600');
-            }
-            window.recalcProgress();
-        };
-
-        window.addPlanStep = function(text = "", existingProg = 0) {
-            const wrapper = document.getElementById('plan-steps-wrapper');
-            const div = document.createElement('div');
-            div.className = "flex items-start gap-2 step-item animate-[slideUp_0.2s_ease-out]";
-            div.innerHTML = `
-                <input type="hidden" class="step-old-prog" value="${existingProg}">
-                <i class="ph-fill ph-check-circle text-slate-300 mt-2.5"></i>
-                <textarea class="step-input w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 dark:text-slate-200 custom-scrollbar resize-none" rows="2" placeholder="Nhập chi tiết...">${text.replace(/"/g, '&quot;')}</textarea>
-                <button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 mt-2 bg-red-50 dark:bg-red-900/30 p-1.5 rounded-lg transition"><i class="ph-bold ph-trash"></i></button>
-            `;
-            wrapper.appendChild(div);
-        };
-
-        window.toggleDropdown = function() {
-            const menu = document.getElementById('assignee-menu');
-            menu.classList.toggle('hidden');
-            if(!menu.classList.contains('hidden')) document.getElementById('assignee-search').focus();
-        };
-        window.toggleReviewerDropdown = function() {
-            const menu = document.getElementById('reviewer-menu');
-            menu.classList.toggle('hidden'); menu.classList.toggle('flex');
-            if(!menu.classList.contains('hidden')) document.getElementById('reviewer-search').focus();
-        };
-
-        document.addEventListener('click', function(event) {
-            const wrapper = document.getElementById('assignee-wrapper');
-            if (wrapper && !wrapper.contains(event.target)) document.getElementById('assignee-menu').classList.add('hidden');
-            const revWrapper = document.getElementById('reviewer-wrapper');
-            if (revWrapper && !revWrapper.contains(event.target)) {
-                document.getElementById('reviewer-menu').classList.add('hidden');
-                document.getElementById('reviewer-menu').classList.remove('flex');
-            }
-        });
-
-        window.selectAssignee = function(id, name) {
-            document.getElementById('task-assignee').value = id + '|' + name;
-            document.getElementById('assignee-display').innerHTML = `<span class="truncate font-black">${name}</span> <i class="ph-bold ph-caret-down shrink-0"></i>`;
-            document.getElementById('assignee-menu').classList.add('hidden');
-        };
-        window.selectReviewer = function(id, name, role) {
-            document.getElementById('task-reviewer').value = id + '|' + name;
-            document.getElementById('reviewer-display-text').innerText = `${name} (${role})`;
-            document.getElementById('reviewer-menu').classList.add('hidden');
-            document.getElementById('reviewer-menu').classList.remove('flex');
-        };
-
-        window.filterAssignee = function() {
-            const keyword = document.getElementById('assignee-search').value.toLowerCase();
-            document.querySelectorAll('.assignee-item').forEach(item => {
-                item.style.display = item.innerText.toLowerCase().includes(keyword) ? 'block' : 'none';
-            });
-        };
-        window.filterReviewerList = function() {
-            const keyword = document.getElementById('reviewer-search').value.toLowerCase();
-            document.querySelectorAll('.reviewer-item').forEach(item => {
-                item.style.display = item.innerText.toLowerCase().includes(keyword) ? 'block' : 'none';
-            });
-        };
-
-        window.toggleReviewerSelect = function() {
-            const isChecked = document.getElementById('task-request-review').checked;
-            const container = document.getElementById('reviewer-select-container');
-            if(isChecked) container.classList.remove('hidden'); else container.classList.add('hidden');
-        };
-
-        // LOAD DANH SÁCH NHÂN VIÊN VÀ TOKEN (ĐỂ BẮN PUSH)
-        async function loadUsersDropdown() {
-            const ul = document.getElementById('assignee-list');
-            const revUl = document.getElementById('reviewer-list');
-            try {
-                const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
-                let html = `<li onclick="window.selectAssignee('${currentUserId}', '${currentUserName}')" class="assignee-item p-3 mb-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg cursor-pointer transition font-black text-blue-700 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">🌟 ${translations[currentLang].self_task}</li>`;
-                let revHtml = ``;
-                
-                globalUserDeptMap = {}; 
-                globalUserEmailMap = {}; // Dùng Map này để chứa Token
-                let currentUserRole = "";
-
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    if(data.ma_nv) {
-                        globalUserDeptMap[data.ma_nv] = data.bo_phan || "";
-                        // LƯU FCM TOKEN CỦA TỪNG NGƯỜI VÀO MAP ĐỂ LÁT NỮA GỌI
-                        if (data.fcm_token) {
-                            globalUserEmailMap[data.ma_nv] = data.fcm_token;
-                        }
-                    }
-                    if(data.ma_nv === currentUserId) currentUserRole = (data.vi_tri || "") + " " + (data.bo_phan || "");
-
-                    if(data.ma_nv && data.ho_ten && data.ma_nv !== currentUserId) {
-                        html += `<li onclick="window.selectAssignee('${data.ma_nv}', '${data.ho_ten.replace(/'/g, "\\'")}')" class="assignee-item p-2 mb-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg cursor-pointer transition text-sm border-b border-slate-50 dark:border-slate-800">
-                            <div class="font-bold text-slate-800 dark:text-slate-200">${data.ho_ten} (${data.ma_nv})</div>
-                            <div class="text-[10px] text-slate-500 mt-0.5">${data.bo_phan || ''}</div>
-                        </li>`;
-                    }
-                    
-                    const roleTitle = (data.vi_tri || "").toLowerCase();
-                    const pcccRole = (data.vai_tro_phu?.pccc || "").toLowerCase();
-                    const isStrictLeader = /giám đốc|quản đốc|giám sát|trưởng|đội phó|ehs|admin/i.test(roleTitle) || /trưởng|phó/i.test(pcccRole);
-                    
-                    if (isStrictLeader && data.ma_nv !== currentUserId && data.ma_nv && data.ho_ten) {
-                        const displayRole = data.vi_tri || 'Lãnh đạo';
-                        revHtml += `
-                            <li onclick="window.selectReviewer('${data.ma_nv}', '${data.ho_ten.replace(/'/g, "\\'")}', '${displayRole.replace(/'/g, "\\'")}')" class="reviewer-item p-2.5 mb-1 hover:bg-purple-100 dark:hover:bg-purple-900/50 rounded-lg cursor-pointer transition text-sm border-b border-slate-100 dark:border-slate-700">
-                                <div class="font-black text-purple-900 dark:text-purple-200 flex items-center justify-between">
-                                    <span>${data.ho_ten}</span><span class="text-[10px] bg-purple-100 dark:bg-purple-900/80 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">${displayRole}</span>
-                                </div>
-                                <div class="text-[11px] text-slate-500 mt-0.5">Mã NV: ${data.ma_nv}</div>
-                            </li>`;
-                    }
-                });
-                
-                ul.innerHTML = html; revUl.innerHTML = revHtml;
-                const myRoleStr = currentUserRole.toLowerCase();
-                isLeader = /trưởng|giám sát|quản đốc|giám đốc|đội phó|ehs|admin/i.test(myRoleStr);
-                isGlobalLeader = /ehs|admin/i.test(myRoleStr);
-
-                if(isLeader) { document.getElementById('tab-all').classList.remove('hidden'); document.getElementById('tab-all').classList.add('flex'); }
-            } catch (e) { console.error("Lỗi dropdown: ", e); }
         }
 
-        async function fetchAllTasks() {
-            document.getElementById('task-grid').classList.add('hidden'); document.getElementById('empty-state').classList.add('hidden'); document.getElementById('loader').classList.remove('hidden');
+        // MODULE: CORE LOGIC
+        async function loadUsersList() {
+            try {
+                const snap = await getDocs(collection(db, "nhan_su_noi_bo"));
+                allUsers = [];
+                let options = '<option value="">-- Chọn Người Nhận Việc --</option>';
+                snap.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if(data.ma_nv && data.ho_ten) {
+                        allUsers.push({ id: data.ma_nv, name: data.ho_ten, fcm_token: data.fcm_token });
+                        options += `<option value="${data.ma_nv}">${data.ho_ten} (${data.bo_phan || 'EHS'})</option>`;
+                    }
+                });
+                document.getElementById('c-assignee').innerHTML = options;
+            } catch(e) { console.error("Lỗi lấy danh sách user:", e); }
+        }
+
+        window.loadTasks = async function() {
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('task-grid').classList.add('hidden');
+            document.getElementById('empty-state').classList.add('hidden');
+
             try {
                 const snap = await getDocs(collection(db, "ehs_tasks"));
                 rawTasksData = [];
-                snap.forEach(doc => rawTasksData.push({id: doc.id, ...doc.data()}));
+                snap.forEach(docSnap => { rawTasksData.push({ id: docSnap.id, ...docSnap.data() }); });
                 window.renderTasks();
-            } catch (e) {
-                document.getElementById('loader').innerHTML = `<div class="text-center text-red-500 font-bold"><i class="ph-bold ph-warning-circle text-4xl mb-2"></i><br>Lỗi máy chủ.<br>${e.message}</div>`;
-            }
+            } catch(e) { console.error(e); }
         }
 
         window.renderTasks = function() {
             const grid = document.getElementById('task-grid');
             const loader = document.getElementById('loader');
             const empty = document.getElementById('empty-state');
-            const leaderboardContainer = document.getElementById('leaderboard-container');
             const lang = translations[currentLang];
             
             grid.innerHTML = '';
             const keyword = document.getElementById('search-box').value.toLowerCase();
-            const filterCat = document.getElementById('filter-category').value;
 
             let filteredTasks = rawTasksData.filter(t => {
                 let tabMatch = false;
                 const isSelfAssigned = (t.assignee_id === t.assigner_id);
                 
+                // ẨN HỒ SƠ ĐÃ BỊ TỪ CHỐI KHỎI BẢNG CÔNG VIỆC
+                if (t.task_type === 'contractor_approval' && t.status === 'Rejected') {
+                    return false;
+                }
+
                 if (currentTab === 'my-tasks' && t.assignee_id === currentUserId) tabMatch = true;
                 if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId && !isSelfAssigned) tabMatch = true;
-                
-                if (currentTab === 'all-tasks' && isLeader) {
-                    if (isSelfAssigned) {
-                        if (t.is_review_requested && (t.reviewer_id === currentUserId || isGlobalLeader)) tabMatch = true;
-                    } else {
-                        if (isGlobalLeader) { tabMatch = true; } 
-                        else {
-                            let myMainDept = userDept.split('-')[0].trim().toLowerCase();
-                            let theirMainDept = (globalUserDeptMap[t.assignee_id] || "").split('-')[0].trim().toLowerCase();
-                            if (myMainDept && theirMainDept && myMainDept === theirMainDept) tabMatch = true;
-                        }
-                    }
+                if (currentTab === 'leader-corner') tabMatch = true;
+
+                let kwMatch = true;
+                if (keyword) {
+                    kwMatch = (t.title && t.title.toLowerCase().includes(keyword)) || 
+                              (t.assignee_name && t.assignee_name.toLowerCase().includes(keyword)) ||
+                              (t.assigner_name && t.assigner_name.toLowerCase().includes(keyword));
                 }
-                if (!tabMatch) return false;
-                if (filterCat !== 'all' && t.category !== filterCat) return false;
-                const textSearch = ((t.title||"") + " " + (t.assignee_name||"") + " " + (t.assigner_name||"")).toLowerCase();
-                if (keyword && !textSearch.includes(keyword)) return false;
-                return true;
+                return tabMatch && kwMatch;
             });
 
             filteredTasks.sort((a,b) => {
-                let timeA = a.created_at ? (a.created_at.toDate ? a.created_at.toDate().getTime() : a.created_at) : 0;
-                let timeB = b.created_at ? (b.created_at.toDate ? b.created_at.toDate().getTime() : b.created_at) : 0;
-                return timeB - timeA;
+                if(a.status === 'Done' && b.status !== 'Done') return 1;
+                if(a.status !== 'Done' && b.status === 'Done') return -1;
+                return new Date(a.due_date) - new Date(b.due_date);
             });
 
-            // Lãnh đạo thống kê
-            if (currentTab === 'all-tasks' && isLeader && filteredTasks.length > 0) {
-                let userStats = {};
-                filteredTasks.forEach(t => {
-                    let assignee = t.assignee_name || 'N/A';
-                    if (!userStats[assignee]) userStats[assignee] = { total: 0, completed: 0, totalProg: 0 };
-                    userStats[assignee].total++;
-                    userStats[assignee].totalProg += parseInt(t.progress || 0);
-                    if (t.status === 'Done') userStats[assignee].completed++;
-                });
+            if (filteredTasks.length === 0) {
+                loader.classList.add('hidden'); empty.classList.remove('hidden'); return;
+            }
 
-                let statsHtml = `<h3 class="font-black text-lg text-slate-800 dark:text-white mb-4 flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-2"><i class="ph-fill ph-chart-bar text-amber-500"></i> Analytics</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
-                let sortedStats = Object.keys(userStats).map(name => ({ name: name, ...userStats[name], avg: Math.round(userStats[name].totalProg / userStats[name].total) })).sort((a, b) => b.avg - a.avg);
-
-                sortedStats.forEach(stat => {
-                    let colorClass = stat.avg === 100 ? 'bg-emerald-500' : (stat.avg >= 50 ? 'bg-blue-500' : 'bg-amber-500');
-                    statsHtml += `
-                        <div class="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-                            <div class="flex justify-between items-center mb-1"><span class="font-bold text-sm text-slate-700 dark:text-slate-200 truncate pr-2">${stat.name}</span><span class="text-xs font-black ${stat.avg === 100 ? 'text-emerald-600' : 'text-blue-600'}">${stat.avg}%</span></div>
-                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 mb-2 overflow-hidden"><div class="${colorClass} h-1.5 rounded-full" style="width: ${stat.avg}%"></div></div>
-                        </div>`;
-                });
-                statsHtml += `</div>`; leaderboardContainer.innerHTML = statsHtml; leaderboardContainer.classList.remove('hidden');
-            } else { leaderboardContainer.classList.add('hidden'); }
-
-            if(filteredTasks.length === 0) { empty.classList.remove('hidden'); grid.classList.add('hidden'); loader.classList.add('hidden'); return; }
+            const today = new Date(); today.setHours(0,0,0,0);
 
             filteredTasks.forEach(t => {
-                const today = new Date(); today.setHours(0,0,0,0);
-                const deadline = new Date(t.due_date);
-                const isOverdue = deadline < today && t.status !== 'Done';
+                const deadlineDate = new Date(t.due_date);
+                deadlineDate.setHours(0,0,0,0);
                 
-                let statusHtml = '';
-                if (t.status === 'Done') statusHtml = `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-check-circle"></i> ${lang.status_done}</span>`;
-                else if (isOverdue) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase animate-pulse"><i class="ph-bold ph-warning-circle"></i> ${lang.status_overdue}</span>`;
-                else if (t.is_review_requested && t.status !== 'Done') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-paper-plane-tilt"></i> ${lang.status_review}</span>`;
-                else if (t.status === 'Review') statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> ${lang.status_wait_accept}</span>`;
-                else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> ${lang.status_doing}</span>`;
-                else statusHtml = `<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> ${lang.status_new}</span>`;
-
-                let catBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 bg-slate-100 text-slate-600 whitespace-nowrap">${t.category || 'Khác'}</span>`;
-
-                const dateStr = deadline.toLocaleDateString('vi-VN');
-                const isSelfAssigned = (t.assignee_id === t.assigner_id);
-
-                let stepsHtml = '';
-                if (t.plan_steps && Array.isArray(t.plan_steps) && t.plan_steps.length > 0) {
-                    stepsHtml = '<ul class="space-y-2 mt-2">';
-                    t.plan_steps.forEach((step) => {
-                        let text = typeof step === 'string' ? step : step.text;
-                        let stepProg = typeof step === 'object' && step.progress !== undefined ? step.progress : (step.done ? 100 : 0);
-                        let isDone = stepProg === 100;
-                        stepsHtml += `
-                            <li class="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                                <div class="flex items-start gap-1.5 text-xs mb-1">${isDone ? '<i class="ph-bold ph-check-circle text-emerald-500 shrink-0 text-base"></i>' : '<i class="ph-bold ph-circle text-slate-300 shrink-0 text-base"></i>'} <span class="${isDone ? 'line-through text-slate-400 font-medium' : 'text-slate-700 dark:text-slate-300 font-medium'}">${text}</span></div>
-                                <div class="flex items-center gap-2 pl-5"><div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1 overflow-hidden"><div class="${isDone ? 'bg-emerald-500' : 'bg-blue-400'} h-1 rounded-full" style="width: ${stepProg}%"></div></div><span class="text-[9px] font-bold text-slate-400 w-6 text-right">${stepProg}%</span></div>
-                            </li>`;
-                    });
-                    stepsHtml += '</ul>';
-                }
-
-                let improveWarning = '';
-                if (t.evaluation && t.status !== 'Done') {
-                    improveWarning = `<div class="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 p-2 rounded-lg"><p class="text-[10px] font-black text-amber-700 uppercase flex items-center gap-1"><i class="ph-fill ph-warning"></i> Sếp yêu cầu cải tiến:</p><p class="text-xs text-amber-800 mt-1 font-medium italic">"${t.evaluation}"</p></div>`;
-                }
+                let statusBadge = ''; let borderColor = 'border-slate-200 dark:border-slate-700';
                 
-                let sourceTaskHtml = '';
-                if (isSelfAssigned) {
-                    if (t.is_review_requested) sourceTaskHtml = `<div class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 p-2 rounded-lg font-semibold flex items-start gap-1.5 border border-purple-100 dark:border-purple-800"><i class="ph-fill ph-paper-plane-tilt mt-0.5 shrink-0"></i> <span>${lang.sent_to} <b class="text-purple-800 dark:text-purple-200">${t.reviewer_name || 'Sếp'}</b></span></div>`;
-                    else sourceTaskHtml = `<div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-indigo-100"><i class="ph-fill ph-user-circle"></i> ${lang.self_tracking}</div>`;
+                if (t.status === 'Done') {
+                    statusBadge = `<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold border border-emerald-200 uppercase tracking-wider"><i class="ph-bold ph-check-circle"></i> ${lang.status_done}</span>`;
+                    borderColor = 'border-emerald-200 dark:border-emerald-800';
+                } else if (t.status === 'Review') {
+                    statusBadge = `<span class="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] font-bold border border-purple-200 uppercase tracking-wider"><i class="ph-bold ph-paper-plane-tilt"></i> ${lang.status_review}</span>`;
+                    borderColor = 'border-purple-300';
+                } else if (deadlineDate < today) {
+                    statusBadge = `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px] font-bold border border-red-200 uppercase tracking-wider"><i class="ph-bold ph-warning-circle"></i> ${lang.status_overdue}</span>`;
+                    borderColor = 'border-red-300';
                 } else {
-                    sourceTaskHtml = `<div class="space-y-1"><p><i class="ph-fill ph-user-circle text-blue-500"></i> ${lang.rcv} <b class="text-slate-700 dark:text-slate-200">${t.assignee_name}</b></p><p><i class="ph-fill ph-user-focus text-amber-500"></i> ${lang.assign} <b class="text-slate-700 dark:text-slate-200">${t.assigner_name}</b></p></div>`;
+                    statusBadge = `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px] font-bold border border-blue-200 uppercase tracking-wider"><i class="ph-bold ph-spinner"></i> ${lang.status_progress}</span>`;
                 }
 
-                // Edit/Delete Buttons (Only for Assigner)
-                let actionBtns = '';
-                if(t.assigner_id === currentUserId) {
-                    actionBtns = `
-                        <div class="flex gap-1 ml-2">
-                            <button onclick="window.editTaskInfo('${t.id}')" class="text-slate-400 hover:text-blue-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
-                            <button onclick="window.deleteTaskInfo('${t.id}')" class="text-slate-400 hover:text-red-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Xóa"><i class="ph-bold ph-trash text-sm"></i></button>
-                        </div>
-                    `;
-                }
+                const dStr = deadlineDate.toLocaleDateString('vi-VN');
+                const prog = t.progress || 0;
 
-                const card = document.createElement('div');
-                card.className = `bg-white dark:bg-dark-card border ${isOverdue && t.status !== 'Done' ? 'border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : 'border-slate-200 dark:border-dark-border shadow-sm hover:shadow-md'} p-5 rounded-2xl flex flex-col transition-all`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex gap-2 flex-wrap">${statusHtml} ${catBadge}</div>
-                        <div class="flex items-center shrink-0">
-                            <span class="text-xs font-mono font-bold ${isOverdue && t.status !== 'Done' ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}"><i class="ph-fill ph-calendar-blank"></i> ${dateStr}</span>
-                            ${actionBtns}
+                grid.innerHTML += `
+                    <div class="bg-white dark:bg-dark-card border ${borderColor} p-5 rounded-2xl flex flex-col hover:shadow-lg transition shadow-sm relative overflow-hidden">
+                        ${t.task_type === 'contractor_approval' ? '<div class="absolute -right-6 -top-6 text-rose-500 opacity-10"><i class="ph-fill ph-hard-hat text-8xl"></i></div>' : ''}
+                        
+                        <div class="flex justify-between items-start mb-3 relative z-10">
+                            <div class="flex gap-2">${statusBadge} <span class="bg-slate-100 dark:bg-slate-800 text-slate-500 px-2 py-0.5 rounded text-[10px] font-bold">${t.category||'Khác'}</span></div>
+                            <span class="text-xs font-mono font-bold text-slate-500"><i class="ph-fill ph-calendar-blank"></i> ${dStr}</span>
                         </div>
-                    </div>
-                    <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2 leading-tight">${t.title}</h3>
-                    <div class="text-[13px] text-slate-500 dark:text-slate-400 mb-3 shrink-0">${sourceTaskHtml}</div>
-                    
-                    <div class="mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex-1 overflow-y-auto custom-scrollbar max-h-40">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">${lang.steps_lbl}</p>
-                        ${stepsHtml}
-                        ${improveWarning}
-                    </div>
-
-                    <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-500 uppercase">${lang.label_total_prog}</span><span class="text-xs font-black text-blue-600">${t.progress}%</span></div>
-                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4 overflow-hidden"><div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: ${t.progress}%"></div></div>
-                        <button onclick="window.openUpdateModal('${t.id}')" class="w-full bg-white dark:bg-slate-800 hover:bg-blue-50 text-blue-600 dark:text-blue-400 font-bold py-2.5 rounded-xl text-sm transition border-2 border-blue-100 flex justify-center items-center gap-2"><i class="ph-bold ph-pencil-simple"></i> ${lang.modal_update_title}</button>
+                        
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-3 leading-tight relative z-10">${t.title}</h3>
+                        
+                        <div class="text-xs text-slate-600 dark:text-slate-400 space-y-1.5 mb-5 flex-1 relative z-10">
+                            <p><i class="ph-fill ph-user-circle text-blue-500"></i> ${lang.txt_receive}: <b>${t.assignee_name}</b></p>
+                            <p><i class="ph-fill ph-paper-plane-right text-amber-500"></i> ${lang.txt_assign}: <b>${t.assigner_name}</b></p>
+                        </div>
+                        
+                        <div class="mt-auto relative z-10">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1">
+                                <span>${lang.txt_total_progress}</span> <span>${prog}%</span>
+                            </div>
+                            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 mb-4 overflow-hidden border border-slate-200 dark:border-slate-700">
+                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: ${prog}%"></div>
+                            </div>
+                            
+                            <button onclick="window.openUpdateModal('${t.id}')" class="w-full bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold py-2 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-slate-700 transition flex items-center justify-center gap-2 shadow-sm text-sm">
+                                <i class="ph-bold ph-pencil-simple"></i> ${lang.btn_update_approve}
+                            </button>
+                        </div>
                     </div>
                 `;
-                grid.appendChild(card);
             });
-
             loader.classList.add('hidden'); empty.classList.add('hidden'); grid.classList.remove('hidden');
-        };
+        }
+
+        window.openCreateModal = function() {
+            document.getElementById('c-title').value = '';
+            document.getElementById('c-deadline').value = new Date().toISOString().split('T')[0];
+            document.getElementById('c-category').value = 'An toàn';
+            document.getElementById('create-modal').classList.remove('hidden');
+        }
+        window.closeCreateModal = () => document.getElementById('create-modal').classList.add('hidden');
+
+        window.saveTask = async function() {
+            const title = document.getElementById('c-title').value.trim();
+            const deadline = document.getElementById('c-deadline').value;
+            const category = document.getElementById('c-category').value;
+            const assigneeId = document.getElementById('c-assignee').value;
+
+            if(!title || !deadline || !assigneeId) return window.showToast("Vui lòng điền đủ thông tin (*)", "error");
+
+            const btn = document.getElementById('btn-save-task');
+            const ogText = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Xử lý...'; btn.disabled = true;
+
+            try {
+                const assigneeObj = allUsers.find(u => u.id === assigneeId);
+                const taskData = {
+                    title: title, category: category, due_date: deadline,
+                    assignee_id: assigneeId, assignee_name: assigneeObj.name,
+                    assigner_id: currentUserId, assigner_name: currentUserName,
+                    progress: 0, status: 'In Progress', task_type: 'normal',
+                    evaluation: '', created_at: new Date(), thoi_gian_cap_nhat: new Date()
+                };
+
+                await addDoc(collection(db, "ehs_tasks"), taskData);
+                window.showToast("Đã giao việc thành công!");
+                window.closeCreateModal(); window.loadTasks();
+
+                const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
+                if(assigneeObj && assigneeObj.fcm_token) {
+                    fetch(PUSH_API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ fcmToken: assigneeObj.fcm_token, title: "🚀 CÓ NHIỆM VỤ MỚI", body: `Sếp ${currentUserName} vừa giao cho bạn: ${title}` })
+                    }).catch(e => console.log("Lỗi Push ngầm", e));
+                }
+            } catch(e) { window.showToast("Lỗi: " + e.message, "error"); }
+            finally { btn.innerHTML = ogText; btn.disabled = false; }
+        }
 
         window.openUpdateModal = function(taskId) {
             const t = rawTasksData.find(x => x.id === taskId);
             if(!t) return;
-            upTaskId = t.id; 
+            const lang = translations[currentLang];
+
+            document.getElementById('u-task-id').value = t.id;
+            document.getElementById('u-task-title').innerText = t.title;
+            document.getElementById('u-task-deadline').innerText = new Date(t.due_date).toLocaleDateString('vi-VN');
             
-            document.getElementById('up-task-id').value = t.id;
-            document.getElementById('disp-title').innerText = t.title;
-            document.getElementById('disp-deadline').innerText = new Date(t.due_date).toLocaleDateString('vi-VN');
-            
-            const container = document.getElementById('modal-checklist-container');
-            const progSection = document.getElementById('checklist-progress-section');
+            document.getElementById('u-progress').value = t.progress || 0;
+            document.getElementById('u-progress-val').innerText = (t.progress || 0) + '%';
+            document.getElementById('task-eval').value = t.evaluation || '';
+            document.getElementById('u-status-done').checked = (t.status === 'Done');
+
+            const normalSec = document.getElementById('normal-action-section');
             const evalSec = document.getElementById('eval-section');
-            const reqReviewSec = document.getElementById('request-review-section');
-            const btnSaveUpdate = document.getElementById('btn-update-task');
-            
-            // XÓA CÁC NÚT PHÊ DUYỆT CŨ NẾU CÓ ĐỂ TRÁNH TRÙNG LẶP
-            const oldContractorDiv = document.getElementById('contractor-approval-ui');
-            if (oldContractorDiv) oldContractorDiv.remove();
+            const progSec = document.getElementById('progress-section');
 
-            // KIỂM TRA NẾU LÀ TASK DUYỆT NHÀ THẦU
+            // DỌN DẸP UI CŨ
+            const oldUI = document.getElementById('contractor-approval-ui');
+            if(oldUI) oldUI.remove();
+            const oldViewBtn = document.getElementById('btn-view-profile');
+            if(oldViewBtn) oldViewBtn.remove();
+
             if (t.task_type === 'contractor_approval') {
-                progSection.classList.add('hidden'); // Ẩn kéo thanh %
-                reqReviewSec.classList.add('hidden');
-                btnSaveUpdate.classList.add('hidden'); // Ẩn nút Lưu bình thường
-                
+                // UI PHÊ DUYỆT 2 CẤP
+                progSec.classList.add('hidden');
+                normalSec.classList.add('hidden');
                 evalSec.classList.remove('hidden');
-                document.getElementById('task-done').parentElement.classList.add('hidden'); // Ẩn nút đóng việc
-                document.getElementById('task-eval').value = t.evaluation || "";
-                document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> Phê Duyệt Nhà Thầu`;
-
-                // TẠO 2 NÚT PHÊ DUYỆT & TỪ CHỐI DÀNH RIÊNG CHO CHUYÊN GIA EHS
-                let approveText = t.approval_step === 1 ? "Duyệt Sơ Bộ (Chuyển GĐ Vượng)" : "Giám Đốc Duyệt (Chốt Hồ Sơ)";
                 
+                document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> ${lang.modal_approve_title}`;
+
+                // NÚT SOI HỒ SƠ
+                const viewProfileUI = document.createElement('a');
+                viewProfileUI.id = 'btn-view-profile';
+                viewProfileUI.href = `quan_ly_nha_thau.html?search=${encodeURIComponent(t.assigner_name)}`;
+                viewProfileUI.target = "_blank";
+                viewProfileUI.className = "w-full mb-4 bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 hover:bg-slate-700";
+                viewProfileUI.innerHTML = `<i class="ph-bold ph-magnifying-glass text-xl"></i> ${lang.btn_view_profile}`;
+                evalSec.insertBefore(viewProfileUI, evalSec.firstChild);
+
+                // NÚT CHỨC NĂNG DUYỆT (CHỈ HIỂN THỊ NẾU ĐÚNG NGƯỜI)
                 const approvalUI = document.createElement('div');
                 approvalUI.id = 'contractor-approval-ui';
-                approvalUI.className = "flex gap-3 mt-6";
-                approvalUI.innerHTML = `
-                    <button onclick="window.processContractorApproval('reject')" class="w-1/3 bg-red-100 text-red-700 hover:bg-red-200 border border-red-300 font-bold py-3.5 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-x-circle text-xl"></i> TỪ CHỐI
-                    </button>
-                    <button onclick="window.processContractorApproval('approve')" class="w-2/3 bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-check-square-offset text-xl"></i> ${approveText}
-                    </button>
-                `;
+
+                if(t.assignee_id !== currentUserId && currentTab !== 'leader-corner') {
+                    approvalUI.className = "bg-red-50 text-red-600 font-bold p-4 rounded-xl text-center border border-red-200 mt-4 text-sm";
+                    approvalUI.innerText = `${lang.msg_no_permission} ${t.assignee_name}`;
+                } else {
+                    let approveText = t.approval_step === 1 ? lang.btn_approve_s1 : lang.btn_approve_s2;
+                    approvalUI.className = "flex gap-3 mt-4";
+                    approvalUI.innerHTML = `
+                        <button onclick="window.processContractorApproval('${t.id}', 'reject')" class="w-1/3 bg-red-100 text-red-700 border border-red-300 font-bold py-3.5 rounded-xl hover:bg-red-200 transition flex items-center justify-center gap-2 shadow-sm text-sm"><i class="ph-bold ph-x-circle"></i> ${lang.btn_reject}</button>
+                        <button onclick="window.processContractorApproval('${t.id}', 'approve')" class="w-2/3 bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-emerald-700 transition flex items-center justify-center gap-2 text-sm"><i class="ph-bold ph-check-square-offset text-xl"></i> ${approveText}</button>
+                    `;
+                }
                 evalSec.appendChild(approvalUI);
-                
-                // Khóa nút nếu không đúng quyền (ĐÃ CẬP NHẬT LOGIC NHẬN DIỆN MÃ 030 CỦA SẾP VƯỢNG)
-                if (t.assignee_id !== currentUserId && !(t.approval_step === 2 && currentUserId === "030")) {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại: ${t.assignee_name}</div>`;
-                }
-                if (t.status === 'Done') {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-200">Hồ sơ đã được phê duyệt chốt.</div>`;
-                    document.getElementById('task-eval').readOnly = true;
-                }
 
             } else {
-                // ==========================================
-                // LÀ CÔNG VIỆC BÌNH THƯỜNG - HIỆN THANH KÉO
-                // ==========================================
-                progSection.classList.remove('hidden');
-                btnSaveUpdate.classList.remove('hidden');
-                document.getElementById('task-done').parentElement.classList.remove('hidden');
-                document.getElementById('task-eval').readOnly = false;
+                // UI CÔNG VIỆC BÌNH THƯỜNG
+                document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-pencil-simple text-blue-600"></i> ${lang.modal_update_title}`;
+                progSec.classList.remove('hidden');
+                normalSec.classList.remove('hidden');
                 
-                container.innerHTML = '';
-                let steps = t.plan_steps || [];
-                if (steps.length === 0) {
-                    container.innerHTML = '<p class="text-sm text-slate-500 italic">Không có bước chi tiết.</p>';
-                } else {
-                    steps.forEach((step, idx) => {
-                        let text = typeof step === 'string' ? step : step.text;
-                        let stepProg = typeof step === 'object' && step.progress !== undefined ? step.progress : (step.done ? 100 : 0);
-                        let isDoneClass = stepProg === 100 ? 'line-through text-emerald-600' : 'text-slate-700 dark:text-slate-200';
-                        let accentClass = stepProg === 100 ? 'accent-emerald-500' : 'accent-blue-600';
-
-                        container.innerHTML += `
-                            <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                                <div class="flex justify-between items-start mb-2 gap-2">
-                                    <span id="step-title-${idx}" class="text-sm font-bold ${isDoneClass} transition-colors">${text}</span>
-                                    <span id="step-val-${idx}" class="text-xs font-black text-blue-600 bg-blue-100 px-2 py-0.5 rounded shrink-0">${stepProg}%</span>
-                                </div>
-                                <input type="range" min="0" max="100" value="${stepProg}" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer modal-step-slider ${accentClass}" data-idx="${idx}" oninput="window.updateStepProg(this)">
-                            </div>
-                        `;
-                    });
-                }
-                window.recalcProgress();
-                
-                const isSelfAssigned = (t.assignee_id === t.assigner_id);
-                const reqReviewCheck = document.getElementById('task-request-review');
-                const evalInput = document.getElementById('task-eval');
-                const doneCheck = document.getElementById('task-done');
-                
-                if (evalInput) evalInput.value = t.evaluation || "";
-                reqReviewSec.classList.add('hidden');
-                
-                if (currentTab === 'my-tasks') {
-                    evalSec.classList.add('hidden');
-                    document.getElementById('update-modal-title').innerText = translations[currentLang].modal_update_title;
-                    if (isSelfAssigned) {
-                        reqReviewSec.classList.remove('hidden');
-                        reqReviewCheck.checked = !!t.is_review_requested;
-                        window.toggleReviewerSelect();
-                        if(t.reviewer_id) {
-                            document.getElementById('task-reviewer').value = `${t.reviewer_id}|${t.reviewer_name}`;
-                            document.getElementById('reviewer-display-text').innerText = `${t.reviewer_name}`;
-                        } else {
-                            document.getElementById('task-reviewer').value = "";
-                            document.getElementById('reviewer-display-text').innerText = translations[currentLang].msg_select_leader;
-                        }
-                    }
-                } else {
+                if(t.assigner_id === currentUserId || currentTab === 'leader-corner') {
                     evalSec.classList.remove('hidden');
-                    if (doneCheck) doneCheck.checked = (t.status === 'Done');
-                    document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-crown text-amber-500"></i> ${translations[currentLang].tab_leader}`;
+                    document.getElementById('u-status-done').parentElement.classList.remove('hidden');
+                } else {
+                    evalSec.classList.add('hidden');
+                    document.getElementById('u-status-done').parentElement.classList.add('hidden');
                 }
             }
 
             document.getElementById('update-modal').classList.remove('hidden');
-        };
-
-        // HÀM XỬ LÝ DUYỆT 2 CẤP DÀNH RIÊNG CHO NHÀ THẦU
-        window.processContractorApproval = async function(action) {
-            const t = rawTasksData.find(x => x.id === upTaskId);
-            const evalNote = document.getElementById('task-eval').value.trim();
-            
-            if (action === 'reject' && !evalNote) {
-                window.showToast("Bắt buộc phải nhập Lý do (Đánh giá) khi Từ chối hồ sơ!", "error");
-                return;
-            }
-
-            if(!confirm(`Xác nhận ${action === 'approve' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} hồ sơ nhà thầu này?`)) return;
-
-            // ĐÃ CẬP NHẬT CHÍNH XÁC MÃ NV CỦA SẾP VƯỢNG CHO CÁC HỒ SƠ TƯƠNG LAI
-            const ID_SEP_VUONG = "030"; 
-            const TEN_SEP_VUONG = "Bùi Văn Vượng (GĐ EHS)";
-
-            let updateData = {
-                evaluation: evalNote,
-                thoi_gian_cap_nhat: new Date()
-            };
-
-            if (action === 'reject') {
-                updateData.status = 'Rejected';
-                updateData.progress = 0;
-            } else if (action === 'approve') {
-                if (t.approval_step === 1) {
-                    // Bước 1: Tư duyệt xong -> Chuyển cho Sếp Vượng
-                    updateData.approval_step = 2;
-                    updateData.assignee_id = ID_SEP_VUONG;
-                    updateData.assignee_name = TEN_SEP_VUONG;
-                    updateData.progress = 50;
-                    updateData.status = 'Review'; // Vẫn tiếp tục Review
-                } else if (t.approval_step === 2) {
-                    // Bước 2: Sếp Vượng duyệt -> Chốt hồ sơ
-                    updateData.status = 'Done';
-                    updateData.progress = 100;
-                    updateData.plan_steps = t.plan_steps.map(s => ({...s, progress: 100}));
-                }
-            }
-
-            try {
-                await updateDoc(doc(db, "ehs_tasks", upTaskId), updateData);
-                window.closeUpdateModal(); 
-                window.showToast("Xử lý hồ sơ thành công!");
-                await fetchAllTasks(); 
-            } catch(e) {
-                window.showToast("Lỗi cập nhật: " + e.message, "error"); 
-            }
-        };
-
-        window.closeUpdateModal = function() { document.getElementById('update-modal').classList.add('hidden'); };
-
-        window.recalcProgress = function() {
-            const sliders = document.querySelectorAll('.modal-step-slider');
-            let prog = 0;
-            if(sliders.length > 0) {
-                let total = 0;
-                sliders.forEach(s => { total += parseInt(s.value); });
-                prog = Math.round(total / sliders.length);
-            }
-            document.getElementById('task-progress').value = prog;
-            document.getElementById('prog-val').innerText = prog + '%';
-        };
-
-        // Hàm Save chung cho Tạo Mới và Cập Nhật (Sửa)
-        window.saveTask = async function() {
-            const editId = document.getElementById('edit-task-id').value; 
-            const title = document.getElementById('task-title').value.trim();
-            const assigneeRaw = document.getElementById('task-assignee').value;
-            const deadline = document.getElementById('task-deadline').value;
-            const cat = document.getElementById('task-category').value;
-
-            const stepInputs = document.querySelectorAll('.step-input');
-            const oldProgInputs = document.querySelectorAll('.step-old-prog'); 
-            
-            const planStepsArray = Array.from(stepInputs).map((inp, idx) => {
-                let p = parseInt(oldProgInputs[idx].value) || 0;
-                return { text: inp.value.trim(), progress: p };
-            }).filter(v => v.text !== '');
-
-            if(!title || !assigneeRaw || !deadline) return showToast("Vui lòng điền đủ Tên, Người nhận và Hạn chót!", "error");
-            if(planStepsArray.length === 0) return showToast("Kế hoạch phải có ít nhất 1 bước thực hiện!", "error");
-
-            const [assignee_id, assignee_name] = assigneeRaw.split('|');
-            const btn = document.getElementById('btn-save-task');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang tải lên...'; btn.disabled = true;
-
-            try {
-                if(editId) {
-                    // Cập nhật công việc hiện tại
-                    const updateData = {
-                        title: title, plan_steps: planStepsArray, due_date: deadline,
-                        category: cat, assignee_id: assignee_id, assignee_name: assignee_name
-                    };
-                    await updateDoc(doc(db, "ehs_tasks", editId), updateData);
-                    showToast("Đã sửa công việc thành công!");
-                } else {
-                    // Tạo mới công việc
-                    const newTask = {
-                        title: title, plan_steps: planStepsArray, due_date: deadline, category: cat,
-                        assigner_id: currentUserId, assigner_name: currentUserName,
-                        assignee_id: assignee_id, assignee_name: assignee_name,
-                        progress: 0, status: 'To Do', evaluation: '', is_review_requested: false,
-                        reviewer_id: "", reviewer_name: "", created_at: new Date()
-                    };
-                    await addDoc(collection(db, "ehs_tasks"), newTask);
-                    
-                    // ===============================================================
-                    // BẮN THÔNG BÁO QUA GOOGLE APPS SCRIPT (TRẠM PHÁT SÓNG)
-                    // ===============================================================
-                    try {
-                        // Tìm xem nhân viên này có FCM Token không
-                        const assigneeToken = globalUserEmailMap[assignee_id]; 
-                        
-                        if (assigneeToken) {
-                            // DÁN ĐƯỜNG LINK GOOGLE APPS SCRIPT ANH LẤY Ở BƯỚC TRƯỚC VÀO ĐÂY:
-                            const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
-                            
-                            // Ngày tháng định dạng việt nam
-                            const deadlineVN = deadline.split('-').reverse().join('/');
-                            
-                            // Gửi lệnh bắn ngầm
-                            fetch(PUSH_API_URL, {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                    fcmToken: assigneeToken,
-                                    title: "🔔 EHS: CÓ NHIỆM VỤ MỚI",
-                                    body: `${currentUserName} vừa giao cho bạn: ${title}. Hạn chót: ${deadlineVN}`
-                                })
-                            }).catch(e => console.log("Gửi Push ngầm thất bại:", e));
-                        }
-                    } catch(pushErr) {
-                        console.log("Lỗi luồng gửi thông báo:", pushErr);
-                    }
-                    // ===============================================================
-
-                    showToast("Đã phát hành kế hoạch thành công!");
-                }
-
-                window.closeTaskModal();
-                if (assignee_id === currentUserId) window.switchTab('my-tasks');
-                else window.switchTab('assigned-tasks');
-                await fetchAllTasks(); 
-                
-            } catch (e) {
-                showToast("Lỗi lưu dữ liệu: " + e.message, "error");
-            } finally {
-                btn.innerHTML = `<i class="ph-bold ph-paper-plane-tilt text-lg"></i> ` + (editId ? translations[currentLang].btn_save_edit : translations[currentLang].btn_publish); 
-                btn.disabled = false;
-            }
-        };
-
-        window.saveUpdate = async function() {
-            const t = rawTasksData.find(x => x.id === upTaskId);
-            const sliders = document.querySelectorAll('.modal-step-slider');
-            let updatedSteps = [];
-            let totalProg = 0;
-            
-            if (t && t.plan_steps) {
-                sliders.forEach(s => {
-                    let idx = s.getAttribute('data-idx');
-                    let text = typeof t.plan_steps[idx] === 'string' ? t.plan_steps[idx] : t.plan_steps[idx].text;
-                    let p = parseInt(s.value);
-                    updatedSteps.push({ text: text, progress: p });
-                    totalProg += p;
-                });
-            }
-
-            let newProg = sliders.length > 0 ? Math.round(totalProg / sliders.length) : parseInt(document.getElementById('task-progress').value);
-
-            let updateData = { progress: newProg, plan_steps: updatedSteps.length > 0 ? updatedSteps : t.plan_steps };
-            
-            if (currentTab === 'all-tasks' || currentTab === 'assigned-tasks') {
-                const evalInput = document.getElementById('task-eval');
-                const isDone = document.getElementById('task-done') ? document.getElementById('task-done').checked : false;
-                updateData.evaluation = evalInput ? evalInput.value.trim() : ""; 
-                if (isDone) { 
-                    updateData.status = 'Done'; updateData.progress = 100; 
-                    updateData.plan_steps = updateData.plan_steps.map(s => ({...s, progress: 100}));
-                }
-                else if (t.status === 'Done' && !isDone) { updateData.status = 'In Progress'; }
-            } else {
-                if (newProg > 0 && newProg < 100) updateData.status = 'In Progress';
-                if (newProg === 100 && !t.is_review_requested) updateData.status = 'Review'; 
-                
-                if (t.assignee_id === t.assigner_id) {
-                    const reqReviewCheck = document.getElementById('task-request-review');
-                    if (reqReviewCheck) {
-                        updateData.is_review_requested = reqReviewCheck.checked;
-                        if (reqReviewCheck.checked) {
-                            const reviewerVal = document.getElementById('task-reviewer').value;
-                            if(!reviewerVal) {
-                                showToast("Vui lòng chọn đích danh Lãnh đạo để gửi duyệt!", "error");
-                                document.getElementById('btn-update-task').disabled = false;
-                                return; 
-                            }
-                            const [revId, revName] = reviewerVal.split('|');
-                            updateData.reviewer_id = revId; updateData.reviewer_name = revName; updateData.status = 'Review';
-                        } else {
-                            updateData.reviewer_id = ""; updateData.reviewer_name = "";
-                            if (newProg === 100) updateData.status = 'Done'; else updateData.status = 'In Progress';
-                        }
-                    }
-                }
-            }
-
-            const btn = document.getElementById('btn-update-task');
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang lưu...'; btn.disabled = true;
-
-            try {
-                await updateDoc(doc(db, "ehs_tasks", upTaskId), updateData);
-                window.closeUpdateModal(); 
-                showToast("Cập nhật tiến độ thành công!");
-                await fetchAllTasks(); 
-            } catch(e) {
-                showToast("Lỗi cập nhật: " + e.message, "error"); 
-                btn.disabled = false; btn.innerHTML = 'Thử lại';
-            }
-        };
-
-        applyTheme();
-
-        // ĐÃ SỬA CHỮA: KHÔNG DÙNG onAuthStateChanged NỮA MÀ KIỂM TRA TRỰC TIẾP MÃ NV TRONG MÁY
-        async function initializeAppForUser() {
-            if (currentUserId) {
-                // Đã có mã NV -> Cho phép tải dữ liệu
-                try {
-                    window.changeLanguage(currentLang);
-                    document.getElementById('header-user-name').innerText = currentUserName;
-                    await loadUsersDropdown();
-                    await fetchAllTasks();
-                } catch (error) {
-                    document.getElementById('loader').innerHTML = `<p class="text-red-500 font-bold text-center">Lỗi tải dữ liệu: ${error.message}</p>`;
-                }
-            } else {
-                // Không có mã NV (Chưa đăng nhập) -> Báo lỗi và hiện ổ khóa đỏ
-                document.getElementById('loader').innerHTML = `
-                    <div class="text-center text-red-500 mt-10">
-                        <i class="ph-fill ph-lock-key text-6xl mb-4"></i>
-                        <p class="font-bold text-lg mb-2">Bạn chưa đăng nhập vào hệ thống EHS.</p>
-                        <a href="login.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-md transition mt-4">Quay về Đăng nhập</a>
-                    </div>`;
-            }
         }
 
-        // Chạy hàm khởi tạo ngay lập tức
-        initializeAppForUser();
+        window.closeUpdateModal = () => document.getElementById('update-modal').classList.add('hidden');
 
+        window.processContractorApproval = async function(taskId, action) {
+            const evalText = document.getElementById('task-eval').value.trim();
+            if(action === 'reject' && !evalText) return window.showToast("Vui lòng nhập lý do từ chối để nhà thầu biết sửa!", "error");
+            
+            const btnUI = document.getElementById('contractor-approval-ui');
+            btnUI.innerHTML = '<div class="w-full text-center py-3 font-bold text-blue-600"><i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang xử lý hồ sơ...</div>';
+            
+            try {
+                // SỬ DỤNG HÀM DOC IMPORT TRỰC TIẾP (KHÔNG DÙNG WINDOW.DOC NỮA)
+                const taskRef = doc(db, "ehs_tasks", taskId);
+                const taskSnap = await getDocs(query(collection(db, "ehs_tasks"), where("__name__", "==", taskId)));
+                const tData = taskSnap.docs[0].data();
+                
+                if (action === 'reject') {
+                    await updateDoc(taskRef, { 
+                        status: 'Rejected', 
+                        evaluation: evalText, 
+                        thoi_gian_cap_nhat: new Date() 
+                    });
+                    window.showToast("Đã TỪ CHỐI hồ sơ trả về cho nhà thầu!");
+                } else if (action === 'approve') {
+                    if (tData.approval_step === 1) {
+                        await updateDoc(taskRef, { 
+                            approval_step: 2, 
+                            assignee_id: ID_SEP_VUONG, 
+                            assignee_name: 'Bùi Văn Vượng',
+                            progress: 50,
+                            thoi_gian_cap_nhat: new Date()
+                        });
+                        window.showToast("Đã duyệt sơ bộ. Đã chuyển hồ sơ cho GĐ Vượng!");
+                    } else {
+                        await updateDoc(taskRef, {
+                            status: 'Done',
+                            progress: 100,
+                            evaluation: 'Hồ sơ đã được Ban Giám Đốc phê duyệt hợp lệ.',
+                            thoi_gian_cap_nhat: new Date()
+                        });
+                        window.showToast("Đã phê duyệt CHỐT hồ sơ!");
+                    }
+                }
+                window.closeUpdateModal();
+                window.loadTasks();
+            } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
+        }
+
+        window.saveUpdate = async function() {
+            const taskId = document.getElementById('u-task-id').value;
+            const progress = parseInt(document.getElementById('u-progress').value);
+            const evaluation = document.getElementById('task-eval').value.trim();
+            const isDone = document.getElementById('u-status-done').checked;
+
+            const btn = document.getElementById('btn-update-task');
+            const ogText = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu...'; btn.disabled = true;
+
+            try {
+                const updateData = { progress: progress, thoi_gian_cap_nhat: new Date() };
+                if (evaluation) updateData.evaluation = evaluation;
+                if (isDone) { updateData.status = 'Done'; updateData.progress = 100; } 
+                else if (progress > 0) { updateData.status = 'In Progress'; }
+                
+                // SỬ DỤNG HÀM DOC IMPORT TRỰC TIẾP
+                await updateDoc(doc(db, "ehs_tasks", taskId), updateData);
+                window.showToast("Cập nhật tiến độ thành công!");
+                window.closeUpdateModal(); window.loadTasks();
+            } catch(e) { window.showToast("Lỗi: " + e.message, "error"); }
+            finally { btn.innerHTML = ogText; btn.disabled = false; }
+        }
+
+        // INIT & BẢO VỆ PHIÊN ĐĂNG NHẬP
+        applyTheme();
+        document.getElementById('header-user-name').innerText = currentUserName;
+        changeLanguage(currentLang);
+        
+        // HÀM KHỞI ĐỘNG (THAY THẾ CHO LÍNH GÁC CỨNG NHẮC CŨ)
+        function initializeAppForUser() {
+            if (!currentUserId) {
+                document.getElementById('loader').innerHTML = `
+                    <div class="flex flex-col items-center gap-4 text-red-500 font-bold">
+                        <i class="ph-fill ph-lock-key text-6xl"></i>
+                        <p>Vui lòng đăng nhập bằng Mã Nhân Viên để truy cập.</p>
+                        <a href="login.html" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Quay về Đăng nhập</a>
+                    </div>`;
+            } else {
+                loadUsersList().then(() => loadTasks());
+            }
+        }
+        
+        initializeAppForUser();
     </script>
 </body>
 </html>
