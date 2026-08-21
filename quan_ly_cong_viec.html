@@ -1018,10 +1018,10 @@
             }
 
             try {
-                await window.updateDoc(window.doc(window.db, "ehs_tasks", upTaskId), updateData);
+                await updateDoc(doc(db, "ehs_tasks", upTaskId), updateData);
                 window.closeUpdateModal(); 
                 window.showToast("Xử lý hồ sơ thành công!");
-                await window.fetchAllTasks(); 
+                await fetchAllTasks(); 
             } catch(e) {
                 window.showToast("Lỗi cập nhật: " + e.message, "error"); 
             }
