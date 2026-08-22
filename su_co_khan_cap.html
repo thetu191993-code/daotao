@@ -150,7 +150,7 @@
         const auth = getAuth(app);
 
         // =========================================================================
-        // KHỞI TẠO MÔI TRƯỜNG 3D VÀ BỘ LÕI AI ROUTING V6 (SURVIVAL-FIRST)
+        // KHỞI TẠO MÔI TRƯỜNG 3D VÀ BỘ LÕI AI ROUTING V6 (SURVIVAL-FIRST CẢI TIẾN)
         // =========================================================================
         let scene, camera, renderer, controls, factoryFloor; 
         let myLocationMarker = null; 
@@ -208,7 +208,7 @@
 
         const ASSEMBLY_NODE = `-20_-420`;
 
-        // 3. KHAI BÁO CỬA THOÁT HIỂM (ĐÃ CẬP NHẬT THEO ĐÚNG HÌNH VẼ MỚI CỦA USER)
+        // 3. KHAI BÁO CỬA THOÁT HIỂM (ĐÃ BỔ SUNG CỬA MỚI, KHÔNG XÓA CỬA CŨ THEO LỆNH)
         const EXIT_DOORS = [
             // Mặt tiền
             { name: "Cửa Chính (Văn phòng)", node: "-20_-280", x: -20, z: -280 },
@@ -220,19 +220,23 @@
             { name: "Cửa Hông Kho TP 1 (Trái)", node: "-340_260", x: -340, z: 260 },
             { name: "Cửa Hông Kho TP 2 (Trái)", node: "-340_380", x: -340, z: 380 },
             
-            // Cửa hông Phải (Đã thêm)
+            // Cửa hông Phải
             { name: "Cửa Hông Necker", node: "340_0", x: 340, z: 0 },
             { name: "Cửa Kẹp Kho TP 1&2 (Phải)", node: "340_380", x: 340, z: 380 }, 
             
-            // Cửa Sau lưng Kho Thành Phẩm 2 (3 Cửa theo đánh dấu của User)
+            // BỔ SUNG: 2 CỬA MỚI NẰM BÊN TRONG CÁC KHU KHO
+            { name: "Cửa Trước Kho TP 1 (B)", node: "180_260", x: 180, z: 260 },
+            { name: "Cửa Trước Kho TP 2 (A)", node: "-180_380", x: -180, z: 380 },
+
+            // 3 Cửa sau lưng Kho Thành Phẩm 2
             { name: "Cửa Sau Kho TP 2 (Trái)", node: "-180_450", x: -180, z: 450 },
             { name: "Cửa Sau Kho TP 2 (Giữa)", node: "-20_450", x: -20, z: 450 },
             { name: "Cửa Sau Kho TP 2 (Phải)", node: "180_450", x: 180, z: 450 },
 
-            // Cửa Mặt Nam (Đường NA2) - Trạm XLNT và Kho Nguyên Liệu
-            { name: "Cửa Trạm XLNT", node: "-180_800", x: -180, z: 800 },
-            { name: "Cửa Kho Nguyên Liệu (Trái)", node: "-20_800", x: -20, z: 800 },
-            { name: "Cửa Kho Nguyên Liệu (Phải)", node: "180_800", x: 180, z: 800 }
+            // 3 Cửa Mặt Nam (Kho NL và XLNT đã đổi chỗ)
+            { name: "Cửa Sau Kho NL 1 (Trái)", node: "-180_800", x: -180, z: 800 },
+            { name: "Cửa Sau Kho NL 2 (Giữa)", node: "-20_800", x: -20, z: 800 },
+            { name: "Cửa Trạm XLNT", node: "180_800", x: 180, z: 800 }
         ];
 
         function init3D() {
@@ -345,9 +349,9 @@
             // Kéo Kho Hóa chất lên phía Bãi đất trống (Z=480)
             drawWireframeZone(80, 160, 300, 480, 0x8b5cf6, "KHO HÓA CHẤT");
             
-            // Đảo vị trí Trạm XLNT và Kho Nguyên Liệu Chính
-            drawWireframeZone(120, 100, -220, 720, 0x06b6d4, "TRẠM XLNT (WWTP)");
-            drawWireframeZone(340, 100, 80, 720, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
+            // ĐÃ DỊCH TRẠM XLNT SANG PHẢI, KHO NL SANG TRÁI THEO HƯỚNG DẪN 
+            drawWireframeZone(340, 100, -120, 720, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
+            drawWireframeZone(120, 100, 220, 720, 0x06b6d4, "TRẠM XLNT (WWTP)");
             
             createTextLabel("ĐƯỜNG NA2 (PHÍA NAM)", 0, 2, 880, 0x94a3b8, 16);
 
@@ -435,7 +439,13 @@
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(factoryFloor);
             if (intersects.length > 0) {
-                setMarkerPosition(intersects[0].point.x, intersects[0].point.z);
+                let px = Math.round(intersects[0].point.x);
+                let pz = Math.round(intersects[0].point.z);
+                
+                // MỞ KHÓA TÍNH NĂNG BÁO TỌA ĐỘ ĐỂ USER TỰ CHECK CỬA THEO YÊU CẦU
+                // window.showToast(`📍 TỌA ĐỘ CỬA: X = ${px}, Z = ${pz}`, "info");
+                
+                setMarkerPosition(px, pz);
             }
         }
 
@@ -453,8 +463,8 @@
                 case 'sx-necker': coords = {x: 200, z: 0}; break;
                 case 'kho-tp-1': coords = {x: -40, z: 310}; break;
                 case 'kho-tp-2': coords = {x: -40, z: 400}; break;
-                case 'kho-nl': coords = {x: 80, z: 720}; break;
-                case 'tram-xlnt': coords = {x: -220, z: 720}; break;
+                case 'kho-nl': coords = {x: -120, z: 720}; break; // Sửa toạ độ theo Kho NL mới
+                case 'tram-xlnt': coords = {x: 220, z: 720}; break; // Sửa toạ độ theo Trạm XLNT mới
             }
             setMarkerPosition(coords.x, coords.z);
         }
@@ -519,7 +529,7 @@
         }
 
         // =========================================================================================
-        // THUẬT TOÁN ĐỊNH TUYẾN 2 GIAI ĐOẠN (SURVIVAL-FIRST: TÌM CỬA TRƯỚC RỒI MỚI THEO VÀNH ĐAI)
+        // THUẬT TOÁN ĐỊNH TUYẾN 2 GIAI ĐOẠN (HỖ TRỢ TÌM ĐƯỜNG CHO CỬA TRONG XƯỞNG)
         // =========================================================================================
 
         function getDijkstraPath(startNode, endNode, edgeList) {
@@ -591,15 +601,21 @@
 
             let allCompleteRoutes = [];
 
-            // GIAI ĐOẠN 2: TỪ CỬA CHẠY THEO VÀNH ĐAI NGOÀI VỀ ĐIỂM TẬP KẾT (KHÔNG ĐI NGƯỢC VÀO XƯỞNG)
+            // GIAI ĐOẠN 2: TỪ CỬA CHẠY THEO VÀNH ĐAI NGOÀI VỀ ĐIỂM TẬP KẾT 
             selectedDoors.forEach(item => {
+                // Thử tìm đường đi bằng vành đai ngoài trước
                 let toAssembly = getDijkstraPath(item.door.node, ASSEMBLY_NODE, outsideEdges);
+                
+                // NẾU CỬA NẰM BÊN TRONG XƯỞNG (Không móc nối được vành đai), dùng toàn bộ mạng lưới để chạy tiếp ra điểm tập kết
+                if (toAssembly.pathNodes.length === 0) {
+                    toAssembly = getDijkstraPath(item.door.node, ASSEMBLY_NODE, allEdges);
+                }
                 
                 if (toAssembly.pathNodes.length > 0) {
                     let fullPathNodes = item.pathToDoor.concat(toAssembly.pathNodes.slice(1));
                     allCompleteRoutes.push({ 
                         doorName: item.door.name, 
-                        distance: item.distToDoor, // Ưu tiên chọn lộ trình có QUÃNG ĐƯỜNG RA KHỎI XƯỞNG ngắn nhất (Sinh Tồn)
+                        distance: item.distToDoor, // Ưu tiên chọn lộ trình có QUÃNG ĐƯỜNG RA KHỎI CỬA ngắn nhất
                         nodes: fullPathNodes 
                     });
                 }
