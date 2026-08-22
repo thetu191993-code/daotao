@@ -69,6 +69,9 @@
             </div>
 
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
+                <button onclick="window.createReminderTask()" class="bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition border border-indigo-200 flex items-center gap-2 text-sm shadow-sm">
+                    <i class="ph-fill ph-calendar-plus text-lg"></i> Lên Lịch Khám Mới
+                </button>
                 <label class="cursor-pointer bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2 text-sm">
                     <i class="ph-bold ph-microsoft-excel-logo text-lg"></i> Nhập Excel (Hồ sơ khám)
                     <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden" onchange="window.handleExcelUpload(event)">
@@ -80,35 +83,8 @@
         </header>
 
         <main class="flex-1 overflow-y-auto custom-scrollbar p-4 md:p-6 bg-slate-50">
-            <div class="max-w-[1400px] mx-auto space-y-6">
+            <div class="max-w-[1500px] mx-auto space-y-6">
                 
-                <!-- THANH TÌM KIẾM & BỘ LỌC -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row gap-4 justify-between items-center z-20 relative">
-                    <div class="relative w-full lg:w-1/3">
-                        <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                        <input type="text" id="search-input" onkeyup="window.filterTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-2.5 text-sm font-bold outline-none focus:border-rose-500 focus:bg-white transition" placeholder="Tìm tên, Mã NV, Bộ phận...">
-                    </div>
-                    
-                    <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
-                        <select id="filter-type" onchange="window.filterTable()" class="border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-rose-500 cursor-pointer">
-                            <option value="all">Tất cả phân loại</option>
-                            <option value="Loại I">Loại I (Rất tốt)</option>
-                            <option value="Loại II">Loại II (Tốt)</option>
-                            <option value="Loại III">Loại III (Trung bình)</option>
-                            <option value="Loại IV">Loại IV (Yếu)</option>
-                            <option value="Loại V">Loại V (Rất yếu)</option>
-                        </select>
-                        <select id="filter-date" onchange="window.filterTable()" class="border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm font-bold text-blue-700 outline-none focus:border-rose-500 cursor-pointer min-w-[150px]">
-                            <option value="all">Tất cả đợt khám</option>
-                        </select>
-                        
-                        <!-- NÚT XÓA HÀNG LOẠT -->
-                        <button onclick="window.confirmBulkDelete()" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2" title="Xóa toàn bộ đợt khám đang chọn">
-                            <i class="ph-bold ph-trash"></i> Xóa đợt này
-                        </button>
-                    </div>
-                </div>
-
                 <!-- BẢNG THỐNG KÊ (DASHBOARD) -->
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <!-- Biểu đồ Tròn -->
@@ -121,7 +97,6 @@
 
                     <!-- 5 Chỉ số Tổng quan -->
                     <div class="col-span-1 lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
-                        
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center items-center text-center">
                             <div class="w-10 h-10 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mb-2"><i class="ph-fill ph-users-three text-xl"></i></div>
                             <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng NV (Nội bộ)</p>
@@ -134,10 +109,11 @@
                             <p class="text-2xl font-black text-blue-700" id="stat-examined">0</p>
                         </div>
 
-                        <div class="bg-purple-50 p-4 rounded-2xl shadow-sm border border-purple-200 flex flex-col justify-center items-center text-center relative overflow-hidden">
-                            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-2 relative z-10"><i class="ph-fill ph-user-minus text-xl"></i></div>
-                            <p class="text-[9px] font-black text-purple-800 uppercase tracking-wider mb-1 relative z-10">CHƯA KHÁM</p>
-                            <p class="text-2xl font-black text-purple-700 relative z-10" id="stat-unexamined">0</p>
+                        <div class="bg-amber-50 p-4 rounded-2xl shadow-sm border border-amber-200 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 text-amber-500 opacity-20"><i class="ph-fill ph-warning text-6xl"></i></div>
+                            <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-2 relative z-10"><i class="ph-fill ph-calendar-x text-xl"></i></div>
+                            <p class="text-[9px] font-black text-amber-800 uppercase tracking-wider mb-1 relative z-10">ĐẾN HẠN KHÁM LẠI</p>
+                            <p class="text-2xl font-black text-amber-700 relative z-10" id="stat-due">0</p>
                         </div>
 
                         <div class="bg-emerald-50 p-4 rounded-2xl shadow-sm border border-emerald-200 flex flex-col justify-center items-center text-center">
@@ -155,6 +131,34 @@
                     </div>
                 </div>
 
+                <!-- THANH TÌM KIẾM & BỘ LỌC -->
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row gap-4 justify-between items-center z-20 relative">
+                    <div class="relative w-full lg:w-1/3">
+                        <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                        <input type="text" id="search-input" onkeyup="window.filterTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-2.5 text-sm font-bold outline-none focus:border-rose-500 focus:bg-white transition" placeholder="Tìm tên nhân viên, Mã NV, Bộ phận...">
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
+                        <select id="filter-type" onchange="window.filterTable()" class="border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-rose-500 cursor-pointer">
+                            <option value="all">Tất cả phân loại</option>
+                            <option value="I">Loại I (Rất tốt)</option>
+                            <option value="II">Loại II (Tốt)</option>
+                            <option value="III">Loại III (Trung bình)</option>
+                            <option value="IV">Loại IV (Yếu)</option>
+                            <option value="V">Loại V (Rất yếu)</option>
+                        </select>
+                        <select id="filter-date" onchange="window.filterTable()" class="border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm font-bold text-blue-700 outline-none focus:border-rose-500 cursor-pointer min-w-[150px]">
+                            <option value="all">Tất cả đợt khám</option>
+                        </select>
+                        
+                        <!-- NÚT XÓA HÀNG LOẠT -->
+                        <button onclick="window.confirmBulkDelete()" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center gap-2" title="Xóa toàn bộ đợt khám đang chọn">
+                            <i class="ph-bold ph-trash"></i> Xóa đợt này
+                        </button>
+                    </div>
+                </div>
+
+                <!-- MA TRẬN CHUYÊN KHOA -->
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" id="specialty-stats-container">
                     <div class="bg-slate-800 p-3">
                         <h3 class="text-white font-bold text-sm uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-chart-bar text-amber-400"></i> Ma trận thống kê theo Chuyên khoa (Đợt đang chọn)</h3>
@@ -185,7 +189,7 @@
 
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden" id="table-container">
                     <div class="overflow-x-auto custom-scrollbar">
-                        <table class="w-full text-left border-collapse min-w-[1500px]" id="health-table">
+                        <table class="w-full text-left border-collapse min-w-[1600px]" id="health-table">
                             <thead>
                                 <tr class="bg-slate-800 text-white text-[11px] uppercase tracking-wider whitespace-nowrap">
                                     <th class="p-4 font-bold text-center w-12">STT</th>
@@ -194,6 +198,8 @@
                                     <th class="p-4 font-bold w-32">Bộ phận / Xưởng</th>
                                     <th class="p-4 font-bold text-center border-l border-slate-700">Ngày Khám</th>
                                     <th class="p-4 font-bold text-center border-l border-slate-700 text-amber-300">SK Chung</th>
+                                    <th class="p-4 font-bold text-center border-l border-slate-700 text-sky-300">Cao / Nặng</th>
+                                    <th class="p-4 font-bold text-center border-l border-slate-700 text-rose-300">Huyết Áp</th>
                                     <th class="p-4 font-bold text-center border-l border-slate-700 text-slate-300">Thể lực</th>
                                     <th class="p-4 font-bold text-center border-l border-slate-700 text-slate-300">Nội</th>
                                     <th class="p-4 font-bold text-center border-l border-slate-700 text-slate-300">Ngoại</th>
@@ -217,7 +223,7 @@
 
     <!-- MODAL CHI TIẾT / CHỈNH SỬA -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="p-5 border-b border-slate-100 bg-rose-50 flex justify-between items-center shrink-0">
                 <h3 class="text-lg font-black text-rose-800 flex items-center gap-2"><i class="ph-fill ph-pencil-simple"></i> Cập Nhật Hồ Sơ Khám Sức Khỏe</h3>
                 <button onclick="window.closeModal()" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
@@ -234,41 +240,52 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <div class="md:col-span-2">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Đợt khám (Ngày)</label>
-                        <input type="date" id="m-date" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-semibold">
+                        <input type="date" id="m-date" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-semibold bg-white">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Xếp loại Sức Khỏe <span class="text-red-500">*</span></label>
-                        <select id="m-type" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-black text-rose-700 bg-rose-50">
-                            <option value="I">Loại I</option>
-                            <option value="II">Loại II</option>
-                            <option value="III">Loại III</option>
-                            <option value="IV">Loại IV</option>
-                            <option value="V">Loại V</option>
-                        </select>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Chiều cao</label>
+                        <input type="text" id="m-chieucao" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-semibold bg-white" placeholder="VD: 1.7m">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Cân nặng</label>
+                        <input type="text" id="m-cannang" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-semibold bg-white" placeholder="VD: 60kg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Huyết áp</label>
+                        <input type="text" id="m-huyetap" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-semibold bg-white" placeholder="VD: 120/80">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div class="col-span-3 sm:col-span-4"><p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">Chi tiết Chuyên Khoa</p></div>
-                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Thể lực</label><input type="text" id="m-tl" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-sm font-mono text-center"></div>
-                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nội</label><input type="text" id="m-noi" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-sm font-mono text-center"></div>
-                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ngoại</label><input type="text" id="m-ngoai" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-sm font-mono text-center"></div>
-                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mắt</label><input type="text" id="m-mat" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-sm font-mono text-center"></div>
-                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">TMH</label><input type="text" id="m-tmh" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-sm font-mono text-center"></div>
-                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">RHM</label><input type="text" id="m-rhm" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-sm font-mono text-center"></div>
-                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Phụ Khoa</label><input type="text" id="m-pk" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-sm font-mono text-center"></div>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div class="col-span-3 sm:col-span-4 flex justify-between items-center mb-2">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Chi tiết Chuyên Khoa</p>
+                        <div class="flex items-center gap-2">
+                            <label class="text-[10px] font-black text-rose-700 uppercase">Phân loại Tổng quát:</label>
+                            <select id="m-type" class="border border-rose-300 rounded-lg px-2 py-1 outline-none focus:border-rose-500 text-xs font-black text-rose-700 bg-rose-50">
+                                <option value="I">Loại I</option><option value="II">Loại II</option><option value="III">Loại III</option><option value="IV">Loại IV</option><option value="V">Loại V</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Chuyên khoa -->
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Thể lực</label><input type="text" id="m-tl" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nội</label><input type="text" id="m-noi" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ngoại</label><input type="text" id="m-ngoai" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mắt</label><input type="text" id="m-mat" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">TMH</label><input type="text" id="m-tmh" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
+                    <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">RHM</label><input type="text" id="m-rhm" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
+                    <div class="col-span-2"><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Phụ Khoa</label><input type="text" id="m-pk" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bệnh lý / Kết luận</label>
-                    <textarea id="m-note" rows="2" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-medium custom-scrollbar resize-none"></textarea>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bệnh lý / Kết luận của Bác sĩ</label>
+                    <textarea id="m-note" rows="3" class="w-full border border-slate-300 rounded-xl px-3 py-2 outline-none focus:border-rose-500 text-sm font-medium custom-scrollbar resize-none"></textarea>
                 </div>
             </div>
             
-            <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0">
+            <div class="p-5 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 shrink-0 rounded-b-2xl">
                 <button onclick="window.closeModal()" class="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-200 transition">Hủy</button>
                 <button id="btn-save" onclick="window.saveHealthData()" class="bg-rose-600 text-white px-8 py-2.5 rounded-xl font-black hover:bg-rose-700 shadow-md transition flex items-center gap-2">
                     <i class="ph-bold ph-floppy-disk"></i> Lưu Hồ Sơ
@@ -310,11 +327,11 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Biến toàn cục (Global State)
-        window.allHRData = {}; // Map lưu { ma_nv: { ho_ten, bo_phan } }
+        // Biến toàn cục
+        window.allHRData = {}; 
         window.allHealthData = []; 
         let myChart = null;
-        let deleteAction = null; // Biến lưu hàm xóa (xóa 1 hoặc xóa nhiều)
+        let deleteAction = null; 
 
         // =====================================
         // TIỆN ÍCH CHUNG
@@ -334,7 +351,6 @@
             const btn = document.querySelector('#login-screen button');
             const ogText = btn.innerHTML;
             btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> ĐANG KIỂM TRA...'; btn.disabled = true;
-
             try {
                 await signInWithEmailAndPassword(auth, "admin@ehs.com", pass);
             } catch (error) {
@@ -360,18 +376,41 @@
             }
         });
 
-        // Hàm chuẩn hóa chuỗi Phân loại sức khỏe (Giải quyết triệt để lỗi La Mã)
-        function normalizeType(text) {
+        // HÀM CHUẨN HÓA LOẠI SỨC KHỎE CHÍNH XÁC (KHÔNG BỊ NHẦM LA MÃ)
+        function normalizeTypeExact(text) {
             if(!text) return "N/A";
-            // Bóc tách chữ LOẠI ra trước để không bị nhầm chữ I trong chữ LOẠI
-            let s = String(text).toUpperCase().replace(/LOẠI/g, "").replace(/LỌAI/g, "").replace(/\s/g, "");
-            // So sánh chính xác thay vì dùng includes
+            // Ép kiểu chuỗi, bỏ khoảng trắng dư thừa
+            let s = String(text).toUpperCase().trim();
+            // Nếu có chữ LOẠI thì bóc nó ra
+            s = s.replace("LOẠI", "").replace("LỌAI", "").trim();
+            
+            // Dùng so sánh bằng tuyệt đối (===) thay vì includes
+            if(s === "V" || s === "5") return "V";
             if(s === "IV" || s === "4") return "IV";
             if(s === "III" || s === "3") return "III";
             if(s === "II" || s === "2") return "II";
-            if(s === "V" || s === "5") return "V";
             if(s === "I" || s === "1" || s === "BÌNHTHƯỜNG" || s === "BT") return "I";
             return "N/A";
+        }
+
+        // HÀM ĐÁNH GIÁ THÔNG MINH CHO CÁC CHUYÊN KHOA (ĐỂ VẼ MA TRẬN)
+        function smartMapToType(text) {
+            if(!text || text === "N/A" || text === "-") return null;
+            let s = String(text).toLowerCase();
+            
+            // Nếu là số La Mã chuẩn
+            let exact = normalizeTypeExact(text);
+            if(exact !== "N/A") return exact;
+
+            // Nếu là chữ nghĩa từ bác sĩ
+            if(s.includes("bình thường") || s.includes("chưa phát hiện") || s.includes("tốt")) return "I";
+            if(s.includes("nhẹ") || s.includes("ít") || s.includes("loại 2") || s.includes("loại ii")) return "II";
+            if(s.includes("trung bình") || s.includes("loại 3") || s.includes("loại iii")) return "III";
+            if(s.includes("loại 4") || s.includes("loại iv")) return "IV";
+            if(s.includes("loại 5") || s.includes("loại v")) return "V";
+            
+            // Nếu có ghi bệnh lý (nhưng ko có loại) thì mặc định cảnh báo là Loại 3 để EHS chú ý
+            return "III"; 
         }
 
         // =====================================
@@ -382,7 +421,6 @@
             document.getElementById('table-container').classList.add('hidden');
             
             try {
-                // 1. Tải HR Data
                 const hrSnap = await getDocs(collection(db, "nhan_su_noi_bo"));
                 window.allHRData = {};
                 hrSnap.forEach(doc => {
@@ -395,7 +433,6 @@
                     }
                 });
 
-                // 2. Tải Health Data
                 const skSnap = await getDocs(collection(db, "suc_khoe_noi_bo"));
                 window.allHealthData = [];
                 let datesSet = new Set();
@@ -406,31 +443,28 @@
                     let hrInfo = window.allHRData[mnv] || { ho_ten: d.ho_ten || 'Ngoại lai / Lỗi mã', bo_phan: '-' };
                     
                     if(d.ngay_kham) datesSet.add(d.ngay_kham);
-
-                    // Map chuyên khoa
                     const ck = d.chuyen_khoa || {};
 
                     window.allHealthData.push({
                         id: doc.id, ma_nv: mnv, ho_ten: hrInfo.ho_ten, bo_phan: hrInfo.bo_phan,
-                        ngay_kham: d.ngay_kham || '', phan_loai: normalizeType(d.phan_loai),
+                        ngay_kham: d.ngay_kham || '', 
+                        phan_loai: normalizeTypeExact(d.phan_loai), // Dùng hàm chính xác
                         ghi_chu: d.ghi_chu || '',
-                        the_luc: normalizeType(ck.the_luc),
-                        rhm: normalizeType(ck.rhm), tmh: normalizeType(ck.tmh),
-                        mat: normalizeType(ck.mat), noi: normalizeType(ck.noi),
-                        ngoai: normalizeType(ck.ngoai), phu_khoa: normalizeType(ck.phu_khoa)
+                        chieu_cao: d.chieu_cao || '', can_nang: d.can_nang || '', huyet_ap: d.huyet_ap || '',
+                        the_luc: ck.the_luc || 'N/A', rhm: ck.rhm || 'N/A', tmh: ck.tmh || 'N/A',
+                        mat: ck.mat || 'N/A', noi: ck.noi || 'N/A', ngoai: ck.ngoai || 'N/A', phu_khoa: ck.phu_khoa || 'N/A'
                     });
                 });
 
-                // Cập nhật Select Box
                 const dateSelect = document.getElementById('filter-date');
-                const currVal = dateSelect.value; // Giữ nguyên giá trị đang chọn nếu có
+                const currVal = dateSelect.value; 
                 dateSelect.innerHTML = '<option value="all">Tất cả đợt khám</option>';
                 let sortedDates = Array.from(datesSet).sort().reverse();
                 sortedDates.forEach(date => {
                     if(date) dateSelect.innerHTML += `<option value="${date}">Đợt: ${date.split('-').reverse().join('/')}</option>`;
                 });
                 if(sortedDates.includes(currVal)) dateSelect.value = currVal;
-                else if(sortedDates.length > 0) dateSelect.value = sortedDates[0]; // Mặc định chọn đợt mới nhất
+                else if(sortedDates.length > 0) dateSelect.value = sortedDates[0]; 
 
                 window.filterTable();
 
@@ -445,7 +479,7 @@
 
         window.filterTable = function() {
             const kw = document.getElementById('search-input').value.toLowerCase().trim();
-            const typeFilter = document.getElementById('filter-type').value.replace("Loại ", "");
+            const typeFilter = document.getElementById('filter-type').value; // Bỏ replace vì hàm exact đã xử lý
             const dateFilter = document.getElementById('filter-date').value;
 
             let filtered = window.allHealthData.filter(item => {
@@ -471,7 +505,7 @@
             tbody.innerHTML = '';
 
             if (dataArray.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="15" class="p-8 text-center text-slate-500 font-bold">Không tìm thấy hồ sơ sức khỏe nào.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="17" class="p-8 text-center text-slate-500 font-bold">Không tìm thấy hồ sơ sức khỏe nào.</td></tr>`;
                 return;
             }
 
@@ -479,6 +513,12 @@
             dataArray.forEach(d => {
                 const badge = getBadgeHTML(d.phan_loai);
                 const displayDate = d.ngay_kham ? d.ngay_kham.split('-').reverse().join('/') : '-';
+                
+                const safeNote = (d.ghi_chu||'').replace(/'/g, "\\'");
+                const safeTl = (d.the_luc||'').replace(/'/g, "\\'"); const safeNoi = (d.noi||'').replace(/'/g, "\\'");
+                const safeNgoai = (d.ngoai||'').replace(/'/g, "\\'"); const safeMat = (d.mat||'').replace(/'/g, "\\'");
+                const safeTmh = (d.tmh||'').replace(/'/g, "\\'"); const safeRhm = (d.rhm||'').replace(/'/g, "\\'");
+                const safePk = (d.phu_khoa||'').replace(/'/g, "\\'");
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-blue-50/50 transition-colors border-b border-slate-100">
@@ -488,14 +528,16 @@
                         <td class="p-3 text-[11px] font-bold text-slate-500">${d.bo_phan}</td>
                         <td class="p-3 text-center font-mono font-semibold text-slate-600 border-l border-slate-100">${displayDate}</td>
                         <td class="p-3 text-center border-l border-slate-100">${badge}</td>
-                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-slate-500">${d.the_luc}</td>
-                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-slate-500">${d.noi}</td>
-                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-slate-500">${d.ngoai}</td>
-                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-slate-500">${d.mat}</td>
-                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-slate-500">${d.tmh}</td>
-                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-slate-500">${d.rhm}</td>
-                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-slate-500">${d.phu_khoa}</td>
-                        <td class="p-3 text-xs text-slate-600 truncate max-w-[200px] border-l border-slate-100" title="${d.ghi_chu}">${d.ghi_chu || '-'}</td>
+                        <td class="p-3 text-center font-mono text-xs border-l border-slate-100 text-sky-600 bg-sky-50/30">${d.chieu_cao || '-'} / ${d.can_nang || '-'}</td>
+                        <td class="p-3 text-center font-mono text-xs text-rose-500 bg-rose-50/30">${d.huyet_ap || '-'}</td>
+                        <td class="p-3 text-center text-xs border-l border-slate-100 text-slate-500" title="${d.the_luc}">${d.the_luc.substring(0,10)}${d.the_luc.length>10?'...':''}</td>
+                        <td class="p-3 text-center text-xs border-l border-slate-100 text-slate-500" title="${d.noi}">${d.noi.substring(0,10)}${d.noi.length>10?'...':''}</td>
+                        <td class="p-3 text-center text-xs border-l border-slate-100 text-slate-500" title="${d.ngoai}">${d.ngoai.substring(0,10)}${d.ngoai.length>10?'...':''}</td>
+                        <td class="p-3 text-center text-xs border-l border-slate-100 text-slate-500" title="${d.mat}">${d.mat.substring(0,10)}${d.mat.length>10?'...':''}</td>
+                        <td class="p-3 text-center text-xs border-l border-slate-100 text-slate-500" title="${d.tmh}">${d.tmh.substring(0,10)}${d.tmh.length>10?'...':''}</td>
+                        <td class="p-3 text-center text-xs border-l border-slate-100 text-slate-500" title="${d.rhm}">${d.rhm.substring(0,10)}${d.rhm.length>10?'...':''}</td>
+                        <td class="p-3 text-center text-xs border-l border-slate-100 text-slate-500" title="${d.phu_khoa}">${d.phu_khoa.substring(0,10)}${d.phu_khoa.length>10?'...':''}</td>
+                        <td class="p-3 text-xs text-slate-600 truncate max-w-[200px] border-l border-slate-100 font-medium" title="${d.ghi_chu}">${d.ghi_chu || '-'}</td>
                         <td class="p-3 text-center whitespace-nowrap border-l border-slate-100">
                             <button onclick="window.openDetail('${d.id}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 p-1.5 rounded-lg transition mr-1" title="Sửa chi tiết"><i class="ph-bold ph-pencil-simple text-base"></i></button>
                             <button onclick="window.deleteRecord('${d.id}', '${d.ho_ten}')" class="text-slate-400 hover:text-red-500 bg-slate-50 hover:bg-red-50 p-1.5 rounded-lg transition" title="Xóa"><i class="ph-bold ph-trash text-base"></i></button>
@@ -516,7 +558,6 @@
             let tGood = 0; let t3 = 0; let tWeak = 0;
             let countObj = { "I":0, "II":0, "III":0, "IV":0, "V":0 };
             
-            // Khởi tạo khung chứa Ma trận chuyên khoa
             let specStats = {
                 the_luc: {I:0, II:0, III:0, IV:0, V:0}, noi: {I:0, II:0, III:0, IV:0, V:0},
                 ngoai: {I:0, II:0, III:0, IV:0, V:0}, mat: {I:0, II:0, III:0, IV:0, V:0},
@@ -524,50 +565,61 @@
             };
 
             let uniqueEmpInFilter = new Set();
+            
+            // Xử lý Lịch khám quá hạn (Tất cả Health Data, không phân biệt filter đợt)
+            let dueCount = 0;
+            let sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            let latestCheckupMap = {};
+            
+            window.allHealthData.forEach(d => {
+                if(!d.ma_nv || !d.ngay_kham) return;
+                let dDate = new Date(d.ngay_kham);
+                if(!latestCheckupMap[d.ma_nv] || dDate > latestCheckupMap[d.ma_nv]) {
+                    latestCheckupMap[d.ma_nv] = dDate;
+                }
+            });
 
+            // Lọc Data cho Bảng Thống kê & Ma trận
             dataArray.forEach(d => {
                 if (d.ma_nv) uniqueEmpInFilter.add(d.ma_nv);
                 let loai = d.phan_loai;
                 
-                // Thống kê SK Tổng Quát: Tốt = I, II, III. Yếu = IV, V
-                if(loai === "I" || loai === "II" || loai === "III") tGood++;
+                if(loai === "I" || loai === "II") tGood++;
+                else if(loai === "III") t3++;
                 else if(loai === "IV" || loai === "V") tWeak++;
 
                 if(countObj[loai] !== undefined) countObj[loai]++;
 
-                // Thống kê Chuyên Khoa
                 ["the_luc", "noi", "ngoai", "mat", "tmh", "rhm", "phu_khoa"].forEach(k => {
-                    let val = d[k];
-                    if (specStats[k][val] !== undefined) specStats[k][val]++;
+                    let mappedType = smartMapToType(d[k]);
+                    if (mappedType && specStats[k][mappedType] !== undefined) specStats[k][mappedType]++;
                 });
             });
 
-            // TÍNH TOÁN NGƯỜI CHƯA KHÁM (Tổng nhân sự HR - Số người đã khám trong đợt này)
+            // Tính người chưa khám & Hết hạn
             let totalHRCount = Object.keys(window.allHRData).length;
             let examinedCount = uniqueEmpInFilter.size;
-            let unexaminedCount = Math.max(0, totalHRCount - examinedCount);
             
-            // Nếu không lọc theo đợt cụ thể thì việc tính "Chưa khám" sẽ không chính xác tuyệt đối, nên ta báo hiệu bằng UI
-            if (dateFilter === 'all') {
-                document.getElementById('stat-unexamined').innerText = "-";
-            } else {
-                document.getElementById('stat-unexamined').innerText = unexaminedCount;
+            for(let mnv in window.allHRData) {
+                if(!latestCheckupMap[mnv] || latestCheckupMap[mnv] < sixMonthsAgo) dueCount++;
             }
 
             document.getElementById('stat-total-hr').innerText = totalHRCount;
             document.getElementById('stat-examined').innerText = examinedCount;
             document.getElementById('stat-good').innerText = tGood;
             document.getElementById('stat-weak').innerText = tWeak;
+            document.getElementById('stat-due').innerText = dueCount;
 
             // VẼ MA TRẬN CHUYÊN KHOA
             const specBody = document.getElementById('specialty-body');
-            const specNames = {the_luc: "Thể lực chung", noi: "Nội khoa", ngoai: "Ngoại khoa", mat: "Mắt / Thị lực", tmh: "Tai Mũi Họng", rhm: "Răng Hàm Mặt", phu_khoa: "Phụ khoa (Nữ)"};
+            const specNames = {the_luc: "Thể lực (Cao, nặng, HA)", noi: "Nội tổng quát", ngoai: "Ngoại tổng quát", mat: "Mắt / Thị lực", tmh: "Tai Mũi Họng", rhm: "Răng Hàm Mặt", phu_khoa: "Sản Phụ khoa"};
             let specHtml = '';
             
             for (let k in specStats) {
                 let st = specStats[k];
                 let total = st.I + st.II + st.III + st.IV + st.V;
-                if(total === 0) continue; // Bỏ qua nếu ko có data
+                if(total === 0) continue; 
 
                 let getPct = (val) => total > 0 ? `<span class="text-[9px] text-slate-400 block">${Math.round((val/total)*100)}%</span>` : '';
                 
@@ -584,7 +636,6 @@
             }
             specBody.innerHTML = specHtml || `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Chưa có dữ liệu chuyên khoa cho đợt này.</td></tr>`;
 
-            // Cập nhật biểu đồ Tròn
             const ctx = document.getElementById('healthChart').getContext('2d');
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
@@ -605,7 +656,47 @@
         }
 
         // =====================================
-        // XỬ LÝ EXCEL VỚI RADAR MỚI
+        // NHẮC LỊCH KHÁM & TẠO TASK (MỚI)
+        // =====================================
+        window.createReminderTask = async function() {
+            let dueCount = document.getElementById('stat-due').innerText;
+            if(dueCount == 0) return window.showToast("Toàn bộ nhân sự đã khám sức khỏe định kỳ. Chưa cần lên lịch mới!", "error");
+            
+            if(!confirm(`Có ${dueCount} nhân sự đã quá 6 tháng chưa khám sức khỏe. Bạn có muốn tạo Kế hoạch gửi cho phòng Y tế/EHS không?`)) return;
+
+            try {
+                const currentUser = localStorage.getItem("ehs_user_name") || "Hệ thống";
+                const currentUserId = localStorage.getItem("ehs_user_id");
+                
+                const taskData = {
+                    title: `Kế hoạch Tổ chức Khám Sức khỏe Định kỳ (${dueCount} người)`,
+                    category: 'Sức khỏe',
+                    task_type: 'normal',
+                    due_date: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0], // Hạn 15 ngày
+                    assigner_id: currentUserId,
+                    assigner_name: currentUser,
+                    assignee_id: currentUserId, // Giao cho chính mình để làm
+                    assignee_name: currentUser,
+                    progress: 0,
+                    status: 'To Do',
+                    is_review_requested: false,
+                    plan_steps: [
+                        {text: `Lọc danh sách ${dueCount} nhân sự cần khám đợt này`, progress: 0},
+                        {text: `Liên hệ Phòng khám/Bệnh viện lấy báo giá`, progress: 0},
+                        {text: `Gửi thông báo lịch khám xuống các Xưởng`, progress: 0},
+                        {text: `Tổ chức khám và nhận kết quả`, progress: 0}
+                    ],
+                    created_at: new Date()
+                };
+
+                await addDoc(collection(db, "ehs_tasks"), taskData);
+                window.showToast("Đã tạo Kế hoạch trên module Giao Việc & Tiến độ thành công!");
+                
+            } catch(e) { window.showToast("Lỗi tạo Task: " + e.message, "error"); }
+        }
+
+        // =====================================
+        // XỬ LÝ ĐỌC EXCEL BẰNG RADAR ĐA DÒNG
         // =====================================
         window.handleExcelUpload = function(e) {
             const file = e.target.files[0];
@@ -629,40 +720,59 @@
                     document.getElementById('loader').classList.remove('hidden');
                     document.getElementById('table-container').classList.add('hidden');
 
-                    let headerRowIndex = -1;
-                    let colMap = { maNV: -1, hoTen: -1, phanLoai: -1, ghiChu: -1, theLuc: -1, noi: -1, ngoai: -1, mat: -1, tmh: -1, rhm: -1, phuKhoa: -1 };
+                    let maxCols = 0;
+                    for(let i=0; i<Math.min(10, rawData.length); i++) {
+                        if(rawData[i] && rawData[i].length > maxCols) maxCols = rawData[i].length;
+                    }
 
-                    // QUÉT RADAR TÌM CỘT
-                    for (let i = 0; i < Math.min(20, rawData.length); i++) {
-                        const row = rawData[i];
-                        let foundTen = row.findIndex(cell => /Tên|Name|Họ/i.test(String(cell).replace(/\s/g,'')));
-                        
-                        if (foundTen !== -1) { 
-                            headerRowIndex = i;
-                            colMap.hoTen = foundTen;
-                            colMap.maNV = row.findIndex(cell => /Mã|MNV|ID|Code/i.test(String(cell).replace(/\s/g,'')));
-                            colMap.phanLoai = row.findIndex(cell => /Loại|Sức.*khỏe|SK|PL/i.test(String(cell).replace(/\s/g,'')));
-                            colMap.ghiChu = row.findIndex(cell => /Ghi|Kết.*luận|Bệnh/i.test(String(cell).replace(/\s/g,'')));
-                            
-                            // Các cột Chuyên khoa mở rộng
-                            colMap.theLuc = row.findIndex(cell => /Thể.*lực|Cân.*đo|Chung/i.test(String(cell).replace(/\s/g,'')));
-                            colMap.noi = row.findIndex(cell => /Nội/i.test(String(cell)));
-                            colMap.ngoai = row.findIndex(cell => /Ngoại|Da.*liễu/i.test(String(cell).replace(/\s/g,'')));
-                            colMap.mat = row.findIndex(cell => /Mắt|Thị.*lực/i.test(String(cell).replace(/\s/g,'')));
-                            colMap.tmh = row.findIndex(cell => /Tai|Mũi|Họng|TMH/i.test(String(cell).replace(/\s/g,'')));
-                            colMap.rhm = row.findIndex(cell => /Răng|RHM/i.test(String(cell).replace(/\s/g,'')));
-                            colMap.phuKhoa = row.findIndex(cell => /Phụ.*khoa|Sản/i.test(String(cell).replace(/\s/g,'')));
-                            break; 
+                    // TẠO CHUỖI HEADER GỘP 10 DÒNG ĐẦU
+                    let combinedHeaders = new Array(maxCols).fill("");
+                    for(let i=0; i<Math.min(10, rawData.length); i++) {
+                        for(let j=0; j<maxCols; j++) {
+                            if(rawData[i] && rawData[i][j]) {
+                                combinedHeaders[j] += " " + String(rawData[i][j]).toLowerCase().replace(/\n/g, ' ');
+                            }
                         }
                     }
 
-                    if (headerRowIndex === -1) throw new Error("Không tìm thấy cột Họ Tên trong 20 dòng đầu. Vui lòng kiểm tra lại file Excel.");
+                    let colMap = { maNV: -1, hoTen: -1, phanLoai: -1, ghiChu: -1, chieuCao: -1, canNang: -1, huyetAp: -1, theLuc: -1, noi: -1, ngoai: -1, mat: -1, tmh: -1, rhm: -1, phuKhoa: -1 };
+
+                    // QUÉT RADAR TÌM CỘT
+                    colMap.hoTen = combinedHeaders.findIndex(h => h.includes("họ và tên") || h.includes("họ tên"));
+                    colMap.maNV = combinedHeaders.findIndex(h => h.includes("mã nv") || h.includes("mã nhân viên"));
+                    
+                    if (colMap.hoTen === -1) throw new Error("Không tìm thấy cột 'Họ và tên' trong 10 dòng đầu. Vui lòng kiểm tra lại file Excel.");
+
+                    // Tìm dòng bắt đầu có dữ liệu thật sự (Bỏ qua các dòng tiêu đề rỗng mã NV/Tên)
+                    let dataStartRow = -1;
+                    for (let i = 2; i < rawData.length; i++) {
+                        let isData = (colMap.hoTen !== -1 && String(rawData[i][colMap.hoTen]).length > 2) || (colMap.maNV !== -1 && String(rawData[i][colMap.maNV]).length > 0);
+                        let isNotHeader = String(rawData[i][colMap.hoTen]).toLowerCase() !== "họ và tên";
+                        if(isData && isNotHeader) {
+                            dataStartRow = i; break;
+                        }
+                    }
+                    if (dataStartRow === -1) throw new Error("Không tìm thấy dòng dữ liệu nào hợp lệ.");
+
+                    // Tìm các cột còn lại
+                    colMap.phanLoai = combinedHeaders.findIndex(h => h.includes("loại") && !h.includes("ngoại")); // Tránh nhầm với "Ngoại"
+                    colMap.ghiChu = combinedHeaders.findIndex(h => h.includes("kết luận") || h.includes("đề nghị") || h.includes("ghi chú"));
+                    colMap.chieuCao = combinedHeaders.findIndex(h => h.includes("chiều cao") || h.includes("cao"));
+                    colMap.canNang = combinedHeaders.findIndex(h => h.includes("cân nặng") || h.includes("nặng"));
+                    colMap.huyetAp = combinedHeaders.findIndex(h => h.includes("huyết áp") || h.includes("ha"));
+                    colMap.noi = combinedHeaders.findIndex(h => h.includes("nội") && !h.includes("nội dung"));
+                    colMap.ngoai = combinedHeaders.findIndex(h => h.includes("ngoại"));
+                    colMap.mat = combinedHeaders.findIndex(h => h.includes("mắt") || h.includes("thị lực"));
+                    colMap.tmh = combinedHeaders.findIndex(h => h.includes("tai mũi họng") || h.includes("tmh"));
+                    colMap.rhm = combinedHeaders.findIndex(h => h.includes("răng hàm mặt") || h.includes("rhm"));
+                    colMap.phuKhoa = combinedHeaders.findIndex(h => h.includes("phụ khoa") || h.includes("sản khoa"));
+                    colMap.theLuc = combinedHeaders.findIndex(h => h.includes("thể lực"));
 
                     let successCount = 0;
                     let currentBatch = writeBatch(db);
                     let opsInBatch = 0;
 
-                    for (let i = headerRowIndex + 1; i < rawData.length; i++) {
+                    for (let i = dataStartRow; i < rawData.length; i++) {
                         const row = rawData[i];
                         let hoTen = colMap.hoTen !== -1 ? row[colMap.hoTen] : "";
                         let maNV = colMap.maNV !== -1 ? row[colMap.maNV] : "";
@@ -675,16 +785,19 @@
                             ma_nv: maNV,
                             ho_ten: String(hoTen).trim(),
                             ngay_kham: dotKham,
-                            phan_loai: normalizeType(colMap.phanLoai !== -1 ? row[colMap.phanLoai] : ""),
+                            phan_loai: normalizeTypeExact(colMap.phanLoai !== -1 ? row[colMap.phanLoai] : ""),
                             ghi_chu: String(colMap.ghiChu !== -1 ? row[colMap.ghiChu] : "").trim(),
+                            chieu_cao: String(colMap.chieuCao !== -1 ? row[colMap.chieuCao] : "").trim(),
+                            can_nang: String(colMap.canNang !== -1 ? row[colMap.canNang] : "").trim(),
+                            huyet_ap: String(colMap.huyetAp !== -1 ? row[colMap.huyetAp] : "").trim(),
                             chuyen_khoa: {
-                                the_luc: normalizeType(colMap.theLuc !== -1 ? row[colMap.theLuc] : ""),
-                                noi: normalizeType(colMap.noi !== -1 ? row[colMap.noi] : ""),
-                                ngoai: normalizeType(colMap.ngoai !== -1 ? row[colMap.ngoai] : ""),
-                                mat: normalizeType(colMap.mat !== -1 ? row[colMap.mat] : ""),
-                                tmh: normalizeType(colMap.tmh !== -1 ? row[colMap.tmh] : ""),
-                                rhm: normalizeType(colMap.rhm !== -1 ? row[colMap.rhm] : ""),
-                                phu_khoa: normalizeType(colMap.phuKhoa !== -1 ? row[colMap.phuKhoa] : "")
+                                the_luc: String(colMap.theLuc !== -1 ? row[colMap.theLuc] : "").trim() || 'N/A',
+                                noi: String(colMap.noi !== -1 ? row[colMap.noi] : "").trim() || 'N/A',
+                                ngoai: String(colMap.ngoai !== -1 ? row[colMap.ngoai] : "").trim() || 'N/A',
+                                mat: String(colMap.mat !== -1 ? row[colMap.mat] : "").trim() || 'N/A',
+                                tmh: String(colMap.tmh !== -1 ? row[colMap.tmh] : "").trim() || 'N/A',
+                                rhm: String(colMap.rhm !== -1 ? row[colMap.rhm] : "").trim() || 'N/A',
+                                phu_khoa: String(colMap.phuKhoa !== -1 ? row[colMap.phuKhoa] : "").trim() || 'N/A'
                             },
                             thoi_gian_nhap: new Date()
                         });
@@ -722,10 +835,17 @@
             document.getElementById('m-type').value = d.phan_loai === 'N/A' ? 'I' : d.phan_loai;
             document.getElementById('m-note').value = d.ghi_chu;
             
-            document.getElementById('m-tl').value = d.the_luc; document.getElementById('m-noi').value = d.noi;
-            document.getElementById('m-ngoai').value = d.ngoai; document.getElementById('m-mat').value = d.mat;
-            document.getElementById('m-tmh').value = d.tmh; document.getElementById('m-rhm').value = d.rhm;
-            document.getElementById('m-pk').value = d.phu_khoa;
+            document.getElementById('m-chieucao').value = d.chieu_cao;
+            document.getElementById('m-cannang').value = d.can_nang;
+            document.getElementById('m-huyetap').value = d.huyet_ap;
+
+            document.getElementById('m-tl').value = d.the_luc !== 'N/A' ? d.the_luc : ''; 
+            document.getElementById('m-noi').value = d.noi !== 'N/A' ? d.noi : '';
+            document.getElementById('m-ngoai').value = d.ngoai !== 'N/A' ? d.ngoai : ''; 
+            document.getElementById('m-mat').value = d.mat !== 'N/A' ? d.mat : '';
+            document.getElementById('m-tmh').value = d.tmh !== 'N/A' ? d.tmh : ''; 
+            document.getElementById('m-rhm').value = d.rhm !== 'N/A' ? d.rhm : '';
+            document.getElementById('m-pk').value = d.phu_khoa !== 'N/A' ? d.phu_khoa : '';
 
             document.getElementById('detail-modal').classList.remove('hidden');
         }
@@ -741,14 +861,17 @@
                 ngay_kham: document.getElementById('m-date').value,
                 phan_loai: document.getElementById('m-type').value,
                 ghi_chu: document.getElementById('m-note').value,
+                chieu_cao: document.getElementById('m-chieucao').value,
+                can_nang: document.getElementById('m-cannang').value,
+                huyet_ap: document.getElementById('m-huyetap').value,
                 chuyen_khoa: {
-                    the_luc: normalizeType(document.getElementById('m-tl').value),
-                    noi: normalizeType(document.getElementById('m-noi').value),
-                    ngoai: normalizeType(document.getElementById('m-ngoai').value),
-                    mat: normalizeType(document.getElementById('m-mat').value),
-                    tmh: normalizeType(document.getElementById('m-tmh').value),
-                    rhm: normalizeType(document.getElementById('m-rhm').value),
-                    phu_khoa: normalizeType(document.getElementById('m-pk').value)
+                    the_luc: document.getElementById('m-tl').value || 'N/A',
+                    noi: document.getElementById('m-noi').value || 'N/A',
+                    ngoai: document.getElementById('m-ngoai').value || 'N/A',
+                    mat: document.getElementById('m-mat').value || 'N/A',
+                    tmh: document.getElementById('m-tmh').value || 'N/A',
+                    rhm: document.getElementById('m-rhm').value || 'N/A',
+                    phu_khoa: document.getElementById('m-pk').value || 'N/A'
                 },
                 thoi_gian_cap_nhat: new Date()
             };
