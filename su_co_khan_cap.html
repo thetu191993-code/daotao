@@ -208,7 +208,7 @@
 
         const ASSEMBLY_NODE = `-20_-420`;
 
-        // 3. KHAI BÁO CỬA THOÁT HIỂM (ĐÃ BỔ SUNG CỬA MỚI, KHÔNG XÓA CỬA CŨ THEO LỆNH)
+        // 3. KHAI BÁO CỬA THOÁT HIỂM (ĐÃ CHUẨN HÓA THEO YÊU CẦU MỚI NHẤT)
         const EXIT_DOORS = [
             // Mặt tiền
             { name: "Cửa Chính (Văn phòng)", node: "-20_-280", x: -20, z: -280 },
@@ -220,23 +220,18 @@
             { name: "Cửa Hông Kho TP 1 (Trái)", node: "-340_260", x: -340, z: 260 },
             { name: "Cửa Hông Kho TP 2 (Trái)", node: "-340_380", x: -340, z: 380 },
             
-            // Cửa hông Phải
-            { name: "Cửa Hông Necker", node: "340_0", x: 340, z: 0 },
+            // Cửa hông Phải (Đã xóa cửa hông Necker, dịch cửa bên trong ra tường ngoài)
+            { name: "Cửa Hông Kho TP 1 (Phải)", node: "340_260", x: 340, z: 260 }, 
             { name: "Cửa Kẹp Kho TP 1&2 (Phải)", node: "340_380", x: 340, z: 380 }, 
-            
-            // BỔ SUNG: 2 CỬA MỚI NẰM BÊN TRONG CÁC KHU KHO
-            { name: "Cửa Trước Kho TP 1 (B)", node: "180_260", x: 180, z: 260 },
-            { name: "Cửa Trước Kho TP 2 (A)", node: "-180_380", x: -180, z: 380 },
 
             // 3 Cửa sau lưng Kho Thành Phẩm 2
             { name: "Cửa Sau Kho TP 2 (Trái)", node: "-180_450", x: -180, z: 450 },
             { name: "Cửa Sau Kho TP 2 (Giữa)", node: "-20_450", x: -20, z: 450 },
             { name: "Cửa Sau Kho TP 2 (Phải)", node: "180_450", x: 180, z: 450 },
 
-            // 3 Cửa Mặt Nam (Kho NL và XLNT đã đổi chỗ)
+            // Cửa Mặt Nam (Đã xóa cửa Trạm XLNT)
             { name: "Cửa Sau Kho NL 1 (Trái)", node: "-180_800", x: -180, z: 800 },
-            { name: "Cửa Sau Kho NL 2 (Giữa)", node: "-20_800", x: -20, z: 800 },
-            { name: "Cửa Trạm XLNT", node: "180_800", x: 180, z: 800 }
+            { name: "Cửa Sau Kho NL 2 (Giữa)", node: "-20_800", x: -20, z: 800 }
         ];
 
         function init3D() {
