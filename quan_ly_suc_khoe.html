@@ -696,7 +696,7 @@
         }
 
         // =====================================
-        // XỬ LÝ ĐỌC EXCEL BẰNG RADAR ĐA DÒNG
+        // XỬ LÝ ĐỌC EXCEL BẰNG RADAR ĐA DÒNG (BẢN NÂNG CẤP SIÊU NÉN)
         // =====================================
         window.handleExcelUpload = function(e) {
             const file = e.target.files[0];
@@ -721,52 +721,56 @@
                     document.getElementById('table-container').classList.add('hidden');
 
                     let maxCols = 0;
-                    for(let i=0; i<Math.min(10, rawData.length); i++) {
+                    for(let i=0; i<Math.min(15, rawData.length); i++) {
                         if(rawData[i] && rawData[i].length > maxCols) maxCols = rawData[i].length;
                     }
 
-                    // TẠO CHUỖI HEADER GỘP 10 DÒNG ĐẦU
+                    // TẠO CHUỖI HEADER GỘP 15 DÒNG ĐẦU BẰNG CÁCH XÓA SẠCH KHOẢNG TRẮNG VÀ XUỐNG DÒNG
+                    // Mục đích: Chữ "Chi\nều\ncao" sẽ ép bẹp thành "chiềucao" -> Bắt từ khóa chính xác 100%
                     let combinedHeaders = new Array(maxCols).fill("");
-                    for(let i=0; i<Math.min(10, rawData.length); i++) {
+                    for(let i=0; i<Math.min(15, rawData.length); i++) {
                         for(let j=0; j<maxCols; j++) {
                             if(rawData[i] && rawData[i][j]) {
-                                combinedHeaders[j] += " " + String(rawData[i][j]).toLowerCase().replace(/\n/g, ' ');
+                                let cleanWord = String(rawData[i][j]).toLowerCase().replace(/[\s\n\r\t]/g, '');
+                                combinedHeaders[j] += cleanWord;
                             }
                         }
                     }
 
                     let colMap = { maNV: -1, hoTen: -1, phanLoai: -1, ghiChu: -1, chieuCao: -1, canNang: -1, huyetAp: -1, theLuc: -1, noi: -1, ngoai: -1, mat: -1, tmh: -1, rhm: -1, phuKhoa: -1 };
 
-                    // QUÉT RADAR TÌM CỘT
-                    colMap.hoTen = combinedHeaders.findIndex(h => h.includes("họ và tên") || h.includes("họ tên"));
-                    colMap.maNV = combinedHeaders.findIndex(h => h.includes("mã nv") || h.includes("mã nhân viên"));
+                    // QUÉT RADAR TÌM CỘT BẰNG TỪ KHÓA ĐÃ NÉN CHẶT
+                    colMap.hoTen = combinedHeaders.findIndex(h => h.includes("họvàtên") || h.includes("họtên"));
+                    colMap.maNV = combinedHeaders.findIndex(h => h.includes("mãnv") || h.includes("mãnhânviên"));
                     
-                    if (colMap.hoTen === -1) throw new Error("Không tìm thấy cột 'Họ và tên' trong 10 dòng đầu. Vui lòng kiểm tra lại file Excel.");
+                    if (colMap.hoTen === -1) throw new Error("Không tìm thấy cột 'Họ và tên' trong các dòng đầu. Vui lòng kiểm tra lại file Excel.");
 
-                    // Tìm dòng bắt đầu có dữ liệu thật sự (Bỏ qua các dòng tiêu đề rỗng mã NV/Tên)
+                    colMap.phanLoai = combinedHeaders.findIndex(h => h.includes("loại") && !h.includes("ngoại")); 
+                    colMap.ghiChu = combinedHeaders.findIndex(h => h.includes("kếtluận") || h.includes("đềnghị") || h.includes("ghichú"));
+                    colMap.chieuCao = combinedHeaders.findIndex(h => h.includes("chiềucao") || h.includes("chiêucao"));
+                    colMap.canNang = combinedHeaders.findIndex(h => h.includes("cânnặng"));
+                    colMap.huyetAp = combinedHeaders.findIndex(h => h.includes("huyếtáp") || h.includes("h.áp"));
+                    colMap.noi = combinedHeaders.findIndex(h => h.includes("nội") && !h.includes("nộidung"));
+                    colMap.ngoai = combinedHeaders.findIndex(h => h.includes("ngoại"));
+                    colMap.mat = combinedHeaders.findIndex(h => h.includes("mắt") || h.includes("thịlực") || h.includes("khúcxạ"));
+                    colMap.tmh = combinedHeaders.findIndex(h => h.includes("mũihọng") || h.includes("tmh"));
+                    colMap.rhm = combinedHeaders.findIndex(h => h.includes("rănghàm") || h.includes("rhm"));
+                    colMap.phuKhoa = combinedHeaders.findIndex(h => h.includes("phụkhoa") || h.includes("sảnkhoa"));
+                    colMap.theLuc = combinedHeaders.findIndex(h => h.includes("thểlực") || h.includes("thểtrạng"));
+
+                    // Tìm dòng bắt đầu có dữ liệu thật sự (Bỏ qua các dòng tiêu đề chung chung)
                     let dataStartRow = -1;
                     for (let i = 2; i < rawData.length; i++) {
-                        let isData = (colMap.hoTen !== -1 && String(rawData[i][colMap.hoTen]).length > 2) || (colMap.maNV !== -1 && String(rawData[i][colMap.maNV]).length > 0);
-                        let isNotHeader = String(rawData[i][colMap.hoTen]).toLowerCase() !== "họ và tên";
-                        if(isData && isNotHeader) {
+                        let hoTenVal = colMap.hoTen !== -1 ? String(rawData[i][colMap.hoTen] || "").replace(/[\s\n\r\t]/g, '').toLowerCase() : "";
+                        let isNotHeader = hoTenVal !== "họvàtên" && hoTenVal !== "họtên";
+                        
+                        let hasData = (colMap.hoTen !== -1 && String(rawData[i][colMap.hoTen] || "").trim().length > 2);
+                        
+                        if(hasData && isNotHeader) {
                             dataStartRow = i; break;
                         }
                     }
                     if (dataStartRow === -1) throw new Error("Không tìm thấy dòng dữ liệu nào hợp lệ.");
-
-                    // Tìm các cột còn lại
-                    colMap.phanLoai = combinedHeaders.findIndex(h => h.includes("loại") && !h.includes("ngoại")); // Tránh nhầm với "Ngoại"
-                    colMap.ghiChu = combinedHeaders.findIndex(h => h.includes("kết luận") || h.includes("đề nghị") || h.includes("ghi chú"));
-                    colMap.chieuCao = combinedHeaders.findIndex(h => h.includes("chiều cao") || h.includes("cao"));
-                    colMap.canNang = combinedHeaders.findIndex(h => h.includes("cân nặng") || h.includes("nặng"));
-                    colMap.huyetAp = combinedHeaders.findIndex(h => h.includes("huyết áp") || h.includes("ha"));
-                    colMap.noi = combinedHeaders.findIndex(h => h.includes("nội") && !h.includes("nội dung"));
-                    colMap.ngoai = combinedHeaders.findIndex(h => h.includes("ngoại"));
-                    colMap.mat = combinedHeaders.findIndex(h => h.includes("mắt") || h.includes("thị lực"));
-                    colMap.tmh = combinedHeaders.findIndex(h => h.includes("tai mũi họng") || h.includes("tmh"));
-                    colMap.rhm = combinedHeaders.findIndex(h => h.includes("răng hàm mặt") || h.includes("rhm"));
-                    colMap.phuKhoa = combinedHeaders.findIndex(h => h.includes("phụ khoa") || h.includes("sản khoa"));
-                    colMap.theLuc = combinedHeaders.findIndex(h => h.includes("thể lực"));
 
                     let successCount = 0;
                     let currentBatch = writeBatch(db);
@@ -776,9 +780,10 @@
                         const row = rawData[i];
                         let hoTen = colMap.hoTen !== -1 ? row[colMap.hoTen] : "";
                         let maNV = colMap.maNV !== -1 ? row[colMap.maNV] : "";
-                        if(!hoTen && !maNV) continue;
                         
-                        maNV = maNV.toString().trim().toUpperCase();
+                        if(!hoTen) continue; // Bỏ qua dòng trống
+                        
+                        maNV = maNV ? maNV.toString().trim().toUpperCase() : `NV_TEMP_${i}`;
 
                         const docRef = doc(collection(db, "suc_khoe_noi_bo"));
                         currentBatch.set(docRef, {
