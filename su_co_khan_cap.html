@@ -182,63 +182,63 @@
         const Z_L2 = 0;           // Hành lang cắt ngang Line 2
         const Z_L3 = 160;         // Hành lang cắt ngang Line 3
         const Z_WH1 = 300;        // Hành lang cắt ngang Kho TP 1
-        const Z_WH2 = 440;        // Hành lang cắt ngang Kho TP 2
-        const Z_BACK_WALL = 520;  // Tường sau lưng Kho TP 2
-        const Z_EMPTY_YARD = 640; // Giữa Bãi đất trống
-        const Z_SOUTH_ROAD = 760; // Đường nội bộ phía Nam (Trước Kho Nguyên Liệu)
-        const Z_NA2 = 900;        // Tường rào đường NA2 (Tận cùng phía Nam)
+        // Hệ quy chiếu: Z âm (-) là Phía Bắc (Cổng NA3), Z dương (+) là Phía Nam (NA2)
+        // X âm (-) là Bên trái, X dương (+) là Bên phải
 
-        const C_X = [X_L_WALL, X_L_AISLE, X_MID, X_R_AISLE, X_R_WALL];
-        const C_Z = [Z_NA3, Z_FRONT_WALL, Z_L1, Z_L2, Z_L3, Z_WH1, Z_WH2, Z_BACK_WALL, Z_EMPTY_YARD, Z_SOUTH_ROAD, Z_NA2];
+        // 1. CÁC TRỤC ĐƯỜNG NỘI BỘ (MỞ RỘNG ĐỂ BAO PHỦ BÃI SAU)
+        const C_X = {
+            L_OUT: -320,  // Đường vành đai ngoài cùng bên Trái (rộng ra để không đâm tường)
+            L_IN: -180,   // Hành lang chính Trái 
+            MID: -20,     // Hành lang Trung tâm
+            R_IN: 180,    // Hành lang chính Phải 
+            R_OUT: 320    // Đường vành đai ngoài cùng bên Phải
+        };
+
+        const C_Z = {
+            NA3: -380,    // Điểm tập kết cổng NA3
+            FRONT: -280,  // Đường ngang trước mặt tiền
+            L1: -150,     // Hành lang cắt ngang Line 1
+            L2: 0,        // Hành lang cắt ngang Line 2
+            L3: 120,      // Hành lang cắt ngang Line 3
+            WH1: 310,     // Hành lang cắt ngang Kho 1
+            WH2: 400,     // Hành lang cắt ngang Kho 2
+            BACK_WH: 440, // Đường vành đai sau lưng Kho 2
+            FRONT_NL: 520,// Mặt trước Kho Nguyên Liệu
+            BACK_NL: 580  // Mặt sau Kho Nguyên Liệu (NA2)
+        };
 
         const gridPoints = {};
         const navEdges = [];
 
-        // Tạo Nodes
-        for(let i=0; i<C_X.length; i++) {
-            for(let j=0; j<C_Z.length; j++) {
-                gridPoints[`N_${C_X[i]}_${C_Z[j]}`] = { x: C_X[i], z: C_Z[j] };
+        for(let keyX in C_X) {
+            for(let keyZ in C_Z) {
+                gridPoints[`${keyX}_${keyZ}`] = { x: C_X[keyX], z: C_Z[keyZ] };
             }
         }
 
-        // Nối Nodes (Tạo đường chạy)
-        for(let i=0; i<C_X.length; i++) {
-            for(let j=0; j<C_Z.length - 1; j++) {
-                navEdges.push([`N_${C_X[i]}_${C_Z[j]}`, `N_${C_X[i]}_${C_Z[j+1]}`]);
-            }
-        }
-        for(let j=0; j<C_Z.length; j++) {
-            for(let i=0; i<C_X.length - 1; i++) {
-                navEdges.push([`N_${C_X[i]}_${C_Z[j]}`, `N_${C_X[i+1]}_${C_Z[j]}`]);
-            }
-        }
+        const xKeys = Object.keys(C_X);
+        const zKeys = Object.keys(C_Z);
+        for(let i = 0; i < xKeys.length; i++) { for(let j = 0; j < zKeys.length - 1; j++) navEdges.push([`${xKeys[i]}_${zKeys[j]}`, `${xKeys[i]}_${zKeys[j+1]}`]); }
+        for(let j = 0; j < zKeys.length; j++) { for(let i = 0; i < xKeys.length - 1; i++) navEdges.push([`${xKeys[i]}_${zKeys[j]}`, `${xKeys[i+1]}_${zKeys[j]}`]); }
 
-        // Nút trung tâm Điểm Tập Kết
-        const ASSEMBLY_NODE = `N_${X_MID}_${Z_NA3}`;
+        const ASSEMBLY_NODE = 'MID_NA3';
 
-        // KHAI BÁO 100% CỬA THOÁT HIỂM CHUẨN XÁC THEO YÊU CẦU CỦA USER
+        // 2. KHAI BÁO CỬA THOÁT HIỂM CHUẨN XÁC YÊU CẦU CUỐI CÙNG
         const EXIT_DOORS = [
-            { name: "Cửa chính Văn phòng", node: `N_${X_MID}_${Z_FRONT_WALL}`, x: X_MID, z: Z_FRONT_WALL },
-            { name: "Cửa giữa VP & Canteen", node: `N_${X_R_AISLE}_${Z_FRONT_WALL}`, x: X_R_AISLE, z: Z_FRONT_WALL },
+            { name: "Cửa chính Văn phòng", node: "MID_FRONT", x: -40, z: -280 },
+            { name: "Cửa chính Canteen", node: "R_OUT_FRONT", x: 230, z: -280 },
             
-            // Cửa hông Trái
-            { name: "Cửa hông Cupper", node: `N_${X_L_WALL}_${Z_L2}`, x: X_L_WALL, z: Z_L2 },
-            { name: "Cửa hông Kho TP 1 (Trái)", node: `N_${X_L_WALL}_${Z_WH1}`, x: X_L_WALL, z: Z_WH1 },
-            { name: "Cửa hông Kho TP 2 (Trái)", node: `N_${X_L_WALL}_${Z_WH2}`, x: X_L_WALL, z: Z_WH2 },
+            { name: "Cửa hông Trái (Cupper)", node: "L_OUT_L2", x: -300, z: 0 },
+            { name: "Cửa hông Trái (Kho TP 1)", node: "L_OUT_WH1", x: -300, z: 310 },
+            { name: "Cửa hông Trái (Kho TP 2)", node: "L_OUT_WH2", x: -300, z: 400 },
             
-            // Cửa hông Phải (Đã cập nhật theo yêu cầu mới nhất)
-            { name: "Cửa hông Necker 3", node: `N_${X_R_WALL}_${Z_L3}`, x: X_R_WALL, z: Z_L3 },
-            { name: "Cửa hông Kho TP 1 (Phải)", node: `N_${X_R_WALL}_${Z_WH1}`, x: X_R_WALL, z: Z_WH1 },
+            { name: "Cửa hông Phải (Kho TP 1)", node: "R_OUT_WH1", x: 300, z: 310 },
+            { name: "Cửa hông Phải (Kho TP 2)", node: "R_OUT_WH2", x: 300, z: 400 },
             
-            // Cửa Sau lưng Kho Thành Phẩm 2 (3 Cửa theo đánh dấu)
-            { name: "Cửa sau Kho TP 2 (Trái)", node: `N_${X_L_AISLE}_${Z_BACK_WALL}`, x: X_L_AISLE, z: Z_BACK_WALL },
-            { name: "Cửa sau Kho TP 2 (Giữa)", node: `N_${X_MID}_${Z_BACK_WALL}`, x: X_MID, z: Z_BACK_WALL },
-            { name: "Cửa sau Kho TP 2 (Phải)", node: `N_${X_R_AISLE}_${Z_BACK_WALL}`, x: X_R_AISLE, z: Z_BACK_WALL },
-
-            // Cửa Kho Nguyên Liệu & Hóa chất (Nằm trên đường nội bộ phía Nam)
-            { name: "Cửa Kho Nguyên Liệu 1", node: `N_${X_L_AISLE}_${Z_SOUTH_ROAD}`, x: X_L_AISLE, z: Z_SOUTH_ROAD },
-            { name: "Cửa Kho Nguyên Liệu 2", node: `N_${X_MID}_${Z_SOUTH_ROAD}`, x: X_MID, z: Z_SOUTH_ROAD },
-            { name: "Cửa Trạm XLNT", node: `N_${X_R_AISLE}_${Z_SOUTH_ROAD}`, x: X_R_AISLE, z: Z_SOUTH_ROAD }
+            { name: "Cửa sau lưng Kho TP 2 (Trái)", node: "L_IN_BACK_WH", x: -180, z: 440 },
+            { name: "Cửa sau lưng Kho TP 2 (Phải)", node: "R_IN_BACK_WH", x: 180, z: 440 },
+            
+            { name: "Cửa Kho Nguyên Liệu (NA2)", node: "MID_BACK_NL", x: -30, z: 580 }
         ];
 
         function init3D() {
@@ -489,31 +489,37 @@
                         let dz = -(lat - ANCHOR_LAT) * 111000; 
 
                         if (Math.abs(dx) > 600 || Math.abs(dz) > 800) {
-                            window.showToast("Bạn đang ở xa nhà máy. Dùng tọa độ giả lập để test.", "error");
+                            window.showToast("Bạn đang ở ngoài KCN. Dùng tọa độ giả lập để test.", "error");
                             dx = (Math.random() - 0.5) * 400; dz = (Math.random() - 0.5) * 600;
                         } else {
                             window.showToast("Chốt tọa độ thành công!", "success");
                         }
                         setMarkerPosition(dx, dz);
                     },
-                    (error) => { window.showToast("Mất sóng GPS. Vui lòng chạm đúp lên bản đồ.", "error"); },
-                    { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                    (error) => { 
+                        let errMsg = "Mất sóng GPS. Vui lòng chạm đúp lên bản đồ.";
+                        if(error.code === 1) errMsg = "LỖI: Trình duyệt đang CHẶN quyền Vị trí. Hãy mở khóa ổ khóa trên thanh địa chỉ!";
+                        else if(error.code === 2) errMsg = "LỖI: Không thể kết nối với trạm vệ tinh.";
+                        else if(error.code === 3) errMsg = "LỖI: Quá thời gian kết nối GPS.";
+                        window.showToast(errMsg, "error"); 
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
-            } else { window.showToast("Thiết bị không hỗ trợ GPS.", "error"); }
+            } else { window.showToast("Thiết bị hoặc trình duyệt không hỗ trợ GPS.", "error"); }
         }
 
         function setMarkerPosition(px, pz) {
             currentPos.x = px; currentPos.z = pz;
             
             let zoneName = "Khu vực chung";
-            if(pz < Z_FRONT_WALL) zoneName = "Khu Cổng NA3 / Tập Kết";
-            else if(pz < Z_L1) zoneName = "Khu Văn phòng / Canteen";
-            else if(pz > Z_EMPTY_YARD) zoneName = "Kho NL / Trạm XLNT";
-            else if(pz > Z_WH1) zoneName = "Khu Kho Thành Phẩm";
+            if(pz < -300) zoneName = "Khu Cổng NA3 / Tập Kết";
+            else if(pz < -200) zoneName = "Khu Văn phòng / Canteen";
+            else if(pz > 450) zoneName = "Kho NL / Trạm XLNT";
+            else if(pz > 250) zoneName = "Khu Kho Thành Phẩm";
             else {
-                if(px < X_L_AISLE) zoneName = "Khu Cupper";
-                else if(px < X_MID) zoneName = "Khu Body Maker";
-                else if(px < X_R_AISLE) zoneName = "Khu Decorator / PDP";
+                if(px < -150) zoneName = "Khu Cupper";
+                else if(px < -10) zoneName = "Khu Body Maker";
+                else if(px < 120) zoneName = "Khu Decorator / PDP";
                 else zoneName = "Khu Necker / Đóng gói";
             }
             currentPos.zone = zoneName;
@@ -524,7 +530,7 @@
             myLocationMarker.position.set(px, 0, pz);
             scene.add(myLocationMarker);
 
-            gsapFlyCamera(px, 1000, pz + 600, px, 0, pz);
+            gsapFlyCamera(px, 700, pz + 400, px, 0, pz);
 
             evacuationLineGroup.clear(); 
             
@@ -578,77 +584,109 @@
 
             const startP = new THREE.Vector3(currentPos.x, 5, currentPos.z);
             
-            // 1. Tìm Nút Hành Lang (Nav Node) gần nhất với chỗ đứng
-            let nearestNodeName = `N_${X_MID}_${Z_FRONT_WALL}`; let minDist = Infinity;
+            // 1. TÌM ĐƯỜNG TRONG XƯỞNG (Từ chỗ đứng -> Các cửa thoát hiểm)
+            let nearestNodeName = 'MID_FRONT'; let minDist = Infinity;
             for(let key in gridPoints) {
                 let dist = startP.distanceTo(new THREE.Vector3(gridPoints[key].x, 5, gridPoints[key].z));
                 if(dist < minDist) { minDist = dist; nearestNodeName = key; }
             }
 
-            // 2. Tìm Đường ra TẤT CẢ các cửa (Sắp xếp theo CỬA GẦN NHẤT)
             let doorPaths = [];
             EXIT_DOORS.forEach(door => {
                 let toDoor = getDijkstraPath(nearestNodeName, door.node);
                 if(toDoor.pathNodes.length > 0) {
-                    doorPaths.push({ door: door, distToDoor: toDoor.distance, pathToDoor: toDoor.pathNodes });
+                    doorPaths.push({ door: door, distToDoor: toDoor.distance, path1: toDoor.pathNodes });
                 }
             });
 
-            // Lọc ra 3 cửa gần nhất với chỗ đứng (Survival First)
+            // Ưu tiên: Sắp xếp theo quãng đường TRONG XƯỞNG ngắn nhất (Bắt buộc phải thoát ra khỏi xưởng nhanh nhất)
             doorPaths.sort((a,b) => a.distToDoor - b.distToDoor);
             let selectedDoors = doorPaths.slice(0, 3);
 
             let allCompleteRoutes = [];
 
-            // 3. Nối tiếp đường từ Cửa về Điểm Tập Kết
+            // 2. AI VÀNH ĐAI: SAU KHI RA CỬA THÌ MEN THEO ĐƯỜNG NỘI BỘ VỀ ĐÍCH
             selectedDoors.forEach(item => {
-                let toAssembly = getDijkstraPath(item.door.node, ASSEMBLY_NODE);
-                // Nối 2 đường: Chỗ đứng -> Cửa -> Điểm tập kết
-                let fullPathNodes = item.pathToDoor.concat(toAssembly.pathNodes.slice(1));
+                const doorPos = new THREE.Vector3(item.door.x, 5, item.door.z);
+                let outsidePoints = [];
+                outsidePoints.push(doorPos);
+
+                let dx = doorPos.x; let dz = doorPos.z;
+                const FRONT_Z = -280; const ASSEMB_X = -20; const ASSEMB_Z = -360;
+
+                // Nếu cửa nằm ở mặt tiền -> Chạy qua đường vô khu tập kết
+                if (dz <= FRONT_Z + 10) {
+                    outsidePoints.push(new THREE.Vector3(dx, 5, ASSEMB_Z));
+                    outsidePoints.push(new THREE.Vector3(ASSEMB_X, 5, ASSEMB_Z));
+                } else {
+                    // Nếu cửa ở hông hoặc phía sau (Kho Thành phẩm / Kho Nguyên Liệu)
+                    let runSideX = dx;
+                    // Bẻ người ra đường vành đai ngoài cùng (L_OUT hoặc R_OUT) để tránh đi lọt lại vào xưởng
+                    if (dx > -290 && dx < 290) {
+                        runSideX = dx < 0 ? -330 : 330; 
+                        outsidePoints.push(new THREE.Vector3(runSideX, 5, dz));
+                    } else {
+                        // Cửa hông thì nhích ra giữa đường cho khỏi quẹt tường
+                        runSideX = dx < 0 ? dx - 30 : dx + 30; 
+                        outsidePoints.push(new THREE.Vector3(runSideX, 5, dz));
+                    }
+
+                    // Chạy một đường thẳng băng tắp từ sau ra mặt tiền trước theo dọc Vành đai
+                    outsidePoints.push(new THREE.Vector3(runSideX, 5, FRONT_Z));
+                    // Rẽ ngang vào giữa mặt tiền
+                    outsidePoints.push(new THREE.Vector3(ASSEMB_X, 5, FRONT_Z));
+                    // Cắm thẳng vào Khu Tập Kết
+                    outsidePoints.push(new THREE.Vector3(ASSEMB_X, 5, ASSEMB_Z));
+                }
+
+                // Tính tổng quãng đường (Trong xưởng + Vành đai) để chọn đường Sáng nhất
+                let outDist = 0;
+                for(let i=0; i<outsidePoints.length-1; i++) outDist += outsidePoints[i].distanceTo(outsidePoints[i+1]);
+
+                // Lắp ráp lộ trình Giai đoạn 1 (Trong xưởng)
+                let insidePoints = [];
+                let firstNode = gridPoints[item.path1[0]];
                 
+                // Vẽ đoạn vuống góc bẻ lái từ chỗ người đứng ra hành lang
+                if(Math.abs(startP.x - firstNode.x) > 1 && Math.abs(startP.z - firstNode.z) > 1) {
+                    insidePoints.push(startP);
+                    insidePoints.push(new THREE.Vector3(startP.x, 5, firstNode.z)); 
+                } else {
+                    insidePoints.push(startP);
+                }
+
+                item.path1.forEach(nodeKey => {
+                    insidePoints.push(new THREE.Vector3(gridPoints[nodeKey].x, 5, gridPoints[nodeKey].z));
+                });
+
+                // Nối Giai đoạn 1 và 2 lại với nhau
+                let fullPoints = insidePoints.concat(outsidePoints);
+
                 allCompleteRoutes.push({ 
                     doorName: item.door.name, 
-                    distance: item.distToDoor, // Ưu tiên chọn lộ trình có khoảng cách RA CỬA ngắn nhất
-                    nodes: fullPathNodes 
+                    totalDistance: item.distToDoor + outDist, 
+                    points: fullPoints 
                 });
             });
 
-            if(allCompleteRoutes.length === 0) return window.showToast("Lỗi mạng lưới định tuyến!", "error");
+            // Lọc và chọn Lộ trình tổng ngắn nhất làm Tuyến Xanh Lá (Primary)
+            allCompleteRoutes.sort((a,b) => a.totalDistance - b.totalDistance);
 
-            // 4. Hàm Vẽ đường đi (Tự động nối Vuông Góc ra hành lang)
-            function drawRoute(pathObj, colorHex, isPrimary) {
-                const nodes = pathObj.nodes;
-                const points = [startP]; 
-                
-                let firstNode = gridPoints[nodes[0]];
-                if(Math.abs(startP.x - firstNode.x) > 1 && Math.abs(startP.z - firstNode.z) > 1) {
-                    // Ưu tiên chạy dọc theo trục Z trước (ra hành lang ngang) rồi mới rẽ X
-                    points.push(new THREE.Vector3(startP.x, 5, firstNode.z)); 
-                }
-                
-                for(let i=0; i < nodes.length; i++) {
-                    let node = gridPoints[nodes[i]];
-                    points.push(new THREE.Vector3(node.x, 5, node.z));
-                }
-
-                const geo = new THREE.BufferGeometry().setFromPoints(points);
+            function drawRoute(pathPoints, colorHex, isPrimary) {
+                const geo = new THREE.BufferGeometry().setFromPoints(pathPoints);
                 const mat = new THREE.LineDashedMaterial({ color: colorHex, linewidth: isPrimary ? 8 : 4, scale: 1, dashSize: isPrimary ? 25 : 15, gapSize: 15, transparent: true, opacity: isPrimary ? 1 : 0.5 });
                 const line = new THREE.Line(geo, mat);
                 line.computeLineDistances(); 
                 if(isPrimary) line.userData.isEvacLine = true; 
-                
                 evacuationLineGroup.add(line);
             }
 
-            // Vẽ Lối Gần Nhất (Xanh lá - Chuyển động)
-            drawRoute(allCompleteRoutes[0], 0x10b981, true);
-            
-            // Vẽ Lối phụ (Cam - Nét đứt mờ)
-            if(allCompleteRoutes[1]) drawRoute(allCompleteRoutes[1], 0xf59e0b, false);
-            if(allCompleteRoutes[2]) drawRoute(allCompleteRoutes[2], 0xf59e0b, false);
+            drawRoute(allCompleteRoutes[0].points, 0x10b981, true); // Tuyến Xanh lá
+            if(allCompleteRoutes[1]) drawRoute(allCompleteRoutes[1].points, 0xf59e0b, false); // Tuyến Cam dự phòng 1
+            if(allCompleteRoutes[2]) drawRoute(allCompleteRoutes[2].points, 0xf59e0b, false); // Tuyến Cam dự phòng 2
 
-            window.showToast(`AI đã tìm thấy lối ra nhanh nhất qua ${allCompleteRoutes[0].doorName}! Hãy chạy theo đường SÁNG XANH LÁ.`, "success");
-            gsapFlyCamera(0, 1800, 0, 0, 0, 0); // Zoom out để thấy toàn cảnh
+            window.showToast(`Phát hiện 3 hướng thoát ra vành đai. Chạy theo đường XANH LÁ ra ${allCompleteRoutes[0].doorName}!`, "success");
+            gsapFlyCamera(0, 1500, 0, 0, 0, 0); // Zoom out để thấy toàn cảnh
             if(isDrawerOpen) window.toggleDrawer(); 
         }
 
