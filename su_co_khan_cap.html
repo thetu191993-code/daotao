@@ -220,16 +220,15 @@
         const EXIT_DOORS = [
             { name: "Cửa chính Văn phòng", node: `N_${X_MID}_${Z_FRONT_WALL}`, x: X_MID, z: Z_FRONT_WALL },
             { name: "Cửa giữa VP & Canteen", node: `N_${X_R_AISLE}_${Z_FRONT_WALL}`, x: X_R_AISLE, z: Z_FRONT_WALL },
-            { name: "Cửa hông Canteen", node: `N_${X_R_WALL}_${Z_FRONT_WALL}`, x: X_R_WALL, z: Z_FRONT_WALL },
             
             // Cửa hông Trái
             { name: "Cửa hông Cupper", node: `N_${X_L_WALL}_${Z_L2}`, x: X_L_WALL, z: Z_L2 },
             { name: "Cửa hông Kho TP 1 (Trái)", node: `N_${X_L_WALL}_${Z_WH1}`, x: X_L_WALL, z: Z_WH1 },
             { name: "Cửa hông Kho TP 2 (Trái)", node: `N_${X_L_WALL}_${Z_WH2}`, x: X_L_WALL, z: Z_WH2 },
             
-            // Cửa hông Phải
-            { name: "Cửa hông Necker", node: `N_${X_R_WALL}_${Z_L2}`, x: X_R_WALL, z: Z_L2 },
-            { name: "Cửa hông Kho TP (Phải)", node: `N_${X_R_WALL}_${Z_WH1}`, x: X_R_WALL, z: Z_WH1 },
+            // Cửa hông Phải (Đã cập nhật theo yêu cầu mới nhất)
+            { name: "Cửa hông Necker 3", node: `N_${X_R_WALL}_${Z_L3}`, x: X_R_WALL, z: Z_L3 },
+            { name: "Cửa hông Kho TP 1 (Phải)", node: `N_${X_R_WALL}_${Z_WH1}`, x: X_R_WALL, z: Z_WH1 },
             
             // Cửa Sau lưng Kho Thành Phẩm 2 (3 Cửa theo đánh dấu)
             { name: "Cửa sau Kho TP 2 (Trái)", node: `N_${X_L_AISLE}_${Z_BACK_WALL}`, x: X_L_AISLE, z: Z_BACK_WALL },
@@ -366,7 +365,7 @@
             // ================== MẶT SAU (ĐƯỜNG NA2) ==================
             drawWireframeZone(300, 100, X_MID - 30, Z_SOUTH_ROAD + 70, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
             drawWireframeZone(120, 100, X_R_AISLE + 10, Z_SOUTH_ROAD + 70, 0x06b6d4, "TRẠM XLNT (WWTP)");
-            drawWireframeZone(80, 160, X_R_WALL - 40, Z_SOUTH_ROAD + 40, 0x8b5cf6, "KHO HÓA CHẤT");
+            drawWireframeZone(80, 160, X_R_WALL - 40, Z_SOUTH_ROAD - 60, 0x8b5cf6, "KHO HÓA CHẤT");
             
             createTextLabel("ĐƯỜNG NA2 (PHÍA NAM)", 0, 2, Z_NA2 + 40, 0x94a3b8, 16);
 
