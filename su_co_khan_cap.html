@@ -147,29 +147,29 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
+        // Hệ quy chiếu: Z âm (-) là Phía Bắc (Cổng NA3), Z dương (+) là Phía Nam (NA2)
+        // X âm (-) là Bên trái, X dương (+) là Bên phải
 
-        // =========================================================================
-        // KHỞI TẠO MÔI TRƯỜNG 3D & AI NAV-MESH V5
-        // =========================================================================
-        let scene, camera, renderer, controls, factoryFloor; 
-        let myLocationMarker = null; 
-        let evacuationLineGroup = new THREE.Group(); 
-        let exitSignsGroup = new THREE.Group();
-        let alarmMarkers = [];
-        let raycaster, mouse;
-        
-        let currentUser = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
-        let currentPos = { x: null, z: null, zone: null };
-        let isDrawerOpen = true;
+        // 1. CÁC TRỤC ĐƯỜNG NỘI BỘ (Để AI bám theo không xuyên tường)
+        const C_X = {
+            L_OUT: -300,  // Đường vành đai ngoài cùng bên Trái
+            L_IN: -180,   // Hành lang chính Trái (Giữa Cupper và Bodymaker)
+            MID: -20,     // Hành lang Trung tâm (Giữa Bodymaker và Decorator)
+            R_IN: 180,    // Hành lang chính Phải (Giữa Decorator và Necker)
+            R_OUT: 300    // Đường vành đai ngoài cùng bên Phải
+        };
 
-        // Tọa độ Vệ tinh Tâm Nhà Máy (Cho nút Google Maps)
-        const ANCHOR_LAT = 11.1394136;
-        const ANCHOR_LNG = 106.6241705;
-
-        // 1. MA TRẬN HÀNH LANG VUÔNG GÓC (ORTHOGONAL GRID SYSTEM)
-        const C_X = [-300, -180, -20, 100, 180, 300]; 
-        const C_Z = [-380, -280, -150, 0, 120, 220, 280, 350, 440, 520];
+        const C_Z = {
+            NA3: -380,    // Điểm tập kết cổng NA3
+            FRONT: -280,  // Đường ngang trước mặt tiền Văn phòng
+            L1: -150,     // Hành lang cắt ngang Line 1
+            L2: 0,        // Hành lang cắt ngang Line 2 (Giữa Line 1 & Line 2)
+            L3: 120,      // Hành lang cắt ngang Line 3 (Giữa Line 2 & Line 3)
+            WH1: 240,     // Hành lang cắt ngang Kho thành phẩm 1
+            WH2: 380,     // Hành lang cắt ngang Kho thành phẩm 2
+            YARD: 550,    // ĐƯỜNG BĂNG NGANG BÃI ĐẤT TRỐNG
+            NA2: 750      // Đường ngang vành đai sau NA2 (Kho Nguyên liệu, XLNT)
+        };
 
         const gridPoints = {};
         const navEdges = [];
@@ -257,77 +257,85 @@
         }
 
         function buildBlueprintV6() {
-            const floorGeo = new THREE.PlaneGeometry(1000, 1500);
+            const floorGeo = new THREE.PlaneGeometry(1000, 2000);
             const floorMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.DoubleSide });
             factoryFloor = new THREE.Mesh(floorGeo, floorMat);
             factoryFloor.rotation.x = -Math.PI / 2;
             scene.add(factoryFloor);
 
-            // Bờ tường rào bao quanh toàn KCN
-            const fenceGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(680, 20, 1100));
+            // Bờ tường rào bao quanh toàn KCN (Đã kéo dài)
+            const fenceGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(680, 20, 1400));
             const fenceMat = new THREE.LineBasicMaterial({ color: 0x475569, linewidth: 1 });
             const fence = new THREE.LineSegments(fenceGeo, fenceMat);
-            fence.position.set(0, 10, 90); scene.add(fence);
+            fence.position.set(0, 10, 180); scene.add(fence);
 
             // Đường nội bộ (Sơn xám) bao quanh
             drawRoad(680, 40, 0, -280); // Đường ngang trước Văn phòng
-            drawRoad(680, 40, 0, 520);  // Đường ngang sau (NA2)
-            drawRoad(40, 840, -300, 120); // Vành đai trái
-            drawRoad(40, 840, 300, 120);  // Vành đai phải
+            drawRoad(680, 40, 0, 750);  // Đường ngang sau (NA2)
+            drawRoad(40, 1070, -300, 235); // Vành đai trái (Kéo dài)
+            drawRoad(40, 1070, 300, 235);  // Vành đai phải (Kéo dài)
 
             // ================== CỔNG CHÍNH (ĐƯỜNG NA3 - PHÍA BẮC/TRÊN CÙNG) ==================
             createTextLabel("ĐƯỜNG NA3 (CỔNG CHÍNH)", 0, 2, -450, 0x94a3b8, 16);
             
-            // Khu vực tập kết sự cố
-            drawWireframeZone(240, 80, -20, -360, 0x10b981, "VỊ TRÍ TẬP KẾT SỰ CỐ"); 
+            // Khu vực tập kết sự cố (To, Nằm chính giữa mặt tiền)
+            drawWireframeZone(240, 80, -20, -360, 0x10b981, "VỊ TRÍ TẬP KẾT SỰ CỐ"); // Màu xanh lá
             
             // Nhà xe & Trạm Gas (Hai bên)
             drawWireframeZone(120, 60, -220, -350, 0x64748b, "NHÀ XE (PARKING)");
             drawWireframeZone(100, 40, 180, -360, 0xf59e0b, "TRẠM GAS");
 
             // ================== KHỐI VĂN PHÒNG & CANTEEN ==================
+            // Kéo dài liền mạch từ Văn phòng sang Canteen
             drawWireframeZone(380, 50, -40, -230, 0x0ea5e9, "VĂN PHÒNG (OFFICE)");
             drawWireframeZone(120, 50, 230, -230, 0x0ea5e9, "CANTEEN");
 
             // ================== KHU VỰC SẢN XUẤT (3 LINES) ==================
+            // Khu hông Trái (Cupper kéo dài)
             drawWireframeZone(60, 250, -230, -25, 0x8b5cf6, "CUPPER AREA");
 
-            // BOILER ĐÃ ĐƯỢC DỜI VỀ GIỮA BODY 2 & 3
-            drawWireframeZone(140, 40, -100, 60, 0x64748b, "BOILER"); 
+            // SỬA LỖI BOILER: Đưa Boiler vào giữa Body Maker #2 (Z=0) và #3 (Z=120). 
+            drawWireframeZone(140, 40, -100, 60, 0x64748b, "BOILER AREA"); 
 
-            // Line 1 (Trên)
+            // Line 1 (Trên) Z = -120
             drawWireframeZone(140, 70, -100, -120, 0xef4444, "KHU RỬA / BODY MAKER #1");
             drawWireframeZone(140, 70, 60, -120, 0xef4444, "DECORATOR / PIN OVEN #1");
             drawWireframeZone(100, 70, 200, -120, 0xef4444, "NECKER LINE 1");
 
-            // Line 2 (Giữa)
+            // Line 2 (Giữa) Z = 0
             drawWireframeZone(140, 70, -100, 0, 0xef4444, "BODY MAKER #2");
             drawWireframeZone(140, 70, 60, 0, 0xef4444, "DECORATOR #2");
             drawWireframeZone(100, 70, 200, 0, 0xef4444, "NECKER LINE 2");
 
-            // Line 3 (Dưới)
+            // Line 3 (Dưới) Z = 120
             drawWireframeZone(140, 70, -100, 120, 0xef4444, "BODY MAKER #3");
             drawWireframeZone(140, 70, 60, 120, 0xef4444, "PDP LINE 3");
             drawWireframeZone(100, 70, 200, 120, 0xef4444, "NECKER LINE 3");
 
-            // ================== KHU VỰC KHO ==================
-            drawWireframeZone(140, 60, -100, 220, 0xa8a29e, "NGUYÊN LIỆU (COIL)");
-            drawWireframeZone(140, 60, 60, 220, 0xa8a29e, "LON TRẮNG (BRIGHT)");
-            drawWireframeZone(100, 60, 200, 220, 0x3b82f6, "ĐÓNG GÓI (PALLETIZER)");
+            // ================== KHU VỰC KHO (DƯỚI CÙNG SẢN XUẤT) ==================
+            // Coil & Bright (Z = 220)
+            drawWireframeZone(140, 60, -100, 200, 0xa8a29e, "NGUYÊN LIỆU (COIL)");
+            drawWireframeZone(140, 60, 60, 200, 0xa8a29e, "LON TRẮNG (BRIGHT)");
+            drawWireframeZone(100, 60, 200, 200, 0x3b82f6, "ĐÓNG GÓI (PALLETIZER)");
 
-            drawWireframeZone(240, 70, -40, 310, 0x8b5cf6, "KHO THÀNH PHẨM 1 (A)");
-            drawWireframeZone(180, 70, 190, 310, 0x8b5cf6, "KHO THÀNH PHẨM 1 (B)");
+            // Kho Thành phẩm 1 (Z = 310)
+            drawWireframeZone(240, 70, -40, 290, 0x8b5cf6, "KHO THÀNH PHẨM 1 (A)");
+            drawWireframeZone(180, 70, 190, 290, 0x8b5cf6, "KHO THÀNH PHẨM 1 (B)");
             
-            drawWireframeZone(240, 70, -40, 400, 0x8b5cf6, "KHO THÀNH PHẨM 2 (A)");
-            drawWireframeZone(180, 70, 190, 400, 0x8b5cf6, "KHO THÀNH PHẨM 2 (B)");
+            // Kho Thành phẩm 2 (Z = 400)
+            drawWireframeZone(240, 70, -40, 380, 0x8b5cf6, "KHO THÀNH PHẨM 2 (A)");
+            drawWireframeZone(180, 70, 190, 380, 0x8b5cf6, "KHO THÀNH PHẨM 2 (B)");
             
-            // ================== MẶT SAU (ĐƯỜNG NA2) ==================
-            drawWireframeZone(260, 80, -30, 480, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
-            drawWireframeZone(100, 80, 170, 480, 0x06b6d4, "TRẠM XLNT (WWTP)");
-            drawWireframeZone(40, 150, 260, 445, 0x8b5cf6, "KHO HÓA CHẤT");
-            createTextLabel("ĐƯỜNG NA2 (PHÍA NAM)", 0, 2, 570, 0x94a3b8, 16);
+            // ================== BÃI ĐẤT TRỐNG (KHOẢNG CÁCH THỰC TẾ) ==================
+            drawWireframeZone(640, 180, 0, 530, 0x334155, "BÃI ĐẤT TRỐNG DỰ PHÒNG (EMPTY YARD)");
 
-            // Vẽ Cửa Thoát Hiểm 3D (Đã chuẩn hóa vị trí)
+            // ================== MẶT SAU (ĐƯỜNG NA2 - ĐÃ ĐẨY LÙI XUỐNG Z=750) ==================
+            drawWireframeZone(300, 100, -100, 740, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
+            drawWireframeZone(120, 100, 160, 740, 0x06b6d4, "TRẠM XLNT (WWTP)");
+            drawWireframeZone(80, 180, 260, 700, 0x8b5cf6, "KHO HÓA CHẤT");
+            createTextLabel("ĐƯỜNG NA2 (PHÍA NAM)", 0, 2, 820, 0x94a3b8, 16);
+
+            // Vẽ Cửa Thoát Hiểm 3D
             EXIT_DOORS.forEach(door => {
                 const boxGeo = new THREE.BoxGeometry(20, 20, 20);
                 const boxMat = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 });
@@ -393,14 +401,21 @@
         }
 
         window.selectZoneFromDropdown = function() {
-            const val = document.getElementById('zone-selector').value; if(val === 'none') return;
+            const val = document.getElementById('zone-selector').value;
+            if(val === 'none') return;
+            
             let coords = {x: 0, z: 0};
             switch(val) {
-                case 'khu-tap-ket': coords = {x: -20, z: -360}; break; case 'van-phong': coords = {x: -40, z: -230}; break;
-                case 'sx-cupper': coords = {x: -230, z: -25}; break; case 'sx-body': coords = {x: -100, z: 0}; break;
-                case 'sx-deco': coords = {x: 60, z: 0}; break; case 'sx-necker': coords = {x: 200, z: 0}; break;
-                case 'kho-tp-1': coords = {x: -40, z: 310}; break; case 'kho-tp-2': coords = {x: -40, z: 400}; break;
-                case 'kho-nl': coords = {x: -30, z: 480}; break; case 'tram-xlnt': coords = {x: 170, z: 480}; break;
+                case 'khu-tap-ket': coords = {x: -20, z: -360}; break;
+                case 'van-phong': coords = {x: -40, z: -230}; break;
+                case 'sx-cupper': coords = {x: -230, z: -25}; break;
+                case 'sx-body': coords = {x: -100, z: 0}; break;
+                case 'sx-deco': coords = {x: 60, z: 0}; break;
+                case 'sx-necker': coords = {x: 200, z: 0}; break;
+                case 'kho-tp-1': coords = {x: -40, z: 290}; break;
+                case 'kho-tp-2': coords = {x: -40, z: 380}; break;
+                case 'kho-nl': coords = {x: -100, z: 740}; break;
+                case 'tram-xlnt': coords = {x: 160, z: 740}; break;
             }
             setMarkerPosition(coords.x, coords.z);
         }
