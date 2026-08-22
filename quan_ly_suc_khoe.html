@@ -9,9 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <!-- Tải thư viện Chart.js để vẽ biểu đồ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Tải thư viện SheetJS để đọc file Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -69,9 +67,6 @@
             </div>
 
             <div class="flex flex-wrap gap-2 w-full md:w-auto justify-end">
-                <button onclick="window.createReminderTask()" class="bg-indigo-50 text-indigo-700 px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-100 transition border border-indigo-200 flex items-center gap-2 text-sm shadow-sm">
-                    <i class="ph-fill ph-calendar-plus text-lg"></i> Lên Lịch Khám Mới
-                </button>
                 <label class="cursor-pointer bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition shadow-sm flex items-center gap-2 text-sm">
                     <i class="ph-bold ph-microsoft-excel-logo text-lg"></i> Nhập Excel (Hồ sơ khám)
                     <input type="file" id="excel-upload" accept=".xlsx, .xls" class="hidden" onchange="window.handleExcelUpload(event)">
@@ -95,38 +90,45 @@
                         </div>
                     </div>
 
-                    <!-- 5 Chỉ số Tổng quan -->
-                    <div class="col-span-1 lg:col-span-3 grid grid-cols-2 md:grid-cols-5 gap-4">
+                    <!-- 4 Chỉ số Tổng quan -->
+                    <div class="col-span-1 lg:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-center items-center text-center">
                             <div class="w-10 h-10 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mb-2"><i class="ph-fill ph-users-three text-xl"></i></div>
                             <p class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tổng NV (Nội bộ)</p>
-                            <p class="text-2xl font-black text-slate-800" id="stat-total-hr">0</p>
+                            <p class="text-3xl font-black text-slate-800" id="stat-total-hr">0</p>
                         </div>
 
                         <div class="bg-blue-50 p-4 rounded-2xl shadow-sm border border-blue-200 flex flex-col justify-center items-center text-center">
                             <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-2"><i class="ph-fill ph-stethoscope text-xl"></i></div>
-                            <p class="text-[9px] font-bold text-blue-800 uppercase tracking-wider mb-1">Đã Khám (Đợt này)</p>
-                            <p class="text-2xl font-black text-blue-700" id="stat-examined">0</p>
+                            <p class="text-[9px] font-bold text-blue-800 uppercase tracking-wider mb-1">Đã Khám (Đợt đang chọn)</p>
+                            <p class="text-3xl font-black text-blue-700" id="stat-examined">0</p>
                         </div>
 
-                        <div class="bg-amber-50 p-4 rounded-2xl shadow-sm border border-amber-200 flex flex-col justify-center items-center text-center relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 text-amber-500 opacity-20"><i class="ph-fill ph-warning text-6xl"></i></div>
-                            <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-2 relative z-10"><i class="ph-fill ph-calendar-x text-xl"></i></div>
-                            <p class="text-[9px] font-black text-amber-800 uppercase tracking-wider mb-1 relative z-10">ĐẾN HẠN KHÁM LẠI</p>
-                            <p class="text-2xl font-black text-amber-700 relative z-10" id="stat-due">0</p>
+                        <!-- THẺ CLICK ĐƯỢC: CHƯA KHÁM -->
+                        <div onclick="window.openMissingModal()" class="cursor-pointer bg-purple-50 p-4 rounded-2xl shadow-sm border border-purple-200 flex flex-col justify-center items-center text-center relative overflow-hidden hover:bg-purple-100 transition group">
+                            <div class="absolute -right-4 -top-4 text-purple-500 opacity-10 group-hover:scale-110 transition-transform"><i class="ph-fill ph-user-minus text-6xl"></i></div>
+                            <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mb-2 relative z-10"><i class="ph-fill ph-user-minus text-xl"></i></div>
+                            <p class="text-[9px] font-black text-purple-800 uppercase tracking-wider mb-1 relative z-10">CHƯA KHÁM ĐỢT NÀY</p>
+                            <p class="text-3xl font-black text-purple-700 relative z-10" id="stat-missing">0</p>
+                            <p class="text-[9px] text-purple-500 underline font-bold mt-1 relative z-10">👉 Xem danh sách</p>
                         </div>
 
-                        <div class="bg-emerald-50 p-4 rounded-2xl shadow-sm border border-emerald-200 flex flex-col justify-center items-center text-center">
-                            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-2"><i class="ph-fill ph-heart text-xl"></i></div>
-                            <p class="text-[9px] font-bold text-emerald-800 uppercase tracking-wider mb-1">SK Tốt (I, II, III)</p>
-                            <p class="text-2xl font-black text-emerald-600" id="stat-good">0</p>
-                        </div>
-                        
-                        <div class="bg-rose-50 p-4 rounded-2xl shadow-inner border border-rose-200 flex flex-col justify-center items-center text-center relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 text-rose-100 opacity-50"><i class="ph-fill ph-siren text-6xl"></i></div>
-                            <div class="w-10 h-10 bg-rose-200 text-rose-700 rounded-full flex items-center justify-center mb-2 relative z-10"><i class="ph-fill ph-first-aid text-xl"></i></div>
-                            <p class="text-[9px] font-bold text-rose-900 uppercase tracking-wider mb-1 relative z-10">Yếu Kém (IV, V)</p>
-                            <p class="text-2xl font-black text-rose-700 relative z-10" id="stat-weak">0</p>
+                        <div class="grid grid-rows-2 gap-4">
+                            <div class="bg-emerald-50 p-2 rounded-2xl shadow-sm border border-emerald-200 flex items-center justify-between px-4">
+                                <div>
+                                    <p class="text-[9px] font-bold text-emerald-800 uppercase tracking-wider">SK Đạt (I, II, III)</p>
+                                    <p class="text-xl font-black text-emerald-600" id="stat-good">0</p>
+                                </div>
+                                <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><i class="ph-fill ph-heart"></i></div>
+                            </div>
+                            
+                            <div class="bg-rose-50 p-2 rounded-2xl shadow-sm border border-rose-200 flex items-center justify-between px-4">
+                                <div>
+                                    <p class="text-[9px] font-bold text-rose-900 uppercase tracking-wider">Yếu Kém (IV, V)</p>
+                                    <p class="text-xl font-black text-rose-700" id="stat-weak">0</p>
+                                </div>
+                                <div class="w-8 h-8 bg-rose-200 text-rose-700 rounded-full flex items-center justify-center"><i class="ph-fill ph-first-aid"></i></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -138,7 +140,7 @@
                         <input type="text" id="search-input" onkeyup="window.filterTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-2.5 text-sm font-bold outline-none focus:border-rose-500 focus:bg-white transition" placeholder="Tìm tên nhân viên, Mã NV, Bộ phận...">
                     </div>
                     
-                    <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end">
+                    <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end items-center">
                         <select id="filter-type" onchange="window.filterTable()" class="border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 outline-none focus:border-rose-500 cursor-pointer">
                             <option value="all">Tất cả phân loại</option>
                             <option value="I">Loại I (Rất tốt)</option>
@@ -147,8 +149,8 @@
                             <option value="IV">Loại IV (Yếu)</option>
                             <option value="V">Loại V (Rất yếu)</option>
                         </select>
-                        <select id="filter-date" onchange="window.filterTable()" class="border border-slate-200 bg-white rounded-xl px-4 py-2.5 text-sm font-bold text-blue-700 outline-none focus:border-rose-500 cursor-pointer min-w-[150px]">
-                            <option value="all">Tất cả đợt khám</option>
+                        <select id="filter-date" onchange="window.filterTable()" class="border border-blue-200 bg-blue-50 rounded-xl px-4 py-2.5 text-sm font-bold text-blue-700 outline-none focus:border-blue-500 cursor-pointer min-w-[150px]">
+                            <option value="all">Tất cả các đợt</option>
                         </select>
                         
                         <!-- NÚT XÓA HÀNG LOẠT -->
@@ -221,8 +223,46 @@
         </main>
     </div>
 
+    <!-- MODAL DANH SÁCH CHƯA KHÁM -->
+    <div id="missing-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] border-t-4 border-purple-500">
+            <div class="p-5 border-b border-slate-100 bg-purple-50 flex justify-between items-center shrink-0">
+                <h3 class="text-lg font-black text-purple-800 flex items-center gap-2"><i class="ph-fill ph-user-minus"></i> Danh sách Nhân sự Chưa Khám (Trong đợt đang chọn)</h3>
+                <button onclick="window.closeMissingModal()" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            
+            <div class="p-4 bg-white border-b border-slate-100 flex justify-between items-center gap-4 shrink-0">
+                <p class="text-sm text-slate-600 font-medium">Tổng số: <b class="text-purple-700" id="missing-count">0</b> người chưa tham gia khám sức khỏe.</p>
+                <div class="flex gap-2">
+                    <button onclick="window.exportMissingExcel()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-4 py-2 rounded-lg font-bold border border-emerald-200 transition text-sm flex items-center gap-2">
+                        <i class="ph-bold ph-download-simple"></i> Xuất Excel
+                    </button>
+                    <button onclick="window.createReminderTask()" class="bg-indigo-600 text-white hover:bg-indigo-700 px-4 py-2 rounded-lg font-bold shadow-md transition text-sm flex items-center gap-2">
+                        <i class="ph-bold ph-calendar-plus"></i> Tạo Kế hoạch Khám Bổ Sung
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-y-auto custom-scrollbar flex-1 bg-slate-50 p-4">
+                <table class="w-full text-left border-collapse bg-white rounded-xl shadow-sm overflow-hidden" id="missing-table">
+                    <thead class="sticky top-0 bg-slate-800 text-white z-10">
+                        <tr class="text-[11px] uppercase tracking-wider">
+                            <th class="p-3 text-center w-12">STT</th>
+                            <th class="p-3 w-32">Mã NV</th>
+                            <th class="p-3">Họ và Tên</th>
+                            <th class="p-3">Bộ phận / Xưởng</th>
+                            <th class="p-3 text-center">Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="missing-body" class="text-sm divide-y divide-slate-100 font-medium text-slate-700">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL CHI TIẾT / CHỈNH SỬA -->
-    <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4">
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh]">
             <div class="p-5 border-b border-slate-100 bg-rose-50 flex justify-between items-center shrink-0">
                 <h3 class="text-lg font-black text-rose-800 flex items-center gap-2"><i class="ph-fill ph-pencil-simple"></i> Cập Nhật Hồ Sơ Khám Sức Khỏe</h3>
@@ -295,7 +335,7 @@
     </div>
 
     <!-- HỘP THOẠI XÁC NHẬN XÓA -->
-    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[250] hidden flex items-center justify-center p-4">
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[300] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden text-center p-6">
             <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4">
                 <i class="ph-fill ph-warning text-4xl"></i>
@@ -330,6 +370,7 @@
         // Biến toàn cục
         window.allHRData = {}; 
         window.allHealthData = []; 
+        window.currentMissingList = []; // Chứa danh sách những người chưa khám
         let myChart = null;
         let deleteAction = null; 
 
@@ -376,15 +417,12 @@
             }
         });
 
-        // HÀM CHUẨN HÓA LOẠI SỨC KHỎE CHÍNH XÁC (KHÔNG BỊ NHẦM LA MÃ)
+        // HÀM CHUẨN HÓA LOẠI SỨC KHỎE CHÍNH XÁC 
         function normalizeTypeExact(text) {
             if(!text) return "N/A";
-            // Ép kiểu chuỗi, bỏ khoảng trắng dư thừa
             let s = String(text).toUpperCase().trim();
-            // Nếu có chữ LOẠI thì bóc nó ra
             s = s.replace("LOẠI", "").replace("LỌAI", "").trim();
             
-            // Dùng so sánh bằng tuyệt đối (===) thay vì includes
             if(s === "V" || s === "5") return "V";
             if(s === "IV" || s === "4") return "IV";
             if(s === "III" || s === "3") return "III";
@@ -398,18 +436,15 @@
             if(!text || text === "N/A" || text === "-") return null;
             let s = String(text).toLowerCase();
             
-            // Nếu là số La Mã chuẩn
             let exact = normalizeTypeExact(text);
             if(exact !== "N/A") return exact;
 
-            // Nếu là chữ nghĩa từ bác sĩ
             if(s.includes("bình thường") || s.includes("chưa phát hiện") || s.includes("tốt")) return "I";
             if(s.includes("nhẹ") || s.includes("ít") || s.includes("loại 2") || s.includes("loại ii")) return "II";
             if(s.includes("trung bình") || s.includes("loại 3") || s.includes("loại iii")) return "III";
             if(s.includes("loại 4") || s.includes("loại iv")) return "IV";
             if(s.includes("loại 5") || s.includes("loại v")) return "V";
             
-            // Nếu có ghi bệnh lý (nhưng ko có loại) thì mặc định cảnh báo là Loại 3 để EHS chú ý
             return "III"; 
         }
 
@@ -421,6 +456,7 @@
             document.getElementById('table-container').classList.add('hidden');
             
             try {
+                // 1. Tải danh sách NV Nội bộ
                 const hrSnap = await getDocs(collection(db, "nhan_su_noi_bo"));
                 window.allHRData = {};
                 hrSnap.forEach(doc => {
@@ -433,6 +469,7 @@
                     }
                 });
 
+                // 2. Tải danh sách Khám Sức Khỏe
                 const skSnap = await getDocs(collection(db, "suc_khoe_noi_bo"));
                 window.allHealthData = [];
                 let datesSet = new Set();
@@ -448,7 +485,7 @@
                     window.allHealthData.push({
                         id: doc.id, ma_nv: mnv, ho_ten: hrInfo.ho_ten, bo_phan: hrInfo.bo_phan,
                         ngay_kham: d.ngay_kham || '', 
-                        phan_loai: normalizeTypeExact(d.phan_loai), // Dùng hàm chính xác
+                        phan_loai: normalizeTypeExact(d.phan_loai),
                         ghi_chu: d.ghi_chu || '',
                         chieu_cao: d.chieu_cao || '', can_nang: d.can_nang || '', huyet_ap: d.huyet_ap || '',
                         the_luc: ck.the_luc || 'N/A', rhm: ck.rhm || 'N/A', tmh: ck.tmh || 'N/A',
@@ -456,6 +493,7 @@
                     });
                 });
 
+                // Cập nhật bộ lọc Ngày (Đợt)
                 const dateSelect = document.getElementById('filter-date');
                 const currVal = dateSelect.value; 
                 dateSelect.innerHTML = '<option value="all">Tất cả đợt khám</option>';
@@ -463,6 +501,8 @@
                 sortedDates.forEach(date => {
                     if(date) dateSelect.innerHTML += `<option value="${date}">Đợt: ${date.split('-').reverse().join('/')}</option>`;
                 });
+                
+                // Cố gắng giữ lại giá trị đang chọn nếu có
                 if(sortedDates.includes(currVal)) dateSelect.value = currVal;
                 else if(sortedDates.length > 0) dateSelect.value = sortedDates[0]; 
 
@@ -479,7 +519,7 @@
 
         window.filterTable = function() {
             const kw = document.getElementById('search-input').value.toLowerCase().trim();
-            const typeFilter = document.getElementById('filter-type').value; // Bỏ replace vì hàm exact đã xử lý
+            const typeFilter = document.getElementById('filter-type').value; 
             const dateFilter = document.getElementById('filter-date').value;
 
             let filtered = window.allHealthData.filter(item => {
@@ -494,7 +534,7 @@
 
             filtered.sort((a,b) => b.ngay_kham.localeCompare(a.ngay_kham));
             renderTable(filtered);
-            updateDashboard(filtered, dateFilter);
+            updateDashboard(filtered); // Cập nhật số liệu dựa trên mảng đã lọc
         }
 
         // =====================================
@@ -554,9 +594,8 @@
             return `<span class="text-slate-400 text-xs">-</span>`;
         }
 
-        function updateDashboard(dataArray, dateFilter) {
-            let tGood = 0; let t3 = 0; let tWeak = 0;
-            let countObj = { "I":0, "II":0, "III":0, "IV":0, "V":0 };
+        function updateDashboard(dataArray) {
+            let countObj = { "I":0, "II":0, "III":0, "IV":0, "V":0, "NA":0 };
             
             let specStats = {
                 the_luc: {I:0, II:0, III:0, IV:0, V:0}, noi: {I:0, II:0, III:0, IV:0, V:0},
@@ -565,31 +604,18 @@
             };
 
             let uniqueEmpInFilter = new Set();
+            let examinedIds = new Set();
             
-            // Xử lý Lịch khám quá hạn (Tất cả Health Data, không phân biệt filter đợt)
-            let dueCount = 0;
-            let sixMonthsAgo = new Date();
-            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-            let latestCheckupMap = {};
-            
-            window.allHealthData.forEach(d => {
-                if(!d.ma_nv || !d.ngay_kham) return;
-                let dDate = new Date(d.ngay_kham);
-                if(!latestCheckupMap[d.ma_nv] || dDate > latestCheckupMap[d.ma_nv]) {
-                    latestCheckupMap[d.ma_nv] = dDate;
-                }
-            });
-
             // Lọc Data cho Bảng Thống kê & Ma trận
             dataArray.forEach(d => {
-                if (d.ma_nv) uniqueEmpInFilter.add(d.ma_nv);
+                if (d.ma_nv) {
+                    uniqueEmpInFilter.add(d.ma_nv);
+                    examinedIds.add(d.ma_nv);
+                }
                 let loai = d.phan_loai;
                 
-                if(loai === "I" || loai === "II") tGood++;
-                else if(loai === "III") t3++;
-                else if(loai === "IV" || loai === "V") tWeak++;
-
                 if(countObj[loai] !== undefined) countObj[loai]++;
+                else countObj.NA++; // Tính luôn người "Chưa phân loại" hoặc "Khác" để biểu đồ khớp số tổng
 
                 ["the_luc", "noi", "ngoai", "mat", "tmh", "rhm", "phu_khoa"].forEach(k => {
                     let mappedType = smartMapToType(d[k]);
@@ -597,19 +623,28 @@
                 });
             });
 
-            // Tính người chưa khám & Hết hạn
+            // TÍNH NGƯỜI CHƯA KHÁM (So sánh Mã NV trong HR Nội bộ với Mã NV đã khám trong đợt này)
             let totalHRCount = Object.keys(window.allHRData).length;
             let examinedCount = uniqueEmpInFilter.size;
             
+            window.currentMissingList = []; // Reset danh sách
             for(let mnv in window.allHRData) {
-                if(!latestCheckupMap[mnv] || latestCheckupMap[mnv] < sixMonthsAgo) dueCount++;
+                if(!examinedIds.has(mnv)) {
+                    window.currentMissingList.push({
+                        ma_nv: mnv,
+                        ho_ten: window.allHRData[mnv].ho_ten,
+                        bo_phan: window.allHRData[mnv].bo_phan
+                    });
+                }
             }
 
             document.getElementById('stat-total-hr').innerText = totalHRCount;
             document.getElementById('stat-examined').innerText = examinedCount;
-            document.getElementById('stat-good').innerText = tGood;
-            document.getElementById('stat-weak').innerText = tWeak;
-            document.getElementById('stat-due').innerText = dueCount;
+            document.getElementById('stat-missing').innerText = window.currentMissingList.length;
+            
+            // Tốt = I, II, III. Yếu = IV, V
+            document.getElementById('stat-good').innerText = countObj.I + countObj.II + countObj.III;
+            document.getElementById('stat-weak').innerText = countObj.IV + countObj.V;
 
             // VẼ MA TRẬN CHUYÊN KHOA
             const specBody = document.getElementById('specialty-body');
@@ -636,15 +671,16 @@
             }
             specBody.innerHTML = specHtml || `<tr><td colspan="6" class="p-4 text-center text-slate-400 italic">Chưa có dữ liệu chuyên khoa cho đợt này.</td></tr>`;
 
+            // VẼ BIỂU ĐỒ TRÒN (Có thêm nhóm Khác để khớp 100% quân số)
             const ctx = document.getElementById('healthChart').getContext('2d');
             if (myChart) myChart.destroy();
             myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Loại I (Rất Tốt)', 'Loại II (Tốt)', 'Loại III (Trung bình)', 'Loại IV (Yếu)', 'Loại V (Rất Yếu)'],
+                    labels: ['Loại I', 'Loại II', 'Loại III', 'Loại IV', 'Loại V', 'Khác'],
                     datasets: [{
-                        data: [countObj.I, countObj.II, countObj.III, countObj.IV, countObj.V],
-                        backgroundColor: ['#10b981', '#34d399', '#f59e0b', '#f97316', '#e11d48'],
+                        data: [countObj.I, countObj.II, countObj.III, countObj.IV, countObj.V, countObj.NA],
+                        backgroundColor: ['#10b981', '#34d399', '#f59e0b', '#f97316', '#e11d48', '#94a3b8'],
                         borderWidth: 2, borderColor: '#ffffff'
                     }]
                 },
@@ -656,41 +692,89 @@
         }
 
         // =====================================
-        // NHẮC LỊCH KHÁM & TẠO TASK (MỚI)
+        // CHỨC NĂNG XEM DANH SÁCH "CHƯA KHÁM" 
+        // =====================================
+        window.openMissingModal = function() {
+            const tbody = document.getElementById('missing-body');
+            document.getElementById('missing-count').innerText = window.currentMissingList.length;
+            
+            let html = '';
+            if (window.currentMissingList.length === 0) {
+                html = `<tr><td colspan="5" class="p-8 text-center text-slate-500 font-bold">Tuyệt vời! 100% nhân sự đã tham gia khám.</td></tr>`;
+            } else {
+                window.currentMissingList.forEach((w, i) => {
+                    html += `
+                        <tr class="hover:bg-purple-50/50 transition">
+                            <td class="p-3 text-center text-slate-500">${i+1}</td>
+                            <td class="p-3 font-mono font-bold text-purple-700">${w.ma_nv}</td>
+                            <td class="p-3 font-bold text-slate-800">${w.ho_ten}</td>
+                            <td class="p-3 text-xs text-slate-500">${w.bo_phan}</td>
+                            <td class="p-3 text-center"><span class="bg-red-100 text-red-600 px-2 py-0.5 rounded text-[10px] font-bold">Chưa Khám</span></td>
+                        </tr>
+                    `;
+                });
+            }
+            tbody.innerHTML = html;
+            document.getElementById('missing-modal').classList.remove('hidden');
+        }
+
+        window.closeMissingModal = function() {
+            document.getElementById('missing-modal').classList.add('hidden');
+        }
+
+        window.exportMissingExcel = function() {
+            if(window.currentMissingList.length === 0) return window.showToast("Không có dữ liệu để xuất!", "error");
+            
+            let csv = ['"STT","Mã NV","Họ và Tên","Bộ phận / Xưởng"']; 
+            let bom = "\uFEFF";
+            window.currentMissingList.forEach((w, i) => {
+                csv.push(`"${i+1}","${w.ma_nv}","${w.ho_ten}","${w.bo_phan}"`);
+            });
+            
+            let csvFile = new Blob([bom + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+            let downloadLink = document.createElement("a"); downloadLink.download = "Danh_Sach_Chua_Kham_EHS.csv"; 
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = "none"; document.body.appendChild(downloadLink); 
+            downloadLink.click(); document.body.removeChild(downloadLink);
+        }
+
+        // =====================================
+        // TẠO KẾ HOẠCH KHÁM (TASK)
         // =====================================
         window.createReminderTask = async function() {
-            let dueCount = document.getElementById('stat-due').innerText;
-            if(dueCount == 0) return window.showToast("Toàn bộ nhân sự đã khám sức khỏe định kỳ. Chưa cần lên lịch mới!", "error");
+            let dueCount = window.currentMissingList.length;
+            if(dueCount === 0) return window.showToast("Toàn bộ nhân sự đã khám sức khỏe. Không cần lên kế hoạch!", "error");
             
-            if(!confirm(`Có ${dueCount} nhân sự đã quá 6 tháng chưa khám sức khỏe. Bạn có muốn tạo Kế hoạch gửi cho phòng Y tế/EHS không?`)) return;
+            if(!confirm(`Xác nhận tạo Nhiệm vụ tổ chức khám cho ${dueCount} người trên hệ thống Giao việc (Task)?`)) return;
 
             try {
-                const currentUser = localStorage.getItem("ehs_user_name") || "Hệ thống";
+                const currentUser = localStorage.getItem("ehs_user_name") || "Hệ thống EHS";
                 const currentUserId = localStorage.getItem("ehs_user_id");
                 
                 const taskData = {
-                    title: `Kế hoạch Tổ chức Khám Sức khỏe Định kỳ (${dueCount} người)`,
+                    title: `Kế hoạch Tổ chức Khám Sức khỏe Bổ sung (${dueCount} người)`,
                     category: 'Sức khỏe',
                     task_type: 'normal',
                     due_date: new Date(new Date().setDate(new Date().getDate() + 15)).toISOString().split('T')[0], // Hạn 15 ngày
                     assigner_id: currentUserId,
                     assigner_name: currentUser,
-                    assignee_id: currentUserId, // Giao cho chính mình để làm
+                    assignee_id: currentUserId, // Giao cho chính mình
                     assignee_name: currentUser,
                     progress: 0,
                     status: 'To Do',
                     is_review_requested: false,
                     plan_steps: [
-                        {text: `Lọc danh sách ${dueCount} nhân sự cần khám đợt này`, progress: 0},
-                        {text: `Liên hệ Phòng khám/Bệnh viện lấy báo giá`, progress: 0},
+                        {text: `Lọc danh sách ${dueCount} nhân sự cần khám vét đợt này`, progress: 0},
+                        {text: `Liên hệ Phòng khám/Bệnh viện lấy báo giá & ngày rảnh`, progress: 0},
                         {text: `Gửi thông báo lịch khám xuống các Xưởng`, progress: 0},
-                        {text: `Tổ chức khám và nhận kết quả`, progress: 0}
+                        {text: `Tổ chức khám và cập nhật kết quả lên hệ thống`, progress: 0}
                     ],
                     created_at: new Date()
                 };
 
                 await addDoc(collection(db, "ehs_tasks"), taskData);
                 window.showToast("Đã tạo Kế hoạch trên module Giao Việc & Tiến độ thành công!");
+                window.closeMissingModal();
                 
             } catch(e) { window.showToast("Lỗi tạo Task: " + e.message, "error"); }
         }
@@ -725,10 +809,9 @@
                         if(rawData[i] && rawData[i].length > maxCols) maxCols = rawData[i].length;
                     }
 
-                    // TẠO CHUỖI HEADER GỘP 15 DÒNG ĐẦU BẰNG CÁCH XÓA SẠCH KHOẢNG TRẮNG VÀ XUỐNG DÒNG
-                    // Mục đích: Chữ "Chi\nều\ncao" sẽ ép bẹp thành "chiềucao" -> Bắt từ khóa chính xác 100%
+                    // TẠO CHUỖI HEADER GỘP 10 DÒNG ĐẦU VÀ NÉN CHẶT MỌI KHOẢNG TRẮNG, XUỐNG DÒNG
                     let combinedHeaders = new Array(maxCols).fill("");
-                    for(let i=0; i<Math.min(15, rawData.length); i++) {
+                    for(let i=0; i<Math.min(10, rawData.length); i++) {
                         for(let j=0; j<maxCols; j++) {
                             if(rawData[i] && rawData[i][j]) {
                                 let cleanWord = String(rawData[i][j]).toLowerCase().replace(/[\s\n\r\t]/g, '');
@@ -739,7 +822,7 @@
 
                     let colMap = { maNV: -1, hoTen: -1, phanLoai: -1, ghiChu: -1, chieuCao: -1, canNang: -1, huyetAp: -1, theLuc: -1, noi: -1, ngoai: -1, mat: -1, tmh: -1, rhm: -1, phuKhoa: -1 };
 
-                    // QUÉT RADAR TÌM CỘT BẰNG TỪ KHÓA ĐÃ NÉN CHẶT
+                    // QUÉT RADAR BẰNG TỪ KHÓA ĐÃ NÉN
                     colMap.hoTen = combinedHeaders.findIndex(h => h.includes("họvàtên") || h.includes("họtên"));
                     colMap.maNV = combinedHeaders.findIndex(h => h.includes("mãnv") || h.includes("mãnhânviên"));
                     
@@ -747,9 +830,9 @@
 
                     colMap.phanLoai = combinedHeaders.findIndex(h => h.includes("loại") && !h.includes("ngoại")); 
                     colMap.ghiChu = combinedHeaders.findIndex(h => h.includes("kếtluận") || h.includes("đềnghị") || h.includes("ghichú"));
-                    colMap.chieuCao = combinedHeaders.findIndex(h => h.includes("chiềucao") || h.includes("chiêucao"));
-                    colMap.canNang = combinedHeaders.findIndex(h => h.includes("cânnặng"));
-                    colMap.huyetAp = combinedHeaders.findIndex(h => h.includes("huyếtáp") || h.includes("h.áp"));
+                    colMap.chieuCao = combinedHeaders.findIndex(h => h.includes("chiềucao") || h.includes("chiêucao") || h.includes("cao"));
+                    colMap.canNang = combinedHeaders.findIndex(h => h.includes("cânnặng") || h.includes("nặng"));
+                    colMap.huyetAp = combinedHeaders.findIndex(h => h.includes("huyếtáp") || h.includes("h.áp") || h.includes("ha"));
                     colMap.noi = combinedHeaders.findIndex(h => h.includes("nội") && !h.includes("nộidung"));
                     colMap.ngoai = combinedHeaders.findIndex(h => h.includes("ngoại"));
                     colMap.mat = combinedHeaders.findIndex(h => h.includes("mắt") || h.includes("thịlực") || h.includes("khúcxạ"));
@@ -758,12 +841,11 @@
                     colMap.phuKhoa = combinedHeaders.findIndex(h => h.includes("phụkhoa") || h.includes("sảnkhoa"));
                     colMap.theLuc = combinedHeaders.findIndex(h => h.includes("thểlực") || h.includes("thểtrạng"));
 
-                    // Tìm dòng bắt đầu có dữ liệu thật sự (Bỏ qua các dòng tiêu đề chung chung)
+                    // Tìm dòng bắt đầu có dữ liệu thật sự
                     let dataStartRow = -1;
                     for (let i = 2; i < rawData.length; i++) {
                         let hoTenVal = colMap.hoTen !== -1 ? String(rawData[i][colMap.hoTen] || "").replace(/[\s\n\r\t]/g, '').toLowerCase() : "";
                         let isNotHeader = hoTenVal !== "họvàtên" && hoTenVal !== "họtên";
-                        
                         let hasData = (colMap.hoTen !== -1 && String(rawData[i][colMap.hoTen] || "").trim().length > 2);
                         
                         if(hasData && isNotHeader) {
@@ -781,7 +863,7 @@
                         let hoTen = colMap.hoTen !== -1 ? row[colMap.hoTen] : "";
                         let maNV = colMap.maNV !== -1 ? row[colMap.maNV] : "";
                         
-                        if(!hoTen) continue; // Bỏ qua dòng trống
+                        if(!hoTen) continue; 
                         
                         maNV = maNV ? maNV.toString().trim().toUpperCase() : `NV_TEMP_${i}`;
 
@@ -789,7 +871,7 @@
                         currentBatch.set(docRef, {
                             ma_nv: maNV,
                             ho_ten: String(hoTen).trim(),
-                            ngay_kham: dotKham,
+                            ngay_kham: dotKham, // Ngày do user nhập
                             phan_loai: normalizeTypeExact(colMap.phanLoai !== -1 ? row[colMap.phanLoai] : ""),
                             ghi_chu: String(colMap.ghiChu !== -1 ? row[colMap.ghiChu] : "").trim(),
                             chieu_cao: String(colMap.chieuCao !== -1 ? row[colMap.chieuCao] : "").trim(),
