@@ -209,30 +209,27 @@
         const ASSEMBLY_NODE = 'MID_NA3';
 
         // =========================================================================
-        // KHAI BÁO TỌA ĐỘ CỬA THOÁT HIỂM (MỚI NHẤT & CHUẨN XÁC NHẤT)
+        // KHAI BÁO TỌA ĐỘ CỬA THOÁT HIỂM (BÁM SÁT THỰC TẾ & CHỐNG LỖI ĐƯỜNG CHẠY)
         // =========================================================================
         const EXIT_DOORS = [
-            // Khối Văn Phòng / Canteen (Z = -255)
-            { name: "Cửa Chính (Văn phòng)", node: "MID_FRONT", x: -40, z: -255 }, 
-            { name: "Cửa Nối (VP & Canteen)", node: "R_IN_FRONT", x: 160, z: -255 },
-            { name: "Cửa Giữa Canteen", node: "R_OUT_FRONT", x: 230, z: -255 },
+            // Khối Văn Phòng & Canteen (Trục FRONT Z = -280)
+            { name: "Cửa Chính VP", node: "MID_FRONT", x: -20, z: -280 }, 
+            { name: "Cửa Nối VP & Canteen", node: "R_IN_FRONT", x: 140, z: -280 },
+            { name: "Cửa Canteen", node: "R_OUT_FRONT", x: 270, z: -280 },
             
-            // Khối Sản Xuất
-            { name: "Cửa Hông Trái (Sản Xuất)", node: "L_OUT_A2", x: -260, z: -60 },
-            { name: "Cửa Hông Phải (Necker)", node: "R_OUT_A2", x: 250, z: -60 },
-            
-            // Khối Kho Thành Phẩm
-            { name: "Cửa Hông Phải (Kho TP 1)", node: "R_OUT_A5", x: 280, z: 310 }, 
-            
-            // 3 Cửa sau lưng Kho TP 2 (Chạy ra hành lang A7)
-            { name: "Cửa Sau Trái (Kho TP 2)", node: "L_IN_A7", x: -100, z: 435 },
-            { name: "Cửa Sau Giữa (Kho TP 2)", node: "MID_A7", x: 40, z: 435 },
-            { name: "Cửa Sau Phải (Kho TP 2)", node: "R_IN_A7", x: 190, z: 435 },
+            // Dọc Hành Lang Trái (L_OUT = -300) - Khu Cupper & Body
+            { name: "Cửa Hông Trái 1 (Khu Cupper)", node: "L_OUT_A1", x: -300, z: -180 }, // Cửa mới theo PDF
+            { name: "Cửa Hông Trái 2 (Sản Xuất)", node: "L_OUT_A3", x: -300, z: 60 },
+            { name: "Cửa Hông Trái 3 (Kho Thành Phẩm)", node: "L_OUT_A6", x: -300, z: 360 },
 
-            // Khối Kho Nguyên Liệu
-            { name: "Cửa Mặt Trước (Kho NL)", node: "MID_A7", x: -30, z: 480 },
-            { name: "Cửa Hông Trái (Kho NL)", node: "L_IN_NA2", x: -160, z: 520 },
-            { name: "Cửa Hông Phải (Kho NL)", node: "R_IN_NA2", x: 100, z: 520 }
+            // Dọc Hành Lang Phải (R_OUT = 270) - Khu Necker
+            { name: "Cửa Hông Phải 1 (Necker)", node: "R_OUT_A1", x: 270, z: -180 }, // Tương xứng bên phải
+            { name: "Cửa Hông Phải 2 (Sản Xuất)", node: "R_OUT_A3", x: 270, z: 60 },
+            { name: "Cửa Hông Phải 3 (Kho Thành Phẩm)", node: "R_OUT_A6", x: 270, z: 360 },
+
+            // Vành đai Mặt Sau cùng (NA2 = 580)
+            { name: "Cửa Sau (Trạm XLNT)", node: "R_IN_NA2", x: 140, z: 580 },
+            { name: "Cửa Sau (Kho Hóa Chất)", node: "L_IN_NA2", x: -185, z: 580 }
         ];
 
         window.showToast = function(message, type = "success") {
@@ -600,30 +597,23 @@
 
             if(allCompleteRoutes.length === 0) return window.showToast("Lỗi mạng lưới định tuyến!", "error");
 
-            // 4. Hàm Vẽ Dải Lụa 3D
+            // 4. Hàm Vẽ Dải Lụa 3D (Đã tối ưu logic chống chạy giật lùi)
             function drawRoute(pathObj, colorHex, isPrimary) {
                 const points = [startP]; 
                 
-                // Ra hành lang
+                // Nối vuông góc từ vị trí đứng ra hành lang gần nhất
                 let firstNode = gridPoints[pathObj.nodes1[0]];
                 if(Math.abs(startP.x - firstNode.x) > 1 && Math.abs(startP.z - firstNode.z) > 1) {
                     points.push(new THREE.Vector3(startP.x, 5, firstNode.z)); 
                 }
                 
-                // Men hành lang tới Cửa
+                // Men hành lang tới Cửa (nodes1 kết thúc chính tại Cửa)
                 for(let i=0; i < pathObj.nodes1.length; i++) {
                     let node = gridPoints[pathObj.nodes1[i]];
                     points.push(new THREE.Vector3(node.x, 5, node.z));
                 }
 
-                // Chạm chính xác hộp EXIT
-                points.push(new THREE.Vector3(pathObj.doorObj.x, 5, pathObj.doorObj.z));
-
-                // Bật ngược lại hành lang
-                let doorNode = gridPoints[pathObj.doorObj.node];
-                points.push(new THREE.Vector3(doorNode.x, 5, doorNode.z));
-
-                // Chạy về Tập Kết
+                // Chạy tiếp từ Cửa về Điểm Tập Kết (Bỏ qua điểm đầu của nodes2 vì nó trùng với Cửa)
                 for(let i=1; i < pathObj.nodes2.length; i++) {
                     let node = gridPoints[pathObj.nodes2[i]];
                     points.push(new THREE.Vector3(node.x, 5, node.z));
