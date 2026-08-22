@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHS 3D Emergency Map</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; background-color: #0f172a; }
+        #canvas-container { width: 100vw; height: 100vh; display: block; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 4px; }
+    </style>
+</head>
+<body class="text-slate-200">
+
+    <!-- OVERLAY UI -->
+    <div class="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 sm:p-6 z-10">
+        
+        <!-- TOP HEADER -->
+        <header class="pointer-events-auto flex justify-between items-start">
+            <div class="bg-slate-900/80 backdrop-blur-md border border-slate-700 p-4 rounded-2xl shadow-2xl flex items-center gap-4">
+                <a href="index.html" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 rounded-xl flex items-center justify-center transition border border-slate-600">
+                    <i class="ph-bold ph-arrow-left text-lg text-white"></i>
+                </a>
+                <div>
+                    <h1 class="font-black text-xl text-white tracking-tight flex items-center gap-2">
+                        <i class="ph-fill ph-siren text-red-500 animate-pulse text-2xl"></i> COMMAND CENTER 3D
+                    </h1>
+                    <p class="text-slate-400 font-bold text-[10px] tracking-widest uppercase">Asia Packaging Industries - Bến Cát</p>
+                </div>
+            </div>
+
+            <!-- Bảng Hiện trạng Sự cố (Góc trên phải) -->
+            <div class="bg-slate-900/80 backdrop-blur-md border border-red-500/50 p-4 rounded-2xl shadow-2xl w-64 md:w-80 hidden" id="alarm-panel">
+                <h3 class="text-red-500 font-black text-sm uppercase flex items-center gap-2 mb-2">
+                    <i class="ph-fill ph-warning text-xl animate-pulse"></i> Cảnh Báo Khẩn Cấp
+                </h3>
+                <div id="alarm-list" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar">
+                    <!-- Javascript nạp cảnh báo vào đây -->
+                </div>
+                <!-- Nút Tọa độ Google Maps -->
+                <div class="mt-3 pt-3 border-t border-red-500/30">
+                    <button onclick="window.openGoogleMaps()" class="w-full bg-blue-900/80 hover:bg-blue-600 border border-blue-500 text-white font-bold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                        <i class="ph-bold ph-map-trifold text-lg"></i> ĐỊNH VỊ VỆ TINH (GOOGLE MAPS)
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- BOTTOM CONTROL PANEL -->
+        <div class="pointer-events-auto bg-slate-900/90 backdrop-blur-xl border-t border-slate-700/50 rounded-t-3xl sm:rounded-3xl sm:border p-4 sm:p-5 w-full sm:max-w-3xl mx-auto shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+            
+            <div class="flex flex-col sm:flex-row items-center gap-4 justify-between mb-4">
+                <div class="text-center sm:text-left">
+                    <h3 class="text-white font-black text-lg">Định Vị Tác Chiến</h3>
+                    <p class="text-xs text-slate-400 font-medium">Chạm đúp (Double-Click) vào tòa nhà trên bản đồ 3D để xác định vị trí của bạn.</p>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <div class="bg-slate-800 border border-slate-600 px-4 py-2 rounded-xl flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></div>
+                        <span id="current-loc-text" class="text-sm font-bold text-white">Chưa xác định vị trí</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <button onclick="window.findEvacuationRoute()" class="sm:col-span-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-person-simple-run text-xl"></i> TÌM LỐI THOÁT
+                </button>
+                
+                <div class="sm:col-span-3 grid grid-cols-3 gap-2">
+                    <button onclick="window.reportIncident('Cháy Nổ')" class="bg-red-900/50 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/50 font-bold py-2 rounded-xl transition text-xs flex flex-col items-center justify-center gap-1 group">
+                        <i class="ph-fill ph-fire text-2xl group-hover:scale-110 transition-transform"></i> BÁO CHÁY
+                    </button>
+                    <button onclick="window.reportIncident('Hóa Chất')" class="bg-purple-900/50 hover:bg-purple-600 text-purple-400 hover:text-white border border-purple-500/50 font-bold py-2 rounded-xl transition text-xs flex flex-col items-center justify-center gap-1 group">
+                        <i class="ph-fill ph-drop text-2xl group-hover:scale-110 transition-transform"></i> TRÀN HÓA CHẤT
+                    </button>
+                    <button onclick="window.reportIncident('Y Tế')" class="bg-blue-900/50 hover:bg-blue-600 text-blue-400 hover:text-white border border-blue-500/50 font-bold py-2 rounded-xl transition text-xs flex flex-col items-center justify-center gap-1 group">
+                        <i class="ph-fill ph-first-aid text-2xl group-hover:scale-110 transition-transform"></i> CẤP CỨU Y TẾ
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- 3D CANVAS -->
+    <div id="canvas-container"></div>
+
+    <!-- AUDIO KHẨN CẤP (Ẩn) -->
+    <audio id="alarm-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" loop preload="auto"></audio>
+
+    <!-- GOOGLE MAPS MODAL (EHS COMMAND) -->
+    <div id="gmaps-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col h-[85vh] border border-slate-600">
+            <div class="flex justify-between items-center p-4 border-b border-slate-700 bg-slate-900">
+                <h3 class="text-lg font-black text-white flex items-center gap-2">
+                    <i class="ph-fill ph-crosshair text-blue-500 text-2xl"></i> TỌA ĐỘ VỆ TINH TỔNG BẢN DOANH (ĐIỀU PHỐI NGOẠI VI)
+                </h3>
+                <button onclick="window.closeGoogleMaps()" class="text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
+            </div>
+            <div class="flex-1 w-full bg-slate-100 relative">
+                <!-- iframe Google Maps dạng Vệ Tinh (Satellite) lấy chính xác tọa độ Công ty Asia Packaging Industries Bình Dương -->
+                <iframe src="https://maps.google.com/maps?q=Asia%20Packaging%20Industries%20Vi%E1%BB%87t%20Nam,%20B%E1%BA%BFn%20C%C3%A1t,%20B%C3%ACnh%20D%C6%B0%C6%A1ng&t=k&z=18&output=embed" width="100%" height="100%" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+                
+                <div class="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur border border-red-500 p-4 rounded-xl flex items-center gap-3 shadow-2xl">
+                    <i class="ph-fill ph-siren text-3xl text-red-500 animate-pulse"></i>
+                    <div>
+                        <p class="text-xs font-black text-red-400 uppercase">Cơ quan đầu não EHS - Hướng dẫn điều phối ngoại vi</p>
+                        <p class="text-xs text-slate-300 font-medium mt-1">Bản đồ vệ tinh cung cấp tọa độ thực và khu vực lân cận. Hãy hướng dẫn Xe cứu hỏa tiến vào từ đường <b>NA3</b>, Trạm Y tế tiếp cận <b>Lô E12</b>. Yêu cầu bảo vệ xác nhận cổng chính đã mở barie hoàn toàn!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // FIREBASE SETUP
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+            authDomain: "ehs-training-app.firebaseapp.com",
+            projectId: "ehs-training-app",
+            storageBucket: "ehs-training-app.firebasestorage.app",
+            messagingSenderId: "354083430003",
+            appId: "1:354083430003:web:059953b7b9c1a9470a5406"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // GLOBAL VARIABLES
+        let scene, camera, renderer, controls;
+        let factoryCan, factoryEnd, road;
+        let myLocationMarker = null;
+        let evacuationLine = null;
+        let alarmMarkers = [];
+        let raycaster, mouse;
+        
+        let currentUser = localStorage.getItem("ehs_user_name") || "Nhân viên Nội bộ";
+        let currentPos = { x: null, z: null, zone: null };
+
+        // ==========================================
+        // KHỞI TẠO MÔI TRƯỜNG 3D
+        // ==========================================
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+            
+            // 1. Scene & Camera
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0f172a); // Nền tối
+            scene.fog = new THREE.FogExp2(0x0f172a, 0.002);
+
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+            camera.position.set(0, 150, 200);
+
+            // 2. Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            container.appendChild(renderer.domElement);
+
+            // 3. Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.maxPolarAngle = Math.PI / 2 - 0.1; // Không cho nhìn dưới mặt đất
+
+            // 4. Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(100, 200, 50);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            // 5. Build Environment
+            buildEnvironment();
+
+            // 6. Raycaster (Để click lên sa bàn)
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            
+            // Lắng nghe sự kiện Double Click (Chạm 2 lần)
+            window.addEventListener('dblclick', onDoubleClick);
+            
+            // Xử lý Touch trên điện thoại (Giả lập double tap)
+            let lastTap = 0;
+            window.addEventListener('touchend', function(e) {
+                let currentTime = new Date().getTime();
+                let tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                    onDoubleClick(e.changedTouches[0]);
+                }
+                lastTap = currentTime;
+            });
+
+            window.addEventListener('resize', onWindowResize);
+
+            animate();
+        }
+
+        // VẼ NHÀ MÁY (TÁCH 2 KHỐI CAN VÀ END)
+        function buildEnvironment() {
+            // Nền đất KCN
+            const groundGeo = new THREE.PlaneGeometry(500, 500);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Đường nhựa ngăn cách 2 nhà máy
+            const roadGeo = new THREE.PlaneGeometry(40, 400);
+            const roadMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
+            road = new THREE.Mesh(roadGeo, roadMat);
+            road.rotation.x = -Math.PI / 2;
+            road.position.set(0, 0.1, 0); // Đặt hơi cao hơn nền 1 xíu
+            road.receiveShadow = true;
+            scene.add(road);
+
+            // Vẽ vạch kẻ đường
+            const dashGeo = new THREE.PlaneGeometry(1, 10);
+            const dashMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            for(let i = -180; i < 180; i += 20) {
+                let dash = new THREE.Mesh(dashGeo, dashMat);
+                dash.rotation.x = -Math.PI / 2;
+                dash.position.set(0, 0.2, i);
+                scene.add(dash);
+            }
+
+            // Vật liệu nhà máy (Hơi trong suốt để nhìn thấy bên trong)
+            const factoryMat = new THREE.MeshStandardMaterial({ 
+                color: 0x3b82f6, transparent: true, opacity: 0.15, 
+                roughness: 0.2, metalness: 0.8, side: THREE.DoubleSide
+            });
+            const frameMat = new THREE.LineBasicMaterial({ color: 0x60a5fa, linewidth: 2 });
+
+            // NHÀ MÁY CAN (Bên trái đường)
+            const canGeo = new THREE.BoxGeometry(100, 30, 150);
+            factoryCan = new THREE.Mesh(canGeo, factoryMat);
+            factoryCan.position.set(-80, 15, 0); // Dời sang trái
+            factoryCan.userData = { name: "Nhà Máy Can" };
+            scene.add(factoryCan);
+            // Viền ngoài Can
+            const canEdges = new THREE.EdgesGeometry(canGeo);
+            const canLine = new THREE.LineSegments(canEdges, frameMat);
+            factoryCan.add(canLine);
+
+            // NHÀ MÁY END (Bên phải đường)
+            const endGeo = new THREE.BoxGeometry(80, 25, 120);
+            factoryEnd = new THREE.Mesh(endGeo, factoryMat);
+            factoryEnd.position.set(70, 12.5, 20); // Dời sang phải
+            factoryEnd.userData = { name: "Nhà Máy End" };
+            scene.add(factoryEnd);
+            // Viền ngoài End
+            const endEdges = new THREE.EdgesGeometry(endGeo);
+            const endLine = new THREE.LineSegments(endEdges, frameMat);
+            factoryEnd.add(endLine);
+            
+            // Vẽ bảng tên Nhà máy
+            createLabel("NHÀ MÁY CAN", -80, 35, 0, 0x3b82f6);
+            createLabel("NHÀ MÁY END", 70, 30, 20, 0x10b981);
+        }
+
+        // TẠO CHỮ NỔI TRÊN 3D (Dùng CanvasTexture)
+        function createLabel(text, x, y, z, colorHex) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#' + colorHex.toString(16).padStart(6, '0');
+            ctx.font = 'bold 32px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(text, 128, 40);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const spriteMat = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(spriteMat);
+            sprite.scale.set(40, 10, 1);
+            sprite.position.set(x, y, z);
+            scene.add(sprite);
+        }
+
+        // XỬ LÝ SỰ KIỆN CHẠM/CLICK TRÊN BẢN ĐỒ
+        function onDoubleClick(event) {
+            event.preventDefault();
+            
+            // Lấy tọa độ chuột/chạm
+            let clientX = event.clientX || event.pageX;
+            let clientY = event.clientY || event.pageY;
+
+            mouse.x = (clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            // Chỉ bắn tia vào 2 khối nhà máy (Không cho đứng ngoài đường)
+            const intersects = raycaster.intersectObjects([factoryCan, factoryEnd]);
+
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
+                const point = intersect.point;
+                const zoneName = intersect.object.userData.name;
+
+                // Cập nhật biến toàn cục
+                currentPos.x = point.x;
+                currentPos.z = point.z;
+                currentPos.zone = zoneName;
+
+                // Xóa marker cũ nếu có
+                if(myLocationMarker) scene.remove(myLocationMarker);
+
+                // Vẽ marker mới (Cột sáng màu xanh dương)
+                const geo = new THREE.CylinderGeometry(2, 2, 40, 16);
+                const mat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.8 });
+                myLocationMarker = new THREE.Mesh(geo, mat);
+                myLocationMarker.position.set(point.x, 20, point.z);
+                scene.add(myLocationMarker);
+
+                // Bay camera tới vị trí đó
+                gsapFlyCamera(point.x, 80, point.z + 80, point.x, 0, point.z);
+
+                // Xóa đường thoát hiểm cũ nếu có
+                if(evacuationLine) { scene.remove(evacuationLine); evacuationLine = null; }
+
+                document.getElementById('current-loc-text').innerText = `${zoneName}`;
+            }
+        }
+
+        // TÌM LỐI THOÁT HIỂM (Vẽ đường xanh)
+        window.findEvacuationRoute = function() {
+            if(!currentPos.x) return alert("Vui lòng click đúp vào bản đồ để xác định vị trí của bạn trước!");
+
+            if(evacuationLine) scene.remove(evacuationLine);
+
+            // Xác định cửa thoát hiểm gần nhất (Giả lập cửa luôn nằm hướng ra đường lớn Z=100)
+            const exitX = currentPos.x; // Chạy thẳng ra trước
+            const exitZ = 120; // Hướng ra ngoài
+
+            const points = [];
+            points.push(new THREE.Vector3(currentPos.x, 2, currentPos.z));
+            points.push(new THREE.Vector3(currentPos.x, 2, currentPos.z + 20)); // Chạy thẳng
+            points.push(new THREE.Vector3(exitX, 2, exitZ)); // Ra cửa
+
+            const geo = new THREE.BufferGeometry().setFromPoints(points);
+            const mat = new THREE.LineDashedMaterial({ color: 0x10b981, dashSize: 5, gapSize: 3, linewidth: 3 });
+            evacuationLine = new THREE.Line(geo, mat);
+            evacuationLine.computeLineDistances();
+            scene.add(evacuationLine);
+
+            // Bay camera nhìn tổng quan đường chạy
+            gsapFlyCamera(currentPos.x, 100, currentPos.z + 100, exitX, 0, exitZ);
+        }
+
+        // GỬI BÁO CÁO LÊN FIREBASE
+        window.reportIncident = async function(type) {
+            if(!currentPos.x) return alert("Cảnh báo: Không có tọa độ! Vui lòng chạm đúp vào bản đồ để định vị chỗ bạn đang đứng.");
+            
+            try {
+                await addDoc(collection(db, "ehs_incidents"), {
+                    type: type,
+                    zone: currentPos.zone,
+                    reporter: currentUser,
+                    x: currentPos.x,
+                    z: currentPos.z,
+                    time: new Date().toISOString(),
+                    status: 'Active'
+                });
+                // Alert nhỏ báo thành công
+                console.log("Đã phát tín hiệu SOS thành công!");
+            } catch(e) { alert("Lỗi mạng: " + e.message); }
+        }
+
+        // LẮNG NGHE THỜI GIAN THỰC TỪ FIREBASE
+        onSnapshot(collection(db, "ehs_incidents"), (snapshot) => {
+            const panel = document.getElementById('alarm-panel');
+            const list = document.getElementById('alarm-list');
+            const sound = document.getElementById('alarm-sound');
+            
+            // Xóa các điểm đỏ cũ trên bản đồ
+            alarmMarkers.forEach(m => scene.remove(m));
+            alarmMarkers = [];
+            list.innerHTML = '';
+            
+            let hasActiveAlarm = false;
+
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                hasActiveAlarm = true;
+
+                // 1. Thêm vào danh sách UI
+                let color = data.type === 'Cháy Nổ' ? 'text-red-500' : (data.type === 'Hóa Chất' ? 'text-purple-500' : 'text-blue-500');
+                let timeStr = new Date(data.time).toLocaleTimeString('vi-VN');
+                
+                list.innerHTML += `
+                    <div class="bg-slate-800 border border-slate-700 p-3 rounded-xl shadow-sm">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="font-black text-sm ${color}">${data.type.toUpperCase()}</h4>
+                            <span class="text-[10px] text-slate-400">${timeStr}</span>
+                        </div>
+                        <p class="text-xs text-white font-bold mb-1"><i class="ph-fill ph-map-pin"></i> ${data.zone}</p>
+                        <p class="text-[10px] text-slate-400">Người báo: ${data.reporter}</p>
+                        <button onclick="window.focusIncident(${data.x}, ${data.z})" class="mt-2 text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded w-full transition">Xem Tọa Độ</button>
+                    </div>
+                `;
+
+                // 2. Vẽ ngọn lửa/khói đỏ trên Bản đồ 3D
+                const geo = new THREE.SphereGeometry(6, 16, 16);
+                const mat = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.8 });
+                const marker = new THREE.Mesh(geo, mat);
+                marker.position.set(data.x, 15, data.z);
+                
+                // Animation nhấp nháy cho marker đỏ
+                marker.userData.clock = Math.random() * 100; 
+                
+                scene.add(marker);
+                alarmMarkers.push(marker);
+            });
+
+            if (hasActiveAlarm) {
+                panel.classList.remove('hidden');
+                document.body.classList.add('border-4', 'border-red-600');
+                if(sound.paused) sound.play().catch(e => console.log('Bị chặn autoplay audio'));
+            } else {
+                panel.classList.add('hidden');
+                document.body.classList.remove('border-4', 'border-red-600');
+                sound.pause(); sound.currentTime = 0;
+            }
+        });
+
+        // HÀM MỞ BẢN ĐỒ VỆ TINH GOOGLE MAPS
+        window.openGoogleMaps = function() {
+            document.getElementById('gmaps-modal').classList.remove('hidden');
+        };
+        window.closeGoogleMaps = function() {
+            document.getElementById('gmaps-modal').classList.add('hidden');
+        };
+
+        // FOCUS VÀO ĐIỂM CHÁY
+        window.focusIncident = function(x, z) {
+            gsapFlyCamera(x, 60, z + 60, x, 0, z);
+        }
+
+        // HÀM BAY CAMERA MƯỢT MÀ (Giả lập GSAP bằng RequestAnimationFrame)
+        function gsapFlyCamera(tx, ty, tz, lx, ly, lz) {
+            const startPos = camera.position.clone();
+            const targetPos = new THREE.Vector3(tx, ty, tz);
+            const startLook = controls.target.clone();
+            const targetLook = new THREE.Vector3(lx, ly, lz);
+            
+            let frame = 0;
+            const maxFrames = 60; // 1 giây
+
+            function anim() {
+                frame++;
+                let t = frame / maxFrames;
+                t = t * (2 - t); // Ease out
+                
+                camera.position.lerpVectors(startPos, targetPos, t);
+                controls.target.lerpVectors(startLook, targetLook, t);
+                controls.update();
+
+                if(frame < maxFrames) requestAnimationFrame(anim);
+            }
+            anim();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Làm cho các điểm đỏ chớp nháy (Scale up/down)
+            const time = Date.now() * 0.005;
+            alarmMarkers.forEach(m => {
+                const scale = 1 + Math.sin(time + m.userData.clock) * 0.3;
+                m.scale.set(scale, scale, scale);
+            });
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Chạy 3D khi load xong
+        window.onload = init3D;
+
+    </script>
+</body>
+</html>
