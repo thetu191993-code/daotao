@@ -14,9 +14,7 @@
         #canvas-container { width: 100vw; height: 100vh; display: block; position: absolute; top: 0; left: 0; z-index: 0; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
-        
         .floating-panel { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-        
         .drawer { transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
         .drawer-closed { transform: translateY(calc(100% - 56px)); }
     </style>
@@ -24,7 +22,7 @@
 <body class="text-slate-200 select-none">
 
     <!-- TOAST THÔNG BÁO -->
-    <div id="toast" class="fixed top-4 sm:top-24 left-1/2 transform -translate-x-1/2 -translate-y-[200%] z-[200] transition-all duration-300 flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl font-bold text-white bg-slate-800/95 border border-slate-600 text-xs sm:text-sm w-11/12 sm:w-auto max-w-md text-center justify-center">
+    <div id="toast" class="fixed top-4 sm:top-24 left-1/2 transform -translate-x-1/2 -translate-y-[200%] z-[200] transition-all duration-300 flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl font-bold text-white bg-slate-800/95 border border-slate-600 text-xs sm:text-sm w-11/12 sm:w-auto max-w-md text-center justify-center pointer-events-none">
         <i id="toast-icon" class="text-xl sm:text-2xl shrink-0"></i>
         <span id="toast-message" class="leading-tight"></span>
     </div>
@@ -32,14 +30,13 @@
     <!-- UI LAYER TẦNG TRÊN CÙNG -->
     <div class="absolute inset-0 pointer-events-none flex flex-col justify-between z-10">
         
-        <!-- HEADER -->
         <header class="pointer-events-auto p-3 sm:p-6 flex justify-between items-start">
             <div class="bg-slate-900/90 floating-panel border border-blue-500/50 p-3 sm:p-4 rounded-2xl shadow-lg flex items-center gap-3">
-                <a href="index.html" class="w-8 h-8 sm:w-10 sm:h-10 bg-slate-800 hover:bg-slate-700 rounded-lg flex items-center justify-center transition border border-slate-600 shrink-0 shadow-sm">
-                    <i class="ph-bold ph-arrow-left text-base sm:text-lg text-blue-400"></i>
+                <a href="index.html" class="w-8 h-8 sm:w-10 sm:h-10 bg-slate-800 hover:bg-blue-600 hover:text-white rounded-lg flex items-center justify-center transition border border-slate-600 shrink-0 shadow-sm text-blue-400">
+                    <i class="ph-bold ph-arrow-left text-base sm:text-lg"></i>
                 </a>
                 <div class="pr-2">
-                    <h1 class="font-black text-sm sm:text-xl text-white tracking-tight flex items-center gap-1.5 sm:gap-2 leading-none">
+                    <h1 class="font-black text-sm sm:text-xl text-white tracking-tight flex items-center gap-1.5 sm:gap-2 leading-none uppercase">
                         <i class="ph-fill ph-siren text-red-500 animate-pulse text-lg sm:text-2xl"></i> COMMAND 3D
                     </h1>
                     <p class="text-blue-400 font-bold text-[8px] sm:text-[10px] tracking-widest uppercase mt-0.5">Asia Packaging Ind.</p>
@@ -54,7 +51,7 @@
                 <div id="alarm-list" class="space-y-2 max-h-32 sm:max-h-40 overflow-y-auto custom-scrollbar pr-1"></div>
                 <div class="mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-red-500/30 flex flex-col gap-2">
                     <button onclick="window.openGoogleMaps()" class="w-full bg-blue-900/40 hover:bg-blue-600 border border-blue-500/50 text-blue-300 hover:text-white font-bold px-3 py-2 rounded-xl transition flex items-center justify-center gap-1.5 text-xs sm:text-sm">
-                        <i class="ph-bold ph-satellite"></i> Mở Vệ Tinh (Đ.Phối Xe)
+                        <i class="ph-bold ph-satellite"></i> Mở Vệ Tinh (Điều Xe)
                     </button>
                     <button onclick="window.clearAlarms()" class="w-full bg-slate-800 hover:bg-red-900 border border-slate-600 text-slate-300 font-bold px-3 py-2 rounded-xl transition text-xs sm:text-sm">
                         Tắt còi báo động
@@ -66,7 +63,7 @@
         <!-- HƯỚNG DẪN TRÊN MÀN HÌNH -->
         <div class="pointer-events-none w-full flex justify-center mt-1 absolute top-20 sm:top-24">
             <div class="bg-slate-900/80 floating-panel border border-slate-600/50 px-4 py-2 rounded-full text-[10px] sm:text-xs font-bold text-blue-300 shadow-lg flex items-center gap-2">
-                <i class="ph-fill ph-info"></i> Chạm đúp (Double-Click) vào một khu vực để thả ghim định vị.
+                <i class="ph-fill ph-info"></i> Dùng 1 ngón tay để xoay, 2 ngón tay để thu phóng. Chạm đúp để xác định vị trí.
             </div>
         </div>
 
@@ -74,10 +71,11 @@
         <div id="tactical-drawer" class="pointer-events-auto w-full max-w-md mx-auto mt-auto bg-slate-900/95 floating-panel border border-blue-500/30 rounded-t-3xl shadow-[0_-15px_40px_rgba(0,0,0,0.6)] drawer">
             
             <div onclick="window.toggleDrawer()" class="w-full h-14 flex justify-between items-center px-6 cursor-pointer hover:bg-slate-800/50 rounded-t-3xl transition group border-b border-slate-700/50">
-                <h3 class="text-white font-black text-sm flex items-center gap-2">
-                    <i class="ph-bold ph-crosshair text-blue-400 text-lg"></i> Định Vị Tác Chiến
+                <div class="w-12 h-1.5 bg-slate-600 rounded-full absolute top-2 left-1/2 -translate-x-1/2 opacity-50 group-hover:bg-blue-400 transition"></div>
+                <h3 class="text-white font-black text-sm flex items-center gap-2 mt-2">
+                    <i class="ph-bold ph-crosshair text-blue-400 text-lg"></i> Bảng Tác Chiến
                 </h3>
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 mt-2">
                     <div class="relative group" onclick="event.stopPropagation()">
                         <select id="zone-selector" onchange="window.selectZoneFromDropdown()" class="bg-slate-800 border border-slate-600 px-3 py-1.5 rounded-full text-[10px] font-bold text-sky-400 truncate max-w-[160px] outline-none appearance-none cursor-pointer">
                             <option value="none">Chưa xác định tọa độ</option>
@@ -100,7 +98,7 @@
             <div class="p-5 space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <button onclick="window.useGPS()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-blue-400 font-bold py-3.5 rounded-xl transition text-xs flex items-center justify-center gap-2 shadow-sm">
-                        <i class="ph-bold ph-navigation-arrow text-base"></i> Định vị GPS
+                        <i class="ph-bold ph-navigation-arrow text-base"></i> Tự động (GPS)
                     </button>
                     <button onclick="window.findEvacuationRoute()" class="bg-emerald-500 hover:bg-emerald-400 text-white font-black py-3.5 rounded-xl transition shadow-[0_0_15px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 text-xs border border-emerald-400">
                         <i class="ph-bold ph-person-simple-run text-lg"></i> TÌM LỐI THOÁT
@@ -108,7 +106,7 @@
                 </div>
 
                 <div class="pt-3 border-t border-slate-800">
-                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-2 text-center">Báo cáo sự cố khẩn cấp tại vị trí đã ghim</p>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-wider mb-2 text-center">Báo sự cố tại vị trí đã ghim</p>
                     <div class="grid grid-cols-3 gap-2">
                         <button onclick="window.reportIncident('Cháy Nổ')" class="bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 hover:border-red-500 font-bold py-3 rounded-xl transition text-[10px] flex flex-col items-center justify-center gap-1 group">
                             <i class="ph-fill ph-fire text-xl group-hover:scale-110 transition-transform"></i> BÁO CHÁY
@@ -149,9 +147,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // =========================================================================
-        // KHỞI TẠO MÔI TRƯỜNG 3D
-        // =========================================================================
         let scene, camera, renderer, controls, factoryFloor; 
         let myLocationMarker = null; 
         let evacuationLineGroup = new THREE.Group(); 
@@ -163,71 +158,102 @@
         let currentPos = { x: null, z: null, zone: null };
         let isDrawerOpen = true;
 
-        // Tọa độ Vệ tinh Tâm Nhà Máy (Cho nút Google Maps & tính toán GPS)
+        // Tọa độ GPS Tâm Nhà Máy
         const ANCHOR_LAT = 11.1394136;
         const ANCHOR_LNG = 106.6241705;
 
-        // Hệ quy chiếu: Z âm (-) là Phía Bắc (Cổng NA3), Z dương (+) là Phía Nam (NA2)
-        // X âm (-) là Bên trái, X dương (+) là Bên phải
-
-        // 1. CÁC TRỤC ĐƯỜNG NỘI BỘ (Để AI bám theo không xuyên tường)
+        // =========================================================================
+        // MẠNG LƯỚI HÀNH LANG ẢO (ORTHOGONAL NAVIGATION MESH) - CHUẨN XÁC 100% THEO KHE HỞ MÁY MÓC
+        // =========================================================================
+        
+        // Trục X (Hành lang dọc): Tính toán lọt khe giữa các xưởng
         const C_X = {
             L_OUT: -300,  // Đường vành đai ngoài cùng bên Trái
-            L_IN: -180,   // Hành lang chính Trái (Giữa Cupper và Bodymaker)
-            MID: -20,     // Hành lang Trung tâm (Giữa Bodymaker và Decorator)
-            R_IN: 180,    // Hành lang chính Phải (Giữa Decorator và Necker)
-            R_OUT: 300    // Đường vành đai ngoài cùng bên Phải
+            L_IN: -185,   // Khe hở giữa Cupper (phải=-215) và Bodymaker (trái=-170) -> -185
+            MID: -20,     // Khe hở giữa Bodymaker (phải=-30) và Decorator (trái=-10) -> -20
+            R_IN: 140,    // Khe hở giữa Decorator (phải=130) và Necker (trái=150) -> 140
+            R_OUT: 270    // Đường vành đai ngoài cùng bên Phải
         };
 
+        // Trục Z (Hành lang ngang): Tính toán lọt khe giữa các line
         const C_Z = {
             NA3: -380,    // Điểm tập kết cổng NA3
             FRONT: -280,  // Đường ngang trước mặt tiền Văn phòng
-            L1: -150,     // Hành lang cắt ngang Line 1
-            L2: 0,        // Hành lang cắt ngang Line 2 (Giữa Line 1 & Line 2)
-            L3: 120,      // Hành lang cắt ngang Line 3 (Giữa Line 2 & Line 3)
-            WH1: 220,     // Hành lang cắt ngang Kho thành phẩm 1
-            WH2: 350,     // Hành lang cắt ngang Kho thành phẩm 2
-            NA2: 520      // Đường ngang vành đai sau NA2 (Kho Nguyên liệu, XLNT)
+            A1: -180,     // Khe hở sau VP, trước Line 1
+            A2: -60,      // Khe hở giữa Line 1 và Line 2
+            A3: 60,       // Khe hở giữa Line 2 và Line 3 (Chỗ đặt Boiler)
+            A4: 180,      // Khe hở sau Line 3
+            A5: 270,      // Khe hở sau Kho nguyên liệu Coil/Bright
+            A6: 360,      // Khe hở giữa Kho 1 và Kho 2
+            A7: 450,      // Khe hở sau lưng Kho 2
+            NA2: 580      // Đường vành đai sau cùng (Kho NL, XLNT)
         };
 
         const gridPoints = {};
         const navEdges = [];
 
+        // Tạo toàn bộ các Nút giao (Intersections)
         for(let keyX in C_X) {
             for(let keyZ in C_Z) {
                 gridPoints[`${keyX}_${keyZ}`] = { x: C_X[keyX], z: C_Z[keyZ] };
             }
         }
 
+        // Nối các Nút tạo thành Mạng lưới (Chỉ đi vuông góc dọc/ngang)
         const xKeys = Object.keys(C_X);
         const zKeys = Object.keys(C_Z);
         for(let i = 0; i < xKeys.length; i++) { for(let j = 0; j < zKeys.length - 1; j++) navEdges.push([`${xKeys[i]}_${zKeys[j]}`, `${xKeys[i]}_${zKeys[j+1]}`]); }
         for(let j = 0; j < zKeys.length; j++) { for(let i = 0; i < xKeys.length - 1; i++) navEdges.push([`${xKeys[i]}_${zKeys[j]}`, `${xKeys[i+1]}_${zKeys[j]}`]); }
 
-        // Nút trung tâm Điểm Tập Kết
+        // Đích đến cuối cùng an toàn nhất
         const ASSEMBLY_NODE = 'MID_NA3';
 
-        // 2. KHAI BÁO VỊ TRÍ CỬA THOÁT HIỂM (Theo bản PDF)
+        // =========================================================================
+        // KHAI BÁO TỌA ĐỘ CỬA THOÁT HIỂM (MỚI NHẤT & CHUẨN XÁC NHẤT)
+        // =========================================================================
         const EXIT_DOORS = [
-            { name: "Cửa Chính (Văn phòng)", node: "MID_FRONT", x: C_X.MID, z: C_Z.FRONT },
-            { name: "Cửa Hông Trái (Cupper)", node: "L_OUT_L1", x: C_X.L_OUT, z: C_Z.L1 },
-            { name: "Cửa Hông Trái (Sản Xuất)", node: "L_OUT_L2", x: C_X.L_OUT, z: C_Z.L2 },
-            { name: "Cửa Hông Trái (Kho TP)", node: "L_OUT_WH1", x: C_X.L_OUT, z: C_Z.WH1 },
-            { name: "Cửa Hông Phải (Canteen)", node: "R_OUT_FRONT", x: C_X.R_OUT, z: C_Z.FRONT },
-            { name: "Cửa Hông Phải (Necker)", node: "R_OUT_L2", x: C_X.R_OUT, z: C_Z.L2 },
-            { name: "Cửa Hông Phải (Kho TP)", node: "R_OUT_WH2", x: C_X.R_OUT, z: C_Z.WH2 },
-            { name: "Cửa Sau (Kho Nguyên Liệu)", node: "MID_NA2", x: C_X.MID, z: C_Z.NA2 }
+            // Khối Văn Phòng / Canteen (Z = -255)
+            { name: "Cửa Chính (Văn phòng)", node: "MID_FRONT", x: -40, z: -255 }, 
+            { name: "Cửa Nối (VP & Canteen)", node: "R_IN_FRONT", x: 160, z: -255 },
+            { name: "Cửa Giữa Canteen", node: "R_OUT_FRONT", x: 230, z: -255 },
+            
+            // Khối Sản Xuất
+            { name: "Cửa Hông Trái (Sản Xuất)", node: "L_OUT_A2", x: -260, z: -60 },
+            { name: "Cửa Hông Phải (Necker)", node: "R_OUT_A2", x: 250, z: -60 },
+            
+            // Khối Kho Thành Phẩm
+            { name: "Cửa Hông Phải (Kho TP 1)", node: "R_OUT_A5", x: 280, z: 310 }, 
+            
+            // 3 Cửa sau lưng Kho TP 2 (Chạy ra hành lang A7)
+            { name: "Cửa Sau Trái (Kho TP 2)", node: "L_IN_A7", x: -100, z: 435 },
+            { name: "Cửa Sau Giữa (Kho TP 2)", node: "MID_A7", x: 40, z: 435 },
+            { name: "Cửa Sau Phải (Kho TP 2)", node: "R_IN_A7", x: 190, z: 435 },
+
+            // Khối Kho Nguyên Liệu
+            { name: "Cửa Mặt Trước (Kho NL)", node: "MID_A7", x: -30, z: 480 },
+            { name: "Cửa Hông Trái (Kho NL)", node: "L_IN_NA2", x: -160, z: 520 },
+            { name: "Cửa Hông Phải (Kho NL)", node: "R_IN_NA2", x: 100, z: 520 }
         ];
+
+        window.showToast = function(message, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            if (type === "success") { toast.className = "fixed top-4 sm:top-24 left-1/2 transform -translate-x-1/2 z-[200] transition-all duration-300 flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl font-bold text-emerald-400 bg-slate-800/95 border border-emerald-900 text-xs sm:text-sm w-11/12 sm:w-auto max-w-md text-center justify-center pointer-events-none"; icon.className = "ph-fill ph-check-circle text-xl sm:text-2xl shrink-0 text-emerald-500"; } 
+            else { toast.className = "fixed top-4 sm:top-24 left-1/2 transform -translate-x-1/2 z-[200] transition-all duration-300 flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl font-bold text-red-400 bg-slate-800/95 border border-red-900 text-xs sm:text-sm w-11/12 sm:w-auto max-w-md text-center justify-center pointer-events-none"; icon.className = "ph-fill ph-warning-circle text-xl sm:text-2xl shrink-0 text-red-500"; }
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('-translate-y-[200%]');
+            setTimeout(() => { toast.classList.add('-translate-y-[200%]'); }, 3000);
+        }
 
         function init3D() {
             const container = document.getElementById('canvas-container');
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x040b16); 
-            // Sương mù tuyến tính giúp zoom cao không bị mờ
-            scene.fog = new THREE.Fog(0x040b16, 500, 4000); 
+            // Giảm sương mù để có thể Zoom out bao quát toàn bộ nhà máy
+            scene.fog = new THREE.FogExp2(0x040b16, 0.0003); 
 
             camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 5000);
-            camera.position.set(0, 1500, 800); // Góc nhìn Bird's eye view
+            camera.position.set(0, 1800, 1000); // Bird's eye view cao hơn
 
             renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -237,18 +263,18 @@
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true; controls.dampingFactor = 0.05;
             controls.maxPolarAngle = Math.PI / 2.1; 
-            controls.minDistance = 100; controls.maxDistance = 3000;
+            controls.minDistance = 100; controls.maxDistance = 4000;
             controls.target.set(0, 0, 0); 
 
             scene.add(new THREE.AmbientLight(0xffffff, 1));
             
-            const gridHelper = new THREE.GridHelper(2000, 100, 0x1e293b, 0x0f172a); 
+            const gridHelper = new THREE.GridHelper(3000, 150, 0x1e293b, 0x0f172a); 
             gridHelper.position.y = -1; scene.add(gridHelper);
 
             scene.add(evacuationLineGroup);
             scene.add(exitSignsGroup);
 
-            buildBlueprintV6(); 
+            buildBlueprintV7(); // Bản cập nhật hình khối V7
 
             raycaster = new THREE.Raycaster(); mouse = new THREE.Vector2();
             
@@ -264,8 +290,8 @@
             animate();
         }
 
-        function buildBlueprintV6() {
-            const floorGeo = new THREE.PlaneGeometry(1000, 1500);
+        function buildBlueprintV7() {
+            const floorGeo = new THREE.PlaneGeometry(1200, 2000);
             const floorMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.DoubleSide });
             factoryFloor = new THREE.Mesh(floorGeo, floorMat);
             factoryFloor.rotation.x = -Math.PI / 2;
@@ -275,85 +301,78 @@
             const fenceGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(680, 20, 1100));
             const fenceMat = new THREE.LineBasicMaterial({ color: 0x475569, linewidth: 1 });
             const fence = new THREE.LineSegments(fenceGeo, fenceMat);
-            fence.position.set(0, 10, 90); scene.add(fence);
+            fence.position.set(-10, 10, 100); scene.add(fence);
 
-            // Đường nội bộ (Sơn xám) bao quanh
-            drawRoad(680, 40, 0, -280); // Đường ngang trước Văn phòng
-            drawRoad(680, 40, 0, 520);  // Đường ngang sau (NA2)
-            drawRoad(40, 840, -300, 120); // Vành đai trái
-            drawRoad(40, 840, 300, 120);  // Vành đai phải
-
-            // ================== CỔNG CHÍNH (ĐƯỜNG NA3 - PHÍA BẮC/TRÊN CÙNG) ==================
-            createTextLabel("ĐƯỜNG NA3 (CỔNG CHÍNH)", 0, 2, -450, 0x94a3b8, 16);
+            // ================== KHỐI NA3 (MẶT TIỀN / TRÊN CÙNG) ==================
+            createTextLabel("ĐƯỜNG NA3 (CỔNG CHÍNH)", -10, 2, -450, 0x94a3b8, 16);
+            drawRoad(680, 40, -10, -280); // Đường ngang trước Văn phòng
             
-            // Khu vực tập kết sự cố (To, Nằm chính giữa mặt tiền)
-            drawWireframeZone(240, 80, -20, -360, 0x10b981, "VỊ TRÍ TẬP KẾT SỰ CỐ"); // Màu xanh lá
-            
-            // Nhà xe & Trạm Gas (Hai bên)
+            // Vị trí tập kết & Phụ trợ
+            drawWireframeZone(240, 80, -20, -360, 0x10b981, "VỊ TRÍ TẬP KẾT SỰ CỐ"); 
             drawWireframeZone(120, 60, -220, -350, 0x64748b, "NHÀ XE (PARKING)");
             drawWireframeZone(100, 40, 180, -360, 0xf59e0b, "TRẠM GAS");
 
-            // ================== KHỐI VĂN PHÒNG & CANTEEN ==================
-            // Kéo dài liền mạch từ Văn phòng sang Canteen
-            drawWireframeZone(380, 50, -40, -230, 0x0ea5e9, "VĂN PHÒNG (OFFICE)");
-            drawWireframeZone(120, 50, 230, -230, 0x0ea5e9, "CANTEEN");
+            // Văn phòng & Canteen (Kéo dài, Canteen bên phải)
+            drawWireframeZone(300, 50, -60, -230, 0x0ea5e9, "VĂN PHÒNG (OFFICE)");
+            drawWireframeZone(100, 50, 180, -230, 0x0ea5e9, "CANTEEN");
 
-            // ================== KHU VỰC SẢN XUẤT (3 LINES) ==================
-            // Khu hông Trái (Cupper kéo dài)
-            drawWireframeZone(60, 250, -230, -25, 0x8b5cf6, "CUPPER AREA");
+            // ================== KHỐI SẢN XUẤT ==================
+            drawWireframeZone(60, 250, -245, -25, 0x8b5cf6, "CUPPER AREA");
 
-            // SỬA LỖI BOILER: Đưa Boiler vào giữa Body Maker #2 (Z=0) và #3 (Z=120). 
-            drawWireframeZone(140, 40, -100, 60, 0x64748b, "BOILER AREA"); 
-
-            // Line 1 (Trên) Z = -120
+            // Line 1 (Z = -120)
             drawWireframeZone(140, 70, -100, -120, 0xef4444, "KHU RỬA / BODY MAKER #1");
             drawWireframeZone(140, 70, 60, -120, 0xef4444, "DECORATOR / PIN OVEN #1");
             drawWireframeZone(100, 70, 200, -120, 0xef4444, "NECKER LINE 1");
 
-            // Line 2 (Giữa) Z = 0
+            // Line 2 (Z = 0)
             drawWireframeZone(140, 70, -100, 0, 0xef4444, "BODY MAKER #2");
             drawWireframeZone(140, 70, 60, 0, 0xef4444, "DECORATOR #2");
             drawWireframeZone(100, 70, 200, 0, 0xef4444, "NECKER LINE 2");
 
-            // Line 3 (Dưới) Z = 120
+            // **BOILER AREA (Chèn giữa Line 2 và 3 - Không cản đường)**
+            drawWireframeZone(40, 40, -100, 60, 0x64748b, "BOILER"); 
+
+            // Line 3 (Z = 120)
             drawWireframeZone(140, 70, -100, 120, 0xef4444, "BODY MAKER #3");
             drawWireframeZone(140, 70, 60, 120, 0xef4444, "PDP LINE 3");
             drawWireframeZone(100, 70, 200, 120, 0xef4444, "NECKER LINE 3");
 
-            // ================== KHU VỰC KHO (DƯỚI CÙNG SẢN XUẤT) ==================
-            // Coil & Bright (Z = 220)
+            // ================== KHỐI KHO VẬN ==================
+            // Coil & Bright
             drawWireframeZone(140, 60, -100, 220, 0xa8a29e, "NGUYÊN LIỆU (COIL)");
             drawWireframeZone(140, 60, 60, 220, 0xa8a29e, "LON TRẮNG (BRIGHT)");
             drawWireframeZone(100, 60, 200, 220, 0x3b82f6, "ĐÓNG GÓI (PALLETIZER)");
 
-            // Kho Thành phẩm 1 (Z = 310)
+            // Kho TP 1 (Z = 310)
             drawWireframeZone(240, 70, -40, 310, 0x8b5cf6, "KHO THÀNH PHẨM 1 (A)");
             drawWireframeZone(180, 70, 190, 310, 0x8b5cf6, "KHO THÀNH PHẨM 1 (B)");
             
-            // Kho Thành phẩm 2 (Z = 400)
+            // Kho TP 2 (Z = 400)
             drawWireframeZone(240, 70, -40, 400, 0x8b5cf6, "KHO THÀNH PHẨM 2 (A)");
             drawWireframeZone(180, 70, 190, 400, 0x8b5cf6, "KHO THÀNH PHẨM 2 (B)");
             
-            // ================== MẶT SAU (ĐƯỜNG NA2 - TRỤC Z: 550) ==================
+            // Kho NL Chính & Phụ trợ (Mặt sau NA2)
             drawWireframeZone(260, 80, -30, 520, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
             drawWireframeZone(100, 80, 170, 520, 0x06b6d4, "TRẠM XLNT (WWTP)");
             drawWireframeZone(40, 150, 260, 480, 0x8b5cf6, "KHO HÓA CHẤT");
+            
+            drawRoad(680, 40, -10, 580);  // Đường ngang vành đai NA2
+            createTextLabel("ĐƯỜNG NA2 (PHÍA NAM)", -10, 2, 630, 0x94a3b8, 12);
 
-            // Vẽ Cửa Thoát Hiểm 3D
+            // ================== XÂY DỰNG CỬA THOÁT HIỂM 3D ==================
             EXIT_DOORS.forEach(door => {
                 const boxGeo = new THREE.BoxGeometry(20, 20, 20);
                 const boxMat = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 });
                 const box = new THREE.Mesh(boxGeo, boxMat);
                 box.position.set(door.x, 10, door.z);
                 exitSignsGroup.add(box);
-                // Chữ EXIT nổi
                 createTextLabel("EXIT", door.x, 30, door.z, 0x10b981, 14);
             });
         }
 
         function drawRoad(w, d, x, z) {
             const geo = new THREE.PlaneGeometry(w, d);
-            const mat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false });
+            const mat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide, transparent: true, opacity: 0.3, depthWrite: false });
             const road = new THREE.Mesh(geo, mat); road.rotation.x = -Math.PI / 2; road.position.set(x, 0.5, z);
             scene.add(road);
         }
@@ -384,23 +403,22 @@
             const group = new THREE.Group();
             const pinMat = new THREE.MeshBasicMaterial({ color: 0x0ea5e9 }); 
             
-            // Giọt nước ngược (Pin)
-            const sphereGeo = new THREE.SphereGeometry(12, 32, 32);
+            // Ghim bản đồ Drop-Pin
+            const sphereGeo = new THREE.SphereGeometry(15, 32, 32);
             const sphere = new THREE.Mesh(sphereGeo, pinMat);
-            sphere.position.y = 35; group.add(sphere);
+            sphere.position.y = 45; group.add(sphere);
 
-            const coneGeo = new THREE.ConeGeometry(12, 20, 32);
+            const coneGeo = new THREE.ConeGeometry(15, 25, 32);
             const cone = new THREE.Mesh(coneGeo, pinMat);
-            cone.rotation.x = Math.PI; cone.position.y = 20; group.add(cone);
+            cone.rotation.x = Math.PI; cone.position.y = 25; group.add(cone);
 
-            // Chấm đen ở giữa
-            const dotGeo = new THREE.SphereGeometry(5, 16, 16);
+            const dotGeo = new THREE.SphereGeometry(6, 16, 16);
             const dotMat = new THREE.MeshBasicMaterial({ color: 0x020617 });
             const dot = new THREE.Mesh(dotGeo, dotMat);
-            dot.position.set(0, 35, 10); group.add(dot);
+            dot.position.set(0, 45, 12); group.add(dot);
 
             // Vòng sóng Radar dưới đáy
-            const ringGeo = new THREE.RingGeometry(0.1, 40, 32);
+            const ringGeo = new THREE.RingGeometry(0.1, 50, 32);
             const ringMat = new THREE.MeshBasicMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthTest: false });
             const ring = new THREE.Mesh(ringGeo, ringMat);
             ring.rotation.x = -Math.PI / 2; ring.position.y = 1;
@@ -431,12 +449,11 @@
         window.selectZoneFromDropdown = function() {
             const val = document.getElementById('zone-selector').value;
             if(val === 'none') return;
-            
             let coords = {x: 0, z: 0};
             switch(val) {
                 case 'khu-tap-ket': coords = {x: -20, z: -360}; break;
                 case 'van-phong': coords = {x: -40, z: -230}; break;
-                case 'sx-cupper': coords = {x: -230, z: -25}; break;
+                case 'sx-cupper': coords = {x: -245, z: -25}; break;
                 case 'sx-body': coords = {x: -100, z: 0}; break;
                 case 'sx-deco': coords = {x: 60, z: 0}; break;
                 case 'sx-necker': coords = {x: 200, z: 0}; break;
@@ -450,24 +467,22 @@
 
         window.useGPS = function() {
             if (navigator.geolocation) {
-                window.showToast("Đang quét vệ tinh...", "info");
+                window.showToast("Đang quét vệ tinh lấy tọa độ...", "info");
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        // Công thức quy đổi Vĩ độ Kinh độ sang Metres (Tương đối)
+                        // Công thức quy đổi Vĩ độ Kinh độ sang Metres (Tương đối 1 độ ~ 111km)
                         let dx = (lng - ANCHOR_LNG) * 109000;
                         let dz = -(lat - ANCHOR_LAT) * 111000; 
 
-                        if (Math.abs(dx) > 400 || Math.abs(dz) > 600) {
-                            window.showToast("Bạn đang ở quá xa nhà máy. Dùng tọa độ giả lập để test.", "error");
-                            dx = (Math.random() - 0.5) * 200; dz = (Math.random() - 0.5) * 300;
-                        } else {
-                            window.showToast("Chốt tọa độ thành công!", "success");
-                        }
+                        if (Math.abs(dx) > 600 || Math.abs(dz) > 800) {
+                            window.showToast("Bạn đang ở ngoài KCN. Dùng tọa độ giả lập để test.", "error");
+                            dx = (Math.random() - 0.5) * 300; dz = (Math.random() - 0.5) * 500;
+                        } else { window.showToast("Khóa mục tiêu thành công!", "success"); }
                         setMarkerPosition(dx, dz);
                     },
-                    (error) => { window.showToast("Mất sóng GPS. Vui lòng chạm đúp lên bản đồ.", "error"); },
+                    (error) => { window.showToast("Mất sóng GPS. Vui lòng chạm đúp lên khu vực bạn đứng.", "error"); },
                     { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
                 );
             } else { window.showToast("Thiết bị không hỗ trợ GPS.", "error"); }
@@ -499,7 +514,6 @@
 
             evacuationLineGroup.clear(); 
             
-            // Cập nhật thẻ selector
             const selector = document.getElementById('zone-selector');
             selector.options[0].text = `📍 Tọa độ: ${zoneName}`;
             selector.value = 'none';
@@ -549,14 +563,14 @@
 
             const startP = new THREE.Vector3(currentPos.x, 5, currentPos.z);
             
-            // 1. Tìm Nút Hành Lang (Grid Node) gần nhất để chạy ra
+            // 1. Tìm Nút Hành Lang gần nhất
             let nearestNodeName = 'MID_FRONT'; let minDist = Infinity;
             for(let key in gridPoints) {
                 let dist = startP.distanceTo(new THREE.Vector3(gridPoints[key].x, 5, gridPoints[key].z));
                 if(dist < minDist) { minDist = dist; nearestNodeName = key; }
             }
 
-            // 2. Chạy Dijkstra tìm đường ra TẤT CẢ các cửa thoát hiểm
+            // 2. Tìm 3 Cửa thoát hiểm gần nhất
             let doorPaths = [];
             EXIT_DOORS.forEach(door => {
                 let toDoor = getDijkstraPath(nearestNodeName, door.node);
@@ -564,46 +578,54 @@
                     doorPaths.push({ door: door, distToDoor: toDoor.distance, path1: toDoor.pathNodes });
                 }
             });
-
-            // Lọc ra 3 cửa gần nhất
             doorPaths.sort((a,b) => a.distToDoor - b.distToDoor);
             let selectedDoors = doorPaths.slice(0, 3);
 
             let allCompleteRoutes = [];
 
-            // 3. Từ mỗi Cửa, tính tiếp đường chạy vòng theo đường nội bộ về Điểm Tập Kết
+            // 3. Từ mỗi Cửa, tính tiếp đường men theo tường về Điểm Tập Kết NA3
             selectedDoors.forEach(item => {
                 let toAssembly = getDijkstraPath(item.door.node, ASSEMBLY_NODE);
-                
-                // Nối 2 đường lại với nhau (Bỏ node trùng ở giữa)
-                let fullPathNodes = item.path1.concat(toAssembly.pathNodes.slice(1));
                 let totalDist = item.distToDoor + toAssembly.distance;
                 
                 allCompleteRoutes.push({ 
                     doorName: item.door.name, 
+                    doorObj: item.door,
                     distance: totalDist, 
-                    nodes: fullPathNodes 
+                    nodes1: item.path1,          // User -> Cửa
+                    nodes2: toAssembly.pathNodes // Cửa -> Assembly
                 });
             });
-
-            // Sắp xếp lại theo tổng quãng đường
             allCompleteRoutes.sort((a,b) => a.distance - b.distance);
 
             if(allCompleteRoutes.length === 0) return window.showToast("Lỗi mạng lưới định tuyến!", "error");
 
-            // 4. Hàm Vẽ đường đi (Vuông Góc)
+            // 4. Hàm Vẽ Dải Lụa 3D
             function drawRoute(pathObj, colorHex, isPrimary) {
-                const nodes = pathObj.nodes;
                 const points = [startP]; 
                 
-                // Vẽ đoạn vuông góc từ chỗ người đứng ra Hành lang
-                let firstNode = gridPoints[nodes[0]];
+                // Ra hành lang
+                let firstNode = gridPoints[pathObj.nodes1[0]];
                 if(Math.abs(startP.x - firstNode.x) > 1 && Math.abs(startP.z - firstNode.z) > 1) {
-                    points.push(new THREE.Vector3(startP.x, 5, firstNode.z)); // Bẻ góc 90 độ
+                    points.push(new THREE.Vector3(startP.x, 5, firstNode.z)); 
                 }
                 
-                for(let i=0; i < nodes.length; i++) {
-                    let node = gridPoints[nodes[i]];
+                // Men hành lang tới Cửa
+                for(let i=0; i < pathObj.nodes1.length; i++) {
+                    let node = gridPoints[pathObj.nodes1[i]];
+                    points.push(new THREE.Vector3(node.x, 5, node.z));
+                }
+
+                // Chạm chính xác hộp EXIT
+                points.push(new THREE.Vector3(pathObj.doorObj.x, 5, pathObj.doorObj.z));
+
+                // Bật ngược lại hành lang
+                let doorNode = gridPoints[pathObj.doorObj.node];
+                points.push(new THREE.Vector3(doorNode.x, 5, doorNode.z));
+
+                // Chạy về Tập Kết
+                for(let i=1; i < pathObj.nodes2.length; i++) {
+                    let node = gridPoints[pathObj.nodes2[i]];
                     points.push(new THREE.Vector3(node.x, 5, node.z));
                 }
 
@@ -616,15 +638,13 @@
                 evacuationLineGroup.add(line);
             }
 
-            // Vẽ Lối Gần Nhất (Xanh lá - Chuyển động)
+            // Vẽ Lối 1 (Xanh lá) & Lối dự phòng (Cam)
             drawRoute(allCompleteRoutes[0], 0x10b981, true);
-            
-            // Vẽ 2 Lối phụ (Cam - Nét đứt mờ) - Nếu có
             if(allCompleteRoutes[1]) drawRoute(allCompleteRoutes[1], 0xf59e0b, false);
             if(allCompleteRoutes[2]) drawRoute(allCompleteRoutes[2], 0xf59e0b, false);
 
-            window.showToast(`Đã tính toán 3 lối thoát an toàn. Hãy chạy theo đường SÁNG XANH LÁ ra ${allCompleteRoutes[0].doorName}!`, "success");
-            gsapFlyCamera(0, 1500, 0, 0, 0, 0); // Zoom out để thấy toàn cảnh đường chạy
+            window.showToast(`Đã thiết lập 3 đường sơ tán. Chạy theo luồng ánh sáng XANH LÁ ra Cổng NA3 qua [${allCompleteRoutes[0].doorName}]!`, "success");
+            gsapFlyCamera(0, 1600, 200, 0, 0, 0); 
             if(isDrawerOpen) window.toggleDrawer(); 
         }
 
@@ -632,22 +652,23 @@
             if(currentPos.x === null) return window.showToast("Phải ghim vị trí trước khi báo sự cố!", "error");
             
             try {
+                // Sửa lỗi: Cần đảm bảo Firebase rules được mở
                 await addDoc(collection(db, "ehs_incidents"), {
                     type: type, zone: currentPos.zone, reporter: currentUser,
                     x: currentPos.x, z: currentPos.z, time: new Date().toISOString(), status: 'Active'
                 });
                 window.showToast(`Đã phát lệnh báo động [${type}] toàn hệ thống!`, "success");
             } catch(e) {
-                console.warn("Máy chủ Firebase bị khóa. Đang giả lập Offline mode.");
+                // Fallback nếu chưa mở Rules
                 drawAlarmEffect(currentPos.x, currentPos.z, type);
-                window.showToast(`Báo động [${type}] kích hoạt cục bộ!`, "info");
+                window.showToast(`Báo động [${type}] kích hoạt cục bộ! Cần mở Firebase Rules để đồng bộ.`, "info");
             }
             if(isDrawerOpen) window.toggleDrawer();
         }
 
         function drawAlarmEffect(x, z, type) {
             let markerColor = type === 'Cháy Nổ' ? 0xff0000 : (type === 'Hóa Chất' ? 0xa855f7 : 0x3b82f6);
-            const beamGeo = new THREE.CylinderGeometry(15, 40, 800, 16);
+            const beamGeo = new THREE.CylinderGeometry(20, 50, 800, 16);
             const beamMat = new THREE.MeshBasicMaterial({ color: markerColor, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
             const beam = new THREE.Mesh(beamGeo, beamMat);
             beam.position.set(x, 400, z); beam.userData.clock = Math.random() * 100;
@@ -661,7 +682,6 @@
             gsapFlyCamera(x, 800, z + 300, x, 0, z);
         }
 
-        // Bắt lỗi Firebase (Firebase Rules) để web không sập
         try {
             signInAnonymously(auth).then(() => {
                 onSnapshot(collection(db, "ehs_incidents"), (snapshot) => {
@@ -694,7 +714,7 @@
                         panel.classList.add('hidden'); document.body.classList.remove('border-4', 'border-red-600');
                         sound.pause(); sound.currentTime = 0;
                     }
-                }, (error) => { console.log("Cần mở quyền Firebase Rules (allow read, write: if true;) để đồng bộ sự cố."); });
+                }, (error) => { console.log("Firebase Rules lỗi."); });
             });
         } catch(err) { console.log("Bỏ qua lỗi Auth."); }
 
@@ -742,7 +762,6 @@
             requestAnimationFrame(animate);
             const time = Date.now() * 0.005;
             
-            // Animation Sóng âm của Ghim định vị
             if(myLocationMarker && myLocationMarker.userData.ring) {
                 myLocationMarker.userData.ring.scale.x += 0.04;
                 myLocationMarker.userData.ring.scale.y += 0.04;
@@ -753,14 +772,10 @@
                 }
             }
 
-            // Animation Cột sáng Sự cố
             alarmMarkers.forEach(m => { m.material.opacity = 0.5 + Math.sin(time + m.userData.clock) * 0.5; });
             
-            // Animation Dòng chảy thoát hiểm
             evacuationLineGroup.children.forEach(child => {
-                if(child.userData.isEvacLine) {
-                    child.material.dashOffset -= 1.5; 
-                }
+                if(child.userData.isEvacLine) { child.material.dashOffset -= 1.5; }
             });
 
             controls.update(); renderer.render(scene, camera);
