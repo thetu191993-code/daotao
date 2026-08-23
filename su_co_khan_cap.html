@@ -259,12 +259,12 @@
         const E_Z = 1000; 
         
         // Mạng lưới Grid cho End Line thu nhỏ lại
-        const END_C_X = [E_X - 220, E_X - 20, E_X + 120, E_X + 260];
-        const END_C_Z = [E_Z - 360, E_Z - 150, E_Z + 50, E_Z + 200, E_Z + 380];
+       const END_C_X = [E_X - 160, E_X, E_X + 160];
+        const END_C_Z = [E_Z - 280, E_Z - 100, E_Z + 100, E_Z + 250];
         
         const gridEnd = {}; const edgesEnd = []; const outsideEdgesEnd = [];
-        // Điểm tập kết nằm ở phía Bắc (Z âm)
-        const ASSEMBLY_END = `${E_X - 20}_${E_Z - 360}`; 
+        // Điểm tập kết End Line dời về góc Đông Nam
+        const ASSEMBLY_END = `${E_X + 160}_${E_Z + 250}`; 
 
         let isOutsideEndNode = (key) => {
             let [x, z] = key.split('_').map(Number);
@@ -291,10 +291,10 @@
         }
 
         const EXIT_DOORS_END = [
-            { name: "Cửa Trước (Hướng Tập Kết)", node: `${E_X - 20}_${E_Z - 150}`, x: E_X - 120, z: E_Z - 150 },
-            { name: "Cửa Hông (Khu Canteen)", node: `${E_X - 20}_${E_Z - 150}`, x: E_X - 20, z: E_Z - 150 },
-            { name: "Cửa Hông (Khu Bãi Xe)", node: `${E_X - 20}_${E_Z + 50}`, x: E_X - 20, z: E_Z + 50 },
-            { name: "Cổng Chính (NA4)", node: `${E_X - 20}_${E_Z + 380}`, x: E_X - 20, z: E_Z + 360 }
+            { name: "Cổng Chính (NA4)", node: `${E_X}_${E_Z + 250}`, x: E_X, z: E_Z + 250 },
+            { name: "Cửa Hông Trái", node: `${E_X - 160}_${E_Z - 100}`, x: E_X - 160, z: E_Z - 100 },
+            { name: "Cửa Hông Phải (Đông)", node: `${E_X + 160}_${E_Z - 100}`, x: E_X + 160, z: E_Z - 100 },
+            { name: "Cửa Sau (Mặt Bắc)", node: `${E_X}_${E_Z - 280}`, x: E_X, z: E_Z - 280 }
         ];
 
         // =========================================================================
@@ -432,16 +432,16 @@
             drawRoad(30, 610, ox - 215, oz); // Phía Tây
             drawRoad(30, 610, ox + 255, oz); // Phía Đông
 
-            // ĐIỂM TẬP KẾT (Phía Bắc - Rừng Cây)
-            createTextLabel("ĐIỂM TẬP KẾT END LINE (RỪNG CÂY)", ox - 20, 2, oz - 420, 0x10b981, 16);
-            drawWireframeZone(160, 50, ox - 80, oz - 360, 0x10b981, "ĐIỂM TẬP KẾT");
+            // ĐIỂM TẬP KẾT (Góc Đông Nam)
+            createTextLabel("ĐIỂM TẬP KẾT (ĐÔNG NAM)", E_X + 160, 2, E_Z + 320, 0x10b981, 16);
+            drawWireframeZone(120, 60, E_X + 160, E_Z + 280, 0x10b981, "ĐIỂM TẬP KẾT");
 
             // CỔNG CHÍNH (Phía Nam - Đường NA4)
             createTextLabel("CỔNG CHÍNH END LINE (ĐƯỜNG NA4)", ox - 20, 2, oz + 420, 0x94a3b8, 16);
             
             // CÁC KHỐI CHỨC NĂNG THEO BẢN VẼ PDF CHUẨN XÁC
             // 1. Khối Nhà Xưởng Chính (Bên trái)
-            drawWireframeZone(230, 160, ox - 90, oz - 150, 0x8b5cf6, "KHO THÀNH PHẨM");
+            drawWireframeZone(160, 180, E_X - 80, E_Z - 120, 0x8b5cf6, "KHO THÀNH PHẨM");
             drawWireframeZone(230, 40, ox - 90, oz - 40, 0x0ea5e9, "PHÒNG LAB QC");
             drawWireframeZone(230, 220, ox - 90, oz + 100, 0xef4444, "KHU LINER & SHELL PRESS");
             
@@ -563,10 +563,10 @@
                 case 'kho-tp-2': coords = {x: -40, z: 400}; break;
                 case 'kho-nl': coords = {x: -120, z: 720}; break; 
                 case 'tram-xlnt': coords = {x: 220, z: 720}; break; 
-                case 'end-tap-ket': coords = {x: E_X - 80, z: E_Z - 360}; break;
-                case 'end-sx': coords = {x: E_X - 100, z: E_Z + 150}; break;
-                case 'end-kho': coords = {x: E_X - 100, z: E_Z - 150}; break;
-                case 'end-cong': coords = {x: E_X, z: E_Z + 360}; break;
+                case 'end-tap-ket': coords = {x: E_X + 160, z: E_Z + 250}; break;
+                case 'end-sx': coords = {x: E_X - 80, z: E_Z + 50}; break;
+                case 'end-kho': coords = {x: E_X - 80, z: E_Z - 100}; break;
+                case 'end-cong': coords = {x: E_X, z: E_Z + 250}; break;
             }
             setMarkerPosition(coords.x, coords.z);
         }
@@ -600,9 +600,9 @@
             let zoneName = "Khu vực chung";
             if (px > 1500) {
                 zoneName = "Khu vực END LINE";
-                if(pz < E_Z - 200) zoneName = "End Line: Rừng Cây (Tập kết)";
-                else if(pz > E_Z + 250) zoneName = "End Line: Cổng NA4";
-                else if(px < E_X + 20) zoneName = "End Line: Sản Xuất & Kho";
+                if(pz > E_Z + 150 && px > E_X + 50) zoneName = "End Line: Điểm Tập Kết (Đông Nam)";
+                else if(pz > E_Z + 150) zoneName = "End Line: Cổng NA4";
+                else if(px < E_X) zoneName = "End Line: Sản Xuất & Kho";
                 else zoneName = "End Line: Tiện ích / Bãi xe";
             } else {
                 if(pz < -250) zoneName = "Can Line: Cổng NA3 / Tập Kết";
