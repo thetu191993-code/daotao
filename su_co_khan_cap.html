@@ -235,9 +235,11 @@
             { name: "Cửa Sau Kho TP 2 (Phải)", node: "180_450", x: 180, z: 450 },
 
             // Cửa Mặt Nam (Đường NA2)
-            { name: "Cửa Trạm XLNT", node: "-180_800", x: -180, z: 800 },
             { name: "Cửa Kho Nguyên Liệu (Trái)", node: "-20_800", x: -20, z: 800 },
             { name: "Cửa Kho Nguyên Liệu (Phải)", node: "180_800", x: 180, z: 800 }
+            // Cửa Mặt Bắc (Đường NA2)
+            { name: "Cửa Kho Nguyên Liệu (Trái)", node: "20_800", x: 20, z: 800 },
+            { name: "Cửa Kho Nguyên Liệu (Phải)", node: "-180_800", x: -180, z: 800 }
         ];
 
         function init3D() {
@@ -353,9 +355,9 @@
             // ================== MẶT SAU (ĐƯỜNG NA2) ==================
             drawWireframeZone(80, 160, 300, 480, 0x8b5cf6, "KHO HÓA CHẤT");
             
-            drawWireframeZone(120, 100, -220, 720, 0x06b6d4, "TRẠM XLNT (WWTP)");
-            drawWireframeZone(340, 100, 80, 720, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
-            
+            drawWireframeZone(340, 100, -120, 720, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
+            drawWireframeZone(120, 100, 220, 720, 0x06b6d4, "TRẠM XLNT (WWTP)");
+                        
             createTextLabel("ĐƯỜNG NA2 (PHÍA NAM)", 0, 2, 880, 0x94a3b8, 16);
 
             // Vẽ Cửa Thoát Hiểm 3D (Xanh Lá)
