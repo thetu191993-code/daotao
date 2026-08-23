@@ -204,7 +204,11 @@
                     }
                 }
             }
-        // 3. KHAI BÁO CỬA THOÁT HIỂM (ĐÃ BỔ SUNG CỬA MỚI, KHÔNG XÓA CỬA CŨ THEO LỆNH)
+        }
+
+        const ASSEMBLY_NODE = `-20_-420`;
+
+        // 3. KHAI BÁO CỬA THOÁT HIỂM
         const EXIT_DOORS = [
             // Mặt tiền
             { name: "Cửa Chính (Văn phòng)", node: "-20_-280", x: -20, z: -280 },
@@ -221,7 +225,7 @@
             { name: "Cửa Hông Kho TP 1 (Trái)", node: "-340_260", x: -340, z: 260 },
             { name: "Cửa Hông Kho TP 2 (Trái)", node: "-340_380", x: -340, z: 380 },
             
-            // Cửa hông Phải (Đã xóa cửa hông Necker, dịch cửa bên trong ra tường ngoài)
+            // Cửa hông Phải
             { name: "Cửa Hông Kho TP 1 (Phải)", node: "340_260", x: 340, z: 260 }, 
             { name: "Cửa Kẹp Kho TP 1&2 (Phải)", node: "340_380", x: 340, z: 380 }, 
 
@@ -230,9 +234,10 @@
             { name: "Cửa Sau Kho TP 2 (Giữa)", node: "-20_450", x: -20, z: 450 },
             { name: "Cửa Sau Kho TP 2 (Phải)", node: "180_450", x: 180, z: 450 },
 
-            // Cửa Mặt Nam (Đã xóa cửa Trạm XLNT)
-            { name: "Cửa Sau Kho NL 1 (Trái)", node: "-180_800", x: -180, z: 800 },
-            { name: "Cửa Sau Kho NL 2 (Giữa)", node: "-20_800", x: -20, z: 800 }
+            // Cửa Mặt Nam (Đường NA2)
+            { name: "Cửa Trạm XLNT", node: "-180_800", x: -180, z: 800 },
+            { name: "Cửa Kho Nguyên Liệu (Trái)", node: "-20_800", x: -20, z: 800 },
+            { name: "Cửa Kho Nguyên Liệu (Phải)", node: "180_800", x: 180, z: 800 }
         ];
 
         function init3D() {
@@ -328,6 +333,7 @@
             drawWireframeZone(100, 70, 200, 120, 0xef4444, "NECKER LINE 3");
 
             // ================== MÁY NÉN KHÍ ==================
+            // BỔ SUNG KHU VỰC MÁY NÉN KHÍ BÊN PHẢI NECKER
             drawWireframeZone(60, 390, 300, 52, 0x64748b, "MÁY NÉN KHÍ");
 
             // ================== KHU VỰC KHO ==================
@@ -345,16 +351,14 @@
             drawWireframeZone(640, 140, -20, 550, 0x334155, "BÃI ĐẤT TRỐNG (EMPTY YARD)");
 
             // ================== MẶT SAU (ĐƯỜNG NA2) ==================
-            // Kéo Kho Hóa chất lên phía Bãi đất trống (Z=480)
             drawWireframeZone(80, 160, 300, 480, 0x8b5cf6, "KHO HÓA CHẤT");
             
-            // ĐÃ DỊCH TRẠM XLNT SANG PHẢI, KHO NL SANG TRÁI THEO HƯỚNG DẪN 
-            drawWireframeZone(340, 100, -120, 720, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
-            drawWireframeZone(120, 100, 220, 720, 0x06b6d4, "TRẠM XLNT (WWTP)");
+            drawWireframeZone(120, 100, -220, 720, 0x06b6d4, "TRẠM XLNT (WWTP)");
+            drawWireframeZone(340, 100, 80, 720, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
             
             createTextLabel("ĐƯỜNG NA2 (PHÍA NAM)", 0, 2, 880, 0x94a3b8, 16);
 
-            // Vẽ Cửa Thoát Hiểm 3D (Xanh Lá) theo đúng Map
+            // Vẽ Cửa Thoát Hiểm 3D (Xanh Lá)
             EXIT_DOORS.forEach(door => {
                 const boxGeo = new THREE.BoxGeometry(20, 20, 20);
                 const boxMat = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 });
