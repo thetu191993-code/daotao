@@ -162,6 +162,7 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
+        // Biến môi trường 3D
         let scene, camera, renderer, controls, factoryFloor; 
         let myLocationMarker = null; 
         let evacuationLineGroup = new THREE.Group(); 
@@ -176,7 +177,7 @@
         const ANCHOR_LAT = 11.1394136;
         const ANCHOR_LNG = 106.6241705;
 
-        // 1. CAN LINE (Trọng tâm X=0, Z=0)
+        // 1. CAN LINE GRID (Trọng tâm X=0, Z=0)
         const CAN_C_X = [-340, -180, -20, 180, 340];
         const CAN_C_Z = [-420, -280, -150, 0, 120, 260, 380, 450, 650, 800];
         const gridCan = {}; const edgesCan = []; const outsideEdgesCan = [];
@@ -206,11 +207,11 @@
             }
         }
 
-        // 2. END LINE (Tọa độ dời về Đông Nam: X dương, Z dương theo Google Maps)
+        // 2. END LINE GRID (Tọa độ dời về Đông Nam: X dương, Z dương theo Google Maps)
         const END_OFFSET_X = 2600; 
         const END_OFFSET_Z = 1600; 
         
-        // Scale End Line thu nhỏ lại (End: 27k m2 vs Can: 71k m2)
+        // Scale End Line thu nhỏ lại theo tỷ lệ diện tích (27k m2 vs 71k m2)
         const END_C_X = [END_OFFSET_X - 160, END_OFFSET_X, END_OFFSET_X + 160];
         const END_C_Z = [END_OFFSET_Z - 250, END_OFFSET_Z - 100, END_OFFSET_Z + 100, END_OFFSET_Z + 250];
         
@@ -247,7 +248,7 @@
             { name: "Cửa Giữa VP-Canteen", node: "180_-280", x: 180, z: -280 },
             { name: "Cửa Hông Canteen", node: "340_-280", x: 340, z: -280 },
             
-            // 3 Cửa đi vào lối Văn phòng (Phía sau)
+            // 3 Cửa đi vào lối Văn phòng (Phía sau) - GIỮ NGUYÊN THEO YÊU CẦU
             { name: "Cửa Sau VP (Trái)", node: "-180_-150", x: -180, z: -150 },
             { name: "Cửa Sau VP (Giữa)", node: "-20_-150", x: -20, z: -150 },
             { name: "Cửa Sau VP (Phải)", node: "180_-150", x: 180, z: -150 },
@@ -257,7 +258,7 @@
             { name: "Cửa Hông Kho TP 1 (Trái)", node: "-340_260", x: -340, z: 260 },
             { name: "Cửa Hông Kho TP 2 (Trái)", node: "-340_380", x: -340, z: 380 },
             
-            // Cửa hông Phải (Đã chỉnh sửa dời ra ngoài)
+            // Cửa hông Phải
             { name: "Cửa Hông Kho TP 1 (Phải)", node: "340_260", x: 340, z: 260 }, 
             { name: "Cửa Kẹp Kho TP 1&2 (Phải)", node: "340_380", x: 340, z: 380 }, 
 
@@ -266,7 +267,7 @@
             { name: "Cửa Sau Kho TP 2 (Giữa)", node: "-20_450", x: -20, z: 450 },
             { name: "Cửa Sau Kho TP 2 (Phải)", node: "180_450", x: 180, z: 450 },
 
-            // Cửa Kho Nguyên Liệu (Hướng Bắc - bãi đất trống)
+            // Cửa Kho Nguyên Liệu (Hướng Bắc - bãi đất trống) - THEO YÊU CẦU
             { name: "Cửa Bắc Kho NL (Trái)", node: "-180_650", x: -180, z: 650 },
             { name: "Cửa Bắc Kho NL (Phải)", node: "-20_650", x: -20, z: 650 }
         ];
@@ -305,7 +306,7 @@
             scene.add(evacuationLineGroup);
             scene.add(exitSignsGroup);
 
-            // Mở rộng mặt sàn tàng hình để đón click chuột toàn Map
+            // Mở rộng mặt sàn tàng hình 30.000m để đón click chuột toàn Map (Bao gồm End Line và đường đi)
             const floorGeo = new THREE.PlaneGeometry(30000, 30000);
             const floorMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0, side: THREE.DoubleSide });
             factoryFloor = new THREE.Mesh(floorGeo, floorMat);
@@ -338,18 +339,22 @@
             const fence = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(760, 20, 1400)), new THREE.LineBasicMaterial({ color: 0x475569, linewidth: 1 }));
             fence.position.set(0, 10, 260); scene.add(fence);
 
+            // Vành đai
             drawRoad(760, 40, 0, -280); drawRoad(760, 40, 0, 450);  
             drawRoad(760, 40, 0, 650); drawRoad(760, 40, 0, 800);  
             drawRoad(40, 1120, -340, 260); drawRoad(40, 1120, 340, 260); 
 
+            // CỔNG CHÍNH
             createTextLabel("ĐƯỜNG NA3 (CỔNG CHÍNH)", 0, 2, -500, 0x94a3b8, 16);
             drawWireframeZone(240, 80, -20, -420, 0x10b981, "VỊ TRÍ TẬP KẾT SỰ CỐ"); 
             drawWireframeZone(120, 60, -220, -410, 0x64748b, "NHÀ XE (PARKING)");
             drawWireframeZone(100, 40, 180, -420, 0xf59e0b, "TRẠM GAS");
 
+            // VĂN PHÒNG & CANTEEN
             drawWireframeZone(380, 50, -40, -230, 0x0ea5e9, "VĂN PHÒNG (OFFICE)");
             drawWireframeZone(140, 50, 230, -230, 0x0ea5e9, "CANTEEN");
 
+            // KHU SẢN XUẤT
             drawWireframeZone(60, 250, -230, -25, 0x8b5cf6, "CUPPER AREA");
             drawWireframeZone(140, 40, -100, 60, 0x64748b, "BOILER"); 
 
@@ -366,9 +371,10 @@
             drawWireframeZone(140, 70, 60, 120, 0xef4444, "PDP LINE 3");
             drawWireframeZone(100, 70, 200, 120, 0xef4444, "NECKER LINE 3");
 
-            // MÁY NÉN KHÍ
+            // MÁY NÉN KHÍ (GIỮ NGUYÊN)
             drawWireframeZone(60, 390, 300, 52, 0x64748b, "MÁY NÉN KHÍ");
 
+            // KHU VỰC KHO SẢN XUẤT
             drawWireframeZone(140, 60, -100, 220, 0xa8a29e, "NGUYÊN LIỆU (COIL)");
             drawWireframeZone(140, 60, 60, 220, 0xa8a29e, "LON TRẮNG (BRIGHT)");
             drawWireframeZone(100, 60, 200, 220, 0x3b82f6, "ĐÓNG GÓI (PALLETIZER)");
@@ -379,9 +385,10 @@
             drawWireframeZone(240, 70, -40, 400, 0x8b5cf6, "KHO THÀNH PHẨM 2 (A)");
             drawWireframeZone(180, 70, 190, 400, 0x8b5cf6, "KHO THÀNH PHẨM 2 (B)");
             
+            // BÃI ĐẤT TRỐNG
             drawWireframeZone(640, 140, -20, 550, 0x334155, "BÃI ĐẤT TRỐNG (EMPTY YARD)");
 
-            // MẶT SAU (ĐƯỜNG NA2)
+            // MẶT SAU (ĐƯỜNG NA2) - QUY HOẠCH CHUẨN XÁC
             drawWireframeZone(80, 160, 300, 560, 0x8b5cf6, "KHO HÓA CHẤT");
             drawWireframeZone(340, 100, -120, 720, 0xa8a29e, "KHO NGUYÊN LIỆU CHÍNH");
             drawWireframeZone(120, 100, 220, 720, 0x06b6d4, "TRẠM XLNT (WWTP)");
@@ -401,18 +408,20 @@
             const fence = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(400, 20, 600)), new THREE.LineBasicMaterial({ color: 0x475569, linewidth: 1 }));
             fence.position.set(ox, 10, oz); scene.add(fence);
 
+            // Vành đai End Line
             drawRoad(400, 30, ox, oz - 250); 
             drawRoad(400, 30, ox, oz + 250); 
             drawRoad(30, 500, ox - 180, oz); 
             drawRoad(30, 500, ox + 180, oz); 
 
-            // Điểm tập kết ở phía Rừng cây (Bắc)
+            // ĐIỂM TẬP KẾT (Phía Bắc - Rừng Cây)
             createTextLabel("ĐIỂM TẬP KẾT END LINE (HƯỚNG RỪNG CÂY)", ox, 2, oz - 350, 0x10b981, 16);
             drawWireframeZone(120, 50, ox, oz - 280, 0x10b981, "ĐIỂM TẬP KẾT");
 
-            // Cổng chính ở phía NA4 (Nam)
+            // CỔNG CHÍNH (Phía Nam - Đường NA4)
             createTextLabel("CỔNG CHÍNH END LINE (ĐƯỜNG NA4)", ox, 2, oz + 300, 0x94a3b8, 16);
 
+            // CÁC KHỐI CHỨC NĂNG
             drawWireframeZone(180, 100, ox - 80, oz - 150, 0x8b5cf6, "KHO THÀNH PHẨM");
             drawWireframeZone(180, 150, ox - 80, oz + 50, 0xef4444, "KHU LINER & SHELL PRESS");
             
@@ -434,7 +443,7 @@
             const na3 = new THREE.Mesh(new THREE.PlaneGeometry(1600, 60), roadMat);
             na3.rotation.x = -Math.PI / 2; na3.position.set(800, 0.2, -500); scene.add(na3);
             
-            // Rẽ xuống DA3 (Nam)
+            // Rẽ xuống DA3/DA4 (Nam)
             const da3 = new THREE.Mesh(new THREE.PlaneGeometry(60, 2300), roadMat);
             da3.rotation.x = -Math.PI / 2; da3.position.set(1600, 0.2, 650); scene.add(da3);
             createTextLabel("ĐƯỜNG DA3", 1600, 2, 650, 0x94a3b8, 16);
@@ -444,7 +453,7 @@
             na4.rotation.x = -Math.PI / 2; na4.position.set(2200, 0.2, END_OFFSET_Z + 250); scene.add(na4);
             createTextLabel("ĐƯỜNG NA4", 2200, 2, END_OFFSET_Z + 250, 0x94a3b8, 16);
             
-            // Vẽ đường gạch nối (Route Line) để minh họa
+            // Vẽ đường gạch nối (Route Line đỏ)
             const points = [
                 new THREE.Vector3(0, 2, -500),
                 new THREE.Vector3(1600, 2, -500),
@@ -762,6 +771,7 @@
         }
 
         function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+        
         function animate() {
             requestAnimationFrame(animate); const time = Date.now() * 0.005;
             if(myLocationMarker && myLocationMarker.userData.ring) {
