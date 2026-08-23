@@ -439,18 +439,19 @@
             // CỔNG CHÍNH (Phía Nam - Đường NA4)
             createTextLabel("CỔNG CHÍNH END LINE (ĐƯỜNG NA4)", ox - 20, 2, oz + 420, 0x94a3b8, 16);
             
-            // CÁC KHỐI CHỨC NĂNG THEO PDF
-            // Khu Vực SX và Kho Thành Phẩm (Bên trái)
-            drawWireframeZone(220, 250, ox - 100, oz - 150, 0x8b5cf6, "KHO THÀNH PHẨM");
-            drawWireframeZone(220, 250, ox - 100, oz + 150, 0xef4444, "KHU LINER & SHELL PRESS");
+            // CÁC KHỐI CHỨC NĂNG THEO BẢN VẼ PDF CHUẨN XÁC
+            // 1. Khối Nhà Xưởng Chính (Bên trái)
+            drawWireframeZone(230, 160, ox - 90, oz - 150, 0x8b5cf6, "KHO THÀNH PHẨM");
+            drawWireframeZone(230, 40, ox - 90, oz - 40, 0x0ea5e9, "PHÒNG LAB QC");
+            drawWireframeZone(230, 220, ox - 90, oz + 100, 0xef4444, "KHU LINER & SHELL PRESS");
             
-            // Dải tiện ích ở giữa
-            drawWireframeZone(80, 120, ox + 80, oz - 150, 0x0ea5e9, "CANTEEN / TOILET");
-            drawWireframeZone(80, 150, ox + 80, oz + 50, 0x64748b, "BÃI XE MÁY");
-            drawWireframeZone(80, 80, ox + 80, oz + 200, 0x334155, "PHẾ LIỆU");
+            // 2. Dải tiện ích (Dọc ở giữa)
+            drawWireframeZone(70, 120, ox + 70, oz - 130, 0x0ea5e9, "CANTEEN / NHÀ BẾP");
+            drawWireframeZone(70, 140, ox + 70, oz + 20, 0x64748b, "BÃI XE MÁY");
+            drawWireframeZone(70, 80, ox + 70, oz + 150, 0x334155, "PHẾ LIỆU");
             
-            // Nhà Kho Trống (Bên phải)
-            drawWireframeZone(120, 400, ox + 200, oz + 50, 0x334155, "NHÀ KHO TRỐNG");
+            // 3. Khu Nhà Kho Trống (Tòa độc lập bên phải)
+            drawWireframeZone(110, 380, ox + 175, oz + 20, 0x334155, "NHÀ KHO TRỐNG");
 
             EXIT_DOORS_END.forEach(door => {
                 const box = new THREE.Mesh(new THREE.BoxGeometry(15, 15, 15), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 }));
