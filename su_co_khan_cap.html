@@ -204,17 +204,18 @@
                     }
                 }
             }
-        }
-
-        const ASSEMBLY_NODE = `-20_-420`;
-
-        // 3. KHAI BÁO CỬA THOÁT HIỂM (ĐÃ CHUẨN HÓA THEO YÊU CẦU MỚI NHẤT)
+        // 3. KHAI BÁO CỬA THOÁT HIỂM (ĐÃ BỔ SUNG CỬA MỚI, KHÔNG XÓA CỬA CŨ THEO LỆNH)
         const EXIT_DOORS = [
             // Mặt tiền
             { name: "Cửa Chính (Văn phòng)", node: "-20_-280", x: -20, z: -280 },
             { name: "Cửa Giữa VP & Canteen", node: "180_-280", x: 180, z: -280 },
             { name: "Cửa Hông Canteen", node: "340_-280", x: 340, z: -280 },
             
+            // BỔ SUNG: 3 Cửa đi vào lối Văn phòng (Phía sau)
+            { name: "Cửa Sau Văn Phòng (Trái)", node: "-180_-150", x: -180, z: -150 },
+            { name: "Cửa Sau Văn Phòng (Giữa)", node: "-20_-150", x: -20, z: -150 },
+            { name: "Cửa Sau Văn Phòng (Phải)", node: "180_-150", x: 180, z: -150 },
+
             // Cửa hông Trái
             { name: "Cửa Hông Cupper", node: "-340_0", x: -340, z: 0 },
             { name: "Cửa Hông Kho TP 1 (Trái)", node: "-340_260", x: -340, z: 260 },
