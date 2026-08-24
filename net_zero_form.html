@@ -126,30 +126,48 @@
         </form>
     </div>
 
+    <!-- Tải bộ thư viện Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
     <script>
-        function submitData() {
-            // Đóng gói toàn bộ dữ liệu từ form
+        // CẤU HÌNH FIREBASE TỪ DỰ ÁN EHS-TRAINING-APP CỦA ANH
+        const firebaseConfig = {
+          apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
+          authDomain: "ehs-training-app.firebaseapp.com",
+          projectId: "ehs-training-app",
+          storageBucket: "ehs-training-app.firebasestorage.app",
+          messagingSenderId: "354083430003",
+          appId: "1:354083430003:web:059953b7b9c1a9470a5406",
+          measurementId: "G-74ETHWTJCW"
+        };
+
+        // Khởi tạo hệ thống
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Hàm đẩy dữ liệu lên mây
+        async function submitData() {
+            // Lấy dữ liệu từ giao diện
             const ghgData = {
                 period: document.getElementById('period').value,
                 factory_zone: document.getElementById('factory_zone').value,
                 
-                // Scope 1: Combustion
                 s1_washer_lpg: Number(document.getElementById('s1_washer').value) || 0,
                 s1_pinoven_lpg: Number(document.getElementById('s1_pinoven').value) || 0,
                 s1_ibo_lpg: Number(document.getElementById('s1_ibo').value) || 0,
                 s1_boiler_lpg: Number(document.getElementById('s1_boiler').value) || 0,
                 
-                // Scope 1: Refrigerants
                 s1_r410a: Number(document.getElementById('s1_r410a').value) || 0,
                 s1_r22: Number(document.getElementById('s1_r22').value) || 0,
                 s1_r32: Number(document.getElementById('s1_r32').value) || 0,
                 
-                // Scope 2 & 3
                 scope2_elec: Number(document.getElementById('scope2_elec').value) || 0,
                 scope3_water: Number(document.getElementById('scope3_water').value) || 0,
                 scope3_waste: Number(document.getElementById('scope3_waste').value) || 0,
                 
-                status: "pending"
+                status: "pending",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // Lưu thời gian thực
             };
 
             if (!ghgData.period || ghgData.scope2_elec === 0) {
@@ -157,8 +175,16 @@
                 return;
             }
 
-            console.log("Dữ liệu chuẩn bị đẩy lên Firestore:", ghgData);
-            alert("Bảng dữ liệu chi tiết đã sẵn sàng! Có thể xem log F12 để kiểm tra object.");
+            // Gửi lên Firestore vào Collection "ghg_raw_inputs"
+            try {
+                const docRef = await db.collection("ghg_raw_inputs").add(ghgData);
+                console.log("Document written with ID: ", docRef.id);
+                alert("Thành công! Số liệu đã được đưa lên Firestore an toàn.");
+                document.getElementById('ghgForm').reset(); // Xóa trắng form sau khi gửi
+            } catch (error) {
+                console.error("Lỗi khi gửi dữ liệu: ", error);
+                alert("Lỗi kết nối! Vui lòng kiểm tra lại cấu hình.");
+            }
         }
     </script>
 </body>
