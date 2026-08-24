@@ -478,27 +478,27 @@
             createTextLabel("ĐƯỜNG NA3", -100, 2, -500, 0x94a3b8, 16);
     
             // Đường DA3 (Nối NA3 và NA4)
-            const da3Length = Math.abs((E_Z + 420) - (-500)) + 60;
+            const da3Length = Math.abs((E_Z - 420) - (-500)) + 60;
             const da3 = new THREE.Mesh(new THREE.PlaneGeometry(60, da3Length), roadMat);
             da3.rotation.x = -Math.PI / 2; 
-            da3.position.set(-600, 0.2, (-500 + E_Z + 420) / 2); 
+            da3.position.set(-600, 0.2, (-500 + E_Z - 420) / 2); 
             scene.add(da3);
-            createTextLabel("ĐƯỜNG DA3", -600, 2, (-500 + E_Z + 420) / 2, 0x94a3b8, 16);
+            createTextLabel("ĐƯỜNG DA3", -600, 2, (-500 + E_Z - 420) / 2, 0x94a3b8, 16);
 
             // Đường NA4 (Đi vào cổng End Line)
             const na4Length = Math.abs(E_X - (-600)) + 60;
             const na4 = new THREE.Mesh(new THREE.PlaneGeometry(na4Length, 60), roadMat);
             na4.rotation.x = -Math.PI / 2; 
-            na4.position.set((-600 + E_X) / 2, 0.2, E_Z + 420); 
+            na4.position.set((-600 + E_X) / 2, 0.2, E_Z - 420); 
             scene.add(na4);
-            createTextLabel("ĐƯỜNG NA4", (-600 + E_X) / 2, 2, E_Z + 420, 0x94a3b8, 16);
+            createTextLabel("ĐƯỜNG NA4", (-600 + E_X) / 2, 2, E_Z - 420, 0x94a3b8, 16);
 
             // Vẽ tuyến đường sơ tán 900m
             const points = [
                 new THREE.Vector3(0, 5, -500),              // Xuất phát: Cổng Can Line (NA3)
                 new THREE.Vector3(-600, 5, -500),           // Ngã tư NA3 - DA3
-                new THREE.Vector3(-600, 5, E_Z + 420),      // Ngã tư DA3 - NA4
-                new THREE.Vector3(E_X, 5, E_Z + 420)        // Đích đến: Cổng End Line
+                new THREE.Vector3(-600, 5, E_Z - 420),      // Ngã tư DA3 - NA4
+                new THREE.Vector3(E_X, 5, E_Z - 420)        // Đích đến: Cổng End Line
             ];
             const routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: 0xef4444, linewidth: 3, scale: 1, dashSize: 25, gapSize: 15 }));
             routeLine.computeLineDistances(); 
