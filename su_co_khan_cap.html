@@ -443,27 +443,27 @@
             createTextLabel("CỔNG CHÍNH", ox, 2, oz - 420, 0x94a3b8, 16);
                   
             // 2. KHO CHÍNH (Nằm dọc bên trái)
-            drawWireframeZone(150, 350, ox - 90, oz + 110, 0x8b5cf6, "KHO THÀNH PHẨM (CHÍNH)");
+            drawWireframeZone(150, 320, ox - 90, oz + 90, 0x8b5cf6, "KHO THÀNH PHẨM (CHÍNH)");
 
             // 3. KHO ĐÔNG (Nằm ngang phía trên, dưới Tập kết)
-            drawWireframeZone(250, 90, ox + 25, oz + 265, 0x8b5cf6, "KHO THÀNH PHẨM (PHỤ)");
+            drawWireframeZone(200, 100, ox + 105, oz + 200, 0x8b5cf6, "KHO THÀNH PHẨM (PHỤ)");
 
             // 4. PHÒNG LAB QC (Kẹp giữa Kho Đông và SX)
-            drawWireframeZone(30, 160, ox + 50, oz - 40, 0x0ea5e9, "PHÒNG LAB QC");
+            drawWireframeZone(30, 120, ox - 10, oz + 40, 0x0ea5e9, "PHÒNG LAB QC");
 
             // 5. KHU SẢN XUẤT (Dưới QC)
-            drawWireframeZone(200, 220, ox + 105, oz + 65, 0xef4444, "SX LINER & SHELL PRESS");
+            drawWireframeZone(200, 220, ox + 105, oz + 40, 0xef4444, "SX LINER & SHELL PRESS");
 
             // 6. DẢI TIỆN ÍCH (Dọc bên phải SX)
-            drawWireframeZone(60, 60, ox - 135, oz + 160, 0x10b981, "KHO PHẾ LIỆU");
-            drawWireframeZone(50, 60, ox - 80, oz + 160, 0x10b981, "TRẠM BƠM - BÃI XE");
-            drawWireframeZone(90, 60, ox - 10, oz + 160, 0x10b981, "TOILET + CANTEEN");
+            drawWireframeZone(60, 60, ox + 175, oz - 160, 0x10b981, "KHO PHẾ LIỆU");
+            drawWireframeZone(50, 60, ox + 120, oz - 160, 0x10b981, "TRẠM BƠM - BÃI XE");
+            drawWireframeZone(110, 60, ox + 50, oz - 160, 0x10b981, "TOILET + CANTEEN");
 
             // 7. NHÀ KHO TRỐNG (Bìa cùng bên phải)
-            drawWireframeZone(250, 90, ox + 60, oz - 250, 0x334155, "NHÀ KHO TRỐNG");
+            drawWireframeZone(250, 80, ox + 65, oz - 250, 0x334155, "NHÀ KHO TRỐNG");
 
             // 8. KHO NGUYÊN LIỆU (Nằm dọc lấp vào khoảng trống bên phải SX Liner)
-            drawWireframeZone(200, 50, ox + 105, oz - 110, 0xa8a29e, "KHO NGUYÊN LIỆU");
+            drawWireframeZone(200, 60, ox + 105, oz - 100, 0xa8a29e, "KHO NGUYÊN LIỆU");
 
             EXIT_DOORS_END.forEach(door => {
                  let box = new THREE.Mesh(new THREE.BoxGeometry(15, 15, 15), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 }));
