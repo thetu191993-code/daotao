@@ -462,6 +462,9 @@
             // 7. NHÀ KHO TRỐNG (Bìa cùng bên phải)
             drawWireframeZone(250, 90, ox + 60, oz - 250, 0x334155, "NHÀ KHO TRỐNG");
 
+            // 8. KHO NGUYÊN LIỆU (Nằm dọc lấp vào khoảng trống bên phải SX Liner)
+            drawWireframeZone(250, 60, ox + 130, oz - 150, 0xa8a29e, "KHO NGUYÊN LIỆU");
+
             EXIT_DOORS_END.forEach(door => {
                  let box = new THREE.Mesh(new THREE.BoxGeometry(15, 15, 15), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 }));
                 box.position.set(door.x, 10, door.z); exitSignsGroup.add(box);
