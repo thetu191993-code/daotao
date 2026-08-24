@@ -436,8 +436,8 @@
             drawRoad(30, 610, ox + 255, oz); // Phía Đông
 
             // 1. ĐIỂM TẬP KẾT (Dịch lên oz - 100 để đón lõng luồng sơ tán)
-            createTextLabel("ĐIỂM TẬP KẾT", ox - 195, 2, oz + 60, 0x10b981, 16);
-            drawWireframeZone(40, 120, ox - 195, oz + 60, 0x10b981, "ĐIỂM TẬP KẾT");
+            createTextLabel("ĐIỂM TẬP KẾT", ox - 190, 2, oz + 60, 0x10b981, 16);
+            drawWireframeZone(40, 120, ox - 190, oz + 60, 0x10b981, "ĐIỂM TẬP KẾT");
 
             // ĐẢO DẤU: Cổng mang dấu ÂM (-420), Tập kết mang dấu DƯƠNG (+260)
             createTextLabel("CỔNG CHÍNH", ox, 2, oz - 420, 0x94a3b8, 16);
@@ -449,15 +449,15 @@
             drawWireframeZone(250, 90, ox + 25, oz + 265, 0x8b5cf6, "KHO THÀNH PHẨM (PHỤ)");
 
             // 4. PHÒNG LAB QC (Kẹp giữa Kho Đông và SX)
-            drawWireframeZone(30, 160, ox + 10, oz + 40, 0x0ea5e9, "PHÒNG LAB QC");
+            drawWireframeZone(30, 160, ox + 50, oz - 40, 0x0ea5e9, "PHÒNG LAB QC");
 
             // 5. KHU SẢN XUẤT (Dưới QC)
-            drawWireframeZone(140, 290, ox + 105, oz + 65, 0xef4444, "SX LINER & SHELL PRESS");
+            drawWireframeZone(200, 220, ox + 105, oz + 65, 0xef4444, "SX LINER & SHELL PRESS");
 
             // 6. DẢI TIỆN ÍCH (Dọc bên phải SX)
-            drawWireframeZone(60, 80, ox + 130, oz - 40, 0x0ea5e9, "CANTEEN & BẾP");
-            drawWireframeZone(60, 100, ox + 130, oz + 60, 0x64748b, "BÃI XE MÁY");
-            drawWireframeZone(60, 80, ox + 130, oz + 160, 0x334155, "PHẾ LIỆU");
+            drawWireframeZone(60, 60, ox - 135, oz + 160, 0x10b981, "KHO PHẾ LIỆU");
+            drawWireframeZone(50, 60, ox - 80, oz + 160, 0x10b981, "TRẠM BƠM - BÃI XE");
+            drawWireframeZone(90, 60, ox - 10, oz + 160, 0x10b981, "TOILET + CANTEEN");
 
             // 7. NHÀ KHO TRỐNG (Bìa cùng bên phải)
             drawWireframeZone(250, 90, ox + 60, oz - 250, 0x334155, "NHÀ KHO TRỐNG");
