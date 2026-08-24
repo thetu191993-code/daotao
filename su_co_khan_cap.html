@@ -255,8 +255,8 @@
         // =========================================================================
         // DATA: NHÀ MÁY END LINE (Phía Đông Nam)
         // =========================================================================
-        const E_X = 2800; 
-        const E_Z = 1000; 
+        const E_X = 1200; 
+        const E_Z = 800; 
         
         // Mạng lưới Grid End Line
         const END_C_X = [E_X - 215, E_X - 100, E_X, E_X + 100, E_X + 255];
@@ -469,31 +469,40 @@
         function buildConnectingRoads() {
             const roadMat = new THREE.MeshBasicMaterial({ color: 0x334155, side: THREE.DoubleSide, transparent: true, opacity: 0.3, depthWrite: false });
             
-            // Đường NA3 (Sang Đông)
-            const na3 = new THREE.Mesh(new THREE.PlaneGeometry(1600, 60), roadMat);
-            na3.rotation.x = -Math.PI / 2; na3.position.set(800, 0.2, -500); scene.add(na3);
-            
-            // Rẽ DA3 (Sang Nam)
-            const da3 = new THREE.Mesh(new THREE.PlaneGeometry(60, 1940), roadMat);
-            da3.rotation.x = -Math.PI / 2; da3.position.set(1600, 0.2, 440); scene.add(da3);
-            createTextLabel("ĐƯỜNG DA3", 1600, 2, 440, 0x94a3b8, 16);
+            // Đường NA3 (Sang Đông từ Can Line tới Ngã tư DA3)
+            const na3 = new THREE.Mesh(new THREE.PlaneGeometry(E_X, 60), roadMat);
+            na3.rotation.x = -Math.PI / 2; 
+            na3.position.set(E_X / 2, 0.2, -500); 
+            scene.add(na3);
+            createTextLabel("ĐƯỜNG NA3", E_X / 2, 2, -500, 0x94a3b8, 16);
+    
+            // Đường DA3 (Chạy dọc xuống Nam, nối NA3 và NA4)
+            const da3Length = (E_Z + 420) - (-500);
+            const da3 = new THREE.Mesh(new THREE.PlaneGeometry(60, da3Length), roadMat);
+            da3.rotation.x = -Math.PI / 2; 
+            da3.position.set(E_X - 250, 0.2, -500 + da3Length / 2); 
+            scene.add(da3);
+            createTextLabel("ĐƯỜNG DA3", E_X - 250, 2, -500 + da3Length / 2, 0x94a3b8, 16);
 
-            // Rẽ NA4 (Sang Đông tới Cổng End Line)
-            const na4 = new THREE.Mesh(new THREE.PlaneGeometry(1200, 60), roadMat);
-            na4.rotation.x = -Math.PI / 2; na4.position.set(2200, 0.2, 1380); scene.add(na4);
-            createTextLabel("ĐƯỜNG NA4", 2200, 2, 1380, 0x94a3b8, 16);
+            // Đường NA4 (Sang Đông chạy ngang mặt tiền End Line)
+            const na4 = new THREE.Mesh(new THREE.PlaneGeometry(800, 60), roadMat);
+            na4.rotation.x = -Math.PI / 2; 
+            na4.position.set(E_X, 0.2, E_Z + 420); 
+            scene.add(na4);
+            createTextLabel("ĐƯỜNG NA4", E_X, 2, E_Z + 420, 0x94a3b8, 16);
 
-            // Vẽ Tuyến đường nối (Line đỏ)
+            // Vẽ tuyến đường 900m (Vạch kẻ đứt màu đỏ như chỉ dẫn vệ tinh)
             const points = [
-                new THREE.Vector3(0, 5, -500),
-                new THREE.Vector3(1600, 5, -500),
-                new THREE.Vector3(1600, 5, 1380),
-                new THREE.Vector3(E_X, 5, 1380)
+                new THREE.Vector3(0, 5, -500),              // Xuất phát: Cổng Can Line (NA3)
+                new THREE.Vector3(E_X - 250, 5, -500),      // Rẽ phải tại Ngã tư NA3 - DA3
+                new THREE.Vector3(E_X - 250, 5, E_Z + 420), // Đi hết DA3, rẽ trái tại Ngã tư NA4
+                new THREE.Vector3(E_X, 5, E_Z + 420)        // Đích đến: Cổng End Line
             ];
-            const routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: 0xef4444, linewidth: 2, scale: 1, dashSize: 20, gapSize: 10 }));
-            routeLine.computeLineDistances(); scene.add(routeLine);
+            const routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: 0xef4444, linewidth: 3, scale: 1, dashSize: 25, gapSize: 15 }));
+            routeLine.computeLineDistances(); 
+            scene.add(routeLine);
         }
-
+        
         function drawRoad(w, d, x, z) {
             const geo = new THREE.PlaneGeometry(w, d);
             const mat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false });
