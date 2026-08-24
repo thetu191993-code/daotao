@@ -263,8 +263,8 @@
         const END_C_Z = [E_Z - 320, E_Z - 280, E_Z - 100, E_Z + 100, E_Z + 320];
         
         const gridEnd = {}; const edgesEnd = []; const outsideEdgesEnd = [];
-        // Điểm tập kết nằm ở phía Bắc (Z âm)
-        const ASSEMBLY_END = `${E_X - 20}_${E_Z - 360}`; 
+        // Cập nhật lại tọa độ AI Sơ tán hướng về hành lang lề Đông (Bên phải)
+        const ASSEMBLY_END = `${E_X + 255}_${E_Z}`; 
 
         let isOutsideEndNode = (key) => {
             let [x, z] = key.split('_').map(Number);
@@ -433,15 +433,15 @@
             drawRoad(30, 610, ox + 255, oz); // Phía Đông
 
             // 1. ĐIỂM TẬP KẾT (Phía Bắc, nằm trên Kho Đông)
-            createTextLabel("ĐIỂM TẬP KẾT END LINE", ox, 2, oz - 300, 0x10b981, 16);
-            drawWireframeZone(160, 50, ox, oz - 280, 0x10b981, "ĐIỂM TẬP KẾT");
+            createTextLabel("ĐIỂM TẬP KẾT", ox + 230, 2, oz, 0x10b981, 16);
+            drawWireframeZone(40, 120, ox + 230, oz, 0x10b981, "ĐIỂM TẬP KẾT");
 
             // ĐẢO DẤU: Cổng mang dấu ÂM (-420), Tập kết mang dấu DƯƠNG (+260)
             createTextLabel("CỔNG CHÍNH", ox, 2, oz - 420, 0x94a3b8, 16);
       
             
             // 2. KHO BẮC (Nằm dọc bên trái)
-            drawWireframeZone(80, 480, ox - 160, oz + 20, 0x8b5cf6, "KHO THÀNH PHẨM (BẮC)");
+            drawWireframeZone(80, 250, ox + 150, oz, 0x8b5cf6, "KHO THÀNH PHẨM (CHÍNH)");
 
             // 3. KHO ĐÔNG (Nằm ngang phía trên, dưới Tập kết)
             drawWireframeZone(160, 100, ox, oz - 200, 0x8b5cf6, "KHO THÀNH PHẨM (ĐÔNG)");
@@ -461,92 +461,92 @@
             drawWireframeZone(70, 400, ox + 205, oz + 10, 0x334155, "NHÀ KHO TRỐNG");
 
             EXIT_DOORS_END.forEach(door => {
-                const box = new THREE.Mesh(new THREE.BoxGeometry(15, 15, 15), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 }));
+                 box = new THREE.Mesh(new THREE.BoxGeometry(15, 15, 15), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 }));
                 box.position.set(door.x, 10, door.z); exitSignsGroup.add(box);
                 createTextLabel("EXIT", door.x, 25, door.z, 0x10b981, 12);
             });
         }
 
         function buildConnectingRoads() {
-            const roadMat = new THREE.MeshBasicMaterial({ color: 0x334155, side: THREE.DoubleSide, transparent: true, opacity: 0.3, depthWrite: false });
+             roadMat = new THREE.MeshBasicMaterial({ color: 0x334155, side: THREE.DoubleSide, transparent: true, opacity: 0.3, depthWrite: false });
     
             // Đường NA3 (Đi từ Can Line tới Ngã tư DA3)
-            const na3 = new THREE.Mesh(new THREE.PlaneGeometry(1000, 60), roadMat);
+             na3 = new THREE.Mesh(new THREE.PlaneGeometry(1000, 60), roadMat);
             na3.rotation.x = -Math.PI / 2; 
             na3.position.set(-100, 0.2, -500); 
             scene.add(na3);
             createTextLabel("ĐƯỜNG NA3", -100, 2, -500, 0x94a3b8, 16);
     
             // Đường DA3 (Nối NA3 và NA4)
-            const da3Length = Math.abs((E_Z - 420) - (-500)) + 60;
-            const da3 = new THREE.Mesh(new THREE.PlaneGeometry(60, da3Length), roadMat);
+             da3Length = Math.abs((E_Z - 420) - (-500)) + 60;
+             da3 = new THREE.Mesh(new THREE.PlaneGeometry(60, da3Length), roadMat);
             da3.rotation.x = -Math.PI / 2; 
             da3.position.set(-600, 0.2, (-500 + E_Z - 420) / 2); 
             scene.add(da3);
             createTextLabel("ĐƯỜNG DA3", -600, 2, (-500 + E_Z - 420) / 2, 0x94a3b8, 16);
 
             // Đường NA4 (Đi vào cổng End Line)
-            const na4Length = Math.abs(E_X - (-600)) + 60;
-            const na4 = new THREE.Mesh(new THREE.PlaneGeometry(na4Length, 60), roadMat);
+             na4Length = Math.abs(E_X - (-600)) + 60;
+             na4 = new THREE.Mesh(new THREE.PlaneGeometry(na4Length, 60), roadMat);
             na4.rotation.x = -Math.PI / 2; 
             na4.position.set((-600 + E_X) / 2, 0.2, E_Z - 420); 
             scene.add(na4);
             createTextLabel("ĐƯỜNG NA4", (-600 + E_X) / 2, 2, E_Z - 420, 0x94a3b8, 16);
 
             // Vẽ tuyến đường sơ tán 900m
-            const points = [
+             points = [
                 new THREE.Vector3(0, 5, -500),              // Xuất phát: Cổng Can Line (NA3)
                 new THREE.Vector3(-600, 5, -500),           // Ngã tư NA3 - DA3
                 new THREE.Vector3(-600, 5, E_Z - 420),      // Ngã tư DA3 - NA4
                 new THREE.Vector3(E_X, 5, E_Z - 420)        // Đích đến: Cổng End Line
             ];
-            const routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: 0xef4444, linewidth: 3, scale: 1, dashSize: 25, gapSize: 15 }));
+             routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), new THREE.LineDashedMaterial({ color: 0xef4444, linewidth: 3, scale: 1, dashSize: 25, gapSize: 15 }));
             routeLine.computeLineDistances(); 
             scene.add(routeLine);
         }
         
         function drawRoad(w, d, x, z) {
-            const geo = new THREE.PlaneGeometry(w, d);
-            const mat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false });
-            const road = new THREE.Mesh(geo, mat); road.rotation.x = -Math.PI / 2; road.position.set(x, 0.5, z);
+             geo = new THREE.PlaneGeometry(w, d);
+             mat = new THREE.MeshBasicMaterial({ color: 0x1e293b, side: THREE.DoubleSide, transparent: true, opacity: 0.5, depthWrite: false });
+             road = new THREE.Mesh(geo, mat); road.rotation.x = -Math.PI / 2; road.position.set(x, 0.5, z);
             scene.add(road);
         }
 
         function drawWireframeZone(w, d, x, z, colorHex, name) {
-            const geo = new THREE.BoxGeometry(w, 40, d);
-            const fillMat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.05, depthWrite: false, side: THREE.DoubleSide });
-            const mesh = new THREE.Mesh(geo, fillMat); mesh.position.set(x, 20, z); scene.add(mesh);
+             geo = new THREE.BoxGeometry(w, 40, d);
+             fillMat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.05, depthWrite: false, side: THREE.DoubleSide });
+             mesh = new THREE.Mesh(geo, fillMat); mesh.position.set(x, 20, z); scene.add(mesh);
 
-            const edges = new THREE.EdgesGeometry(geo);
-            const lineMat = new THREE.LineBasicMaterial({ color: colorHex, linewidth: 2, transparent: true, opacity: 0.4 });
-            const line = new THREE.LineSegments(edges, lineMat); line.position.set(x, 20, z); scene.add(line);
+             edges = new THREE.EdgesGeometry(geo);
+             lineMat = new THREE.LineBasicMaterial({ color: colorHex, linewidth: 2, transparent: true, opacity: 0.4 });
+             line = new THREE.LineSegments(edges, lineMat); line.position.set(x, 20, z); scene.add(line);
 
             if (name) createTextLabel(name, x, 45, z, colorHex, 9);
         }
 
         function createTextLabel(text, x, y, z, colorHex, fontSize) {
-            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
-            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#' + colorHex.toString(16).padStart(6, '0');
+             canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+             ctx = canvas.getContext('2d'); ctx.fillStyle = '#' + colorHex.toString(16).padStart(6, '0');
             ctx.font = `bold ${fontSize*2.5}px Inter`; ctx.textAlign = 'center'; ctx.fillText(text, 256, 64);
-            const texture = new THREE.CanvasTexture(canvas);
-            const spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.9, depthTest: false });
-            const sprite = new THREE.Sprite(spriteMat);
+             texture = new THREE.CanvasTexture(canvas);
+             spriteMat = new THREE.SpriteMaterial({ map: texture, transparent: true, opacity: 0.9, depthTest: false });
+             sprite = new THREE.Sprite(spriteMat);
             sprite.scale.set(150, 37.5, 1); sprite.position.set(x, y, z); sprite.renderOrder = 1; scene.add(sprite);
         }
 
         function createMapPin() {
-            const group = new THREE.Group();
-            const pinMat = new THREE.MeshBasicMaterial({ color: 0x0ea5e9 }); 
-            const sphere = new THREE.Mesh(new THREE.SphereGeometry(12, 32, 32), pinMat); sphere.position.y = 35; group.add(sphere);
-            const cone = new THREE.Mesh(new THREE.ConeGeometry(12, 20, 32), pinMat); cone.rotation.x = Math.PI; cone.position.y = 20; group.add(cone);
-            const dot = new THREE.Mesh(new THREE.SphereGeometry(5, 16, 16), new THREE.MeshBasicMaterial({ color: 0x020617 })); dot.position.set(0, 35, 10); group.add(dot);
-            const ring = new THREE.Mesh(new THREE.RingGeometry(0.1, 40, 32), new THREE.MeshBasicMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthTest: false }));
+             group = new THREE.Group();
+             pinMat = new THREE.MeshBasicMaterial({ color: 0x0ea5e9 }); 
+             sphere = new THREE.Mesh(new THREE.SphereGeometry(12, 32, 32), pinMat); sphere.position.y = 35; group.add(sphere);
+             cone = new THREE.Mesh(new THREE.ConeGeometry(12, 20, 32), pinMat); cone.rotation.x = Math.PI; cone.position.y = 20; group.add(cone);
+             dot = new THREE.Mesh(new THREE.SphereGeometry(5, 16, 16), new THREE.MeshBasicMaterial({ color: 0x020617 })); dot.position.set(0, 35, 10); group.add(dot);
+             ring = new THREE.Mesh(new THREE.RingGeometry(0.1, 40, 32), new THREE.MeshBasicMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthTest: false }));
             ring.rotation.x = -Math.PI / 2; ring.position.y = 1; group.add(ring);
             group.userData.ring = ring; return group;
         }
 
         window.toggleDrawer = function() {
-            const drawer = document.getElementById('tactical-drawer');
+             drawer = document.getElementById('tactical-drawer');
             if (isDrawerOpen) { drawer.classList.add('drawer-closed'); } 
             else { drawer.classList.remove('drawer-closed'); }
             isDrawerOpen = !isDrawerOpen;
@@ -557,7 +557,7 @@
             let clientY = event.clientY || (event.touches && event.touches[0].clientY);
             mouse.x = (clientX / window.innerWidth) * 2 - 1; mouse.y = -(clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObject(factoryFloor);
+             intersects = raycaster.intersectObject(factoryFloor);
             if (intersects.length > 0) {
                 let px = Math.round(intersects[0].point.x);
                 let pz = Math.round(intersects[0].point.z);
@@ -566,7 +566,7 @@
         }
 
         window.selectZoneFromDropdown = function() {
-            const val = document.getElementById('zone-selector').value;
+             val = document.getElementById('zone-selector').value;
             if(val === 'none') return;
             let coords = {x: 0, z: 0};
             switch(val) {
@@ -593,8 +593,8 @@
                 window.showToast("Đang quét vệ tinh...", "info");
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
+                         lat = position.coords.latitude;
+                         lng = position.coords.longitude;
                         let dx = (lng - ANCHOR_LNG) * 109000;
                         let dz = -(lat - ANCHOR_LAT) * 111000; 
                         if (Math.abs(dx) > 600 || Math.abs(dz) > 800) {
@@ -645,7 +645,7 @@
             gsapFlyCamera(px, 1200, pz + 600, px, 0, pz);
             evacuationLineGroup.clear(); 
             
-            const selector = document.getElementById('zone-selector');
+             selector = document.getElementById('zone-selector');
             selector.options[0].text = `📍 Tọa độ: ${zoneName}`;
             selector.value = 'none';
             selector.classList.replace('text-sky-400', 'text-white');
@@ -707,7 +707,7 @@
             let targetDoors = isEndLine ? EXIT_DOORS_END : EXIT_DOORS_CAN;
             let targetAssembly = isEndLine ? ASSEMBLY_END : ASSEMBLY_CAN;
 
-            const startP = new THREE.Vector3(currentPos.x, 5, currentPos.z);
+             startP = new THREE.Vector3(currentPos.x, 5, currentPos.z);
             
             // TÌM NODE GẦN NHẤT
             let nearestNodeName = Object.keys(targetGrid)[0]; let minDist = Infinity;
@@ -753,8 +753,8 @@
 
             // VẼ ĐƯỜNG
             function drawRoute(pathObj, colorHex, isPrimary) {
-                const nodes = pathObj.nodes;
-                const points = [startP]; 
+                 nodes = pathObj.nodes;
+                 points = [startP]; 
                 
                 let firstNode = targetGrid[nodes[0]];
                 if(Math.abs(startP.x - firstNode.x) > 1 && Math.abs(startP.z - firstNode.z) > 1) {
@@ -766,9 +766,9 @@
                     points.push(new THREE.Vector3(node.x, 5, node.z));
                 }
 
-                const geo = new THREE.BufferGeometry().setFromPoints(points);
-                const mat = new THREE.LineDashedMaterial({ color: colorHex, linewidth: isPrimary ? 8 : 4, scale: 1, dashSize: isPrimary ? 25 : 15, gapSize: 15, transparent: true, opacity: isPrimary ? 1 : 0.5 });
-                const line = new THREE.Line(geo, mat);
+                 geo = new THREE.BufferGeometry().setFromPoints(points);
+                 mat = new THREE.LineDashedMaterial({ color: colorHex, linewidth: isPrimary ? 8 : 4, scale: 1, dashSize: isPrimary ? 25 : 15, gapSize: 15, transparent: true, opacity: isPrimary ? 1 : 0.5 });
+                 line = new THREE.Line(geo, mat);
                 line.computeLineDistances(); 
                 if(isPrimary) line.userData.isEvacLine = true; 
                 
@@ -801,16 +801,16 @@
 
         function drawAlarmEffect(x, z, type) {
             let markerColor = type === 'Cháy Nổ' ? 0xff0000 : (type === 'Hóa Chất' ? 0xa855f7 : 0x3b82f6);
-            const beamGeo = new THREE.CylinderGeometry(15, 40, 800, 16);
-            const beamMat = new THREE.MeshBasicMaterial({ color: markerColor, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
-            const beam = new THREE.Mesh(beamGeo, beamMat);
+             beamGeo = new THREE.CylinderGeometry(15, 40, 800, 16);
+             beamMat = new THREE.MeshBasicMaterial({ color: markerColor, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
+             beam = new THREE.Mesh(beamGeo, beamMat);
             beam.position.set(x, 400, z); beam.userData.clock = Math.random() * 100;
             scene.add(beam); alarmMarkers.push(beam);
 
             document.getElementById('alarm-panel').classList.remove('hidden');
             document.getElementById('alarm-list').innerHTML = `<div class="bg-slate-800 border border-red-500 p-3 rounded-xl shadow-md"><h4 class="font-black text-sm text-red-400 animate-pulse"><i class="ph-bold ph-warning"></i> ${type.toUpperCase()}</h4><p class="text-[11px] text-slate-300 font-bold mt-1"><i class="ph-fill ph-map-pin text-red-500"></i> ${currentPos.zone}</p></div>`;
             
-            const sound = document.getElementById('alarm-sound');
+             sound = document.getElementById('alarm-sound');
             if(sound.paused) sound.play().catch(e => console.log('Audio blocked'));
             gsapFlyCamera(x, 800, z + 300, x, 0, z);
         }
@@ -818,15 +818,15 @@
         try {
             signInAnonymously(auth).then(() => {
                 onSnapshot(collection(db, "ehs_incidents"), (snapshot) => {
-                    const panel = document.getElementById('alarm-panel');
-                    const list = document.getElementById('alarm-list');
-                    const sound = document.getElementById('alarm-sound');
+                     panel = document.getElementById('alarm-panel');
+                     list = document.getElementById('alarm-list');
+                     sound = document.getElementById('alarm-sound');
                     
                     alarmMarkers.forEach(m => scene.remove(m)); alarmMarkers = [];
                     list.innerHTML = ''; let hasActiveAlarm = false;
 
                     snapshot.forEach(doc => {
-                        const data = doc.data(); if(data.status !== 'Active') return;
+                         data = doc.data(); if(data.status !== 'Active') return;
                         hasActiveAlarm = true;
 
                         let colorCls = data.type === 'Cháy Nổ' ? 'text-red-400 border-red-500' : (data.type === 'Hóa Chất' ? 'text-purple-400 border-purple-500' : 'text-blue-400 border-blue-500');
