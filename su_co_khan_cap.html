@@ -443,16 +443,16 @@
             createTextLabel("CỔNG CHÍNH", ox, 2, oz - 420, 0x94a3b8, 16);
                   
             // 2. KHO CHÍNH (Nằm dọc bên trái)
-            drawWireframeZone(150, 350, ox - 80, oz + 110, 0x8b5cf6, "KHO THÀNH PHẨM (CHÍNH)");
+            drawWireframeZone(150, 350, ox - 90, oz + 110, 0x8b5cf6, "KHO THÀNH PHẨM (CHÍNH)");
 
             // 3. KHO ĐÔNG (Nằm ngang phía trên, dưới Tập kết)
-            drawWireframeZone(250, 90, ox + 60, oz + 250, 0x8b5cf6, "KHO THÀNH PHẨM (PHỤ)");
+            drawWireframeZone(250, 90, ox + 25, oz + 265, 0x8b5cf6, "KHO THÀNH PHẨM (PHỤ)");
 
             // 4. PHÒNG LAB QC (Kẹp giữa Kho Đông và SX)
-            drawWireframeZone(30, 160, ox + 12, oz + 60, 0x0ea5e9, "PHÒNG LAB QC");
+            drawWireframeZone(30, 160, ox + 10, oz + 40, 0x0ea5e9, "PHÒNG LAB QC");
 
             // 5. KHU SẢN XUẤT (Dưới QC)
-            drawWireframeZone(160, 250, ox + 110, oz + 60, 0xef4444, "SX LINER & SHELL PRESS");
+            drawWireframeZone(140, 290, ox + 105, oz + 65, 0xef4444, "SX LINER & SHELL PRESS");
 
             // 6. DẢI TIỆN ÍCH (Dọc bên phải SX)
             drawWireframeZone(60, 80, ox + 130, oz - 40, 0x0ea5e9, "CANTEEN & BẾP");
@@ -463,7 +463,7 @@
             drawWireframeZone(250, 90, ox + 60, oz - 250, 0x334155, "NHÀ KHO TRỐNG");
 
             // 8. KHO NGUYÊN LIỆU (Nằm dọc lấp vào khoảng trống bên phải SX Liner)
-            drawWireframeZone(200, 50, ox + 110, oz - 110, 0xa8a29e, "KHO NGUYÊN LIỆU");
+            drawWireframeZone(200, 50, ox + 105, oz - 110, 0xa8a29e, "KHO NGUYÊN LIỆU");
 
             EXIT_DOORS_END.forEach(door => {
                  let box = new THREE.Mesh(new THREE.BoxGeometry(15, 15, 15), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 }));
