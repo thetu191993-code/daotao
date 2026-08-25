@@ -53,6 +53,7 @@
                             <div><label class="text-xs">IBO LPG (kg)</label><input type="number" id="s1_ibo" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
                             <div><label class="text-xs">Boiler LPG (kg)</label><input type="number" id="s1_boiler" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
                             <div><label class="text-xs">Gas R410A (kg)</label><input type="number" id="s1_r410a" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
+                            <div><label class="text-xs">Gas R22 (kg)</label><input type="number" id="s1_r22" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
                             <div><label class="text-xs">Gas R32 (kg)</label><input type="number" id="s1_r32" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
                         </div>
                     </div>
@@ -168,21 +169,21 @@
         // 4. Hàm đẩy dữ liệu lên Firestore
         async function submitData() {
             const ghgData = {
-                period: document.getElementById('period').value,
-                factory_zone: document.getElementById('factory_zone').value,
+                period: document.getElementById('period')?.value,
+                factory_zone: document.getElementById('factory_zone')?.value,
                 
-                s1_washer_lpg: Number(document.getElementById('s1_washer').value) || 0,
-                s1_pinoven_lpg: Number(document.getElementById('s1_pinoven').value) || 0,
-                s1_ibo_lpg: Number(document.getElementById('s1_ibo').value) || 0,
-                s1_boiler_lpg: Number(document.getElementById('s1_boiler').value) || 0,
+                s1_washer_lpg: Number(document.getElementById('s1_washer')?.value) || 0,
+                s1_pinoven_lpg: Number(document.getElementById('s1_pinoven')?.value) || 0,
+                s1_ibo_lpg: Number(document.getElementById('s1_ibo')?.value) || 0,
+                s1_boiler_lpg: Number(document.getElementById('s1_boiler')?.value) || 0,
                 
-                s1_r410a: Number(document.getElementById('s1_r410a').value) || 0,
-                s1_r22: Number(document.getElementById('s1_r22').value) || 0,
-                s1_r32: Number(document.getElementById('s1_r32').value) || 0,
+                s1_r410a: Number(document.getElementById('s1_r410a')?.value) || 0,
+                s1_r22: Number(document.getElementById('s1_r22')?.value) || 0,
+                s1_r32: Number(document.getElementById('s1_r32')?.value) || 0,
                 
-                scope2_elec: Number(document.getElementById('scope2_elec').value) || 0,
-                scope3_water: Number(document.getElementById('scope3_water').value) || 0,
-                scope3_waste: Number(document.getElementById('scope3_waste').value) || 0,
+                scope2_elec: Number(document.getElementById('scope2_elec')?.value) || 0,
+                scope3_water: Number(document.getElementById('scope3_water')?.value) || 0,
+                scope3_waste: Number(document.getElementById('scope3_waste')?.value) || 0,
                 
                 status: "pending",
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
