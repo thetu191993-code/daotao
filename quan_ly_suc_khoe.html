@@ -133,11 +133,12 @@
                     </div>
                 </div>
 
-                <!-- THANH TÌM KIẾM & BỘ LỌC -->
+                <!-- THANH TÌM KIẾM & BỘ LỌC ĐÃ SỬA LỖI -->
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row gap-4 justify-between items-center z-20 relative">
                     <div class="relative w-full lg:w-1/3">
                         <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
-                        <input type="text" id="search-input" onkeyup="window.filterTable()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-2.5 text-sm font-bold outline-none focus:border-rose-500 focus:bg-white transition" placeholder="Tìm tên nhân viên, Mã NV, Bộ phận...">
+                        <!-- Đổi onkeyup thành oninput và gọi debouncedFilter để chống giật lag -->
+                        <input type="text" id="search-input" oninput="window.debouncedFilter()" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-2.5 text-sm font-bold outline-none focus:border-rose-500 focus:bg-white transition" placeholder="Tìm tên nhân viên, Mã NV, Bộ phận...">
                     </div>
                     
                     <div class="flex flex-wrap gap-2 w-full lg:w-auto justify-end items-center">
@@ -309,7 +310,6 @@
                             </select>
                         </div>
                     </div>
-                    <!-- Chuyên khoa -->
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Thể lực</label><input type="text" id="m-tl" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nội</label><input type="text" id="m-noi" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
                     <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ngoại</label><input type="text" id="m-ngoai" class="w-full border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-rose-500 text-xs font-medium text-center"></div>
@@ -373,6 +373,26 @@
         window.currentMissingList = []; // Chứa danh sách những người chưa khám
         let myChart = null;
         let deleteAction = null; 
+        let searchTimeout = null; // Biến dùng cho tính năng chống giật lag tìm kiếm
+
+        // HÀM CHUẨN HÓA MÃ NV (Xử lý vụ Excel nuốt mất số 0 ở đầu)
+        function normalizeEmpId(id) {
+            if (!id) return "";
+            let s = String(id).trim().toUpperCase();
+            // Nếu là chuỗi số có số 0 ở đầu (VD: "001", "030"), gọt số 0 đi để thành "1", "30"
+            if (/^0+\d+$/.test(s)) {
+                s = s.replace(/^0+/, '');
+            }
+            return s;
+        }
+
+        // HÀM CHỐNG GIẬT LAG TÌM KIẾM (DEBOUNCE)
+        window.debouncedFilter = function() {
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                window.filterTable();
+            }, 400); // Chờ người dùng ngừng gõ 400ms mới chạy lệnh lọc
+        };
 
         // =====================================
         // TIỆN ÍCH CHUNG
@@ -462,9 +482,11 @@
                 hrSnap.forEach(doc => {
                     const d = doc.data();
                     if(d.ma_nv && d.ho_ten) {
-                        window.allHRData[d.ma_nv.toString().trim().toUpperCase()] = {
+                        let normId = normalizeEmpId(d.ma_nv); // Chuẩn hóa mã
+                        window.allHRData[normId] = {
                             ho_ten: d.ho_ten || 'Không rõ',
-                            bo_phan: d.bo_phan || 'Không có bộ phận'
+                            bo_phan: d.bo_phan || 'Không có bộ phận',
+                            original_id: d.ma_nv // Giữ lại mã gốc có số 0 để in ra màn hình
                         };
                     }
                 });
@@ -476,14 +498,21 @@
 
                 skSnap.forEach(doc => {
                     const d = doc.data();
-                    let mnv = d.ma_nv ? d.ma_nv.toString().trim().toUpperCase() : '';
-                    let hrInfo = window.allHRData[mnv] || { ho_ten: d.ho_ten || 'Ngoại lai / Lỗi mã', bo_phan: '-' };
+                    let rawMnv = d.ma_nv ? d.ma_nv.toString().trim().toUpperCase() : '';
+                    let normId = normalizeEmpId(rawMnv); // Chuẩn hóa mã từ dữ liệu khám
+                    
+                    // So sánh ngầm bằng mã đã gọt số 0
+                    let hrInfo = window.allHRData[normId] || { ho_ten: d.ho_ten || 'Ngoại lai / Lỗi mã', bo_phan: '-', original_id: rawMnv };
                     
                     if(d.ngay_kham) datesSet.add(d.ngay_kham);
                     const ck = d.chuyen_khoa || {};
 
                     window.allHealthData.push({
-                        id: doc.id, ma_nv: mnv, ho_ten: hrInfo.ho_ten, bo_phan: hrInfo.bo_phan,
+                        id: doc.id, 
+                        ma_nv: hrInfo.original_id || rawMnv, // Ưu tiên in ra mã gốc có số 0 từ database HR
+                        norm_id: normId, // Mã dùng để tính toán thuật toán
+                        ho_ten: hrInfo.ho_ten, 
+                        bo_phan: hrInfo.bo_phan,
                         ngay_kham: d.ngay_kham || '', 
                         phan_loai: normalizeTypeExact(d.phan_loai),
                         ghi_chu: d.ghi_chu || '',
@@ -608,9 +637,9 @@
             
             // Lọc Data cho Bảng Thống kê & Ma trận
             dataArray.forEach(d => {
-                if (d.ma_nv) {
-                    uniqueEmpInFilter.add(d.ma_nv);
-                    examinedIds.add(d.ma_nv);
+                if (d.norm_id) { // Thay vì d.ma_nv, ta dùng mã chuẩn hóa norm_id
+                    uniqueEmpInFilter.add(d.norm_id);
+                    examinedIds.add(d.norm_id);
                 }
                 let loai = d.phan_loai;
                 
@@ -623,17 +652,17 @@
                 });
             });
 
-            // TÍNH NGƯỜI CHƯA KHÁM (So sánh Mã NV trong HR Nội bộ với Mã NV đã khám trong đợt này)
+            // TÍNH NGƯỜI CHƯA KHÁM (So sánh Mã NV chuẩn hóa trong HR với Mã chuẩn hóa đã khám)
             let totalHRCount = Object.keys(window.allHRData).length;
             let examinedCount = uniqueEmpInFilter.size;
             
-            window.currentMissingList = []; // Reset danh sách
-            for(let mnv in window.allHRData) {
-                if(!examinedIds.has(mnv)) {
+            window.currentMissingList = []; 
+            for(let normMnv in window.allHRData) {
+                if(!examinedIds.has(normMnv)) {
                     window.currentMissingList.push({
-                        ma_nv: mnv,
-                        ho_ten: window.allHRData[mnv].ho_ten,
-                        bo_phan: window.allHRData[mnv].bo_phan
+                        ma_nv: window.allHRData[normMnv].original_id, // Lấy lại mã gốc có số 0 để in ra danh sách
+                        ho_ten: window.allHRData[normMnv].ho_ten,
+                        bo_phan: window.allHRData[normMnv].bo_phan
                     });
                 }
             }
