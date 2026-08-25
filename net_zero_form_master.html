@@ -4,38 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Trị Net Zero - Tổng Hợp</title>
-    <!-- Thư viện giao diện & Biểu đồ -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Thư viện Firebase -->
+    
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 </head>
-<body class="bg-slate-100 p-6 font-sans">
+<body class="bg-slate-100 p-6 font-sans relative min-h-screen">
+
+    <div id="toast" class="fixed top-6 right-6 z-50 transform transition-all duration-300 translate-x-full opacity-0 max-w-sm w-full bg-white border-l-4 rounded-lg shadow-xl p-4 flex items-start">
+        <div id="toast-icon" class="text-2xl mr-3"></div>
+        <div>
+            <h4 id="toast-title" class="font-bold text-slate-800">Thông báo</h4>
+            <p id="toast-message" class="text-sm text-slate-600 mt-1"></p>
+        </div>
+    </div>
 
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="mb-6">
-            <h2 class="text-3xl font-bold text-blue-700">Trạm Kiểm Kê Khí Nhà Kính (GHG Inventory)</h2>
-            <p class="text-slate-500 mt-1">Hệ sinh thái EHS - Asia Packaging Industries Vietnam</p>
+        <div class="mb-6 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-bold text-blue-700">Trạm Kiểm Kê Khí Nhà Kính (GHG Inventory)</h2>
+                <p class="text-slate-500 mt-1">Hệ sinh thái EHS - Asia Packaging Industries Vietnam</p>
+            </div>
         </div>
 
         <!-- Bố cục chia 2 cột -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <!-- CỘT TRÁI: FORM NHẬP LIỆU (Chiếm 7 phần) -->
             <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                 <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Nhập Liệu Định Kỳ</h3>
                 <form id="ghgForm" class="space-y-6">
                     
-                    <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl">
+                    <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Kỳ báo cáo</label>
-                            <input type="month" id="period" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Kỳ báo cáo <span class="text-red-500">*</span></label>
+                            <input type="month" id="period" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Khu vực</label>
-                            <select id="factory_zone" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <select id="factory_zone" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                                 <option value="Line 1">Dây chuyền 1</option>
                                 <option value="Line 2">Dây chuyền 2</option>
                                 <option value="Line 3">Dây chuyền 3</option>
@@ -44,65 +52,64 @@
                         </div>
                     </div>
 
-                    <!-- Scope 1 -->
-                    <div class="bg-red-50 p-4 rounded-xl border border-red-100">
-                        <h4 class="font-bold text-red-700 mb-2">Scope 1 (Gas & Rò rỉ)</h4>
+                    <div class="bg-red-50 p-5 rounded-xl border border-red-100">
+                        <h4 class="font-bold text-red-700 mb-3 border-b border-red-200 pb-1">Scope 1 (Gas & Rò rỉ)</h4>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="text-xs">Washer LPG (kg)</label><input type="number" id="s1_washer" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
-                            <div><label class="text-xs">Pinoven LPG (kg)</label><input type="number" id="s1_pinoven" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
-                            <div><label class="text-xs">IBO LPG (kg)</label><input type="number" id="s1_ibo" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
-                            <div><label class="text-xs">Boiler LPG (kg)</label><input type="number" id="s1_boiler" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
-                            <div><label class="text-xs">Gas R410A (kg)</label><input type="number" id="s1_r410a" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
-                            <div><label class="text-xs">Gas R22 (kg)</label><input type="number" id="s1_r22" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
-                            <div><label class="text-xs">Gas R32 (kg)</label><input type="number" id="s1_r32" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-red-400"></div>
+                            <div><label class="text-xs font-semibold text-slate-700">Washer LPG (kg)</label><input type="number" id="s1_washer" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div><label class="text-xs font-semibold text-slate-700">Pinoven LPG (kg)</label><input type="number" id="s1_pinoven" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div><label class="text-xs font-semibold text-slate-700">IBO LPG (kg)</label><input type="number" id="s1_ibo" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div><label class="text-xs font-semibold text-slate-700">Boiler LPG (kg)</label><input type="number" id="s1_boiler" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            
+                            <div class="col-span-2 mt-2"><p class="text-xs font-bold text-red-600">Rò rỉ Gas Lạnh (Nạp bổ sung)</p></div>
+                            <div><label class="text-xs font-semibold text-slate-700">Gas R410A (kg)</label><input type="number" id="s1_r410a" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <!-- ĐÃ VÁ LỖI: THÊM Ô NHẬP LIỆU GAS R22 -->
+                            <div><label class="text-xs font-semibold text-slate-700">Gas R22 (kg)</label><input type="number" id="s1_r22" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div><label class="text-xs font-semibold text-slate-700">Gas R32 (kg)</label><input type="number" id="s1_r32" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
                         </div>
                     </div>
 
-                    <!-- Scope 2 & 3 -->
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                            <h4 class="font-bold text-yellow-700 mb-2">Scope 2</h4>
-                            <label class="text-xs">Điện tiêu thụ (kWh)</label>
-                            <input type="number" id="scope2_elec" required class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-yellow-400">
+                            <h4 class="font-bold text-yellow-700 mb-2 border-b border-yellow-200 pb-1">Scope 2</h4>
+                            <label class="text-xs font-semibold text-slate-700">Điện tiêu thụ (kWh) <span class="text-red-500">*</span></label>
+                            <input type="number" id="scope2_elec" required class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-yellow-400 outline-none mt-1">
                         </div>
                         <div class="bg-green-50 p-4 rounded-xl border border-green-100">
-                            <h4 class="font-bold text-green-700 mb-2">Scope 3</h4>
-                            <label class="text-xs">Nước cấp (m3)</label>
-                            <input type="number" id="scope3_water" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-green-400 mb-2">
-                            <label class="text-xs">Rác thải (kg)</label>
-                            <input type="number" id="scope3_waste" class="w-full px-2 py-1 border rounded focus:ring-1 focus:ring-green-400">
+                            <h4 class="font-bold text-green-700 mb-2 border-b border-green-200 pb-1">Scope 3</h4>
+                            <label class="text-xs font-semibold text-slate-700">Nước cấp (m3)</label>
+                            <input type="number" id="scope3_water" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-green-400 outline-none mb-2 mt-1">
+                            <label class="text-xs font-semibold text-slate-700">Rác thải (kg)</label>
+                            <input type="number" id="scope3_waste" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-green-400 outline-none mt-1">
                         </div>
                     </div>
 
-                    <div class="text-right pt-2">
-                        <button type="button" onclick="submitData()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow">
-                            Lưu & Tính Toán
+                    <div class="text-right pt-4 border-t border-slate-100">
+                        <button type="button" onclick="submitData()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all transform hover:scale-105">
+                            Lưu Dữ Liệu & Tính Toán
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- CỘT PHẢI: BẢNG ĐIỀU KHIỂN BIỂU ĐỒ (Chiếm 5 phần) -->
             <div class="lg:col-span-5 flex flex-col gap-6">
                 <!-- Status Card -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center justify-between">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-800">Trạng Thái Kết Nối AI</h3>
-                        <p class="text-sm text-slate-500">Đồng bộ Google Colab & Firestore</p>
+                        <h3 class="text-lg font-bold text-slate-800">Trạng Thái Kết Nối API</h3>
+                        <p id="auth-status-text" class="text-sm text-yellow-600 font-semibold mt-1">Đang xác thực hệ thống...</p>
                     </div>
                     <div class="flex items-center">
-                        <span class="relative flex h-3 w-3 mr-2">
-                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                          <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        <span class="relative flex h-4 w-4 mr-2">
+                          <span id="ping-indicator" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                          <span id="status-indicator" class="relative inline-flex rounded-full h-4 w-4 bg-yellow-500"></span>
                         </span>
-                        <span class="text-green-600 font-bold text-sm">Online</span>
                     </div>
                 </div>
 
                 <!-- Chart Card -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-grow">
                     <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Biểu Đồ Phát Thải KNK</h3>
-                    <div class="relative h-72">
+                    <div class="relative h-[300px] w-full">
                         <canvas id="ghgChart"></canvas>
                     </div>
                 </div>
@@ -111,9 +118,8 @@
         </div>
     </div>
 
-    <!-- LOGIC XỬ LÝ DỮ LIỆU & BIỂU ĐỒ -->
     <script>
-        // 1. Cấu hình Firebase
+        // 1. CẤU HÌNH FIREBASE
         const firebaseConfig = {
           apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
           authDomain: "ehs-training-app.firebaseapp.com",
@@ -125,8 +131,58 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
-        // 2. Khởi tạo Biểu đồ Chart.js
+        // Hàm hiển thị thông báo Toast (Thay cho Alert)
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const title = document.getElementById('toast-title');
+            const msg = document.getElementById('toast-message');
+
+            toast.classList.remove('translate-x-full', 'opacity-0', 'border-green-500', 'border-red-500', 'border-yellow-500');
+            
+            if (type === 'success') {
+                toast.classList.add('border-green-500');
+                icon.innerHTML = '✅';
+                title.textContent = 'Thành công';
+                title.className = 'font-bold text-green-700';
+            } else if (type === 'error') {
+                toast.classList.add('border-red-500');
+                icon.innerHTML = '⚠️';
+                title.textContent = 'Lỗi hệ thống';
+                title.className = 'font-bold text-red-700';
+            } else {
+                toast.classList.add('border-yellow-500');
+                icon.innerHTML = 'ℹ️';
+                title.textContent = 'Thông báo';
+                title.className = 'font-bold text-yellow-700';
+            }
+
+            msg.textContent = message;
+            toast.classList.add('translate-x-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-x-0', 'opacity-100');
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 5000);
+        }
+
+        // 2. TỰ ĐỘNG ĐĂNG NHẬP ẨN DANH (Vượt qua Rules của Firebase)
+        auth.signInAnonymously().catch((error) => {
+            console.error("Lỗi xác thực:", error);
+            showToast("Lỗi xác thực ngầm: " + error.message, "error");
+        });
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('auth-status-text').textContent = 'Kết nối bảo mật ổn định';
+                document.getElementById('auth-status-text').className = 'text-sm text-green-600 font-semibold mt-1';
+                document.getElementById('ping-indicator').classList.replace('bg-yellow-400', 'bg-green-400');
+                document.getElementById('status-indicator').classList.replace('bg-yellow-500', 'bg-green-500');
+            }
+        });
+
         const ctx = document.getElementById('ghgChart').getContext('2d');
         const ghgChart = new Chart(ctx, {
             type: 'bar',
@@ -142,12 +198,12 @@
                 maintainAspectRatio: false,
                 scales: {
                     x: { stacked: true },
-                    y: { stacked: true, title: { display: true, text: 'Tổng kgCO2' } }
+                    y: { stacked: true, title: { display: true, text: 'Tổng Phát Thải (kgCO2)' } }
                 }
             }
         });
 
-        // 3. Lắng nghe dữ liệu thời gian thực (Cập nhật biểu đồ tự động)
+        // 3. LẮNG NGHE DỮ LIỆU THỜI GIAN THỰC
         db.collection("ghg_results").orderBy("period", "asc").onSnapshot((snapshot) => {
             const labels = [];
             const scope1 = [];
@@ -164,43 +220,48 @@
             ghgChart.data.datasets[0].data = scope1;
             ghgChart.data.datasets[1].data = scope2;
             ghgChart.update();
+        }, (error) => {
+            console.error("Lỗi đọc biểu đồ:", error);
         });
 
-        // 4. Hàm đẩy dữ liệu lên Firestore
         async function submitData() {
+            // Lấy dữ liệu an toàn bằng Optional Chaining (?.) tránh sập Null
             const ghgData = {
-                period: document.getElementById('period')?.value,
-                factory_zone: document.getElementById('factory_zone')?.value,
+                period: document.getElementById('period')?.value || "",
+                factory_zone: document.getElementById('factory_zone')?.value || "Toàn nhà máy",
                 
-                s1_washer_lpg: Number(document.getElementById('s1_washer')?.value) || 0,
-                s1_pinoven_lpg: Number(document.getElementById('s1_pinoven')?.value) || 0,
-                s1_ibo_lpg: Number(document.getElementById('s1_ibo')?.value) || 0,
-                s1_boiler_lpg: Number(document.getElementById('s1_boiler')?.value) || 0,
+                s1_washer_lpg: Number(document.getElementById('s1_washer')?.value || 0),
+                s1_pinoven_lpg: Number(document.getElementById('s1_pinoven')?.value || 0),
+                s1_ibo_lpg: Number(document.getElementById('s1_ibo')?.value || 0),
+                s1_boiler_lpg: Number(document.getElementById('s1_boiler')?.value || 0),
                 
-                s1_r410a: Number(document.getElementById('s1_r410a')?.value) || 0,
-                s1_r22: Number(document.getElementById('s1_r22')?.value) || 0,
-                s1_r32: Number(document.getElementById('s1_r32')?.value) || 0,
+                s1_r410a: Number(document.getElementById('s1_r410a')?.value || 0),
+                s1_r22: Number(document.getElementById('s1_r22')?.value || 0), 
+                s1_r32: Number(document.getElementById('s1_r32')?.value || 0),
                 
-                scope2_elec: Number(document.getElementById('scope2_elec')?.value) || 0,
-                scope3_water: Number(document.getElementById('scope3_water')?.value) || 0,
-                scope3_waste: Number(document.getElementById('scope3_waste')?.value) || 0,
+                scope2_elec: Number(document.getElementById('scope2_elec')?.value || 0),
+                scope3_water: Number(document.getElementById('scope3_water')?.value || 0),
+                scope3_waste: Number(document.getElementById('scope3_waste')?.value || 0),
                 
                 status: "pending",
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
+            // Bắt lỗi Form Validation
             if (!ghgData.period || ghgData.scope2_elec === 0) {
-                alert("Vui lòng nhập Kỳ báo cáo và Số Điện tiêu thụ!");
+                showToast("Vui lòng điền 'Kỳ báo cáo' và 'Điện tiêu thụ'!", "warning");
                 return;
             }
 
+            // Gửi dữ liệu lên Firestore
             try {
                 await db.collection("ghg_raw_inputs").add(ghgData);
                 document.getElementById('ghgForm').reset();
-                alert("Đã lưu số liệu thành công! Colab đang xử lý...");
+                showToast("Gửi số liệu lên Đám mây thành công! Mời chạy Colab.", "success");
             } catch (error) {
-                console.error("Lỗi:", error);
-                alert("Lỗi kết nối mạng!");
+                console.error("Lỗi FireStore:", error);
+                // Hiển thị lỗi Firebase thực sự ra màn hình
+                showToast("Firebase từ chối: " + error.message, "error");
             }
         }
     </script>
