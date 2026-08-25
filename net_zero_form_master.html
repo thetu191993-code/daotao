@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Trị Net Zero - Tổng Hợp</title>
+    <!-- Thư viện giao diện & Biểu đồ -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <!-- Thư viện xuất Excel (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Thư viện Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -29,11 +32,10 @@
             </div>
         </div>
 
-        <!-- Bố cục chia 2 cột -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             
             <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Nhập Liệu Định Kỳ</h3>
+                <h3 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Nhập Liệu Định Kỳ (Chờ AI Xử Lý)</h3>
                 <form id="ghgForm" class="space-y-6">
                     
                     <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
@@ -42,11 +44,10 @@
                             <input type="month" id="period" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Khu vực</label>
-                            <select id="factory_zone" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
-                                <option value="Line 1">Dây chuyền 1</option>
-                                <option value="Line 2">Dây chuyền 2</option>
-                                <option value="Line 3">Dây chuyền 3</option>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Khu vực <span class="text-red-500">*</span></label>
+                            <select id="factory_zone" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer">
+                                <option value="Nhà máy Can (Can Plant)">Nhà máy Can (Can Plant)</option>
+                                <option value="Nhà máy End (End Plant)">Nhà máy End (End Plant)</option>
                                 <option value="Toàn nhà máy">Toàn nhà máy</option>
                             </select>
                         </div>
@@ -62,7 +63,6 @@
                             
                             <div class="col-span-2 mt-2"><p class="text-xs font-bold text-red-600">Rò rỉ Gas Lạnh (Nạp bổ sung)</p></div>
                             <div><label class="text-xs font-semibold text-slate-700">Gas R410A (kg)</label><input type="number" id="s1_r410a" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            <!-- ĐÃ VÁ LỖI: THÊM Ô NHẬP LIỆU GAS R22 -->
                             <div><label class="text-xs font-semibold text-slate-700">Gas R22 (kg)</label><input type="number" id="s1_r22" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
                             <div><label class="text-xs font-semibold text-slate-700">Gas R32 (kg)</label><input type="number" id="s1_r32" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
                         </div>
@@ -84,8 +84,9 @@
                     </div>
 
                     <div class="text-right pt-4 border-t border-slate-100">
-                        <button type="button" onclick="submitData()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all transform hover:scale-105">
-                            Lưu Dữ Liệu & Tính Toán
+                        <button type="button" onclick="submitDataForColab()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all transform hover:scale-105 flex items-center justify-end w-full sm:w-auto ml-auto gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                            Gửi Dữ Liệu Lên Đám Mây
                         </button>
                     </div>
                 </form>
@@ -95,8 +96,8 @@
                 <!-- Status Card -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center justify-between">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-800">Trạng Thái Kết Nối API</h3>
-                        <p id="auth-status-text" class="text-sm text-yellow-600 font-semibold mt-1">Đang xác thực hệ thống...</p>
+                        <h3 class="text-lg font-bold text-slate-800">Trạng Thái Xử Lý AI/Colab</h3>
+                        <p id="auth-status-text" class="text-sm text-yellow-600 font-semibold mt-1">Đang thiết lập kết nối đám mây...</p>
                     </div>
                     <div class="flex items-center">
                         <span class="relative flex h-4 w-4 mr-2">
@@ -106,10 +107,24 @@
                     </div>
                 </div>
 
-                <!-- Chart Card -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-grow">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Biểu Đồ Phát Thải KNK</h3>
-                    <div class="relative h-[300px] w-full">
+                <!-- Chart Card with Export Buttons -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-grow flex flex-col">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 border-b pb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Biểu Đồ Phát Thải KNK</h3>
+                        <div class="flex gap-2">
+                            <!-- Nút Tải Ảnh -->
+                            <button onclick="exportChartImage()" class="bg-indigo-100 hover:bg-indigo-600 text-indigo-700 hover:text-white font-bold py-1.5 px-3 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                Tải Ảnh
+                            </button>
+                            <!-- Nút Xuất Excel -->
+                            <button onclick="exportToExcel()" class="bg-emerald-100 hover:bg-emerald-600 text-emerald-700 hover:text-white font-bold py-1.5 px-3 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                Xuất Excel
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative flex-grow min-h-[350px] w-full bg-white rounded-xl">
                         <canvas id="ghgChart"></canvas>
                     </div>
                 </div>
@@ -119,7 +134,7 @@
     </div>
 
     <script>
-        // 1. CẤU HÌNH FIREBASE
+        // 1. CẤU HÌNH BẢO MẬT FIREBASE
         const firebaseConfig = {
           apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
           authDomain: "ehs-training-app.firebaseapp.com",
@@ -133,7 +148,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Hàm hiển thị thông báo Toast (Thay cho Alert)
+        // 2. HỆ THỐNG THÔNG BÁO TOAST THÔNG MINH
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -144,19 +159,13 @@
             
             if (type === 'success') {
                 toast.classList.add('border-green-500');
-                icon.innerHTML = '✅';
-                title.textContent = 'Thành công';
-                title.className = 'font-bold text-green-700';
+                icon.innerHTML = '✅'; title.textContent = 'Thành công'; title.className = 'font-bold text-green-700';
             } else if (type === 'error') {
                 toast.classList.add('border-red-500');
-                icon.innerHTML = '⚠️';
-                title.textContent = 'Lỗi hệ thống';
-                title.className = 'font-bold text-red-700';
+                icon.innerHTML = '⚠️'; title.textContent = 'Lỗi hệ thống'; title.className = 'font-bold text-red-700';
             } else {
                 toast.classList.add('border-yellow-500');
-                icon.innerHTML = 'ℹ️';
-                title.textContent = 'Thông báo';
-                title.className = 'font-bold text-yellow-700';
+                icon.innerHTML = 'ℹ️'; title.textContent = 'Thông báo'; title.className = 'font-bold text-yellow-700';
             }
 
             msg.textContent = message;
@@ -168,20 +177,33 @@
             }, 5000);
         }
 
-        // 2. TỰ ĐỘNG ĐĂNG NHẬP ẨN DANH (Vượt qua Rules của Firebase)
+        // 3. ĐĂNG NHẬP ẨN DANH (Vượt tường lửa tự động)
         auth.signInAnonymously().catch((error) => {
             console.error("Lỗi xác thực:", error);
-            showToast("Lỗi xác thực ngầm: " + error.message, "error");
+            showToast("Firebase: " + error.message, "error");
         });
 
         auth.onAuthStateChanged((user) => {
             if (user) {
-                document.getElementById('auth-status-text').textContent = 'Kết nối bảo mật ổn định';
+                document.getElementById('auth-status-text').textContent = 'Kết nối bảo mật ổn định - Sẵn sàng gửi Colab';
                 document.getElementById('auth-status-text').className = 'text-sm text-green-600 font-semibold mt-1';
                 document.getElementById('ping-indicator').classList.replace('bg-yellow-400', 'bg-green-400');
                 document.getElementById('status-indicator').classList.replace('bg-yellow-500', 'bg-green-500');
             }
         });
+
+        // Plugin lót nền màu trắng cho biểu đồ (Để khi tải ảnh PNG không bị nền đen)
+        const customCanvasBackgroundColor = {
+            id: 'customCanvasBackgroundColor',
+            beforeDraw: (chart, args, options) => {
+                const {ctx} = chart;
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = options.color || '#ffffff';
+                ctx.fillRect(0, 0, chart.width, chart.height);
+                ctx.restore();
+            }
+        };
 
         const ctx = document.getElementById('ghgChart').getContext('2d');
         const ghgChart = new Chart(ctx, {
@@ -189,79 +211,137 @@
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Scope 1 (Gas) - kgCO2', backgroundColor: '#ef4444', data: [] },
-                    { label: 'Scope 2 (Điện) - kgCO2', backgroundColor: '#eab308', data: [] }
+                    { label: 'Scope 1 (Gas & Rò rỉ) - kgCO2', backgroundColor: '#ef4444', data: [], borderRadius: 4 },
+                    { label: 'Scope 2 (Điện năng) - kgCO2', backgroundColor: '#eab308', data: [], borderRadius: 4 }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false,
+                plugins: { 
+                    legend: { position: 'top', labels: { font: { family: 'Inter', weight: 'bold' } } },
+                    customCanvasBackgroundColor: { color: 'white' } // Kích hoạt nền trắng
+                },
                 scales: {
-                    x: { stacked: true },
-                    y: { stacked: true, title: { display: true, text: 'Tổng Phát Thải (kgCO2)' } }
+                    x: { stacked: true, grid: { display: false } },
+                    y: { stacked: true, title: { display: true, text: 'Lượng Phát Thải (kgCO2e)', font: { weight: 'bold' } } }
                 }
-            }
+            },
+            plugins: [customCanvasBackgroundColor]
         });
 
-        // 3. LẮNG NGHE DỮ LIỆU THỜI GIAN THỰC
+        // Lắng nghe kết quả ĐÃ TÍNH TOÁN từ thư mục ghg_results (Do Colab trả về)
         db.collection("ghg_results").orderBy("period", "asc").onSnapshot((snapshot) => {
-            const labels = [];
-            const scope1 = [];
-            const scope2 = [];
-
+            const labels = []; const scope1 = []; const scope2 = [];
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                labels.push(data.period);
+                labels.push(`${data.period} (${data.factory_zone === 'Toàn nhà máy' ? 'Tổng' : data.factory_zone.split(' ')[2]})`);
                 scope1.push(data.scope1_co2_kg);
                 scope2.push(data.scope2_co2_kg);
             });
-
             ghgChart.data.labels = labels;
             ghgChart.data.datasets[0].data = scope1;
             ghgChart.data.datasets[1].data = scope2;
             ghgChart.update();
         }, (error) => {
-            console.error("Lỗi đọc biểu đồ:", error);
+            console.error("Lỗi đọc Database:", error);
         });
 
-        async function submitData() {
-            // Lấy dữ liệu an toàn bằng Optional Chaining (?.) tránh sập Null
-            const ghgData = {
-                period: document.getElementById('period')?.value || "",
-                factory_zone: document.getElementById('factory_zone')?.value || "Toàn nhà máy",
-                
-                s1_washer_lpg: Number(document.getElementById('s1_washer')?.value || 0),
-                s1_pinoven_lpg: Number(document.getElementById('s1_pinoven')?.value || 0),
-                s1_ibo_lpg: Number(document.getElementById('s1_ibo')?.value || 0),
-                s1_boiler_lpg: Number(document.getElementById('s1_boiler')?.value || 0),
-                
-                s1_r410a: Number(document.getElementById('s1_r410a')?.value || 0),
-                s1_r22: Number(document.getElementById('s1_r22')?.value || 0), 
-                s1_r32: Number(document.getElementById('s1_r32')?.value || 0),
-                
-                scope2_elec: Number(document.getElementById('scope2_elec')?.value || 0),
-                scope3_water: Number(document.getElementById('scope3_water')?.value || 0),
-                scope3_waste: Number(document.getElementById('scope3_waste')?.value || 0),
-                
+        // Hàm Gửi Dữ Liệu THÔ lên mây chờ Colab tính
+        async function submitDataForColab() {
+            const period = document.getElementById('period')?.value;
+            const factory_zone = document.getElementById('factory_zone')?.value;
+            const scope2_elec = Number(document.getElementById('scope2_elec')?.value) || 0;
+
+            if (!period || scope2_elec === 0) {
+                showToast("Vui lòng điền 'Kỳ báo cáo' và số 'Điện tiêu thụ'!", "warning");
+                return;
+            }
+
+            // Đóng gói dữ liệu nguyên thủy
+            const rawData = {
+                period: period,
+                factory_zone: factory_zone,
+                s1_washer: Number(document.getElementById('s1_washer')?.value) || 0,
+                s1_pinoven: Number(document.getElementById('s1_pinoven')?.value) || 0,
+                s1_ibo: Number(document.getElementById('s1_ibo')?.value) || 0,
+                s1_boiler: Number(document.getElementById('s1_boiler')?.value) || 0,
+                s1_r410a: Number(document.getElementById('s1_r410a')?.value) || 0,
+                s1_r22: Number(document.getElementById('s1_r22')?.value) || 0,
+                s1_r32: Number(document.getElementById('s1_r32')?.value) || 0,
+                scope2_elec: scope2_elec,
+                scope3_water: Number(document.getElementById('scope3_water')?.value) || 0,
+                scope3_waste: Number(document.getElementById('scope3_waste')?.value) || 0,
                 status: "pending",
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            // Bắt lỗi Form Validation
-            if (!ghgData.period || ghgData.scope2_elec === 0) {
-                showToast("Vui lòng điền 'Kỳ báo cáo' và 'Điện tiêu thụ'!", "warning");
-                return;
-            }
-
-            // Gửi dữ liệu lên Firestore
             try {
-                await db.collection("ghg_raw_inputs").add(ghgData);
+                // Đẩy vào bảng ghg_raw_inputs cho Colab quét
+                await db.collection("ghg_raw_inputs").add(rawData);
                 document.getElementById('ghgForm').reset();
-                showToast("Gửi số liệu lên Đám mây thành công! Mời chạy Colab.", "success");
+                showToast("Đã lưu dữ liệu thô! Hãy mở Google Colab bấm CHẠY để hệ thống AI tính toán và vẽ biểu đồ.", "success");
             } catch (error) {
-                console.error("Lỗi FireStore:", error);
-                // Hiển thị lỗi Firebase thực sự ra màn hình
-                showToast("Firebase từ chối: " + error.message, "error");
+                console.error("Lỗi lưu dữ liệu:", error);
+                showToast("Lỗi truyền tải: " + error.message, "error");
+            }
+        }
+
+        // TÍNH NĂNG XUẤT BÁO CÁO EXCEL CHUYÊN NGHIỆP
+        async function exportToExcel() {
+            try {
+                showToast("Đang trích xuất dữ liệu từ đám mây...", "info");
+                
+                const snapshot = await db.collection("ghg_results").orderBy("period", "asc").get();
+                if (snapshot.empty) {
+                    showToast("Không có dữ liệu kết quả để xuất!", "warning");
+                    return;
+                }
+
+                const excelData = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    excelData.push({
+                        "Kỳ Báo Cáo": data.period,
+                        "Khu Vực": data.factory_zone,
+                        "Scope 1 (kgCO2e)": data.scope1_co2_kg,
+                        "Scope 2 (kgCO2e)": data.scope2_co2_kg,
+                        "Tổng Phát Thải (kgCO2e)": data.total_co2_kg,
+                        "Ngày Chạy Colab": data.calculated_at ? data.calculated_at.toDate().toLocaleString('vi-VN') : "N/A"
+                    });
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(excelData);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Lich_Su_Net_Zero");
+                
+                const dateStr = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(workbook, `Bao_Cao_KNK_${dateStr}.xlsx`);
+                showToast("Đã tải file Excel xuống máy tính!", "success");
+
+            } catch (error) {
+                console.error("Lỗi xuất Excel:", error);
+                showToast("Có lỗi xảy ra khi tạo file Excel.", "error");
+            }
+        }
+
+        // TÍNH NĂNG XUẤT ẢNH BIỂU ĐỒ (PNG)
+        function exportChartImage() {
+            try {
+                // Biến đổi Canvas thành dữ liệu hình ảnh dạng Base64
+                const imageUrl = ghgChart.toBase64Image();
+                
+                // Tạo thẻ link ẩn để mô phỏng hành động Click tải về
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imageUrl;
+                downloadLink.download = `Bieu_Do_Net_Zero_${new Date().toISOString().slice(0, 10)}.png`;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                showToast("Đã tải hình ảnh biểu đồ thành công!", "success");
+            } catch (error) {
+                console.error("Lỗi tải ảnh:", error);
+                showToast("Không thể xuất ảnh lúc này.", "error");
             }
         }
     </script>
