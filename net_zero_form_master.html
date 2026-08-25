@@ -45,7 +45,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Khu vực <span class="text-red-500">*</span></label>
-                            <select id="factory_zone" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer">
+                            <select id="factory_zone" onchange="toggleFieldsByZone()" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer">
                                 <option value="Nhà máy Can (Can Plant)">Nhà máy Can (Can Plant)</option>
                                 <option value="Nhà máy End (End Plant)">Nhà máy End (End Plant)</option>
                                 <option value="Toàn nhà máy">Toàn nhà máy</option>
@@ -55,24 +55,26 @@
 
                     <div class="bg-red-50 p-5 rounded-xl border border-red-100">
                         <h4 class="font-bold text-red-700 mb-3 border-b border-red-200 pb-1">Scope 1 (Gas & Rò rỉ)</h4>
-                        <div class="grid grid-cols-2 gap-4">
+                        
+                        <div id="lpg-group" class="grid grid-cols-2 gap-4 transition-all duration-300">
                             <div><label class="text-xs font-semibold text-slate-700">Washer LPG (kg)</label><input type="number" id="s1_washer" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
                             <div><label class="text-xs font-semibold text-slate-700">Pinoven LPG (kg)</label><input type="number" id="s1_pinoven" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
                             <div><label class="text-xs font-semibold text-slate-700">IBO LPG (kg)</label><input type="number" id="s1_ibo" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
                             <div><label class="text-xs font-semibold text-slate-700">Boiler LPG (kg)</label><input type="number" id="s1_boiler" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            
-                            <div class="col-span-2 mt-2"><p class="text-xs font-bold text-red-600">Rò rỉ Gas Lạnh (Nạp bổ sung)</p></div>
-                            <div><label class="text-xs font-semibold text-slate-700">Gas R410A (kg)</label><input type="number" id="s1_r410a" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            <div><label class="text-xs font-semibold text-slate-700">Gas R22 (kg)</label><input type="number" id="s1_r22" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            <div><label class="text-xs font-semibold text-slate-700">Gas R32 (kg)</label><input type="number" id="s1_r32" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
                         </div>
-                    </div>
 
+                        <div id="extinguisher-group" class="mt-4 hidden transition-all duration-300">
+                            <p class="text-xs font-bold text-red-600 border-b border-red-200 pb-1 mb-2">Bình Chữa Cháy (Diễn tập / Sự cố)</p>
+                            <div><label class="text-xs font-semibold text-slate-700">Lượng khí CO2 xả ra (kg)</label><input type="number" id="s1_co2_extinguisher" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="col-span-2"><p class="text-xs font-bold text-red-600 border-b border-red-200 pb-1">Rò rỉ Gas Lạnh (Nạp bổ sung)</p></div>
                     <div class="grid grid-cols-2 gap-4">
                         <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
                             <h4 class="font-bold text-yellow-700 mb-2 border-b border-yellow-200 pb-1">Scope 2</h4>
-                            <label class="text-xs font-semibold text-slate-700">Điện tiêu thụ (kWh) <span class="text-red-500">*</span></label>
-                            <input type="number" id="scope2_elec" required class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-yellow-400 outline-none mt-1">
+                            <label class="text-xs font-semibold text-slate-700">Điện tiêu thụ (kWh)</label>
+                            <input type="number" id="scope2_elec" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-yellow-400 outline-none mt-1">
                         </div>
                         <div class="bg-green-50 p-4 rounded-xl border border-green-100">
                             <h4 class="font-bold text-green-700 mb-2 border-b border-green-200 pb-1">Scope 3</h4>
@@ -183,6 +185,33 @@
             showToast("Firebase: " + error.message, "error");
         });
 
+        function toggleFieldsByZone() {
+            const zone = document.getElementById('factory_zone').value;
+            const lpgGroup = document.getElementById('lpg-group');
+            const extGroup = document.getElementById('extinguisher-group');
+
+            if (zone === "Nhà máy End (End Plant)") {
+                lpgGroup.classList.add('hidden'); // Ẩn lò sấy
+                extGroup.classList.remove('hidden'); // Hiện PCCC CO2
+                // Reset data lò sấy về 0 để tránh nhiễu
+                document.getElementById('s1_washer').value = '';
+                document.getElementById('s1_pinoven').value = '';
+                document.getElementById('s1_ibo').value = '';
+                document.getElementById('s1_boiler').value = '';
+            } else if (zone === "Nhà máy Can (Can Plant)") {
+                lpgGroup.classList.remove('hidden'); 
+                extGroup.classList.add('hidden');
+                document.getElementById('s1_co2_extinguisher').value = '';
+            } else {
+                // Toàn nhà máy thì hiện tất cả
+                lpgGroup.classList.remove('hidden');
+                extGroup.classList.remove('hidden');
+            }
+        }
+        
+        // Chạy lần đầu khi load trang
+        window.onload = () => { toggleFieldsByZone(); }
+
         auth.onAuthStateChanged((user) => {
             if (user) {
                 document.getElementById('auth-status-text').textContent = 'Kết nối bảo mật ổn định - Sẵn sàng gửi Colab';
@@ -252,8 +281,8 @@
             const factory_zone = document.getElementById('factory_zone')?.value;
             const scope2_elec = Number(document.getElementById('scope2_elec')?.value) || 0;
 
-            if (!period || scope2_elec === 0) {
-                showToast("Vui lòng điền 'Kỳ báo cáo' và số 'Điện tiêu thụ'!", "warning");
+            if (!period) {
+                showToast("Vui lòng chọn 'Kỳ báo cáo' trước khi lưu!", "warning");
                 return;
             }
 
@@ -265,6 +294,7 @@
                 s1_pinoven: Number(document.getElementById('s1_pinoven')?.value) || 0,
                 s1_ibo: Number(document.getElementById('s1_ibo')?.value) || 0,
                 s1_boiler: Number(document.getElementById('s1_boiler')?.value) || 0,
+                s1_co2_extinguisher: Number(document.getElementById('s1_co2_extinguisher')?.value) || 0,
                 s1_r410a: Number(document.getElementById('s1_r410a')?.value) || 0,
                 s1_r22: Number(document.getElementById('s1_r22')?.value) || 0,
                 s1_r32: Number(document.getElementById('s1_r32')?.value) || 0,
