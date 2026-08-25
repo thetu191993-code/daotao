@@ -25,7 +25,7 @@
     <!-- Ẩn Input File dùng cho Import Excel -->
     <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden" onchange="handleExcelImport(event)">
 
-    <div class="w-full 2xl:max-w-[96%] mx-auto">
+    <div class="w-full 2xl:max-w-[98%] mx-auto">
         <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
             <div class="flex items-center gap-4">
                 <a href="index.html" class="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 p-2 rounded-xl shadow-sm transition flex items-center justify-center shrink-0">
@@ -48,10 +48,11 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-4 sm:gap-6">
-            <div class="lg:col-span-1 xl:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
+            <div class="lg:col-span-1 xl:col-span-6 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
                 <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-4 border-b pb-2">Nhập Liệu Định Kỳ (Chờ AI Xử Lý)</h3>
                 
                 <form id="ghgForm" class="space-y-6">
+                    <!-- Khu vực & Kỳ báo cáo -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
                         <div class="md:col-span-1">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Kỳ báo cáo <span class="text-red-500">*</span></label>
@@ -76,26 +77,32 @@
                             <i class="ph-fill ph-gas-can text-xl"></i> Scope 1 (Nhiên liệu & Rò rỉ)
                         </h4>
                         
+                        <!-- Nhiên liệu đốt -->
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 transition-all duration-300 mb-4">
                             <div id="lpg-prod-group" class="sm:col-span-1">
                                 <label class="block text-xs font-bold text-red-700 mb-1">Tổng LPG Sản Xuất (kg)</label>
-                                <input type="number" id="s1_lpg_total" placeholder="Gộp chung lò sấy" class="w-full px-3 py-2 border border-red-200 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none bg-white">
+                                <input type="number" id="s1_lpg_total" placeholder="Gộp chung lò sấy" class="w-full px-3 py-2 border border-red-300 rounded shadow-inner focus:ring-2 focus:ring-red-500 outline-none bg-white">
                             </div>
                             <div class="sm:col-span-1">
                                 <label class="block text-xs font-semibold text-slate-700 mb-1">LPG Xe Nâng (kg)</label>
                                 <input type="number" id="s1_lpg_forklift" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none">
                             </div>
                             <div class="sm:col-span-1">
-                                <label class="block text-xs font-semibold text-slate-700 mb-1">Dầu DO Xe Nâng (kg/lít)</label>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Dầu DO Xe Nâng (kg)</label>
                                 <input type="number" id="s1_do_forklift" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none">
                             </div>
                         </div>
 
-                        <div id="extinguisher-group" class="pt-3 border-t border-red-200 transition-all duration-300">
+                        <!-- PCCC -->
+                        <div class="pt-3 border-t border-red-200 transition-all duration-300">
                             <p class="text-xs font-bold text-red-600 mb-2">Bình Chữa Cháy (Diễn tập / Sự cố)</p>
-                            <div class="w-full sm:w-1/3"><label class="block text-xs font-semibold text-slate-700 mb-1">Khí CO2 xả ra (kg)</label><input type="number" id="s1_co2_extinguisher" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div class="w-full sm:w-1/3">
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Khí CO2 xả ra (kg)</label>
+                                <input type="number" id="s1_co2_extinguisher" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none">
+                            </div>
                         </div>
                         
+                        <!-- Gas Lạnh -->
                         <div class="mt-4 pt-4 border-t border-red-200 transition-all duration-300">
                             <p class="text-xs font-bold text-red-600 mb-2">Rò rỉ Gas Lạnh (Nạp bổ sung)</p>
                             <div class="grid grid-cols-3 gap-4">
@@ -138,7 +145,8 @@
                 </form>
             </div>
 
-            <div class="lg:col-span-1 xl:col-span-5 flex flex-col gap-4 sm:gap-6">
+            <div class="lg:col-span-1 xl:col-span-6 flex flex-col gap-4 sm:gap-6">
+                <!-- Status Card -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6 flex items-center justify-between">
                     <div>
                         <h3 class="text-lg font-bold text-slate-800">Trạng Thái Xử Lý AI/Colab</h3>
@@ -152,9 +160,17 @@
                     </div>
                 </div>
 
+                <!-- Chart Card with Export Buttons and Filters -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex-grow flex flex-col">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 border-b pb-4">
-                        <h3 class="text-lg font-bold text-slate-800">Biểu Đồ Phát Thải KNK</h3>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Biểu Đồ Phát Thải KNK & Dự Báo AI</h3>
+                            <div class="flex gap-2 mt-2">
+                                <button onclick="setChartFilter('all')" id="btn-filter-all" class="px-3 py-1 text-xs font-bold rounded-full bg-blue-600 text-white transition">Toàn Hệ Thống</button>
+                                <button onclick="setChartFilter('Can Plant')" id="btn-filter-can" class="px-3 py-1 text-xs font-bold rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 transition">Nhà máy Can</button>
+                                <button onclick="setChartFilter('End Plant')" id="btn-filter-end" class="px-3 py-1 text-xs font-bold rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 transition">Nhà máy End</button>
+                            </div>
+                        </div>
                         <div class="flex gap-2">
                             <button onclick="exportChartImage()" class="bg-indigo-100 hover:bg-indigo-600 text-indigo-700 hover:text-white font-bold py-1.5 px-3 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
                                 <i class="ph-bold ph-image text-lg"></i> Tải Ảnh
@@ -164,7 +180,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="relative flex-grow min-h-[350px] w-full bg-white rounded-xl">
+                    <div class="relative flex-grow min-h-[450px] w-full bg-white rounded-xl">
                         <canvas id="ghgChart"></canvas>
                     </div>
                 </div>
@@ -173,7 +189,6 @@
     </div>
 
     <script>
-        // CẤU HÌNH FIREBASE
         const firebaseConfig = {
           apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
           authDomain: "ehs-training-app.firebaseapp.com",
@@ -192,10 +207,12 @@
             const icon = document.getElementById('toast-icon');
             const title = document.getElementById('toast-title');
             const msg = document.getElementById('toast-message');
+
             toast.classList.remove('translate-x-full', 'opacity-0', 'border-green-500', 'border-red-500', 'border-yellow-500');
             if (type === 'success') { toast.classList.add('border-green-500'); icon.innerHTML = '✅'; title.textContent = 'Thành công'; title.className = 'font-bold text-green-700'; } 
             else if (type === 'error') { toast.classList.add('border-red-500'); icon.innerHTML = '⚠️'; title.textContent = 'Lỗi hệ thống'; title.className = 'font-bold text-red-700'; } 
             else { toast.classList.add('border-yellow-500'); icon.innerHTML = 'ℹ️'; title.textContent = 'Thông báo'; title.className = 'font-bold text-yellow-700'; }
+            
             msg.textContent = message; toast.classList.add('translate-x-0', 'opacity-100');
             setTimeout(() => { toast.classList.remove('translate-x-0', 'opacity-100'); toast.classList.add('translate-x-full', 'opacity-0'); }, 5000);
         }
@@ -210,6 +227,7 @@
             }
         });
 
+        // Ẩn hiện ô nhập liệu theo đặc thù nhà máy
         function toggleFieldsByZone() {
             const zone = document.getElementById('factory_zone').value;
             const lpgProdGroup = document.getElementById('lpg-prod-group');
@@ -234,39 +252,95 @@
         const ctx = document.getElementById('ghgChart').getContext('2d');
         const ghgChart = new Chart(ctx, {
             type: 'bar',
-            data: {
-                labels: [],
-                datasets: [
-                    { type: 'line', label: 'TỔNG PHÁT THẢI', borderColor: '#0f172a', backgroundColor: '#0f172a', data: [], borderWidth: 2, pointRadius: 4, fill: false, tension: 0.1 },
-                    { type: 'bar', label: 'Scope 1 (Gas & Rò rỉ)', backgroundColor: '#ef4444', data: [], borderRadius: 4 },
-                    { type: 'bar', label: 'Scope 2 (Điện năng)', backgroundColor: '#eab308', data: [], borderRadius: 4 },
-                    { type: 'bar', label: 'Scope 3 (Nước & Rác)', backgroundColor: '#22c55e', data: [], borderRadius: 4 }
-                ]
-            },
+            data: { labels: [], datasets: [] },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', weight: 'bold' } } }, customCanvasBackgroundColor: { color: 'white' } },
-                scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, title: { display: true, text: 'Lượng Phát Thải (kgCO2e)', font: { weight: 'bold' } } } }
+                interaction: { mode: 'index', intersect: false }, 
+                plugins: { 
+                    legend: { position: 'top', labels: { font: { family: 'Inter', weight: 'bold' } } },
+                    customCanvasBackgroundColor: { color: 'white' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) { label += ': '; }
+                                if (context.parsed.y !== null) {
+                                    label += new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' kgCO2e';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { stacked: true, grid: { display: false } },
+                    y: { stacked: true, title: { display: true, text: 'Lượng Phát Thải (kgCO2e)', font: { weight: 'bold' } } }
+                }
             },
             plugins: [customCanvasBackgroundColor]
         });
 
-        db.collection("ghg_results").orderBy("period", "asc").onSnapshot((snapshot) => {
-            const labels = []; const scope1 = []; const scope2 = []; const scope3 = []; const total = [];
-            const aggregated = {};
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const label = `${data.period} (${data.factory_zone === 'Toàn nhà máy' ? 'Tổng' : data.factory_zone.split(' ')[2]})`;
-                if (!aggregated[label]) aggregated[label] = { s1: 0, s2: 0, s3: 0, tot: 0 };
-                aggregated[label].s1 = data.scope1_co2_kg || 0; aggregated[label].s2 = data.scope2_co2_kg || 0;
-                aggregated[label].s3 = data.scope3_co2_kg || 0; aggregated[label].tot = data.total_co2_kg || 0;
+        let globalRawData = [];
+        let globalForecastData = [];
+        let currentFilter = 'all';
+
+        function setChartFilter(filterType) {
+            currentFilter = filterType;
+            ['all', 'Can Plant', 'End Plant'].forEach(type => {
+                let btnId = type === 'all' ? 'btn-filter-all' : (type === 'Can Plant' ? 'btn-filter-can' : 'btn-filter-end');
+                let btn = document.getElementById(btnId);
+                if(type === filterType) { btn.className = 'px-3 py-1 text-xs font-bold rounded-full bg-blue-600 text-white transition'; } 
+                else { btn.className = 'px-3 py-1 text-xs font-bold rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 transition'; }
             });
-            for (const [key, value] of Object.entries(aggregated)) {
-                labels.push(key); scope1.push(value.s1); scope2.push(value.s2); scope3.push(value.s3); total.push(value.tot);
-            }
-            ghgChart.data.labels = labels; ghgChart.data.datasets[0].data = total; ghgChart.data.datasets[1].data = scope1;
-            ghgChart.data.datasets[2].data = scope2; ghgChart.data.datasets[3].data = scope3; ghgChart.update();
-        });
+            updateChartDisplay();
+        }
+
+        function updateChartDisplay() {
+            const labels = []; const scope1 = []; const scope2 = []; const scope3 = []; const total = []; const forecastLine = [];
+            const aggregated = {};
+            
+            globalRawData.forEach((data) => {
+                if (currentFilter !== 'all' && !data.factory_zone.includes(currentFilter)) return;
+                const label = data.period;
+                if (!aggregated[label]) aggregated[label] = { s1: 0, s2: 0, s3: 0, tot: 0 };
+                aggregated[label].s1 += (data.scope1_co2_kg || 0); aggregated[label].s2 += (data.scope2_co2_kg || 0);
+                aggregated[label].s3 += (data.scope3_co2_kg || 0); aggregated[label].tot += (data.total_co2_kg || 0);
+            });
+
+            const forecastAgg = {};
+            globalForecastData.forEach((data) => {
+                if (currentFilter !== 'all' && !data.factory_zone.includes(currentFilter)) return;
+                const label = data.period;
+                if (!forecastAgg[label]) forecastAgg[label] = 0;
+                forecastAgg[label] += (data.predicted_co2_kg || 0);
+            });
+
+            const allMonths = [...new Set([...Object.keys(aggregated), ...Object.keys(forecastAgg)])].sort();
+
+            allMonths.forEach(month => {
+                labels.push(month);
+                if (aggregated[month]) {
+                    scope1.push(aggregated[month].s1); scope2.push(aggregated[month].s2); scope3.push(aggregated[month].s3);
+                    total.push(aggregated[month].tot); forecastLine.push(null);
+                } else {
+                    scope1.push(0); scope2.push(0); scope3.push(0); total.push(null);
+                    forecastLine.push(forecastAgg[month]);
+                }
+            });
+
+            ghgChart.data.labels = labels;
+            ghgChart.data.datasets = [
+                { type: 'line', label: 'TỔNG PHÁT THẢI (Thực tế)', borderColor: '#0f172a', backgroundColor: '#0f172a', data: total, borderWidth: 2, pointRadius: 4, fill: false, tension: 0.1 },
+                { type: 'line', label: 'AI Dự Báo (XGBoost)', borderColor: '#ef4444', backgroundColor: '#ef4444', data: forecastLine, borderWidth: 2, borderDash: [5, 5], pointRadius: 6, pointStyle: 'star', fill: false, tension: 0.1 },
+                { type: 'bar', label: 'Scope 1 (Gas & Rò rỉ)', backgroundColor: '#ef4444', data: scope1, borderRadius: 4 },
+                { type: 'bar', label: 'Scope 2 (Điện năng)', backgroundColor: '#eab308', data: scope2, borderRadius: 4 },
+                { type: 'bar', label: 'Scope 3 (Nước & Rác)', backgroundColor: '#22c55e', data: scope3, borderRadius: 4 }
+            ];
+            ghgChart.update();
+        }
+
+        db.collection("ghg_results").onSnapshot((snapshot) => { globalRawData = []; snapshot.forEach((doc) => globalRawData.push(doc.data())); updateChartDisplay(); });
+        db.collection("ghg_forecasts").onSnapshot((snapshot) => { globalForecastData = []; snapshot.forEach((doc) => globalForecastData.push(doc.data())); updateChartDisplay(); });
 
         async function submitDataForColab() {
             const period = document.getElementById('period')?.value;
@@ -297,23 +371,13 @@
 
         function downloadImportTemplate() {
             const templateData = [{
-                "Ky_Bao_Cao (YYYY-MM)": "2026-09",
-                "Khu_Vuc (Ghi dung chinh ta)": "Nhà máy Can (Can Plant)",
-                "San_Luong (sp)": 1500000,
-                "LPG_San_Xuat (kg)": 5000,
-                "LPG_Xe_Nang (kg)": 150,
-                "Dau_DO_Xe_Nang (kg)": 200,
-                "PCCC_CO2 (kg)": 0,
-                "Gas_R410A (kg)": 5,
-                "Gas_R22 (kg)": 0,
-                "Gas_R32 (kg)": 0,
-                "Dien_Tieu_Thu (kWh)": 120000,
-                "Nuoc_Cap (m3)": 800,
-                "Rac_Thai (kg)": 450
+                "Ky_Bao_Cao (YYYY-MM)": "2026-09", "Khu_Vuc": "Nhà máy Can (Can Plant)", "San_Luong (sp)": 1500000,
+                "LPG_San_Xuat (kg)": 5000, "LPG_Xe_Nang (kg)": 150, "Dau_DO_Xe_Nang (kg)": 200, "PCCC_CO2 (kg)": 0,
+                "Gas_R410A (kg)": 5, "Gas_R22 (kg)": 0, "Gas_R32 (kg)": 0, "Dien_Tieu_Thu (kWh)": 120000,
+                "Nuoc_Cap (m3)": 800, "Rac_Thai (kg)": 450
             }];
-            const ws = XLSX.utils.json_to_sheet(templateData);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Template");
-            XLSX.writeFile(wb, "EHS_NetZero_Template_Import.xlsx");
+            const ws = XLSX.utils.json_to_sheet(templateData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Template");
+            XLSX.writeFile(wb, "EHS_NetZero_Template.xlsx");
         }
 
         async function handleExcelImport(event) {
@@ -321,52 +385,37 @@
             const reader = new FileReader();
             reader.onload = async (e) => {
                 try {
-                    showToast("Đang đọc và đồng bộ Excel lên Đám mây...", "info");
+                    showToast("Đang đồng bộ Excel lên Đám mây...", "info");
                     const data = new Uint8Array(e.target.result);
                     const workbook = XLSX.read(data, {type: 'array'});
-                    const sheetName = workbook.SheetNames[0];
-                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                     
                     if(json.length === 0) return showToast("File Excel trống!", "warning");
 
-                    let successCount = 0;
+                    let count = 0;
                     for(const row of json) {
                         if(!row["Ky_Bao_Cao (YYYY-MM)"]) continue;
-                        
-                        const rawData = {
-                            period: row["Ky_Bao_Cao (YYYY-MM)"],
-                            factory_zone: row["Khu_Vuc (Ghi dung chinh ta)"] || "Toàn nhà máy",
+                        await db.collection("ghg_raw_inputs").add({
+                            period: row["Ky_Bao_Cao (YYYY-MM)"], factory_zone: row["Khu_Vuc"] || "Toàn nhà máy",
                             production_volume: Number(row["San_Luong (sp)"]) || 0,
-                            s1_lpg_total: Number(row["LPG_San_Xuat (kg)"]) || 0,
-                            s1_lpg_forklift: Number(row["LPG_Xe_Nang (kg)"]) || 0,
-                            s1_do_forklift: Number(row["Dau_DO_Xe_Nang (kg)"]) || 0,
-                            s1_co2_extinguisher: Number(row["PCCC_CO2 (kg)"]) || 0,
-                            s1_r410a: Number(row["Gas_R410A (kg)"]) || 0,
-                            s1_r22: Number(row["Gas_R22 (kg)"]) || 0,
-                            s1_r32: Number(row["Gas_R32 (kg)"]) || 0,
-                            scope2_elec: Number(row["Dien_Tieu_Thu (kWh)"]) || 0,
-                            scope3_water: Number(row["Nuoc_Cap (m3)"]) || 0,
-                            scope3_waste: Number(row["Rac_Thai (kg)"]) || 0,
-                            status: "pending",
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        };
-                        await db.collection("ghg_raw_inputs").add(rawData);
-                        successCount++;
+                            s1_lpg_total: Number(row["LPG_San_Xuat (kg)"]) || 0, s1_lpg_forklift: Number(row["LPG_Xe_Nang (kg)"]) || 0,
+                            s1_do_forklift: Number(row["Dau_DO_Xe_Nang (kg)"]) || 0, s1_co2_extinguisher: Number(row["PCCC_CO2 (kg)"]) || 0,
+                            s1_r410a: Number(row["Gas_R410A (kg)"]) || 0, s1_r22: Number(row["Gas_R22 (kg)"]) || 0, s1_r32: Number(row["Gas_R32 (kg)"]) || 0,
+                            scope2_elec: Number(row["Dien_Tieu_Thu (kWh)"]) || 0, scope3_water: Number(row["Nuoc_Cap (m3)"]) || 0,
+                            scope3_waste: Number(row["Rac_Thai (kg)"]) || 0, status: "pending", timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        }); count++;
                     }
-                    document.getElementById('excelFileInput').value = ""; // Reset input
-                    showToast(`Import thành công ${successCount} dòng! Mở Colab để tính toán.`, "success");
-                } catch(err) {
-                    showToast("Lỗi Import: File không đúng định dạng.", "error");
-                }
-            };
-            reader.readAsArrayBuffer(file);
+                    document.getElementById('excelFileInput').value = "";
+                    showToast(`Import thành công ${count} dòng! Mở Colab để tính toán.`, "success");
+                } catch(err) { showToast("Lỗi Import Excel.", "error"); }
+            }; reader.readAsArrayBuffer(file);
         }
 
         async function exportToExcel() {
             try {
-                showToast("Đang trích xuất dữ liệu từ đám mây...", "info");
+                showToast("Đang trích xuất dữ liệu...", "info");
                 const snapshot = await db.collection("ghg_results").orderBy("period", "asc").get();
-                if (snapshot.empty) return showToast("Không có dữ liệu kết quả để xuất!", "warning");
+                if (snapshot.empty) return showToast("Không có dữ liệu!", "warning");
                 const excelData = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
@@ -374,15 +423,13 @@
                         "Kỳ Báo Cáo": data.period, "Khu Vực": data.factory_zone, "Sản Lượng (sp)": data.production_volume,
                         "Cường độ (kgCO2e/sp)": data.emission_intensity ? data.emission_intensity.toFixed(4) : "N/A",
                         "Scope 1 (kgCO2e)": data.scope1_co2_kg, "Scope 2 (kgCO2e)": data.scope2_co2_kg,
-                        "Scope 3 (kgCO2e)": data.scope3_co2_kg, "Tổng Phát Thải (kgCO2e)": data.total_co2_kg,
-                        "Ngày Chạy Colab": data.calculated_at ? data.calculated_at.toDate().toLocaleString('vi-VN') : "N/A"
+                        "Scope 3 (kgCO2e)": data.scope3_co2_kg, "Tổng Phát Thải (kgCO2e)": data.total_co2_kg
                     });
                 });
                 const ws = XLSX.utils.json_to_sheet(excelData); const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Lich_Su_Net_Zero");
-                XLSX.writeFile(wb, `Bao_Cao_KNK_${new Date().toISOString().slice(0, 10)}.xlsx`);
+                XLSX.utils.book_append_sheet(wb, ws, "Net_Zero"); XLSX.writeFile(wb, `Bao_Cao_KNK_${new Date().toISOString().slice(0, 10)}.xlsx`);
                 showToast("Đã tải file Excel xuống máy tính!", "success");
-            } catch (error) { showToast("Có lỗi xảy ra khi tạo file Excel.", "error"); }
+            } catch (error) { showToast("Có lỗi khi tạo Excel.", "error"); }
         }
 
         function exportChartImage() {
