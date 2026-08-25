@@ -38,11 +38,94 @@
             
             <div class="lg:col-span-1 xl:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
                 <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-4 border-b pb-2">Nhập Liệu Định Kỳ (Chờ AI Xử Lý)</h3>
-                <form id="ghgForm" class="space-y-4 sm:space-y-6">
+                
+                <!-- BẮT ĐẦU FORM MỚI CHUẨN XÁC -->
+                <form id="ghgForm" class="space-y-6">
                     
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                            <input type="month" id="period" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    <!-- BƯỚC 1: Thu hẹp Kỳ báo cáo, mở rộng Khu vực -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Kỳ báo cáo <span class="text-red-500">*</span></label>
+                            <input type="month" id="period" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition shadow-inner">
                         </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Khu vực <span class="text-red-500">*</span></label>
+                            <select id="factory_zone" onchange="toggleFieldsByZone()" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer shadow-inner font-medium text-blue-800 bg-blue-50/30">
+                                <option value="Nhà máy Can (Can Plant)">🏭 Nhà máy Can (Can Plant)</option>
+                                <option value="Nhà máy End (End Plant)">🏭 Nhà máy End (End Plant)</option>
+                                <option value="Toàn nhà máy">🌐 Toàn nhà máy</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- BƯỚC 2: Khôi phục Scope 1 rộng rãi, chia cột chuẩn xác -->
+                    <div class="bg-red-50/80 p-5 rounded-xl border border-red-100 shadow-sm">
+                        <h4 class="font-bold text-red-700 mb-4 border-b border-red-200 pb-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" /></svg>
+                            Scope 1 (Gas & Rò rỉ)
+                        </h4>
+                        
+                        <!-- 4 Ô LPG -->
+                        <div id="lpg-group" class="grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-300">
+                            <div><label class="block text-xs font-semibold text-slate-700 mb-1">Washer LPG (kg)</label><input type="number" id="s1_washer" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div><label class="block text-xs font-semibold text-slate-700 mb-1">Pinoven LPG (kg)</label><input type="number" id="s1_pinoven" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div><label class="block text-xs font-semibold text-slate-700 mb-1">IBO LPG (kg)</label><input type="number" id="s1_ibo" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            <div><label class="block text-xs font-semibold text-slate-700 mb-1">Boiler LPG (kg)</label><input type="number" id="s1_boiler" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                        </div>
+
+                        <!-- Ô PCCC -->
+                        <div id="extinguisher-group" class="mt-5 hidden transition-all duration-300">
+                            <p class="text-sm font-bold text-red-600 border-b border-red-200 pb-1 mb-3">Bình Chữa Cháy (Diễn tập / Sự cố)</p>
+                            <div class="w-full md:w-1/2"><label class="block text-xs font-semibold text-slate-700 mb-1">Lượng khí CO2 xả ra (kg)</label><input type="number" id="s1_co2_extinguisher" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                        </div>
+                        
+                        <!-- 3 Ô Gas Lạnh -->
+                        <div class="mt-5 pt-4 border-t border-red-200 transition-all duration-300">
+                            <p class="text-sm font-bold text-red-600 mb-3">Rò rỉ Gas Lạnh (Nạp bổ sung)</p>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div><label class="block text-xs font-semibold text-slate-700 mb-1">Gas R410A (kg)</label><input type="number" id="s1_r410a" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                                <div><label class="block text-xs font-semibold text-slate-700 mb-1">Gas R22 (kg)</label><input type="number" id="s1_r22" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                                <div><label class="block text-xs font-semibold text-slate-700 mb-1">Gas R32 (kg)</label><input type="number" id="s1_r32" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BƯỚC 3: Cân bằng Scope 2 và 3 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="bg-yellow-50/80 p-5 rounded-xl border border-yellow-200 shadow-sm flex flex-col justify-center">
+                            <h4 class="font-bold text-yellow-700 mb-3 border-b border-yellow-200 pb-2 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.476.859h4z" /></svg>
+                                Scope 2
+                            </h4>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Điện tiêu thụ (kWh)</label>
+                            <input type="number" id="scope2_elec" class="w-full px-3 py-2.5 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-yellow-400 outline-none">
+                        </div>
+                        
+                        <div class="bg-green-50/80 p-5 rounded-xl border border-green-200 shadow-sm">
+                            <h4 class="font-bold text-green-700 mb-3 border-b border-green-200 pb-2 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd" /></svg>
+                                Scope 3
+                            </h4>
+                            <div class="mb-3">
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Nước cấp (m3)</label>
+                                <input type="number" id="scope3_water" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-green-400 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 mb-1">Rác thải (kg)</label>
+                                <input type="number" id="scope3_waste" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-green-400 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-right pt-4 border-t border-slate-200">
+                        <button type="button" onclick="submitDataForColab()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center justify-end w-full sm:w-auto ml-auto gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                            Gửi Dữ Liệu Lên Đám Mây
+                        </button>
+                    </div>
+                </form>
+                <!-- KẾT THÚC FORM MỚI -->
+            </div>
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Khu vực <span class="text-red-500">*</span></label>
                             <select id="factory_zone" onchange="toggleFieldsByZone()" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer">
