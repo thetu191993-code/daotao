@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Trị Net Zero - Tổng Hợp</title>
-    <!-- Thư viện giao diện & Biểu đồ -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Thư viện xuất Excel (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Thư viện Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -24,7 +21,6 @@
         </div>
     </div>
 
-    <!-- VÁ LỖI GIAO DIỆN: Đổi từ max-w-7xl thành Full Width đổ tràn màn hình -->
     <div class="w-full 2xl:max-w-[96%] mx-auto">
         <div class="mb-4 sm:mb-6 flex justify-between items-end">
             <div>
@@ -33,17 +29,15 @@
             </div>
         </div>
 
-        <!-- Tối ưu Responsive: Máy tính bảng (lg) chia đôi 50/50, Màn hình lớn (xl) chia 60/40, Điện thoại (1 cột) -->
         <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-4 sm:gap-6">
             
             <div class="lg:col-span-1 xl:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-6">
                 <h3 class="text-lg sm:text-xl font-bold text-slate-800 mb-4 border-b pb-2">Nhập Liệu Định Kỳ (Chờ AI Xử Lý)</h3>
                 
-                <!-- BẮT ĐẦU FORM MỚI CHUẨN XÁC -->
                 <form id="ghgForm" class="space-y-6">
                     
-                    <!-- BƯỚC 1: Thu hẹp Kỳ báo cáo, mở rộng Khu vực -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <!-- BƯỚC 1: Thông tin chung & Sản lượng -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
                         <div class="md:col-span-1">
                             <label class="block text-sm font-semibold text-slate-700 mb-1">Kỳ báo cáo <span class="text-red-500">*</span></label>
                             <input type="month" id="period" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition shadow-inner">
@@ -56,16 +50,19 @@
                                 <option value="Toàn nhà máy">🌐 Toàn nhà máy</option>
                             </select>
                         </div>
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Sản lượng (sp)</label>
+                            <input type="number" id="production_volume" placeholder="Tùy chọn" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition shadow-inner">
+                        </div>
                     </div>
 
-                    <!-- BƯỚC 2: Khôi phục Scope 1 rộng rãi, chia cột chuẩn xác -->
+                    <!-- BƯỚC 2: Scope 1 (LPG, PCCC, Gas Lạnh) -->
                     <div class="bg-red-50/80 p-5 rounded-xl border border-red-100 shadow-sm">
                         <h4 class="font-bold text-red-700 mb-4 border-b border-red-200 pb-2 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" /></svg>
                             Scope 1 (Gas & Rò rỉ)
                         </h4>
                         
-                        <!-- 4 Ô LPG -->
                         <div id="lpg-group" class="grid grid-cols-2 md:grid-cols-4 gap-4 transition-all duration-300">
                             <div><label class="block text-xs font-semibold text-slate-700 mb-1">Washer LPG (kg)</label><input type="number" id="s1_washer" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
                             <div><label class="block text-xs font-semibold text-slate-700 mb-1">Pinoven LPG (kg)</label><input type="number" id="s1_pinoven" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
@@ -73,13 +70,11 @@
                             <div><label class="block text-xs font-semibold text-slate-700 mb-1">Boiler LPG (kg)</label><input type="number" id="s1_boiler" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
                         </div>
 
-                        <!-- Ô PCCC -->
                         <div id="extinguisher-group" class="mt-5 hidden transition-all duration-300">
                             <p class="text-sm font-bold text-red-600 border-b border-red-200 pb-1 mb-3">Bình Chữa Cháy (Diễn tập / Sự cố)</p>
                             <div class="w-full md:w-1/2"><label class="block text-xs font-semibold text-slate-700 mb-1">Lượng khí CO2 xả ra (kg)</label><input type="number" id="s1_co2_extinguisher" class="w-full px-3 py-2 border border-slate-300 rounded shadow-inner focus:ring-2 focus:ring-red-400 outline-none"></div>
                         </div>
                         
-                        <!-- 3 Ô Gas Lạnh -->
                         <div class="mt-5 pt-4 border-t border-red-200 transition-all duration-300">
                             <p class="text-sm font-bold text-red-600 mb-3">Rò rỉ Gas Lạnh (Nạp bổ sung)</p>
                             <div class="grid grid-cols-3 gap-4">
@@ -90,7 +85,7 @@
                         </div>
                     </div>
 
-                    <!-- BƯỚC 3: Cân bằng Scope 2 và 3 -->
+                    <!-- BƯỚC 3: Scope 2 & 3 -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="bg-yellow-50/80 p-5 rounded-xl border border-yellow-200 shadow-sm flex flex-col justify-center">
                             <h4 class="font-bold text-yellow-700 mb-3 border-b border-yellow-200 pb-2 flex items-center gap-2">
@@ -124,67 +119,6 @@
                         </button>
                     </div>
                 </form>
-                <!-- KẾT THÚC FORM MỚI -->
-            </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Khu vực <span class="text-red-500">*</span></label>
-                            <select id="factory_zone" onchange="toggleFieldsByZone()" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition cursor-pointer">
-                                <option value="Nhà máy Can (Can Plant)">Nhà máy Can (Can Plant)</option>
-                                <option value="Nhà máy End (End Plant)">Nhà máy End (End Plant)</option>
-                                <option value="Toàn nhà máy">Toàn nhà máy</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="bg-red-50 p-4 sm:p-5 rounded-xl border border-red-100">
-                        <h4 class="font-bold text-red-700 mb-3 border-b border-red-200 pb-1">Scope 1 (Gas & Rò rỉ)</h4>
-                        
-                        <!-- Tối ưu Mobile: 2 cột trên điện thoại, 4 cột trên PC -->
-                        <div id="lpg-group" class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 transition-all duration-300">
-                            <div><label class="text-xs font-semibold text-slate-700">Washer LPG (kg)</label><input type="number" id="s1_washer" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            <div><label class="text-xs font-semibold text-slate-700">Pinoven LPG (kg)</label><input type="number" id="s1_pinoven" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            <div><label class="text-xs font-semibold text-slate-700">IBO LPG (kg)</label><input type="number" id="s1_ibo" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            <div><label class="text-xs font-semibold text-slate-700">Boiler LPG (kg)</label><input type="number" id="s1_boiler" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                        </div>
-
-                        <div id="extinguisher-group" class="mt-4 hidden transition-all duration-300">
-                            <p class="text-xs font-bold text-red-600 border-b border-red-200 pb-1 mb-2">Bình Chữa Cháy (Diễn tập / Sự cố)</p>
-                            <div><label class="text-xs font-semibold text-slate-700">Lượng khí CO2 xả ra (kg)</label><input type="number" id="s1_co2_extinguisher" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                        </div>
-                        
-                        <!-- VÁ LỖI CẤU TRÚC: Khôi phục nhóm Gas Lạnh và đóng thẻ div bị thiếu -->
-                        <div class="mt-4 transition-all duration-300">
-                            <p class="text-xs font-bold text-red-600 border-b border-red-200 pb-1 mb-2">Rò rỉ Gas Lạnh (Nạp bổ sung)</p>
-                            <div class="grid grid-cols-3 gap-3 sm:gap-4">
-                                <div><label class="text-xs font-semibold text-slate-700">Gas R410A (kg)</label><input type="number" id="s1_r410a" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                                <div><label class="text-xs font-semibold text-slate-700">Gas R22 (kg)</label><input type="number" id="s1_r22" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                                <div><label class="text-xs font-semibold text-slate-700">Gas R32 (kg)</label><input type="number" id="s1_r32" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-red-400 outline-none"></div>
-                            </div>
-                        </div>
-                    </div> <!-- KẾT THÚC KHỐI SCOPE 1 (Thẻ Div này đã bị mất ở bản trước gây sập giao diện) -->
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-                            <h4 class="font-bold text-yellow-700 mb-2 border-b border-yellow-200 pb-1">Scope 2</h4>
-                            <label class="text-xs font-semibold text-slate-700">Điện tiêu thụ (kWh)</label>
-                            <input type="number" id="scope2_elec" class="w-full px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-yellow-400 outline-none mt-1">
-                        </div>
-                        <div class="bg-green-50 p-4 rounded-xl border border-green-100">
-                            <h4 class="font-bold text-green-700 mb-2 border-b border-green-200 pb-1">Scope 3</h4>
-                            <label class="text-xs font-semibold text-slate-700">Nước cấp (m3)</label>
-                            <input type="number" id="scope3_water" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-green-400 outline-none mb-2 mt-1">
-                            <label class="text-xs font-semibold text-slate-700">Rác thải (kg)</label>
-                            <input type="number" id="scope3_waste" class="w-full px-2 sm:px-3 py-1.5 border border-slate-300 rounded focus:ring-2 focus:ring-green-400 outline-none mt-1">
-                        </div>
-                    </div>
-
-                    <div class="text-right pt-4 border-t border-slate-100">
-                        <button type="button" onclick="submitDataForColab()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all transform hover:scale-105 flex items-center justify-end w-full sm:w-auto ml-auto gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
-                            Gửi Dữ Liệu Lên Đám Mây
-                        </button>
-                    </div>
-                </form>
             </div>
 
             <div class="lg:col-span-1 xl:col-span-5 flex flex-col gap-4 sm:gap-6">
@@ -207,12 +141,10 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3 border-b pb-4">
                         <h3 class="text-lg font-bold text-slate-800">Biểu Đồ Phát Thải KNK</h3>
                         <div class="flex gap-2">
-                            <!-- Nút Tải Ảnh -->
                             <button onclick="exportChartImage()" class="bg-indigo-100 hover:bg-indigo-600 text-indigo-700 hover:text-white font-bold py-1.5 px-3 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                 Tải Ảnh
                             </button>
-                            <!-- Nút Xuất Excel -->
                             <button onclick="exportToExcel()" class="bg-emerald-100 hover:bg-emerald-600 text-emerald-700 hover:text-white font-bold py-1.5 px-3 rounded-lg text-sm transition flex items-center gap-1.5 shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                                 Xuất Excel
@@ -229,7 +161,7 @@
     </div>
 
     <script>
-        // 1. CẤU HÌNH BẢO MẬT FIREBASE
+        // CẤU HÌNH BẢO MẬT FIREBASE
         const firebaseConfig = {
           apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
           authDomain: "ehs-training-app.firebaseapp.com",
@@ -243,7 +175,7 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // 2. HỆ THỐNG THÔNG BÁO TOAST THÔNG MINH
+        // HỆ THỐNG THÔNG BÁO TOAST
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const icon = document.getElementById('toast-icon');
@@ -272,12 +204,13 @@
             }, 5000);
         }
 
-        // 3. ĐĂNG NHẬP ẨN DANH (Vượt tường lửa tự động)
+        // ĐĂNG NHẬP ẨN DANH (Vượt tường lửa tự động)
         auth.signInAnonymously().catch((error) => {
             console.error("Lỗi xác thực:", error);
             showToast("Firebase: " + error.message, "error");
         });
 
+        // Ẩn hiện các trường nhập liệu theo đặc thù nhà máy
         function toggleFieldsByZone() {
             const zone = document.getElementById('factory_zone').value;
             const lpgGroup = document.getElementById('lpg-group');
@@ -286,7 +219,6 @@
             if (zone === "Nhà máy End (End Plant)") {
                 lpgGroup.classList.add('hidden'); // Ẩn lò sấy
                 extGroup.classList.remove('hidden'); // Hiện PCCC CO2
-                // Reset data lò sấy về 0 để tránh nhiễu
                 document.getElementById('s1_washer').value = '';
                 document.getElementById('s1_pinoven').value = '';
                 document.getElementById('s1_ibo').value = '';
@@ -296,13 +228,11 @@
                 extGroup.classList.add('hidden');
                 document.getElementById('s1_co2_extinguisher').value = '';
             } else {
-                // Toàn nhà máy thì hiện tất cả
                 lpgGroup.classList.remove('hidden');
                 extGroup.classList.remove('hidden');
             }
         }
         
-        // Chạy lần đầu khi load trang
         window.onload = () => { toggleFieldsByZone(); }
 
         auth.onAuthStateChanged((user) => {
@@ -314,7 +244,7 @@
             }
         });
 
-        // Plugin lót nền màu trắng cho biểu đồ (Để khi tải ảnh PNG không bị nền đen)
+        // Plugin lót nền màu trắng cho biểu đồ 
         const customCanvasBackgroundColor = {
             id: 'customCanvasBackgroundColor',
             beforeDraw: (chart, args, options) => {
@@ -327,21 +257,24 @@
             }
         };
 
+        // Khởi tạo Biểu đồ Đa lớp (Line & Bar)
         const ctx = document.getElementById('ghgChart').getContext('2d');
         const ghgChart = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: [],
                 datasets: [
-                    { label: 'Scope 1 (Gas & Rò rỉ) - kgCO2', backgroundColor: '#ef4444', data: [], borderRadius: 4 },
-                    { label: 'Scope 2 (Điện năng) - kgCO2', backgroundColor: '#eab308', data: [], borderRadius: 4 }
+                    { type: 'line', label: 'TỔNG PHÁT THẢI', borderColor: '#0f172a', backgroundColor: '#0f172a', data: [], borderWidth: 2, pointRadius: 4, fill: false, tension: 0.1 },
+                    { type: 'bar', label: 'Scope 1 (Gas & Rò rỉ)', backgroundColor: '#ef4444', data: [], borderRadius: 4 },
+                    { type: 'bar', label: 'Scope 2 (Điện năng)', backgroundColor: '#eab308', data: [], borderRadius: 4 },
+                    { type: 'bar', label: 'Scope 3 (Nước & Rác)', backgroundColor: '#22c55e', data: [], borderRadius: 4 }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
                 plugins: { 
                     legend: { position: 'top', labels: { font: { family: 'Inter', weight: 'bold' } } },
-                    customCanvasBackgroundColor: { color: 'white' } // Kích hoạt nền trắng
+                    customCanvasBackgroundColor: { color: 'white' } 
                 },
                 scales: {
                     x: { stacked: true, grid: { display: false } },
@@ -351,38 +284,52 @@
             plugins: [customCanvasBackgroundColor]
         });
 
-        // Lắng nghe kết quả ĐÃ TÍNH TOÁN từ thư mục ghg_results (Do Colab trả về)
+        // Lắng nghe kết quả ĐÃ TÍNH TOÁN từ Colab & Gộp dữ liệu Frontend
         db.collection("ghg_results").orderBy("period", "asc").onSnapshot((snapshot) => {
-            const labels = []; const scope1 = []; const scope2 = [];
+            const labels = []; const scope1 = []; const scope2 = []; const scope3 = []; const total = [];
+            
+            const aggregated = {};
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                labels.push(`${data.period} (${data.factory_zone === 'Toàn nhà máy' ? 'Tổng' : data.factory_zone.split(' ')[2]})`);
-                scope1.push(data.scope1_co2_kg);
-                scope2.push(data.scope2_co2_kg);
+                const label = `${data.period} (${data.factory_zone === 'Toàn nhà máy' ? 'Tổng' : data.factory_zone.split(' ')[2]})`;
+                
+                if (!aggregated[label]) aggregated[label] = { s1: 0, s2: 0, s3: 0, tot: 0 };
+                aggregated[label].s1 = data.scope1_co2_kg || 0;
+                aggregated[label].s2 = data.scope2_co2_kg || 0;
+                aggregated[label].s3 = data.scope3_co2_kg || 0;
+                aggregated[label].tot = data.total_co2_kg || 0;
             });
+
+            for (const [key, value] of Object.entries(aggregated)) {
+                labels.push(key);
+                scope1.push(value.s1); scope2.push(value.s2); scope3.push(value.s3); total.push(value.tot);
+            }
+
             ghgChart.data.labels = labels;
-            ghgChart.data.datasets[0].data = scope1;
-            ghgChart.data.datasets[1].data = scope2;
+            ghgChart.data.datasets[0].data = total;
+            ghgChart.data.datasets[1].data = scope1;
+            ghgChart.data.datasets[2].data = scope2;
+            ghgChart.data.datasets[3].data = scope3;
             ghgChart.update();
         }, (error) => {
             console.error("Lỗi đọc Database:", error);
         });
 
-        // Hàm Gửi Dữ Liệu THÔ lên mây chờ Colab tính
+        // Gửi Dữ Liệu THÔ lên mây chờ Colab tính
         async function submitDataForColab() {
             const period = document.getElementById('period')?.value;
             const factory_zone = document.getElementById('factory_zone')?.value;
-            const scope2_elec = Number(document.getElementById('scope2_elec')?.value) || 0;
+            const production_volume = Number(document.getElementById('production_volume')?.value) || 0;
 
             if (!period) {
                 showToast("Vui lòng chọn 'Kỳ báo cáo' trước khi lưu!", "warning");
                 return;
             }
 
-            // Đóng gói dữ liệu nguyên thủy
             const rawData = {
                 period: period,
                 factory_zone: factory_zone,
+                production_volume: production_volume,
                 s1_washer: Number(document.getElementById('s1_washer')?.value) || 0,
                 s1_pinoven: Number(document.getElementById('s1_pinoven')?.value) || 0,
                 s1_ibo: Number(document.getElementById('s1_ibo')?.value) || 0,
@@ -391,7 +338,7 @@
                 s1_r410a: Number(document.getElementById('s1_r410a')?.value) || 0,
                 s1_r22: Number(document.getElementById('s1_r22')?.value) || 0,
                 s1_r32: Number(document.getElementById('s1_r32')?.value) || 0,
-                scope2_elec: scope2_elec,
+                scope2_elec: Number(document.getElementById('scope2_elec')?.value) || 0,
                 scope3_water: Number(document.getElementById('scope3_water')?.value) || 0,
                 scope3_waste: Number(document.getElementById('scope3_waste')?.value) || 0,
                 status: "pending",
@@ -399,7 +346,6 @@
             };
 
             try {
-                // Đẩy vào bảng ghg_raw_inputs cho Colab quét
                 await db.collection("ghg_raw_inputs").add(rawData);
                 document.getElementById('ghgForm').reset();
                 showToast("Đã lưu dữ liệu thô! Hãy mở Google Colab bấm CHẠY để hệ thống AI tính toán và vẽ biểu đồ.", "success");
@@ -409,11 +355,10 @@
             }
         }
 
-        // TÍNH NĂNG XUẤT BÁO CÁO EXCEL CHUYÊN NGHIỆP
+        // Xuất Excel
         async function exportToExcel() {
             try {
                 showToast("Đang trích xuất dữ liệu từ đám mây...", "info");
-                
                 const snapshot = await db.collection("ghg_results").orderBy("period", "asc").get();
                 if (snapshot.empty) {
                     showToast("Không có dữ liệu kết quả để xuất!", "warning");
@@ -426,10 +371,13 @@
                     excelData.push({
                         "Kỳ Báo Cáo": data.period,
                         "Khu Vực": data.factory_zone,
+                        "Sản Lượng (sp)": data.production_volume,
+                        "Cường độ Phát thải (kgCO2e/sp)": data.emission_intensity ? data.emission_intensity.toFixed(4) : "N/A",
                         "Scope 1 (kgCO2e)": data.scope1_co2_kg,
                         "Scope 2 (kgCO2e)": data.scope2_co2_kg,
+                        "Scope 3 (kgCO2e)": data.scope3_co2_kg,
                         "Tổng Phát Thải (kgCO2e)": data.total_co2_kg,
-                        "Ngày Chạy Colab": data.calculated_at ? data.calculated_at.toDate().toLocaleString('vi-VN') : "N/A"
+                        "Ngày Chạy AI": data.calculated_at ? data.calculated_at.toDate().toLocaleString('vi-VN') : "N/A"
                     });
                 });
 
@@ -447,20 +395,16 @@
             }
         }
 
-        // TÍNH NĂNG XUẤT ẢNH BIỂU ĐỒ (PNG)
+        // Xuất Ảnh Biểu Đồ
         function exportChartImage() {
             try {
-                // Biến đổi Canvas thành dữ liệu hình ảnh dạng Base64
                 const imageUrl = ghgChart.toBase64Image();
-                
-                // Tạo thẻ link ẩn để mô phỏng hành động Click tải về
                 const downloadLink = document.createElement('a');
                 downloadLink.href = imageUrl;
                 downloadLink.download = `Bieu_Do_Net_Zero_${new Date().toISOString().slice(0, 10)}.png`;
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
-                
                 showToast("Đã tải hình ảnh biểu đồ thành công!", "success");
             } catch (error) {
                 console.error("Lỗi tải ảnh:", error);
