@@ -287,23 +287,29 @@
                 let isV = (p1.x === p2.x) && (Math.abs(END_C_Z.indexOf(p1.z) - END_C_Z.indexOf(p2.z)) === 1);
                 
                 if (isH || isV) {
-                    
-                    // --- HỆ THỐNG TƯỜNG LỬA CHẶN ĐƯỜNG AI (FIREWALL MASKING) ---
+                    // --- BỨC TƯỜNG THÉP (IRON FIREWALL) ÉP AI ĐI VÒNG HÀNH LANG ---
                     let isWall = false;
                     let minX = Math.min(p1.x, p2.x);
                     let maxX = Math.max(p1.x, p2.x);
+                    let minZ = Math.min(p1.z, p2.z);
+                    let maxZ = Math.max(p1.z, p2.z);
 
-                    // NGUYÊN TẮC VÀNG EHS: Cấm tuyệt đối đường đi xuyên từ vách (E_X + 45) đâm trực diện vào lòng Kho Chính.
-                    // Nếu là đường đi ngang (isH) nằm bên trong Kho (Z từ E_Z - 30 trở xuống)
-                    if (isH && p1.z > E_Z - 30 && p1.z < E_Z + 290) {
-                        // Chặn đoạn nối đâm từ vách E_X + 45 vào mắt lưới bên trong (minX < E_X + 45)
-                        if (maxX === E_X + 45 && minX < E_X + 45) {
-                            isWall = true; 
-                        }
+                    // 1. CẤM ĐI NGANG: Chặt đứt mọi liên kết đâm từ vách phải (E_X + 45) chui vào lòng Kho Chính
+                    if (isH && maxX === E_X + 45 && minX < E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) {
+                        isWall = true; 
                     }
-                    // --- KẾT THÚC HỆ THỐNG TƯỜNG LỬA ---
+                    
+                    // 2. CẤM ĐI DỌC: Chặt đứt mọi liên kết đâm từ vách trên (E_Z - 30) chui xuống Kho Chính
+                    if (isV && minZ === E_Z - 30 && maxZ > E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) {
+                        isWall = true;
+                    }
 
-                    // Chỉ khi không bị chặn bởi tường lửa, AI mới được phép nối đường chạy
+                    // 3. TƯỜNG KHO NL: Ngăn Khu SX chạy thẳng lên Kho NL, chỉ cho phép đi qua đúng 1 khe hở là Cửa Liên Thông
+                    if (isV && minZ === E_Z - 30 && maxZ > E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
+                        if (p1.x !== E_X + 145) isWall = true;
+                    }
+
+                    // Nếu không vướng 3 lớp tường thép trên, AI mới được nối đường
                     if (!isWall) {
                         edgesEnd.push([key1, key2]);
                         if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) {
@@ -501,6 +507,11 @@
 
             // Vành đai
             drawRoad(500, 30, ox + 20, oz - 320); // Phía Bắc
+            
+            // ĐƯỜNG VÀNH ĐAI MỚI (Nằm vắt ngang ngay trước mặt Đại Sảnh & Canteen)
+            drawRoad(450, 40, ox + 70, oz - 200); 
+            
+            createTextLabel("ĐƯỜNG VÀNH ĐAI NỘI BỘ", ox + 70, 2, oz - 200, 0x94a3b8, 16);
             drawRoad(500, 30, ox + 20, oz + 320); // Phía Nam (Cổng)
             drawRoad(30, 610, ox - 215, oz); // Phía Tây
             drawRoad(30, 610, ox + 255, oz); // Phía Đông
