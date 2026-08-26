@@ -261,9 +261,9 @@
         // =========================================================================
         // Mạng lưới Grid End Line
         // =========================================================================
-        const END_C_X = [E_X - 405, E_X - 215, E_X - 190, E_X - 100, E_X - 45, E_X - 15, E_X, E_X + 45, E_X + 80, E_X + 145, E_X + 245, E_X + 255]; 
+        const END_C_X = [E_X - 405, E_X - 215, E_X - 190, E_X - 100, E_X - 45, E_X - 15, E_X, E_X + 45, E_X + 80, E_X + 115, E_X + 145, E_X + 245, E_X + 255]; 
         // RÚT trục E_Z ra để tránh tạo Node kẹt trong xưởng SX Liner
-        const END_C_Z = [E_Z - 420, E_Z - 280, E_Z - 150, E_Z - 100, E_Z - 90, E_Z - 60, E_Z - 30, E_Z + 60, E_Z + 100, E_Z + 320, E_Z + 420]; 
+        const END_C_Z = [E_Z - 420, E_Z - 280, E_Z - 150, E_Z - 100, E_Z - 90, E_Z - 60, E_Z - 30, E_Z + 15, E_Z + 60, E_Z + 100, E_Z + 320, E_Z + 420]; 
 
         const gridEnd = {}; const edgesEnd = []; const outsideEdgesEnd = [];
         // Dời đích đến AI lên trục ngang E_Z - 100 (Hành lang an toàn tuyệt đối)
@@ -299,7 +299,7 @@
             { name: "Cửa Hông Kho Trống", node: `${E_X + 255}_${E_Z + 100}`, x: E_X + 255, z: E_Z + 100 },
             { name: "Cửa Ra Điểm Tập Kết", node: `${E_X}_${E_Z - 280}`, x: E_X, z: E_Z - 280 },
             // Cửa thoát nạn Ngã 3 (Kho Chính - Kho NL - Khu SX)
-            { name: "Cửa Giữa Xưởng", node: `${E_X + 45}_${E_Z - 30}`, x: E_X + 45, z: E_Z - 30 },
+            { name: "Cửa Giữa Xưởng", node: `${E_X + 45}_${E_Z + 15}`, x: E_X + 45, z: E_Z + 15 },
 
             // --- BỔ SUNG CÁC CỬA MỚI THEO BẢN VẼ ---
             
@@ -308,13 +308,15 @@
             { name: "Cửa Trước Trạm Bơm", node: `${E_X + 80}_${E_Z - 150}`, x: E_X + 80, z: E_Z - 150 },
 
             // 3. Cửa mặt sau Đại Sảnh/Canteen (Hướng vào khe hở)
-            { name: "Cửa Sau Đại Sảnh", node: `${E_X - 45}_${E_Z - 90}`, x: E_X - 45, z: E_Z - 90 },
+            { name: "Cửa Sau Canteen", node: `${E_X - 15}_${E_Z - 90}`, x: E_X - 15, z: E_Z - 90 },
 
-            // 4. Hai cửa mặt trước Kho Nguyên Liệu
-            { name: "Cửa Kho NL (Trái)", node: `${E_X + 45}_${E_Z - 90}`, x: E_X + 45, z: E_Z - 90 },
-            { name: "Cửa Kho NL (Phải)", node: `${E_X + 145}_${E_Z - 90}`, x: E_X + 145, z: E_Z - 90 },
+            // 4. Cửa Kho NL Trái (Dịch sang phải tránh góc xưởng: E_X + 80)
+            { name: "Cửa Kho NL (Trái)", node: `${E_X + 80}_${E_Z - 90}`, x: E_X + 80, z: E_Z - 90 },
 
-            // 5. Cửa hông phải Kho Nguyên Liệu
+            // 5. Cửa Kho NL Phải (Dịch sang trái tránh góc phải: E_X + 115)
+            { name: "Cửa Kho NL (Phải)", node: `${E_X + 115}_${E_Z - 90}`, x: E_X + 115, z: E_Z - 90 }
+
+            // 6. Cửa hông phải Kho Nguyên Liệu
             { name: "Cửa Hông Kho NL", node: `${E_X + 245}_${E_Z - 60}`, x: E_X + 245, z: E_Z - 60 }
         ];
 
