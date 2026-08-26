@@ -261,9 +261,9 @@
         // =========================================================================
         // Mạng lưới Grid End Line
         // =========================================================================
-        const END_C_X = [E_X - 405, E_X - 215, E_X - 190, E_X - 100, E_X - 45, E_X - 15, E_X, E_X + 45, E_X + 80, E_X + 115, E_X + 145, E_X + 245, E_X + 255]; 
+        const END_C_X = [E_X - 405, E_X - 215, E_X - 190, E_X - 105, E_X - 100, E_X - 45, E_X - 15, E_X, E_X + 45, E_X + 80, E_X + 115, E_X + 145, E_X + 215, E_X + 245, E_X + 255];
         // RÚT trục E_Z ra để tránh tạo Node kẹt trong xưởng SX Liner
-        const END_C_Z = [E_Z - 420, E_Z - 280, E_Z - 150, E_Z - 100, E_Z - 90, E_Z - 60, E_Z - 30, E_Z + 15, E_Z + 60, E_Z + 100, E_Z + 320, E_Z + 420]; 
+        const END_C_Z = [E_Z - 420, E_Z - 280, E_Z - 150, E_Z - 100, E_Z - 90, E_Z - 60, E_Z - 30, E_Z + 15, E_Z + 60, E_Z + 100, E_Z + 190, E_Z + 240, E_Z + 290, E_Z + 320, E_Z + 420]; 
 
         const gridEnd = {}; const edgesEnd = []; const outsideEdgesEnd = [];
         // Dời đích đến AI lên trục ngang E_Z - 100 (Hành lang an toàn tuyệt đối)
@@ -317,7 +317,36 @@
             { name: "Cửa Kho NL (Phải)", node: `${E_X + 115}_${E_Z - 90}`, x: E_X + 115, z: E_Z - 90 },
 
             // 6. Cửa hông phải Kho Nguyên Liệu
-            { name: "Cửa Hông Kho NL", node: `${E_X + 245}_${E_Z - 60}`, x: E_X + 245, z: E_Z - 60 }
+            { name: "Cửa Hông Kho NL", node: `${E_X + 245}_${E_Z - 60}`, x: E_X + 245, z: E_Z - 60 },
+
+            // --- 9 CỬA BỔ SUNG THEO BẢN VẼ MỚI ---
+            
+            // 1. Mặt sau Dải tiện ích (Kho phế liệu) - Hướng vành đai
+            { name: "Cửa Sau Kho Phế Liệu", node: `${E_X + 215}_${E_Z - 150}`, x: E_X + 215, z: E_Z - 150 },
+
+            // 2. Ranh giới Kho NL và Khu Sản xuất
+            { name: "Cửa Giữa Kho NL & SX", node: `${E_X + 145}_${E_Z - 30}`, x: E_X + 145, z: E_Z - 30 },
+
+            // 3. Vách trái Kho Thành Phẩm (Chính) - Phía trên
+            { name: "Cửa Trái Kho Chính (Trên)", node: `${E_X - 105}_${E_Z + 15}`, x: E_X - 105, z: E_Z + 15 },
+
+            // 4. Vách trái Kho Thành Phẩm (Chính) - Phía dưới
+            { name: "Cửa Trái Kho Chính (Dưới)", node: `${E_X - 105}_${E_Z + 190}`, x: E_X - 105, z: E_Z + 190 },
+
+            // 5. Ranh giới giữa Kho Chính và Kho Phụ
+            { name: "Cửa Liên Thông Kho Chính-Phụ", node: `${E_X + 45}_${E_Z + 240}`, x: E_X + 45, z: E_Z + 240 },
+
+            // 6. Ranh giới giữa Khu SX và Kho Phụ
+            { name: "Cửa Giữa SX & Kho Phụ", node: `${E_X + 145}_${E_Z + 190}`, x: E_X + 145, z: E_Z + 190 },
+
+            // 7. Vách phải Khu Sản Xuất - Nửa dưới
+            { name: "Cửa Hông Phải SX", node: `${E_X + 245}_${E_Z + 100}`, x: E_X + 245, z: E_Z + 100 },
+
+            // 8. Vách phải Kho Thành Phẩm (Phụ)
+            { name: "Cửa Hông Phải Kho Phụ", node: `${E_X + 245}_${E_Z + 240}`, x: E_X + 245, z: E_Z + 240 },
+
+            // 9. Vách dưới cùng Kho Thành Phẩm (Phụ) - Hướng cổng
+            { name: "Cửa Sau Kho Phụ", node: `${E_X + 145}_${E_Z + 290}`, x: E_X + 145, z: E_Z + 290 }
         ];
 
         // =========================================================================
