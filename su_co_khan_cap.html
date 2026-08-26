@@ -263,7 +263,7 @@
         // =========================================================================
         const END_C_X = [E_X - 405, E_X - 215, E_X - 190, E_X - 105, E_X - 100, E_X - 45, E_X - 15, E_X, E_X + 45, E_X + 80, E_X + 115, E_X + 145, E_X + 215, E_X + 245, E_X + 255];
         // RÚT trục E_Z ra để tránh tạo Node kẹt trong xưởng SX Liner
-        const END_C_Z = [E_Z - 420, E_Z - 280, E_Z - 150, E_Z - 100, E_Z - 90, E_Z - 60, E_Z - 30, E_Z + 15, E_Z + 60, E_Z + 100, E_Z + 190, E_Z + 240, E_Z + 290, E_Z + 320, E_Z + 420]; 
+        const END_C_Z = [E_Z - 420, E_Z - 280, E_Z - 170, E_Z - 150, E_Z - 100, E_Z - 90, E_Z - 60, E_Z - 30, E_Z + 15, E_Z + 60, E_Z + 100, E_Z + 190, E_Z + 240, E_Z + 290, E_Z + 320, E_Z + 420]; 
 
         const gridEnd = {}; const edgesEnd = []; const outsideEdgesEnd = [];
         // Dời đích đến AI lên trục ngang E_Z - 100 (Hành lang an toàn tuyệt đối)
@@ -287,29 +287,31 @@
                 let isV = (p1.x === p2.x) && (Math.abs(END_C_Z.indexOf(p1.z) - END_C_Z.indexOf(p2.z)) === 1);
                 
                 if (isH || isV) {
-                    // --- BỨC TƯỜNG THÉP (IRON FIREWALL) ÉP AI ĐI VÒNG HÀNH LANG ---
                     let isWall = false;
                     let minX = Math.min(p1.x, p2.x);
                     let maxX = Math.max(p1.x, p2.x);
                     let minZ = Math.min(p1.z, p2.z);
                     let maxZ = Math.max(p1.z, p2.z);
 
-                    // 1. CẤM ĐI NGANG: Chặt đứt mọi liên kết đâm từ vách phải (E_X + 45) chui vào lòng Kho Chính
-                    if (isH && maxX === E_X + 45 && minX < E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) {
-                        isWall = true; 
-                    }
+                    // 1. CẤM ĐI NGANG: Chặt đứt liên kết đâm từ vách phải (E_X + 45) chui vào Kho Chính
+                    if (isH && maxX === E_X + 45 && minX < E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) isWall = true; 
                     
-                    // 2. CẤM ĐI DỌC: Chặt đứt mọi liên kết đâm từ vách trên (E_Z - 30) chui xuống Kho Chính
-                    if (isV && minZ === E_Z - 30 && maxZ > E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) {
-                        isWall = true;
-                    }
+                    // 2. CẤM ĐI DỌC: Chặt đứt liên kết đâm từ vách trên (E_Z - 30) chui xuống Kho Chính (Chừa đường luồng bên ngoài E_X - 105)
+                    if (isV && minZ === E_Z - 30 && maxZ > E_Z - 30 && p1.x > E_X - 105 && p1.x < E_X + 45) isWall = true;
 
-                    // 3. TƯỜNG KHO NL: Ngăn Khu SX chạy thẳng lên Kho NL, chỉ cho phép đi qua đúng 1 khe hở là Cửa Liên Thông
+                    // 3. TƯỜNG KHO NL: Ngăn Khu SX chạy thẳng lên Kho NL (Chỉ cho phép qua Cửa E_X + 145)
                     if (isV && minZ === E_Z - 30 && maxZ > E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
                         if (p1.x !== E_X + 145) isWall = true;
                     }
 
-                    // Nếu không vướng 3 lớp tường thép trên, AI mới được nối đường
+                    // 4. ƯU TIÊN VÀNH ĐAI: Ép người lao động phải thoát ra vành đai mới được vòng về Bãi Tập Kết
+                    // Chặn đứng mọi hướng rẽ trái băng ngang qua vách trái nhà máy (E_X - 105) NẾU chưa lên tới Đường Vành Đai (E_Z - 170)
+                    if (isH && minX <= E_X - 105 && maxX >= E_X - 105) {
+                        if (p1.z > E_Z - 170) {
+                            isWall = true;
+                        }
+                    }
+
                     if (!isWall) {
                         edgesEnd.push([key1, key2]);
                         if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) {
@@ -508,8 +510,9 @@
             // Vành đai
             drawRoad(500, 30, ox + 20, oz - 320); // Phía Bắc
             
-            // ĐƯỜNG VÀNH ĐAI MỚI (Nằm vắt ngang ngay trước mặt Đại Sảnh & Canteen)
-            drawRoad(450, 40, ox + 70, oz - 200); 
+            // ĐƯỜNG VÀNH ĐAI MỚI (Cắt gọt bề ngang vừa khít mép tường, ép sát Canteen)
+            drawRoad(350, 40, ox + 70, oz - 170); 
+            createTextLabel("ĐƯỜNG VÀNH ĐAI NỘI BỘ", ox + 70, 2, oz - 170, 0x94a3b8, 16);
             
             createTextLabel("ĐƯỜNG VÀNH ĐAI NỘI BỘ", ox + 70, 2, oz - 200, 0x94a3b8, 16);
             drawRoad(500, 30, ox + 20, oz + 320); // Phía Nam (Cổng)
