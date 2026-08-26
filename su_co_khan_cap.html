@@ -287,8 +287,31 @@
                 let isV = (p1.x === p2.x) && (Math.abs(END_C_Z.indexOf(p1.z) - END_C_Z.indexOf(p2.z)) === 1);
                 
                 if (isH || isV) {
-                    edgesEnd.push([key1, key2]);
-                    if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) outsideEdgesEnd.push([key1, key2]); 
+                    
+                    // --- BẮT ĐẦU: LOGIC CHẶN TƯỜNG ĐẶC (SOLID WALL) ---
+                    let isWall = false;
+
+                    // 1. Chặn AI đi xuyên qua bức tường phía trên của Kho Chính (Đoạn vạch vàng ngang)
+                    if (isV && p1.x > E_X - 105 && p1.x < E_X + 45) {
+                        if (Math.min(p1.z, p2.z) === E_Z - 30 && Math.max(p1.z, p2.z) === E_Z + 15) {
+                            isWall = true;
+                        }
+                    }
+
+                    // 2. Chặn AI đi men hoặc xuyên qua góc tường phải của Kho Chính (Đoạn vạch vàng dọc móc xuống)
+                    if (isV && p1.x === E_X + 45) {
+                        if (Math.min(p1.z, p2.z) === E_Z - 30 && Math.max(p1.z, p2.z) === E_Z + 15) {
+                            isWall = true;
+                        }
+                    }
+                    // --- KẾT THÚC: LOGIC CHẶN TƯỜNG ĐẶC ---
+
+
+                    // Nếu không bị vướng tường thì AI mới được phép nối đường chạy
+                    if (!isWall) {
+                        edgesEnd.push([key1, key2]);
+                        if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) outsideEdgesEnd.push([key1, key2]); 
+                    } 
                 }
             }
         }
