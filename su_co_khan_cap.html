@@ -288,30 +288,54 @@
                 
                 if (isH || isV) {
                     
-                    // --- BẮT ĐẦU: LOGIC CHẶN TƯỜNG ĐẶC (SOLID WALL) ---
+                    // --- KHỞI TẠO HỆ THỐNG TƯỜNG ĐẶC (SOLID WALL MASKING) ---
                     let isWall = false;
+                    let minX = Math.min(p1.x, p2.x);
+                    let maxX = Math.max(p1.x, p2.x);
+                    let minZ = Math.min(p1.z, p2.z);
+                    let maxZ = Math.max(p1.z, p2.z);
 
-                    // 1. Chặn AI đi xuyên qua bức tường phía trên của Kho Chính (Đoạn vạch vàng ngang)
-                    if (isV && p1.x > E_X - 105 && p1.x < E_X + 45) {
-                        if (Math.min(p1.z, p2.z) === E_Z - 30 && Math.max(p1.z, p2.z) === E_Z + 15) {
-                            isWall = true;
+                    // QUY TẮC 1: Xây kín bức tường phía trên Kho Chính (Z = E_Z - 30)
+                    if (isV && p1.x >= E_X - 105 && p1.x < E_X + 45) {
+                        if (minZ <= E_Z - 30 && maxZ >= E_Z - 30) isWall = true; // Chặn đâm xuyên dọc
+                    }
+                    if (isH && p1.z === E_Z - 30 && minX >= E_X - 105 && maxX <= E_X + 45) {
+                        isWall = true; // Chặn chạy men theo bờ tường ngang
+                    }
+                    if (isH && p1.z === E_Z - 30 && maxX === E_X - 105) {
+                        isWall = true; // Chặn AI đâm từ ngoài bãi vào góc tường chết
+                    }
+                    if (isV && p1.x === E_X - 105 && minZ >= E_Z - 30 && maxZ <= E_Z + 15) {
+                        isWall = true; // Chặn chạy ngược từ cửa Exit (Z=+15) lên góc chết
+                    }
+
+                    // QUY TẮC 2: Xây vách dọc ngăn Kho Chính và Khu SX (X = E_X + 45)
+                    // Đây chính là nguyên nhân gây ra lỗi đâm xuyên tường trong hình của anh!
+                    if (isH && minX <= E_X + 45 && maxX >= E_X + 45) {
+                        // AI chỉ được phép đi ngang qua nếu đúng tọa độ có Cửa Exit
+                        if (p1.z !== E_Z + 15 && p1.z !== E_Z + 240) {
+                            isWall = true; 
                         }
                     }
 
-                    // 2. Chặn AI đi men hoặc xuyên qua góc tường phải của Kho Chính (Đoạn vạch vàng dọc móc xuống)
-                    if (isV && p1.x === E_X + 45) {
-                        if (Math.min(p1.z, p2.z) === E_Z - 30 && Math.max(p1.z, p2.z) === E_Z + 15) {
-                            isWall = true;
+                    // QUY TẮC 3: Xây vách ngang ngăn Kho NL và Khu SX (Z = E_Z - 30)
+                    if (isV && minZ <= E_Z - 30 && maxZ >= E_Z - 30) {
+                        if (p1.x > E_X + 45 && p1.x < E_X + 245) {
+                            // Chỉ cho phép đi xuyên qua tại duy nhất Cửa Liên Thông Kho NL & SX
+                            if (p1.x !== E_X + 145) {
+                                isWall = true;
+                            }
                         }
                     }
-                    // --- KẾT THÚC: LOGIC CHẶN TƯỜNG ĐẶC ---
+                    // --- KẾT THÚC HỆ THỐNG TƯỜNG ĐẶC ---
 
-
-                    // Nếu không bị vướng tường thì AI mới được phép nối đường chạy
+                    // Nếu không vướng tường, AI mới được phép vẽ đường kết nối (Edges)
                     if (!isWall) {
                         edgesEnd.push([key1, key2]);
-                        if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) outsideEdgesEnd.push([key1, key2]); 
-                    } 
+                        if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) {
+                            outsideEdgesEnd.push([key1, key2]); 
+                        }
+                    }
                 }
             }
         }
