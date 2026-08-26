@@ -623,7 +623,7 @@
             currentPos.x = px; currentPos.z = pz;
             
             let zoneName = "Khu vực chung";
-            if (px > 1500) {
+            if (px < -500) {
                 zoneName = "Khu vực END LINE";
                 if(pz < E_Z - 200) zoneName = "End Line: Điểm Tập Kết";
                 else if(pz > E_Z + 250) zoneName = "End Line: Cổng NA4";
@@ -708,7 +708,7 @@
             if(currentPos.x === null) return window.showToast("Hãy thả ghim vị trí của bạn trước!", "error");
             evacuationLineGroup.clear();
 
-            let isEndLine = currentPos.x > 1500;
+            let isEndLine = currentPos.x < -500;
             let targetGrid = isEndLine ? gridEnd : gridCan;
             let targetEdges = isEndLine ? edgesEnd : edgesCan;
             let targetOutsideEdges = isEndLine ? outsideEdgesEnd : outsideEdgesCan;
