@@ -32,6 +32,15 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
         body { font-family: 'Inter', sans-serif; }
+        /* BỔ SUNG: ÉP LỚP HẠT AI CHÌM XUỐNG DƯỚI CHỮ CỦA BANNER */
+        #particles-js .particles-js-canvas-el {
+            position: absolute !important;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; 
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen overflow-hidden flex transition-colors duration-300">
@@ -221,14 +230,15 @@
             <div class="max-w-6xl mx-auto w-full">
                 
                 <!-- Hero Banner -->
-                <div class="bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 rounded-3xl p-6 sm:p-12 mb-8 text-white shadow-lg relative overflow-hidden">
-                    <div class="absolute top-0 right-0 -mr-8 -mt-8 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl pointer-events-none"></div>
-                    <div class="relative z-10">
+                <div id="particles-js" class="bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 rounded-3xl p-6 sm:p-12 mb-8 text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute top-0 right-0 -mr-8 -mt-8 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl pointer-events-none z-0"></div>
+                    <!-- Thêm pointer-events-none vào khối chữ để chuột tương tác xuyên qua lớp hạt -->
+                    <div class="relative z-10 pointer-events-none">
                         <p class="text-blue-200 font-bold tracking-widest text-xs mb-3 uppercase">Workspace</p>
                         <h2 class="text-3xl sm:text-5xl font-black mb-4 tracking-tight" data-i18n="hero_title">Trung Tâm Quản Lý EHS</h2>
                         <p class="text-blue-100 max-w-2xl text-sm sm:text-lg leading-relaxed font-medium" data-i18n="hero_subtitle">Nền tảng quản trị thông minh Phòng An Toàn - Vệ Sinh - Môi Trường. Tự động hóa lộ trình đào tạo, số hóa dữ liệu và kiểm soát nhà thầu.</p>
                     </div>
-                    <i class="ph-fill ph-shield-check absolute -bottom-10 -right-10 text-9xl text-white opacity-10 rotate-12 pointer-events-none"></i>
+                    <i class="ph-fill ph-shield-check absolute -bottom-10 -right-10 text-9xl text-white opacity-10 rotate-12 pointer-events-none z-0"></i>
                 </div>
 
                 <!-- Các Thẻ Tính năng chính -->
@@ -1502,6 +1512,53 @@
         if(currentUserId && window.db) {
             setTimeout(window.fetchNotifications, 1000); 
         }
+    </script>
+    <!-- BỔ SUNG PARTICLES.JS: DÁN VÀO ĐÂY, NGAY TRƯỚC THẺ BODY ĐÓNG -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Đảm bảo DOM load xong mới vẽ hạt AI
+        document.addEventListener("DOMContentLoaded", function() {
+            if(document.getElementById('particles-js')) {
+                particlesJS("particles-js", {
+                  "particles": {
+                    "number": { "value": 70, "density": { "enable": true, "value_area": 800 } },
+                    "color": { "value": "#ffffff" },
+                    "shape": { "type": "circle" },
+                    "opacity": { "value": 0.35, "random": false },
+                    "size": { "value": 3, "random": true },
+                    "line_linked": {
+                      "enable": true,
+                      "distance": 150,
+                      "color": "#ffffff",
+                      "opacity": 0.25,
+                      "width": 1
+                    },
+                    "move": {
+                      "enable": true,
+                      "speed": 1.2, /* Bay chậm mượt mà */
+                      "direction": "none",
+                      "random": false,
+                      "straight": false,
+                      "out_mode": "out",
+                      "bounce": false
+                    }
+                  },
+                  "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                      "onhover": { "enable": true, "mode": "grab" },
+                      "onclick": { "enable": true, "mode": "push" },
+                      "resize": true
+                    },
+                    "modes": {
+                      "grab": { "distance": 200, "line_linked": { "opacity": 0.7 } },
+                      "push": { "particles_nb": 3 }
+                    }
+                  },
+                  "retina_detect": true
+                });
+            }
+        });
     </script>
 </body>
 </html>
