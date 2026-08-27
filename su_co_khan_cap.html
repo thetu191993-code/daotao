@@ -306,7 +306,9 @@
                     // =========================================================
                     // Cắt đứt vách trên của Kho Phụ (Z = E_Z + 190).
                     // Cấm AI dẫn đường chạy ngược lên Khu Sản Xuất. Ép phải ra Cổng Nam (Đường Vành đai).
-                    if (isV && minZ < E_Z + 190 && maxZ >= E_Z + 190 && p1.x >= E_X + 45 && p1.x <= E_X + 245) isWall = true;
+                    if (isV && minZ < E_Z + 190 && maxZ >= E_Z + 190 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
+                        if (p1.x !== E_X + 80) isWall = true; 
+                    }
 
                     // =========================================================
                     // 3. VÙNG CỬA CUỐN (RED HATCHED AREA) - ÉP ĐI XUYÊN CANTEEN
@@ -315,6 +317,9 @@
                     // Chặn băng ngang ở X = E_X - 15 và X = E_X - 45. Ép AI chui vào Cửa Sau Canteen rồi mới ra Vành đai.
                     if (isH && minX < E_X - 15 && maxX >= E_X - 15 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
                     if (isH && minX < E_X - 45 && maxX >= E_X - 45 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
+                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
+                        if (p1.x !== E_X + 145) isWall = true;
+                    }
 
                     // =========================================================
                     // 4. KỶ LUẬT VÀNH ĐAI (PERIMETER DISCIPLINE)
@@ -379,7 +384,7 @@
             { name: "Cửa Liên Thông Kho Chính-Phụ", node: `${E_X + 45}_${E_Z + 240}`, x: E_X + 45, z: E_Z + 240 },
 
             // 6. Ranh giới giữa Khu SX và Kho Phụ
-            { name: "Cửa Giữa SX & Kho Phụ", node: `${E_X + 145}_${E_Z + 190}`, x: E_X + 145, z: E_Z + 190 },
+            { name: "Cửa Giữa SX & Kho Phụ", node: `${E_X + 80}_${E_Z + 190}`, x: E_X + 80, z: E_Z + 190 },
 
             // 7. Vách phải Khu Sản Xuất - Nửa dưới
             { name: "Cửa Hông Phải SX", node: `${E_X + 245}_${E_Z + 100}`, x: E_X + 245, z: E_Z + 100 },
@@ -388,10 +393,11 @@
             { name: "Cửa Hông Phải Kho Phụ", node: `${E_X + 245}_${E_Z + 240}`, x: E_X + 245, z: E_Z + 240 },
 
             // 9. Vách dưới cùng Kho Thành Phẩm (Phụ) - Hướng cổng
-            { name: "Cửa Sau Kho Phụ", node: `${E_X + 145}_${E_Z + 290}`, x: E_X + 145, z: E_Z + 290 },
+            { name: "Cửa Sau Kho Phụ", node: `${E_X + 245}_${E_Z + 290}`, x: E_X + 245, z: E_Z + 290 },
+            { name: "Cửa Sau Kho Phụ (Trái)", node: `${E_X + 80}_${E_Z + 290}`, x: E_X + 80, z: E_Z + 290 },
 
             // Thêm Cửa Đáy Kho Chính để tạo thành Hướng thoát thứ 3 khi ở trong Kho
-            { name: "Cửa Dưới Kho Chính", node: `${E_X - 45}_${E_Z + 290}`, x: E_X - 45, z: E_Z + 290 }
+            { name: "Cửa Dưới Kho Chính", node: `${E_X - 100}_${E_Z + 290}`, x: E_X - 100, z: E_Z + 290 }
         ];
 
         // =========================================================================
