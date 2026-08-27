@@ -204,18 +204,30 @@
                 // Gửi request tới Google Apps Script (Người đưa thư)
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Dùng text/plain để tránh lỗi CORS Preflight phức tạp
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify({ message: message })
                 });
 
                 const data = await response.json();
                 removeLoading();
 
+                // =======================================================
+                // ĐÃ SỬA LỖI HIỂN THỊ [object Object] TẠI ĐÂY
+                // =======================================================
                 if (data.error) {
-                    appendMessage('ai', "🚨 **Lỗi từ máy chủ:**\n" + data.error);
-                } else if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    // Bóc tách lỗi: Nếu là Object thì lấy thuộc tính message, nếu không thì ép kiểu thành chuỗi
+                    let errorDetail = "";
+                    if (typeof data.error === 'object') {
+                        errorDetail = data.error.message || JSON.stringify(data.error, null, 2);
+                    } else {
+                        errorDetail = data.error;
+                    }
+                    appendMessage('ai', "🚨 **Thông báo lỗi chi tiết từ Server:**\n`" + errorDetail + "`\n\n*Anh Tư hãy chụp lại lỗi này để kiểm tra trên Google Apps Script nhé!*");
+                } 
+                else if (data.candidates && data.candidates[0].content.parts[0].text) {
                     appendMessage('ai', data.candidates[0].content.parts[0].text);
-                } else {
+                } 
+                else {
                     appendMessage('ai', "⚠️ Trợ lý AI hiện không thể phản hồi. Vui lòng thử lại sau.");
                 }
 
