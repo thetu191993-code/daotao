@@ -294,46 +294,63 @@
                     let maxZ = Math.max(p1.z, p2.z);
 
                     // =========================================================================
-                    // KỶ LUẬT THÉP PCCC: CẤM TUYỆT ĐỐI CHẠY XUYÊN XƯỞNG/KHO ĐỂ ĐI TẮT
+                    // 1. CẮT ĐỨT TUYẾN BẮC - NAM (SỬA LỖI ĐI NGƯỢC VÀO XƯỞNG)
                     // =========================================================================
+                    // Cấm tuyệt đối mọi đường chạy dọc đâm từ khu vực Canteen/Kho NL (Z < -30) 
+                    // xuống xưởng sản xuất (Z >= -30). Ép buộc khu vực phía Bắc phải thoát ra Vành đai.
+                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
+                        isWall = true;
+                    }
 
-                    // 1. BẢO VỆ KHO CHÍNH (VÙNG CẤM XÂM PHẠM & HÀNG RÀO CHẾT)
-                    // - Đổ bê tông vách phải Kho Chính (X = E_X + 45). CẤM đâm xuyên từ SX/Kho Phụ vào Kho Chính.
+                    // =========================================================================
+                    // 2. BẢO VỆ KHO CHÍNH (MAIN WAREHOUSE) - CHỈ RA KHÔNG VÀO
+                    // =========================================================================
+                    // Đổ bê tông vách phải Kho Chính (X = E_X + 45). CẤM đâm xuyên ngang từ Khu SX vào Kho Chính.
                     if (isH && maxX === E_X + 45 && minX < E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) {
                         isWall = true; 
                     }
-                    // - Hàng rào nóc Kho Chính (Z = E_Z - 30): Từ X = -105 đến X = 45 là hàng rào cụt, cấm lao vào.
-                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) isWall = true;
-                    if (isH && p1.z === E_Z - 30 && minX >= E_X - 105 && maxX < E_X + 45) isWall = true;
 
-                    // 2. ÉP THOÁT RA VÀNH ĐAI TÂY (Dành cho người trong Kho Chính)
-                    // Chặn vách X = E_X - 105, CHỈ mở 2 lỗ hổng đúng tại cửa Exit (Z = 15 và Z = 190) để phóng ra đường nhựa
+                    // =========================================================================
+                    // 3. ÉP THOÁT RA VÀNH ĐAI TÂY (Dành cho Canteen & Kho Chính)
+                    // =========================================================================
+                    // Chặn vách X = E_X - 105, CHỈ mở 2 lỗ hổng đúng tại cửa Exit Kho Chính (Z = 15 và Z = 190)
                     if (isH && minX === E_X - 190 && maxX === E_X - 105) {
-                        if (p1.z !== E_Z + 15 && p1.z !== E_Z + 190) isWall = true;
+                        if (p1.z >= E_Z - 30) {
+                            if (p1.z !== E_Z + 15 && p1.z !== E_Z + 190) isWall = true;
+                        } 
+                    }
+                    
+                    // NGUYÊN TẮC VÀNG: Vượt qua ranh giới tường trái (X = -105) thì BẮT BUỘC phải 
+                    // đang nằm trên Vành đai Bắc (Z <= -170) hoặc Vành đai Nam (Z >= 320) mới được rẽ sang Tập Kết.
+                    if (isH && minX < E_X - 105 && maxX >= E_X - 105) {
+                        if (p1.z > E_Z - 170 && p1.z < E_Z + 320) isWall = true; 
                     }
 
-                    // 3. ÉP THOÁT RA VÀNH ĐAI ĐÔNG (Dành cho Khu Sản Xuất & Kho Phụ)
-                    // Chặn vách X = E_X + 245, CHỈ mở 3 lỗ hổng tại cửa Exit (Z = 100, 190, 240) để phóng ra đường nhựa
+                    // =========================================================================
+                    // 4. ÉP THOÁT RA VÀNH ĐAI ĐÔNG (Dành cho Khu Sản Xuất & Kho Phụ)
+                    // =========================================================================
+                    // Chặn vách X = E_X + 245, CHỈ mở 3 lỗ hổng tại cửa Exit (Z = 100, 190, 240)
                     if (isH && minX === E_X + 245 && maxX === E_X + 255 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) {
                         if (p1.z !== E_Z + 100 && p1.z !== E_Z + 190 && p1.z !== E_Z + 240) isWall = true;
                     }
 
-                    // 4. ÉP THOÁT RA VÀNH ĐAI NAM (Dành cho Đáy Kho Phụ & Đáy Kho Chính)
+                    // =========================================================================
+                    // 5. ÉP THOÁT RA VÀNH ĐAI NAM (Dành cho Đáy Kho Phụ & Đáy Kho Chính)
+                    // =========================================================================
                     // Chặn vách đáy Z = E_Z + 290, CHỈ mở 3 lỗ hổng tại (-15, 80, 145) để phóng xuống Vành đai Nam
                     if (isV && minZ === E_Z + 290 && maxZ === E_Z + 320 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
                         if (p1.x !== E_X - 15 && p1.x !== E_X + 80 && p1.x !== E_X + 145) isWall = true;
                     }
 
-                    // 5. CẮT ĐỨT GIAO THÔNG NỘI BỘ (KHÔNG CHO CHẠY LÒNG VÒNG TRONG XƯỞNG)
-                    // - Cấm người từ Kho Phụ chạy ngược lên Khu Sản Xuất (Z = E_Z + 190). Ép phải ra cửa Đông hoặc Nam.
+                    // =========================================================================
+                    // 6. NGĂN CHẶN CHẠY LÒNG VÒNG NỘI BỘ 
+                    // =========================================================================
+                    // - Cấm người từ Kho Phụ chạy ngược lên Khu Sản Xuất (Z = E_Z + 190).
                     if (isV && minZ < E_Z + 190 && maxZ >= E_Z + 190 && p1.x >= E_X + 45 && p1.x < E_X + 245) isWall = true;
-                    // - Vùng cửa cuốn Đại Sảnh/Canteen: Ép luồn cửa sau thay vì cắt ngang.
+                    
+                    // - Vùng cửa cuốn Đại Sảnh/Canteen: Ép luồn cửa sau thay vì cắt ngang bừa bãi.
                     if (isH && minX < E_X - 15 && maxX >= E_X - 15 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
                     if (isH && minX < E_X - 45 && maxX >= E_X - 45 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
-                    // - Ngăn SX đâm bừa lên Kho NL, chỉ chừa đúng 1 cửa liên thông ở X = E_X + 145
-                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
-                        if (p1.x !== E_X + 145) isWall = true;
-                    }
 
                     if (!isWall) {
                         edgesEnd.push([key1, key2]);
