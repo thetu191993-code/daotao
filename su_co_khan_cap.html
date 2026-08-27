@@ -299,54 +299,53 @@
                     if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z > E_Z - 170 && p1.z < E_Z - 30) isWall = true;
 
                     // =========================================================================
-                    // 2. BẢO VỆ KHO CHÍNH (VÙNG CẤM & HÀNG RÀO)
+                    // 2. CÔ LẬP KHO CHÍNH (SỬA LỖI ĐI XUYÊN SẢN XUẤT CỦA ANH)
                     // =========================================================================
-                    if (isH && maxX === E_X + 45 && minX < E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) isWall = true; 
+                    // Chặn vĩnh viễn vách phải Kho Chính (X = 45). Cấm 100% giao thông qua lại giữa Kho Chính và Khu SX/Kho Phụ.
+                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) isWall = true; 
+                    // Chặn nóc Kho Chính
                     if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) isWall = true;
                     if (isH && p1.z === E_Z - 30 && minX >= E_X - 105 && maxX < E_X + 45) isWall = true;
 
                     // =========================================================================
-                    // 3. ÉP THOÁT RA VÀNH ĐAI TÂY & NAM
+                    // 3. MỞ KHÓA VÀNH ĐAI TÂY (CHÌA KHÓA ĐỂ THOÁT THẲNG RA NGOÀI)
                     // =========================================================================
-                    if (isH && minX === E_X - 190 && maxX === E_X - 105 && p1.z >= E_Z - 30) {
+                    // Tường trái Kho Chính (X = -105) bị chặn để ép đi đúng vành đai, 
+                    // NHƯNG phải mở 2 lỗ hổng tại Cửa (Z = 15, Z = 190) để thoát thẳng ra Vành đai Tây!
+                    if (isH && minX < E_X - 105 && maxX >= E_X - 105 && p1.z > E_Z - 170 && p1.z < E_Z + 320) {
                         if (p1.z !== E_Z + 15 && p1.z !== E_Z + 190) isWall = true;
                     } 
-                    if (isH && minX < E_X - 105 && maxX >= E_X - 105 && p1.z > E_Z - 170 && p1.z < E_Z + 320) isWall = true; 
-                    
-                    if (isV && minZ === E_Z + 290 && maxZ === E_Z + 320 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
-                        if (p1.x !== E_X - 15 && p1.x !== E_X + 80 && p1.x !== E_X + 145) isWall = true;
-                    }
 
                     // =========================================================================
                     // 4. ÉP THOÁT RA VÀNH ĐAI ĐÔNG
                     // =========================================================================
-                    if (isH && minX === E_X + 245 && maxX === E_X + 255 && p1.z >= E_Z - 90 && p1.z <= E_Z + 290) {
+                    if (isH && minX < E_X + 245 && maxX >= E_X + 245 && p1.z >= E_Z - 90 && p1.z <= E_Z + 290) {
                         if (p1.z !== E_Z - 60 && p1.z !== E_Z + 100 && p1.z !== E_Z + 190 && p1.z !== E_Z + 240) isWall = true;
                     }
 
                     // =========================================================================
-                    // 5. NGUYÊN TẮC CẮT LỐI ĐI TẮT BÊN TRONG (KHẮC PHỤC 2 LỖI VỪA NÊU)
+                    // 5. ÉP THOÁT RA VÀNH ĐAI NAM
                     // =========================================================================
-                    
-                    // A. Tách biệt Kho Phụ & Khu Sản Xuất: Cắt đứt liên kết dọc từ Z=100 đến Z=190.
-                    // BẤT KỲ AI ở Kho Phụ (nửa dưới) sẽ bị chặn đứng đường lên phía Bắc, bắt buộc phải thoát ra Vành đai Nam.
-                    if (isV && minZ === E_Z + 100 && maxZ === E_Z + 190 && p1.x >= E_X + 45 && p1.x < E_X + 245) isWall = true;
-                    
-                    // B. Điều hướng Kho Nguyên Liệu: Chặn đường đi sang trái tại Z=-60.
-                    // Ép người từ cửa Kho NL (245, -60) không được chui lại vào xưởng, phải bước thẳng ra Vành đai Đông (255).
-                    if (isH && p1.z === E_Z - 60 && maxX === E_X + 245) isWall = true;
+                    if (isV && minZ < E_Z + 290 && maxZ >= E_Z + 290 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
+                        if (p1.x !== E_X - 15 && p1.x !== E_X + 80 && p1.x !== E_X + 145) isWall = true;
+                    }
 
                     // =========================================================================
                     // 6. TUYẾN THOÁT NẠN BẮC - NAM BÊN TRONG XƯỞNG
                     // =========================================================================
+                    // Tách Kho Phụ & SX
+                    if (isV && minZ < E_Z + 190 && maxZ >= E_Z + 190 && p1.x >= E_X + 45 && p1.x < E_X + 245) {
+                        if (p1.x !== E_X + 80) isWall = true;
+                    }
+                    // Tách SX & Kho NL
                     if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
                         if (p1.x !== E_X + 145) isWall = true;
                     }
+                    // Tách Canteen/Trạm Bơm
                     if (isV && minZ < E_Z - 90 && maxZ >= E_Z - 90 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
                         if (p1.x !== E_X - 15 && p1.x !== E_X + 80 && p1.x !== E_X + 115) isWall = true;
                     }
                     if (isV && minZ < E_Z - 150 && maxZ >= E_Z - 150 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
-                        // ĐÃ SỬA LỖI: Bổ sung mở cửa cho X=215 để Kho Phế Liệu có đường đi thẳng lên Vành đai Bắc (-170)
                         if (p1.x !== E_X - 15 && p1.x !== E_X + 80 && p1.x !== E_X + 215) isWall = true;
                     }
 
@@ -354,11 +353,11 @@
                     // 7. BẢO VỆ NHÀ KHO TRỐNG & ĐƯỜNG LUỒNG
                     // =========================================================================
                     if (isH && p1.z === E_Z - 280 && maxX > E_X) isWall = true;
-                    
-                    // Chặn AI đi ngang cắt mặt Canteen, ép Cửa Kho Phế Liệu phải đâm thẳng lên Vành đai Bắc
                     if (isH && p1.z === E_Z - 150 && maxX > E_X - 15) isWall = true;
 
+                    // =========================================================================
                     // 8. CẤM SỬ DỤNG ĐƯỜNG QUỐC LỘ (NA4)
+                    // =========================================================================
                     if (isH && p1.z === E_Z - 420) isWall = true;
 
                     if (!isWall) {
