@@ -294,9 +294,10 @@
                     let maxZ = Math.max(p1.z, p2.z);
 
                     // =========================================================================
-                    // 1. KỊCH BẢN CỬA CUỐN SẬP 
+                    // 1. KỊCH BẢN CỬA CUỐN SẬP (ĐÃ SỬA LỖI CHẶN VÀNH ĐAI)
                     // =========================================================================
-                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z >= E_Z - 170 && p1.z < E_Z - 30) isWall = true;
+                    // Đã thay '>=' thành '>' để GIẢI PHÓNG trục Vành đai nội bộ (Z = -170).
+                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z > E_Z - 170 && p1.z < E_Z - 30) isWall = true;
 
                     // =========================================================================
                     // 2. BẢO VỆ KHO CHÍNH (VÙNG CẤM & HÀNG RÀO)
@@ -344,14 +345,16 @@
                     }
 
                     // =========================================================================
-                    // 7. BẢO VỆ NHÀ KHO TRỐNG VÀ CÁC ĐƯỜNG LUỒNG (NGUYÊN TẮC MỚI BỔ SUNG)
+                    // 7. BẢO VỆ NHÀ KHO TRỐNG & ĐƯỜNG LUỒNG
                     // =========================================================================
-                    // Ngăn chặn AI lười biếng chạy cắt ngang mặt bằng Nhà Kho Trống (Z = -280).
-                    // Tuyến đường ngang Z = -280 này CHỈ ĐƯỢC PHÉP dùng cho đoạn rẽ từ Vành đai Tây chui vào bãi Tập Kết.
                     if (isH && p1.z === E_Z - 280 && maxX > E_X) isWall = true;
-                    
-                    // Ngăn chặn AI chạy dọc mép sau Canteen/Trạm bơm (Z = -150) thay vì đi lên lộ chính Z = -170
                     if (isH && p1.z === E_Z - 150 && maxX > E_X - 15) isWall = true;
+
+                    // =========================================================================
+                    // 8. CẤM SỬ DỤNG ĐƯỜNG QUỐC LỘ BÊN NGOÀI (NA4) LÀM ĐƯỜNG SƠ TÁN
+                    // =========================================================================
+                    // Khóa trục Z = -420. Ép người lao động phải đi ngang qua Vành đai nội bộ Z = -170.
+                    if (isH && p1.z === E_Z - 420) isWall = true;
 
                     if (!isWall) {
                         edgesEnd.push([key1, key2]);
