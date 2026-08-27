@@ -294,54 +294,68 @@
                     let maxZ = Math.max(p1.z, p2.z);
 
                     // =========================================================================
-                    // KỶ LUẬT THÉP PCCC TỐI ƯU: ÉP RA VÀNH ĐAI, CẤM ĐI TẮT XUYÊN XƯỞNG
+                    // 1. KỊCH BẢN CỬA CUỐN SẬP (VÙNG GẠCH ĐỎ CỦA ANH)
                     // =========================================================================
-
-                    // 1. PHÂN LUỒNG HÀNH LANG (SỬA LỖI KHO NGUYÊN LIỆU)
-                    // Cắt đứt hành lang hẻm (Z = -90) tại điểm X = E_X + 45.
-                    // Ép người từ Kho NL bắt buộc phải chạy ra Vành Đai Đông, không được rẽ trái đâm xuyên Canteen.
-                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z === E_Z - 90) {
+                    // Cắt đứt toàn bộ giao thông ngang (Đông-Tây) tại ranh giới X = E_X + 45 ở khu vực trước xưởng.
+                    // Kỷ luật này ép người từ Kho Nguyên Liệu KHÔNG THỂ rẽ trái đi tắt qua Đại Sảnh.
+                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z >= E_Z - 170 && p1.z < E_Z - 30) {
                         isWall = true;
                     }
-                    
-                    // Bịt kín vách sau của Dải tiện ích (Ngăn AI đi xuyên từ hẻm Z = -90 chui vào Trạm Bơm)
-                    // Chỉ chừa đúng Cửa sau Canteen tại X = -15
-                    if (isV && minZ === E_Z - 100 && maxZ === E_Z - 90 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
-                        if (p1.x !== E_X - 15) isWall = true; 
-                    }
 
-                    // 2. BẢO VỆ KHO CHÍNH (MAIN WAREHOUSE)
+                    // =========================================================================
+                    // 2. BẢO VỆ KHO CHÍNH (VÙNG CẤM & HÀNG RÀO)
+                    // =========================================================================
+                    // Cấm đâm xuyên ngang từ Khu SX vào Kho Chính (Vách X = 45)
                     if (isH && maxX === E_X + 45 && minX < E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) isWall = true; 
+                    // Hàng rào nóc Kho Chính (Z = -30). Cấm đâm đầu vào hàng rào.
                     if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) isWall = true;
                     if (isH && p1.z === E_Z - 30 && minX >= E_X - 105 && maxX < E_X + 45) isWall = true;
 
-                    // 3. ÉP THOÁT RA VÀNH ĐAI TÂY 
-                    if (isH && minX === E_X - 190 && maxX === E_X - 105) {
-                        if (p1.z >= E_Z - 30) {
-                            if (p1.z !== E_Z + 15 && p1.z !== E_Z + 190) isWall = true;
-                        } 
-                    }
-                    if (isH && minX < E_X - 105 && maxX >= E_X - 105) {
-                        if (p1.z > E_Z - 170 && p1.z < E_Z + 320) isWall = true; 
-                    }
+                    // =========================================================================
+                    // 3. ÉP THOÁT RA VÀNH ĐAI TÂY (Dành cho Canteen & Kho Chính)
+                    // =========================================================================
+                    // Tường X = -105 chỉ mở 2 lỗ hổng (Z = 15 và Z = 190) để thoát ra ngoài
+                    if (isH && minX === E_X - 190 && maxX === E_X - 105 && p1.z >= E_Z - 30) {
+                        if (p1.z !== E_Z + 15 && p1.z !== E_Z + 190) isWall = true;
+                    } 
+                    // Đã ra Vành đai Tây là cấm đi ngang, ép đi dọc lên bãi Tập Kết
+                    if (isH && minX < E_X - 105 && maxX >= E_X - 105 && p1.z > E_Z - 170 && p1.z < E_Z + 320) isWall = true; 
 
-                    // 4. ÉP THOÁT RA VÀNH ĐAI ĐÔNG (CẬP NHẬT CHO KHO NGUYÊN LIỆU)
-                    // Chặn vách X = 245, chừa các lỗ hổng tại Exit từ Z = -90 trở xuống
+                    // =========================================================================
+                    // 4. ÉP THOÁT RA VÀNH ĐAI ĐÔNG (Kho Nguyên Liệu, SX, Kho Phụ)
+                    // =========================================================================
+                    // Tường X = 245 chỉ mở lỗ hổng tại các Cửa Exit (Z = -60, 100, 190, 240)
                     if (isH && minX === E_X + 245 && maxX === E_X + 255 && p1.z >= E_Z - 90 && p1.z <= E_Z + 290) {
                         if (p1.z !== E_Z - 60 && p1.z !== E_Z + 100 && p1.z !== E_Z + 190 && p1.z !== E_Z + 240) isWall = true;
                     }
 
+                    // =========================================================================
                     // 5. ÉP THOÁT RA VÀNH ĐAI NAM 
+                    // =========================================================================
                     if (isV && minZ === E_Z + 290 && maxZ === E_Z + 320 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
                         if (p1.x !== E_X - 15 && p1.x !== E_X + 80 && p1.x !== E_X + 145) isWall = true;
                     }
 
-                    // 6. CẮT ĐỨT GIAO THÔNG NỘI BỘ (KHÔNG CHO CHẠY LÒNG VÒNG TRONG XƯỞNG)
-                    if (isV && minZ < E_Z + 190 && maxZ >= E_Z + 190 && p1.x >= E_X + 45 && p1.x < E_X + 245) isWall = true;
-                    if (isH && minX < E_X - 15 && maxX >= E_X - 15 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
-                    if (isH && minX < E_X - 45 && maxX >= E_X - 45 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
+                    // =========================================================================
+                    // 6. TUYẾN THOÁT NẠN BẮC - NAM BÊN TRONG XƯỞNG
+                    // =========================================================================
+                    // Ngăn Kho Phụ chạy ngược lên Sản Xuất (Chỉ mở cửa liên thông X = 80)
+                    if (isV && minZ < E_Z + 190 && maxZ >= E_Z + 190 && p1.x >= E_X + 45 && p1.x < E_X + 245) {
+                        if (p1.x !== E_X + 80) isWall = true;
+                    }
+                    // Ngăn SX chạy ngược lên Kho Nguyên Liệu (Chỉ mở cửa liên thông X = 145)
                     if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
                         if (p1.x !== E_X + 145) isWall = true;
+                    }
+                    
+                    // CHUỖI MŨI TÊN VÀNG: Cho phép đi xuyên Trạm Bơm & Canteen ra Vành đai Bắc
+                    // Mở cửa vào (Z = -90) tại X = -15, 80, 115
+                    if (isV && minZ < E_Z - 90 && maxZ >= E_Z - 90 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
+                        if (p1.x !== E_X - 15 && p1.x !== E_X + 80 && p1.x !== E_X + 115) isWall = true;
+                    }
+                    // Mở cửa ra (Z = -150) tại X = -15, 80
+                    if (isV && minZ < E_Z - 150 && maxZ >= E_Z - 150 && p1.x >= E_X - 105 && p1.x <= E_X + 245) {
+                        if (p1.x !== E_X - 15 && p1.x !== E_X + 80) isWall = true;
                     }
 
                     if (!isWall) {
