@@ -287,49 +287,44 @@
                 let isV = (p1.x === p2.x) && (Math.abs(END_C_Z.indexOf(p1.z) - END_C_Z.indexOf(p2.z)) === 1);
                 
                 if (isH || isV) {
-                    
                     let isWall = false;
                     let minX = Math.min(p1.x, p2.x);
                     let maxX = Math.max(p1.x, p2.x);
                     let minZ = Math.min(p1.z, p2.z);
                     let maxZ = Math.max(p1.z, p2.z);
 
-                    // ---------------------------------------------------------
-                    // NGUYÊN TẮC 1: KHÔNG CHO KHU VỰC KHÁC TRÀN VÀO KHO CHÍNH
-                    // ---------------------------------------------------------
-                    // Cắt đứt mọi kết nối đi ngang qua vách phải Kho Chính (X = E_X + 45)
-                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z >= E_Z - 30) {
-                        isWall = true;
-                    }
-                    // Cắt đứt kết nối đi dọc đâm từ trên xuống nóc Kho Chính (Z = E_Z - 30)
-                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) {
-                        isWall = true;
+                    // =========================================================
+                    // 1. KHO CHÍNH (MAIN WAREHOUSE) - CHỈ RA KHÔNG VÀO
+                    // =========================================================
+                    // Cắt đứt mọi kết nối ngang qua vách phải Kho Chính (X = E_X + 45). Ép người bên trong thoát ra Trái & Dưới.
+                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) isWall = true;
+                    // Cắt đứt kết nối dọc từ trên xuống nóc Kho Chính (Z = E_Z - 30)
+                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) isWall = true;
+
+                    // =========================================================
+                    // 2. KHO PHỤ (AUX WAREHOUSE) - ÉP RA VÀNH ĐAI NAM
+                    // =========================================================
+                    // Cắt đứt vách trên của Kho Phụ (Z = E_Z + 190).
+                    // Cấm AI dẫn đường chạy ngược lên Khu Sản Xuất. Ép phải ra Cổng Nam (Đường Vành đai).
+                    if (isV && minZ < E_Z + 190 && maxZ >= E_Z + 190 && p1.x >= E_X + 45 && p1.x <= E_X + 245) isWall = true;
+
+                    // =========================================================
+                    // 3. VÙNG CỬA CUỐN (RED HATCHED AREA) - ÉP ĐI XUYÊN CANTEEN
+                    // =========================================================
+                    // Khi cửa cuốn đóng, khoảng không giữa xưởng và Canteen bị bít 1 phần.
+                    // Chặn băng ngang ở X = E_X - 15 và X = E_X - 45. Ép AI chui vào Cửa Sau Canteen rồi mới ra Vành đai.
+                    if (isH && minX < E_X - 15 && maxX >= E_X - 15 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
+                    if (isH && minX < E_X - 45 && maxX >= E_X - 45 && p1.z > E_Z - 170 && p1.z <= E_Z - 30) isWall = true;
+
+                    // =========================================================
+                    // 4. KỶ LUẬT VÀNH ĐAI (PERIMETER DISCIPLINE)
+                    // =========================================================
+                    // Nếu đã thoát ra vách ngoài bên trái, CẤM băng cắt chéo qua bãi trống.
+                    // Phải bám hành lang đi tới đụng Vành Đai Bắc (Z = -170) hoặc Vành Đai Nam (Z = 320) mới được rẽ sang Điểm tập kết.
+                    if (isH && minX < E_X - 105 && maxX >= E_X - 105) {
+                        if (p1.z > E_Z - 170 && p1.z < E_Z + 320) isWall = true; 
                     }
 
-                    // ---------------------------------------------------------
-                    // NGUYÊN TẮC 2: RA LÀ RA - KHÔNG CHUI NGƯỢC VÀO TRONG
-                    // ---------------------------------------------------------
-                    // Chia cắt vách chung giữa Đại Sảnh và Canteen (X = E_X - 45). Cấm đi xuyên giữa 2 phòng.
-                    if (isH && minX < E_X - 45 && maxX >= E_X - 45 && p1.z >= E_Z - 150 && p1.z <= E_Z - 90) {
-                        isWall = true;
-                    }
-                    // Kiểm soát vách ngăn Khu SX và Kho Nguyên Liệu. Chỉ chừa đúng tọa độ Cửa Liên Thông.
-                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
-                        if (p1.x !== E_X + 145) isWall = true;
-                    }
-
-                    // ---------------------------------------------------------
-                    // NGUYÊN TẮC 3: PHẢI DI CHUYỂN TRÊN TUYẾN VÀNH ĐAI KHI RA NGOÀI
-                    // ---------------------------------------------------------
-                    // Khi người lao động thoát ra vách trái (X = E_X - 105), CẤM rẽ trái băng ngang bãi không. 
-                    // Bắt buộc phải đi dọc hành lang đến khi chạm Vành Đai Trên (Z = -170) hoặc Dưới (Z = 320) mới được rẽ.
-                    if (isH && maxX === E_X - 105 && minX < E_X - 105) {
-                        if (p1.z > E_Z - 170 && p1.z < E_Z + 320) {
-                            isWall = true; 
-                        }
-                    }
-
-                    // Nếu không vi phạm bất kỳ kỷ luật EHS nào ở trên, thuật toán mới được vẽ đường
                     if (!isWall) {
                         edgesEnd.push([key1, key2]);
                         if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) {
@@ -393,7 +388,10 @@
             { name: "Cửa Hông Phải Kho Phụ", node: `${E_X + 245}_${E_Z + 240}`, x: E_X + 245, z: E_Z + 240 },
 
             // 9. Vách dưới cùng Kho Thành Phẩm (Phụ) - Hướng cổng
-            { name: "Cửa Sau Kho Phụ", node: `${E_X + 145}_${E_Z + 290}`, x: E_X + 145, z: E_Z + 290 }
+            { name: "Cửa Sau Kho Phụ", node: `${E_X + 145}_${E_Z + 290}`, x: E_X + 145, z: E_Z + 290 },
+
+            // Thêm Cửa Đáy Kho Chính để tạo thành Hướng thoát thứ 3 khi ở trong Kho
+            { name: "Cửa Dưới Kho Chính", node: `${E_X - 45}_${E_Z + 290}`, x: E_X - 45, z: E_Z + 290 }
         ];
 
         // =========================================================================
