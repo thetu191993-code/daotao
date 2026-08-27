@@ -287,31 +287,49 @@
                 let isV = (p1.x === p2.x) && (Math.abs(END_C_Z.indexOf(p1.z) - END_C_Z.indexOf(p2.z)) === 1);
                 
                 if (isH || isV) {
+                    
                     let isWall = false;
                     let minX = Math.min(p1.x, p2.x);
                     let maxX = Math.max(p1.x, p2.x);
                     let minZ = Math.min(p1.z, p2.z);
                     let maxZ = Math.max(p1.z, p2.z);
 
-                    // 1. CẤM ĐI NGANG: Chặt đứt liên kết đâm từ vách phải (E_X + 45) chui vào Kho Chính
-                    if (isH && maxX === E_X + 45 && minX < E_X + 45 && p1.z >= E_Z - 30 && p1.z <= E_Z + 290) isWall = true; 
-                    
-                    // 2. CẤM ĐI DỌC: Chặt đứt liên kết đâm từ vách trên (E_Z - 30) chui xuống Kho Chính (Chừa đường luồng bên ngoài E_X - 105)
-                    if (isV && minZ === E_Z - 30 && maxZ > E_Z - 30 && p1.x > E_X - 105 && p1.x < E_X + 45) isWall = true;
+                    // ---------------------------------------------------------
+                    // NGUYÊN TẮC 1: KHÔNG CHO KHU VỰC KHÁC TRÀN VÀO KHO CHÍNH
+                    // ---------------------------------------------------------
+                    // Cắt đứt mọi kết nối đi ngang qua vách phải Kho Chính (X = E_X + 45)
+                    if (isH && minX < E_X + 45 && maxX >= E_X + 45 && p1.z >= E_Z - 30) {
+                        isWall = true;
+                    }
+                    // Cắt đứt kết nối đi dọc đâm từ trên xuống nóc Kho Chính (Z = E_Z - 30)
+                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X - 105 && p1.x < E_X + 45) {
+                        isWall = true;
+                    }
 
-                    // 3. TƯỜNG KHO NL: Ngăn Khu SX chạy thẳng lên Kho NL (Chỉ cho phép qua Cửa E_X + 145)
-                    if (isV && minZ === E_Z - 30 && maxZ > E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
+                    // ---------------------------------------------------------
+                    // NGUYÊN TẮC 2: RA LÀ RA - KHÔNG CHUI NGƯỢC VÀO TRONG
+                    // ---------------------------------------------------------
+                    // Chia cắt vách chung giữa Đại Sảnh và Canteen (X = E_X - 45). Cấm đi xuyên giữa 2 phòng.
+                    if (isH && minX < E_X - 45 && maxX >= E_X - 45 && p1.z >= E_Z - 150 && p1.z <= E_Z - 90) {
+                        isWall = true;
+                    }
+                    // Kiểm soát vách ngăn Khu SX và Kho Nguyên Liệu. Chỉ chừa đúng tọa độ Cửa Liên Thông.
+                    if (isV && minZ < E_Z - 30 && maxZ >= E_Z - 30 && p1.x >= E_X + 45 && p1.x <= E_X + 245) {
                         if (p1.x !== E_X + 145) isWall = true;
                     }
 
-                    // 4. ƯU TIÊN VÀNH ĐAI: Ép người lao động phải thoát ra vành đai mới được vòng về Bãi Tập Kết
-                    // Chặn đứng mọi hướng rẽ trái băng ngang qua vách trái nhà máy (E_X - 105) NẾU chưa lên tới Đường Vành Đai (E_Z - 170)
-                    if (isH && minX <= E_X - 105 && maxX >= E_X - 105) {
-                        if (p1.z > E_Z - 170) {
-                            isWall = true;
+                    // ---------------------------------------------------------
+                    // NGUYÊN TẮC 3: PHẢI DI CHUYỂN TRÊN TUYẾN VÀNH ĐAI KHI RA NGOÀI
+                    // ---------------------------------------------------------
+                    // Khi người lao động thoát ra vách trái (X = E_X - 105), CẤM rẽ trái băng ngang bãi không. 
+                    // Bắt buộc phải đi dọc hành lang đến khi chạm Vành Đai Trên (Z = -170) hoặc Dưới (Z = 320) mới được rẽ.
+                    if (isH && maxX === E_X - 105 && minX < E_X - 105) {
+                        if (p1.z > E_Z - 170 && p1.z < E_Z + 320) {
+                            isWall = true; 
                         }
                     }
 
+                    // Nếu không vi phạm bất kỳ kỷ luật EHS nào ở trên, thuật toán mới được vẽ đường
                     if (!isWall) {
                         edgesEnd.push([key1, key2]);
                         if (isOutsideEndNode(key1) && isOutsideEndNode(key2)) {
