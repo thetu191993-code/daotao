@@ -48,7 +48,6 @@
 
     <!-- SIDEBAR -->
     <aside id="sidebar" class="w-[280px] md:w-64 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col shrink-0 transition-transform duration-300 fixed md:relative z-50 h-full -translate-x-full md:translate-x-0">
-        <!-- Logo -->
         <div class="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-dark-border shrink-0">
             <div class="flex items-center">
                 <i class="ph-fill ph-shield-check text-blue-600 dark:text-blue-400 text-2xl mr-2"></i>
@@ -57,7 +56,6 @@
             <button onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
         </div>
 
-        <!-- Menu -->
         <div class="flex-1 overflow-y-auto custom-scrollbar py-4 px-3 space-y-1">
             <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold">
                 <i class="ph-fill ph-squares-four text-lg"></i> <span data-i18n="nav_dashboard">Bảng Điều Khiển</span>
@@ -513,7 +511,6 @@
         };
 
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. SỨC KHỎE (Tạo vỏ xám ban đầu)
             const ctxHealth = document.getElementById('healthChart').getContext('2d');
             window.healthChart = new Chart(ctxHealth, {
                 type: 'doughnut',
@@ -527,7 +524,6 @@
                 }
             });
 
-            // 2. KHÍ NHÀ KÍNH (Tạo vỏ rỗng)
             const ctxGHG = document.getElementById('ghgChart').getContext('2d');
             window.ghgChart = new Chart(ctxGHG, {
                 type: 'bar', plugins: [noDataPlugin],
@@ -539,7 +535,6 @@
                 }
             });
 
-            // 3. QUAN TRẮC HÓA LÝ (Tạo vỏ)
             const ctxPhysico = document.getElementById('physicochemicalChart').getContext('2d');
             window.physicochemicalChart = new Chart(ctxPhysico, {
                 type: 'line', plugins: [noDataPlugin],
@@ -554,7 +549,6 @@
                 }
             });
 
-            // 4. QUAN TRẮC LƯU LƯỢNG (Tạo vỏ)
             const ctxFlow = document.getElementById('flowChart').getContext('2d');
             window.flowChart = new Chart(ctxFlow, {
                 type: 'bar', plugins: [noDataPlugin],
@@ -637,6 +631,7 @@
         
         // =========================================================================
         // ĐỘNG CƠ ĐỒNG BỘ DỮ LIỆU FAIL-SAFE (Chống sập toàn cục)
+        // Cải tiến mạnh mẽ thuật toán Regex và Fallback Collections
         // =========================================================================
         window.fetchDashboardData = async function() {
             if (!window.db) return;
@@ -663,36 +658,52 @@
                 if(document.getElementById('dash-val-rate')) document.getElementById('dash-val-rate').innerText = rate;
             } catch(e) { console.error("Lỗi kéo Task:", e); }
 
-            // 2. BIỂU ĐỒ SỨC KHỎE (Fuzzy Parsing)
+            // 2. BIỂU ĐỒ SỨC KHỎE (Deep Fuzzy Parsing & Fallback Collections)
             try {
-                let qHealth = collection(window.db, "nhan_su_noi_bo");
-                if (plantFilter !== 'all') {
-                    qHealth = query(collection(window.db, "nhan_su_noi_bo"), where("nha_may", "==", plantFilter));
+                let healthSnap = null;
+                // Thử tìm trong bảng ho_so_suc_khoe trước (chuẩn)
+                try {
+                    let qH1 = collection(window.db, "ho_so_suc_khoe");
+                    if (plantFilter !== 'all') qH1 = query(qH1, where("nha_may", "==", plantFilter));
+                    healthSnap = await getDocs(qH1);
+                } catch(e) {}
+                
+                // Nếu rỗng, fallback sang bảng nhan_su_noi_bo
+                if (!healthSnap || healthSnap.empty) {
+                    try {
+                        let qH2 = collection(window.db, "nhan_su_noi_bo");
+                        if (plantFilter !== 'all') qH2 = query(qH2, where("nha_may", "==", plantFilter));
+                        healthSnap = await getDocs(qH2);
+                    } catch(e) {}
                 }
-                const healthSnap = await getDocs(qHealth);
-                let hData = [0, 0, 0, 0, 0];
+
+                let hData = [0, 0, 0, 0, 0, 0]; // Index 5 là Khác/Chưa phân loại
                 let hasHealthData = false;
                 
-                healthSnap.forEach(doc => {
-                    const d = doc.data();
-                    // Thuật toán gộp chuỗi tìm từ khóa chống sai schema
-                    const dataString = JSON.stringify(d).toUpperCase();
-                    
-                    if(dataString.includes('LOẠI I') || dataString.includes('LOẠI 1') || dataString.includes('SK I')) { hData[0]++; hasHealthData = true; } 
-                    else if(dataString.includes('LOẠI II') || dataString.includes('LOẠI 2') || dataString.includes('SK II')) { hData[1]++; hasHealthData = true; } 
-                    else if(dataString.includes('LOẠI III') || dataString.includes('LOẠI 3') || dataString.includes('SK III')) { hData[2]++; hasHealthData = true; } 
-                    else if(dataString.includes('LOẠI IV') || dataString.includes('LOẠI 4') || dataString.includes('SK IV')) { hData[3]++; hasHealthData = true; } 
-                    else if(dataString.includes('LOẠI V') || dataString.includes('LOẠI 5') || dataString.includes('SK V')) { hData[4]++; hasHealthData = true; } 
-                });
+                if (healthSnap && !healthSnap.empty) {
+                    healthSnap.forEach(doc => {
+                        const d = doc.data();
+                        let sk = (d.phan_loai_sk || d.suc_khoe || d.loai_sk || d.phan_loai || "").toString().toUpperCase();
+                        if (!sk) { sk = JSON.stringify(d).toUpperCase(); } // Phân tích toàn bộ object nếu thiếu trường
+
+                        // Regex nhận diện cực mạnh
+                        if (/\b(LOẠI 1|LOẠI I|SK 1|SK I)\b/.test(sk) && !/\b(LOẠI 11|LOẠI II|LOẠI IV)\b/.test(sk)) { hData[0]++; hasHealthData = true; }
+                        else if (/\b(LOẠI 2|LOẠI II|SK 2|SK II)\b/.test(sk) && !/\b(LOẠI 3|LOẠI III)\b/.test(sk)) { hData[1]++; hasHealthData = true; }
+                        else if (/\b(LOẠI 3|LOẠI III|SK 3|SK III)\b/.test(sk)) { hData[2]++; hasHealthData = true; }
+                        else if (/\b(LOẠI 4|LOẠI IV|SK 4|SK IV)\b/.test(sk)) { hData[3]++; hasHealthData = true; }
+                        else if (/\b(LOẠI 5|LOẠI V|SK 5|SK V)\b/.test(sk)) { hData[4]++; hasHealthData = true; }
+                        else { hData[5]++; hasHealthData = true; } // Vào ô Khác nếu có hồ sơ nhưng ko có Loại
+                    });
+                }
                 
                 if(window.healthChart) {
-                    if (hasHealthData) {
-                        window.healthChart.data.labels = ['Loại I', 'Loại II', 'Loại III', 'Loại IV', 'Loại V'];
+                    if (hasHealthData && hData.some(v => v > 0)) {
+                        window.healthChart.data.labels = ['Loại I', 'Loại II', 'Loại III', 'Loại IV', 'Loại V', 'Chưa phân loại/Khác'];
                         window.healthChart.data.datasets[0].data = hData;
-                        window.healthChart.data.datasets[0].backgroundColor = ['#10b981', '#34d399', '#f59e0b', '#ef4444', '#94a3b8'];
+                        window.healthChart.data.datasets[0].backgroundColor = ['#10b981', '#34d399', '#f59e0b', '#ef4444', '#94a3b8', '#e2e8f0'];
                         window.healthChart.data.datasets[0].borderWidth = 2;
                     } else {
-                        window.healthChart.data.labels = ['Chưa phân loại'];
+                        window.healthChart.data.labels = ['Chưa có thông tin (Mảng rỗng)'];
                         window.healthChart.data.datasets[0].data = [1];
                         window.healthChart.data.datasets[0].backgroundColor = ['#e2e8f0'];
                         window.healthChart.data.datasets[0].borderWidth = 0;
@@ -701,7 +712,7 @@
                 }
             } catch(e) { console.error("Lỗi kéo Sức khỏe:", e); }
 
-            // 3. QUAN TRẮC MÔI TRƯỜNG (Bắt case nhạy cảm chữ hoa chữ thường)
+            // 3. QUAN TRẮC MÔI TRƯỜNG
             try {
                 let qWater = collection(window.db, "quan_trac_hang_ngay");
                 if (plantFilter !== 'all') {
@@ -728,7 +739,7 @@
                             { label: 'Target Flo (15)', data: recent.map(() => 15), borderColor: '#fcd34d', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
                             { label: 'COD (mg/L)', data: recent.map(d => parseFloat(d.cod || d.COD || 0)), borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
                             { label: 'Florua (mg/L)', data: recent.map(d => parseFloat(d.florua || d.FLORUA || d.Florua || 0)), borderColor: '#f59e0b', borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#f59e0b', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
-                            // Bắt mọi format của chữ pH
+                            // Đã bọc bắt mọi thể loại tên cột cho pH
                             { label: 'pH', data: recent.map(d => parseFloat(d.ph || d.pH || d.PH || d.Ph || 0)), borderColor: '#3b82f6', borderDash: [5, 5], borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#3b82f6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' }
                         ];
                         window.physicochemicalChart.update();
@@ -743,11 +754,16 @@
                 }
             } catch(e) { console.error("Lỗi kéo Quan trắc:", e); }
 
-            // 4. KIỂM KÊ KNK (Tìm mù collection net_zero hoặc kiem_ke_knk)
+            // 4. KIỂM KÊ KNK (Tìm trong nhiều collections)
             try {
-                let ghgSnap;
+                let ghgSnap = null;
                 try { ghgSnap = await getDocs(collection(window.db, "kiem_ke_knk")); } catch(e) {}
-                if (!ghgSnap || ghgSnap.empty) { ghgSnap = await getDocs(collection(window.db, "net_zero")); }
+                if (!ghgSnap || ghgSnap.empty) { 
+                    try { ghgSnap = await getDocs(collection(window.db, "net_zero")); } catch(e) {}
+                }
+                if (!ghgSnap || ghgSnap.empty) { 
+                    try { ghgSnap = await getDocs(collection(window.db, "bao_cao_ghg")); } catch(e) {}
+                }
 
                 if(ghgSnap && !ghgSnap.empty) {
                     let grouped = {};
@@ -755,12 +771,16 @@
                         let d = doc.data();
                         if (plantFilter !== 'all' && d.nha_may !== plantFilter) return;
 
-                        let m = d.thang || d.month || 'Unknown';
+                        // Quét mọi trường hợp tên cột Ngày tháng
+                        let m = d.thang || d.month || d.ky_bao_cao || d.ngay_ghi_nhan || 'Unknown';
+                        // Định dạng thành YYYY-MM
+                        if (m.length > 7 && m.includes('-')) m = m.substring(0, 7); 
+                        
                         if(!grouped[m]) grouped[m] = {s1:0, s2:0, s3:0, total:0};
                         
-                        let s1 = parseFloat(d.scope1 || d.scope_1 || d.Scope1 || 0);
-                        let s2 = parseFloat(d.scope2 || d.scope_2 || d.Scope2 || 0);
-                        let s3 = parseFloat(d.scope3 || d.scope_3 || d.Scope3 || 0);
+                        let s1 = parseFloat(d.scope1 || d.scope_1 || d.Scope1 || d.luong_scope_1 || 0);
+                        let s2 = parseFloat(d.scope2 || d.scope_2 || d.Scope2 || d.luong_scope_2 || 0);
+                        let s3 = parseFloat(d.scope3 || d.scope_3 || d.Scope3 || d.luong_scope_3 || 0);
                         let tot = parseFloat(d.tong || d.total || d.Tong || (s1+s2+s3));
 
                         grouped[m].s1 += s1; grouped[m].s2 += s2; grouped[m].s3 += s3; grouped[m].total += tot;
@@ -771,9 +791,9 @@
                         window.ghgChart.data.labels = sortedMonths;
                         window.ghgChart.data.datasets = [
                             { type: 'line', label: 'TỔNG PHÁT THẢI', data: sortedMonths.map(m => grouped[m].total), borderColor: '#1e293b', backgroundColor: '#1e293b', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                            { label: 'Scope 1', data: sortedMonths.map(m => grouped[m].s1), backgroundColor: '#ef4444', stack: 'Stack 0' },
-                            { label: 'Scope 2', data: sortedMonths.map(m => grouped[m].s2), backgroundColor: '#f59e0b', stack: 'Stack 0' },
-                            { label: 'Scope 3', data: sortedMonths.map(m => grouped[m].s3), backgroundColor: '#10b981', stack: 'Stack 0' }
+                            { label: 'Scope 1 (Gas & Rò rỉ)', data: sortedMonths.map(m => grouped[m].s1), backgroundColor: '#ef4444', stack: 'Stack 0' },
+                            { label: 'Scope 2 (Điện năng)', data: sortedMonths.map(m => grouped[m].s2), backgroundColor: '#f59e0b', stack: 'Stack 0' },
+                            { label: 'Scope 3 (Nước & Rác)', data: sortedMonths.map(m => grouped[m].s3), backgroundColor: '#10b981', stack: 'Stack 0' }
                         ];
                         window.ghgChart.update();
                         updateChartTheme(localStorage.getItem('ehs_theme') === 'dark'); 
@@ -969,9 +989,10 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (window.checkLoginStatus) window.checkLoginStatus();
-                if(window.fetchDashboardData) window.fetchDashboardData(); 
-                window.fetchLivePTW();
-                setTimeout(window.fetchNotifications, 500); 
+                // Delay Data Fetch to let UI render completely first
+                setTimeout(() => { if(window.fetchDashboardData) window.fetchDashboardData(); }, 300);
+                setTimeout(() => { window.fetchLivePTW(); }, 600);
+                setTimeout(window.fetchNotifications, 900); 
             } else {
                 if(window.fetchDashboardData) window.fetchDashboardData(); 
             }
@@ -1756,22 +1777,32 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             if(document.getElementById('particles-js')) {
+                const isMobile = window.innerWidth < 768; // Nhận diện điện thoại
                 particlesJS("particles-js", {
                   "particles": {
-                    "number": { "value": 70, "density": { "enable": true, "value_area": 800 } },
+                    "number": { "value": isMobile ? 15 : 70, "density": { "enable": true, "value_area": 800 } }, // Giảm hạt trên điện thoại để tiết kiệm pin
                     "color": { "value": "#64748b" }, 
                     "shape": { "type": "circle" },
                     "opacity": { "value": 0.25, "random": false },
                     "size": { "value": 3, "random": true },
                     "line_linked": { "enable": true, "distance": 150, "color": "#94a3b8", "opacity": 0.15, "width": 1 },
-                    "move": { "enable": true, "speed": 1.2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                    "move": { "enable": true, "speed": isMobile ? 0.5 : 1.2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
                   },
-                  "interactivity": { "detect_on": "canvas", "events": { "onhover": { "enable": true, "mode": "grab" }, "onclick": { "enable": true, "mode": "push" }, "resize": true }, "modes": { "grab": { "distance": 200, "line_linked": { "opacity": 0.3 } }, "push": { "particles_nb": 3 } } },
+                  "interactivity": { 
+                      "detect_on": "canvas", 
+                      "events": { 
+                          "onhover": { "enable": !isMobile, "mode": "grab" }, // Tắt tương tác chuột trên mobile
+                          "onclick": { "enable": !isMobile, "mode": "push" }, 
+                          "resize": true 
+                      }, 
+                      "modes": { "grab": { "distance": 200, "line_linked": { "opacity": 0.3 } }, "push": { "particles_nb": 3 } } 
+                  },
                   "retina_detect": true
                 });
             }
-            // Kích hoạt Data Dashboard ngay lập tức khi vẽ DOM xong
-            if(window.fetchDashboardData) { setTimeout(window.fetchDashboardData, 500); }
+            
+            // Trì hoãn việc kéo dữ liệu Firebase nửa giây để giao diện HTML load xong lập tức (tránh lag điện thoại)
+            if(window.fetchDashboardData) { setTimeout(window.fetchDashboardData, 600); }
         });
     </script>
 </body>
