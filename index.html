@@ -485,14 +485,14 @@
         </div>
     </a>
 
-    <!-- KHỞI TẠO BIỂU ĐỒ CHART.JS TOÀN CỤC (CÓ FALLBACK HIỂN THỊ TRỐNG KHI ĐANG TẢI) -->
+    <!-- KHỞI TẠO BIỂU ĐỒ CHART.JS TOÀN CỤC -->
     <script>
         window.healthChart = null;
         window.ghgChart = null;
         window.physicochemicalChart = null;
         window.flowChart = null;
 
-        // Baseline plugin: Hiển thị chữ "Chưa có dữ liệu" nếu mảng trống
+        // Baseline plugin: Hiển thị chữ "Chưa có dữ liệu" nếu mảng trống thay vì bị biến mất
         const noDataPlugin = {
             id: 'noData',
             afterDraw: (chart) => {
@@ -527,7 +527,7 @@
                 }
             });
 
-            // 2. KHI NHÀ KÍNH (Tạo vỏ trống)
+            // 2. KHÍ NHÀ KÍNH (Tạo vỏ rỗng)
             const ctxGHG = document.getElementById('ghgChart').getContext('2d');
             window.ghgChart = new Chart(ctxGHG, {
                 type: 'bar', plugins: [noDataPlugin],
@@ -635,13 +635,15 @@
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
         
-        // ĐỘNG CƠ ĐỒNG BỘ DỮ LIỆU ĐỘNG TỪ FIREBASE LÊN INDEX
+        // =========================================================================
+        // ĐỘNG CƠ ĐỒNG BỘ DỮ LIỆU FAIL-SAFE (Chống sập toàn cục)
+        // =========================================================================
         window.fetchDashboardData = async function() {
             if (!window.db) return;
             const plantFilter = document.getElementById('dashboard-filter-plant') ? document.getElementById('dashboard-filter-plant').value : 'all';
             
+            // 1. KPI CÔNG VIỆC
             try {
-                // 1. KPI CÔNG VIỆC
                 let qTasks = collection(window.db, "ehs_tasks");
                 if (plantFilter !== 'all') {
                     qTasks = query(collection(window.db, "ehs_tasks"), where("nha_may", "==", plantFilter));
@@ -659,8 +661,10 @@
                 if(document.getElementById('dash-val-pending')) document.getElementById('dash-val-pending').innerText = pending;
                 if(document.getElementById('dash-val-completed')) document.getElementById('dash-val-completed').innerText = completed;
                 if(document.getElementById('dash-val-rate')) document.getElementById('dash-val-rate').innerText = rate;
+            } catch(e) { console.error("Lỗi kéo Task:", e); }
 
-                // 2. BIỂU ĐỒ SỨC KHỎE (HỖ TRỢ PARSING MỜ - THUẬT TOÁN MẠNH MẼ)
+            // 2. BIỂU ĐỒ SỨC KHỎE (Fuzzy Parsing)
+            try {
                 let qHealth = collection(window.db, "nhan_su_noi_bo");
                 if (plantFilter !== 'all') {
                     qHealth = query(collection(window.db, "nhan_su_noi_bo"), where("nha_may", "==", plantFilter));
@@ -668,15 +672,17 @@
                 const healthSnap = await getDocs(qHealth);
                 let hData = [0, 0, 0, 0, 0];
                 let hasHealthData = false;
+                
                 healthSnap.forEach(doc => {
-                    // Cố gắng tìm mọi field có thể chứa kết quả SK
                     const d = doc.data();
-                    const sk = String(d.phan_loai_sk || d.suc_khoe || d.kham_suc_khoe || "").toUpperCase();
-                    if(sk.includes('I') && !sk.includes('II') && !sk.includes('IV') || sk.includes('1')) { hData[0]++; hasHealthData = true; } 
-                    else if(sk.includes('II') && !sk.includes('III') || sk.includes('2')) { hData[1]++; hasHealthData = true; } 
-                    else if(sk.includes('III') || sk.includes('3')) { hData[2]++; hasHealthData = true; } 
-                    else if(sk.includes('IV') || sk.includes('4')) { hData[3]++; hasHealthData = true; } 
-                    else if(sk.includes('V') || sk.includes('5')) { hData[4]++; hasHealthData = true; } 
+                    // Thuật toán gộp chuỗi tìm từ khóa chống sai schema
+                    const dataString = JSON.stringify(d).toUpperCase();
+                    
+                    if(dataString.includes('LOẠI I') || dataString.includes('LOẠI 1') || dataString.includes('SK I')) { hData[0]++; hasHealthData = true; } 
+                    else if(dataString.includes('LOẠI II') || dataString.includes('LOẠI 2') || dataString.includes('SK II')) { hData[1]++; hasHealthData = true; } 
+                    else if(dataString.includes('LOẠI III') || dataString.includes('LOẠI 3') || dataString.includes('SK III')) { hData[2]++; hasHealthData = true; } 
+                    else if(dataString.includes('LOẠI IV') || dataString.includes('LOẠI 4') || dataString.includes('SK IV')) { hData[3]++; hasHealthData = true; } 
+                    else if(dataString.includes('LOẠI V') || dataString.includes('LOẠI 5') || dataString.includes('SK V')) { hData[4]++; hasHealthData = true; } 
                 });
                 
                 if(window.healthChart) {
@@ -686,7 +692,6 @@
                         window.healthChart.data.datasets[0].backgroundColor = ['#10b981', '#34d399', '#f59e0b', '#ef4444', '#94a3b8'];
                         window.healthChart.data.datasets[0].borderWidth = 2;
                     } else {
-                        // Trả về vòng xám nếu database thực sự không có ai khám bệnh
                         window.healthChart.data.labels = ['Chưa phân loại'];
                         window.healthChart.data.datasets[0].data = [1];
                         window.healthChart.data.datasets[0].backgroundColor = ['#e2e8f0'];
@@ -694,8 +699,10 @@
                     }
                     window.healthChart.update();
                 }
+            } catch(e) { console.error("Lỗi kéo Sức khỏe:", e); }
 
-                // 3. QUAN TRẮC MÔI TRƯỜNG
+            // 3. QUAN TRẮC MÔI TRƯỜNG (Bắt case nhạy cảm chữ hoa chữ thường)
+            try {
                 let qWater = collection(window.db, "quan_trac_hang_ngay");
                 if (plantFilter !== 'all') {
                     qWater = query(collection(window.db, "quan_trac_hang_ngay"), where("nha_may", "==", plantFilter));
@@ -709,79 +716,79 @@
                 
                 if(waterData.length > 0) {
                     waterData.sort((a, b) => a.ngay_lay_mau.localeCompare(b.ngay_lay_mau));
-                    const recent = waterData.slice(-5); // Lấy 5 ngày mới nhất
+                    const recent = waterData.slice(-5);
                     const labels = recent.map(d => {
                         const parts = d.ngay_lay_mau.split('-'); return parts.length >= 3 ? `${parts[2]}/${parts[1]}` : d.ngay_lay_mau;
                     });
                     
                     if(window.physicochemicalChart && window.flowChart) {
-                        // Update Physicochemical Chart
                         window.physicochemicalChart.data.labels = labels;
                         window.physicochemicalChart.data.datasets = [
                             { label: 'Target COD (90)', data: recent.map(() => 90), borderColor: '#fca5a5', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
                             { label: 'Target Flo (15)', data: recent.map(() => 15), borderColor: '#fcd34d', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
-                            { label: 'COD (mg/L)', data: recent.map(d => parseFloat(d.cod) || 0), borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
-                            { label: 'Florua (mg/L)', data: recent.map(d => parseFloat(d.florua) || 0), borderColor: '#f59e0b', borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#f59e0b', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
-                            { label: 'pH', data: recent.map(d => parseFloat(d.ph) || 0), borderColor: '#3b82f6', borderDash: [5, 5], borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#3b82f6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' }
+                            { label: 'COD (mg/L)', data: recent.map(d => parseFloat(d.cod || d.COD || 0)), borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
+                            { label: 'Florua (mg/L)', data: recent.map(d => parseFloat(d.florua || d.FLORUA || d.Florua || 0)), borderColor: '#f59e0b', borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#f59e0b', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
+                            // Bắt mọi format của chữ pH
+                            { label: 'pH', data: recent.map(d => parseFloat(d.ph || d.pH || d.PH || d.Ph || 0)), borderColor: '#3b82f6', borderDash: [5, 5], borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#3b82f6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' }
                         ];
                         window.physicochemicalChart.update();
 
-                        // Update Flow Chart
                         window.flowChart.data.labels = labels;
                         window.flowChart.data.datasets = [
-                            { type: 'line', label: 'Độ dẫn điện (mS/cm)', data: recent.map(d => parseFloat(d.do_dan_dien) || 0), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 2, tension: 0.4, pointBackgroundColor: 'white', pointBorderColor: '#8b5cf6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' },
-                            { type: 'bar', label: 'Lưu lượng (m³/h)', data: recent.map(d => parseFloat(d.luu_luong) || 0), backgroundColor: '#67e8f9', barThickness: 16, borderRadius: 2, yAxisID: 'y' }
+                            { type: 'line', label: 'Độ dẫn điện (mS/cm)', data: recent.map(d => parseFloat(d.do_dan_dien || d.do_dan || 0)), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 2, tension: 0.4, pointBackgroundColor: 'white', pointBorderColor: '#8b5cf6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' },
+                            { type: 'bar', label: 'Lưu lượng (m³/h)', data: recent.map(d => parseFloat(d.luu_luong || d.LUU_LUONG || 0)), backgroundColor: '#67e8f9', barThickness: 16, borderRadius: 2, yAxisID: 'y' }
                         ];
                         window.flowChart.update();
                     }
-                } else {
-                    if(window.physicochemicalChart) { window.physicochemicalChart.data.datasets = []; window.physicochemicalChart.update(); }
-                    if(window.flowChart) { window.flowChart.data.datasets = []; window.flowChart.update(); }
                 }
+            } catch(e) { console.error("Lỗi kéo Quan trắc:", e); }
 
-                // 4. KIỂM KÊ KNK (NET ZERO)
-                // Cố gắng query cả 2 tên collection có thể có do chưa rõ schema anh đặt
-                let ghgCollectionName = "kiem_ke_knk";
-                let ghgSnap = await getDocs(collection(window.db, ghgCollectionName));
-                if (ghgSnap.empty) { ghgSnap = await getDocs(collection(window.db, "net_zero")); }
+            // 4. KIỂM KÊ KNK (Tìm mù collection net_zero hoặc kiem_ke_knk)
+            try {
+                let ghgSnap;
+                try { ghgSnap = await getDocs(collection(window.db, "kiem_ke_knk")); } catch(e) {}
+                if (!ghgSnap || ghgSnap.empty) { ghgSnap = await getDocs(collection(window.db, "net_zero")); }
 
-                if(!ghgSnap.empty) {
+                if(ghgSnap && !ghgSnap.empty) {
                     let grouped = {};
                     ghgSnap.forEach(doc => {
                         let d = doc.data();
-                        // Nếu lọc nhà máy
                         if (plantFilter !== 'all' && d.nha_may !== plantFilter) return;
 
                         let m = d.thang || d.month || 'Unknown';
                         if(!grouped[m]) grouped[m] = {s1:0, s2:0, s3:0, total:0};
-                        grouped[m].s1 += parseFloat(d.scope1 || d.scope_1 || 0);
-                        grouped[m].s2 += parseFloat(d.scope2 || d.scope_2 || 0);
-                        grouped[m].s3 += parseFloat(d.scope3 || d.scope_3 || 0);
-                        grouped[m].total += parseFloat(d.tong || d.total || (grouped[m].s1+grouped[m].s2+grouped[m].s3));
+                        
+                        let s1 = parseFloat(d.scope1 || d.scope_1 || d.Scope1 || 0);
+                        let s2 = parseFloat(d.scope2 || d.scope_2 || d.Scope2 || 0);
+                        let s3 = parseFloat(d.scope3 || d.scope_3 || d.Scope3 || 0);
+                        let tot = parseFloat(d.tong || d.total || d.Tong || (s1+s2+s3));
+
+                        grouped[m].s1 += s1; grouped[m].s2 += s2; grouped[m].s3 += s3; grouped[m].total += tot;
                     });
 
                     let sortedMonths = Object.keys(grouped).sort();
                     if(sortedMonths.length > 0 && window.ghgChart) {
                         window.ghgChart.data.labels = sortedMonths;
                         window.ghgChart.data.datasets = [
-                            { type: 'line', label: 'TỔNG PHÁT THẢI (Thực tế)', data: sortedMonths.map(m => grouped[m].total), borderColor: '#1e293b', backgroundColor: '#1e293b', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                            { label: 'Scope 1 (Gas & Rò rỉ)', data: sortedMonths.map(m => grouped[m].s1), backgroundColor: '#ef4444', stack: 'Stack 0' },
-                            { label: 'Scope 2 (Điện năng)', data: sortedMonths.map(m => grouped[m].s2), backgroundColor: '#f59e0b', stack: 'Stack 0' },
-                            { label: 'Scope 3 (Nước & Rác)', data: sortedMonths.map(m => grouped[m].s3), backgroundColor: '#10b981', stack: 'Stack 0' }
+                            { type: 'line', label: 'TỔNG PHÁT THẢI', data: sortedMonths.map(m => grouped[m].total), borderColor: '#1e293b', backgroundColor: '#1e293b', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                            { label: 'Scope 1', data: sortedMonths.map(m => grouped[m].s1), backgroundColor: '#ef4444', stack: 'Stack 0' },
+                            { label: 'Scope 2', data: sortedMonths.map(m => grouped[m].s2), backgroundColor: '#f59e0b', stack: 'Stack 0' },
+                            { label: 'Scope 3', data: sortedMonths.map(m => grouped[m].s3), backgroundColor: '#10b981', stack: 'Stack 0' }
                         ];
                         window.ghgChart.update();
-                        updateChartTheme(localStorage.getItem('ehs_theme') === 'dark'); // Force theme update on new lines
+                        updateChartTheme(localStorage.getItem('ehs_theme') === 'dark'); 
                     }
                 }
+            } catch(e) { console.error("Lỗi kéo KNK:", e); }
 
-                // 5. DANH SÁCH CUỘC HỌP
+            // 5. DANH SÁCH CUỘC HỌP
+            try {
                 const mtgList = document.getElementById('dashboard-meeting-list');
                 if(mtgList) {
                     const snapMeetings = await getDocs(collection(window.db, "ehs_meetings"));
                     let meetings = [];
                     const vnTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
-                    const today = new Date(vnTime);
-                    today.setHours(0,0,0,0);
+                    const today = new Date(vnTime); today.setHours(0,0,0,0);
 
                     snapMeetings.forEach(doc => {
                         const m = doc.data();
@@ -805,8 +812,8 @@
                                         <p class="text-lg font-black leading-none">${String(day).padStart(2, '0')}</p>
                                     </div>
                                     <div>
-                                        <h5 class="text-sm font-bold text-slate-800 dark:text-white line-clamp-1" title="${m.title}">${m.title}</h5>
-                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${m.time} • ${m.location || 'Chưa xác định'}</p>
+                                        <h5 class="text-sm font-bold text-slate-800 dark:text-white line-clamp-1" title="${m.title || 'Họp EHS'}">${m.title || 'Họp EHS'}</h5>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${m.time || ''} • ${m.location || 'Chưa xác định'}</p>
                                     </div>
                                 </div>
                             `;
@@ -816,10 +823,7 @@
                         mtgList.innerHTML = `<div class="p-4 text-center border border-dashed border-slate-300 dark:border-slate-700 rounded-xl"><p class="text-sm text-slate-500 dark:text-slate-400">Không có cuộc họp nào sắp tới.</p></div>`;
                     }
                 }
-
-            } catch (error) {
-                console.error("Lỗi đồng bộ Dashboard từ Firebase:", error);
-            }
+            } catch(e) { console.error("Lỗi kéo Cuộc họp:", e); }
         };
 
         window.fetchLivePTW = async function() {
@@ -856,11 +860,11 @@
                     let textClass = "text-slate-800 dark:text-white";
                     let icon = "ph-file-text";
 
-                    if(p.loai_giay_phep.includes("Hàn") || p.loai_giay_phep.includes("Không gian")) {
+                    if((p.loai_giay_phep||"").includes("Hàn") || (p.loai_giay_phep||"").includes("Không gian")) {
                         colorClass = "border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-900/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]";
                         textClass = "text-red-700 dark:text-red-400";
                         icon = "ph-fire";
-                    } else if (p.loai_giay_phep.includes("Trên cao")) {
+                    } else if ((p.loai_giay_phep||"").includes("Trên cao")) {
                         colorClass = "border-amber-300 dark:border-amber-500/50 bg-amber-50 dark:bg-amber-900/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]";
                         textClass = "text-amber-700 dark:text-amber-400";
                         icon = "ph-steps";
@@ -965,13 +969,10 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (window.checkLoginStatus) window.checkLoginStatus();
-                // Bắt buộc gọi chuỗi tải dữ liệu sau khi đăng nhập thành công
                 if(window.fetchDashboardData) window.fetchDashboardData(); 
                 window.fetchLivePTW();
-                // Gọi thông báo hệ thống
                 setTimeout(window.fetchNotifications, 500); 
             } else {
-                // Kể cả không đăng nhập vẫn cố gắng vẽ dashboard
                 if(window.fetchDashboardData) window.fetchDashboardData(); 
             }
         });
@@ -1531,8 +1532,224 @@
             }
         };
 
+        window.handleChangePassword = async function() {
+            const oldPass = document.getElementById('cp-old').value;
+            const newPass = document.getElementById('cp-new').value;
+            const confirmPass = document.getElementById('cp-confirm').value;
+
+            if (!oldPass || !newPass || !confirmPass) return window.showCustomAlert("Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", true);
+            if (newPass !== confirmPass) return window.showCustomAlert("Mật khẩu mới không khớp nhau!", "Cảnh báo", true);
+            if (newPass.length < 6) return window.showCustomAlert("Mật khẩu mới phải có ít nhất 6 ký tự!", "Cảnh báo", true);
+
+            try {
+                const user = window.auth.currentUser;
+                if (!user) throw new Error("Chưa xác định được tài khoản đăng nhập. Vui lòng thử đăng nhập lại.");
+                const fakeEmail = `${currentUserId}@ehs.com`.toLowerCase();
+                const credential = window.EmailAuthProvider.credential(fakeEmail, oldPass);
+
+                await window.reauthenticateWithCredential(user, credential);
+                await window.updatePassword(user, newPass);
+
+                window.showCustomAlert("Cập nhật mật khẩu thành công!", "Thành công");
+                document.getElementById('change-pass-modal').classList.add('hidden');
+                document.getElementById('cp-old').value = ''; document.getElementById('cp-new').value = ''; document.getElementById('cp-confirm').value = '';
+            } catch (error) {
+                console.error(error);
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                    window.showCustomAlert("Mật khẩu hiện tại không đúng!", "Lỗi", true);
+                } else { window.showCustomAlert("Lỗi:<br>" + error.message, "Lỗi", true); }
+            }
+        };
+
+        window.openCourseModal = function() {
+            if (!currentUserId) {
+                window.showCustomAlert("Bạn chưa đăng nhập!<br>Vui lòng đăng nhập hệ thống.", "Cảnh báo", true);
+                setTimeout(() => { window.location.href = "login.html"; }, 2000);
+                return;
+            }
+            const container = document.getElementById('dynamic-courses');
+            container.innerHTML = '';
+            const userDept = localStorage.getItem("ehs_user_dept") || "";
+            let htmlStr = ""; let groupDetected = "Chưa phân loại";
+
+            if (userDept.toLowerCase().includes("điện")) {
+                groupDetected = "Nhóm 3 - An Toàn Điện";
+                htmlStr += `
+                    <a href="bai_giang.html?id=data_an_toan_dien" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition mt-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. An Toàn Điện</h4>
+                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
+                        </div>
+                        <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học bắt buộc dành riêng cho bộ phận Cơ Điện, Bảo trì.</p>
+                    </a>
+                `;
+            } else if (userDept.toLowerCase().includes("sản xuất") || userDept.toLowerCase().includes("washer")) {
+                groupDetected = "Nhóm 3 - An Toàn Hóa Chất";
+                htmlStr += `
+                    <a href="bai_giang.html?id=data_hoa_chat" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition mt-3">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. An Toàn Hóa Chất</h4>
+                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
+                        </div>
+                        <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học bắt buộc dành riêng cho nhân sự tiếp xúc hóa chất.</p>
+                    </a>
+                `;
+            } else {
+                htmlStr += `
+                    <div class="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-center">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">Bộ phận hiện tại của bạn (<span class="font-bold">${userDept || "Chưa cập nhật"}</span>) không yêu cầu thẻ Nhóm 3. Bạn chỉ cần hoàn thành Khóa EHS Chung.</p>
+                    </div>
+                `;
+            }
+            container.innerHTML = htmlStr;
+            document.getElementById('course-modal').classList.remove('hidden'); document.getElementById('course-modal').classList.add('flex');
+        };
+
+        window.closeReportModal = function() { 
+            document.getElementById('report-modal').classList.add('hidden'); document.getElementById('report-modal').classList.remove('flex');
+        }
+
+        window.toggleMobileMenu = function() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden'); setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0'); setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        };
+
+        window.toggleNotifications = function(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notif-dropdown');
+            const overlay = document.getElementById('notif-overlay');
+            
+            if (dropdown.classList.contains('opacity-0')) {
+                dropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
+                dropdown.classList.add('opacity-100', 'visible', 'scale-100');
+                overlay.classList.remove('hidden');
+                document.getElementById('notif-badge').classList.add('hidden'); document.getElementById('notif-count').classList.add('hidden');
+                
+                if(window.fetchNotifications) {
+                    document.getElementById('notif-list').innerHTML = '<div class="p-6 text-center text-blue-500"><i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i><br>Đang đồng bộ dữ liệu...</div>';
+                    window.fetchNotifications();
+                }
+            } else { window.closeNotifications(); }
+        }
+
+        window.closeNotifications = function() {
+            const dropdown = document.getElementById('notif-dropdown');
+            const overlay = document.getElementById('notif-overlay');
+            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
+            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
+            overlay.classList.add('hidden');
+        }
+
+        document.getElementById('notif-dropdown').addEventListener('click', function(e) { e.stopPropagation(); });
+
+        window.fetchNotifications = async function() {
+            const notifList = document.getElementById('notif-list');
+            const badge = document.getElementById('notif-badge');
+            const countLabel = document.getElementById('notif-count');
+            if (!currentUserId || !window.db) { notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Hệ thống chưa sẵn sàng. Vui lòng tải lại trang.</div>`; return; }
+
+            const userDept = localStorage.getItem("ehs_user_dept") || ""; let notifications = [];
+
+            try {
+                // 1. NHIỆM VỤ CÁ NHÂN
+                try {
+                    const qMyTasks = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
+                    const snapMyTasks = await window.getDocs(qMyTasks);
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    const threeDaysLater = new Date(today); threeDaysLater.setDate(today.getDate() + 3);
+
+                    snapMyTasks.forEach(doc => {
+                        const task = doc.data();
+                        if (task.status === 'Done') return; if (task.status === 'Review') return;
+                        const deadline = new Date(task.due_date); deadline.setHours(0,0,0,0);
+                        if (task.evaluation && task.progress < 100) {
+                            notifications.push({ type: 'feedback', title: 'Lãnh đạo yêu cầu cải tiến', message: `Sếp đã nhận xét task: "${task.title}". Vui lòng xem lại.`, icon: 'ph-chat-circle-warning text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50', link: 'quan_ly_cong_viec.html' });
+                        } else if (deadline < today) {
+                            notifications.push({ type: 'overdue', title: 'Công việc quá hạn!', message: `Task: "${task.title}" đã trễ hạn. Vui lòng cập nhật!`, icon: 'ph-warning-circle text-red-500', bg: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50', link: 'quan_ly_cong_viec.html' });
+                        } else if (deadline <= threeDaysLater) {
+                            notifications.push({ type: 'due_soon', title: 'Công việc sắp đến hạn', message: `Task: "${task.title}" cần xong trước ${new Date(task.due_date).toLocaleDateString('vi-VN')}.`, icon: 'ph-clock text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50', link: 'quan_ly_cong_viec.html' });
+                        } else if (task.progress === 0 && task.assigner_id !== currentUserId) {
+                            notifications.push({ type: 'new_task', title: 'Có công việc mới được giao', message: `${task.assigner_name} đã giao cho bạn: "${task.title}".`, icon: 'ph-kanban text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50', link: 'quan_ly_cong_viec.html' });
+                        }
+                    });
+                } catch(e) {}
+
+                // 2. PHÊ DUYỆT LÃNH ĐẠO
+                try {
+                    const qReview = window.query(window.collection(window.db, "ehs_tasks"), window.where("reviewer_id", "==", currentUserId));
+                    const snapReview = await window.getDocs(qReview);
+                    snapReview.forEach(doc => {
+                        const task = doc.data();
+                        if (task.status === 'Review') {
+                            notifications.push({ type: 'review_pending', title: 'Yêu cầu phê duyệt công việc', message: `${task.assignee_name} đã trình duyệt task: "${task.title}".`, icon: 'ph-check-square-offset text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50', link: 'quan_ly_cong_viec.html' });
+                        }
+                    });
+                } catch(e) {}
+
+                // 3. NHẮC NHỞ UTILITY
+                if (userDept.toLowerCase().includes("utility") || userDept.toLowerCase().includes("vận hành")) {
+                    try {
+                        const vnTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
+                        const todayObj = new Date(vnTime);
+                        const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+                        const qUtility = window.query(window.collection(window.db, "quan_trac_hang_ngay"), window.where("ngay_lay_mau", "==", todayStr));
+                        const snapUtility = await window.getDocs(qUtility);
+                        if (snapUtility.empty) {
+                            notifications.push({ type: 'utility_alert', title: 'Nhắc nhở nhập dữ liệu Trạm xử lý', message: 'Hôm nay chưa có dữ liệu quan trắc nước thải. Anh em đang trực vui lòng cập nhật.', icon: 'ph-drop text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800/50', link: 'data_dashboard.html' });
+                        }
+                    } catch(e) {}
+                }
+
+                // 4. LỊCH HỌP
+                try {
+                    const qMeetingsReal = window.query(window.collection(window.db, "ehs_meetings"), window.where("status", "==", "Upcoming"));
+                    const snapMeetings = await window.getDocs(qMeetingsReal);
+                    snapMeetings.forEach(doc => {
+                        const m = doc.data();
+                        if (m.attendee_ids && m.attendee_ids.includes(currentUserId)) {
+                            const myRecord = m.attendance_records ? m.attendance_records[currentUserId] : null;
+                            if (!myRecord || myRecord.status !== 'Attended') {
+                                notifications.push({ type: 'meeting_invite', title: 'Thư mời họp / Toolbox Meeting', message: `Bạn có lịch họp: "${m.title}" vào lúc ${m.time} ngày ${new Date(m.date).toLocaleDateString('vi-VN')}.`, icon: 'ph-users-three text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50', link: 'quan_ly_cuoc_hop.html' });
+                            }
+                        }
+                    });
+                } catch(e) {}
+
+                if (notifications.length > 0) {
+                    badge.classList.remove('hidden'); countLabel.innerText = notifications.length; countLabel.classList.remove('hidden');
+                    let notifHtml = '';
+                    notifications.forEach(n => {
+                        notifHtml += `
+                            <a href="${n.link}" class="block p-4 border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+                                <div class="flex gap-3">
+                                    <div class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border ${n.bg}"><i class="ph-fill ${n.icon} text-xl"></i></div>
+                                    <div><h4 class="text-sm font-bold text-slate-800 dark:text-white mb-0.5">${n.title}</h4><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${n.message}</p></div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                    notifList.innerHTML = notifHtml;
+                } else {
+                    badge.classList.add('hidden'); countLabel.classList.add('hidden');
+                    notifList.innerHTML = `<div class="p-8 text-center"><i class="ph-fill ph-check-circle text-4xl text-slate-300 mb-2"></i><p class="text-sm text-slate-500 font-medium">Bạn đã hoàn thành mọi công việc. Không có thông báo mới.</p></div>`;
+                }
+            } catch (error) { console.error(error); notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Lỗi đồng bộ: ${error.message}</div>`; }
+        };
+
         applyTheme();
         changeLanguage(currentLang);
+        checkLoginStatus();
+        
+        // KIỂM TRA ĐĂNG NHẬP VÀ GỌI THÔNG BÁO GẤP
+        if(currentUserId && window.db) { setTimeout(window.fetchNotifications, 1000); }
     </script>
     
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
@@ -1553,6 +1770,8 @@
                   "retina_detect": true
                 });
             }
+            // Kích hoạt Data Dashboard ngay lập tức khi vẽ DOM xong
+            if(window.fetchDashboardData) { setTimeout(window.fetchDashboardData, 500); }
         });
     </script>
 </body>
