@@ -11,6 +11,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- THƯ VIỆN CHART.JS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script>
@@ -54,6 +55,7 @@
                 <i class="ph-fill ph-shield-check text-blue-600 dark:text-blue-400 text-2xl mr-2"></i>
                 <span class="font-black text-xl tracking-tight text-slate-800 dark:text-white">EHS System</span>
             </div>
+            <!-- Nút đóng menu trên Mobile -->
             <button onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-red-500 transition">
                 <i class="ph-bold ph-x text-2xl"></i>
             </button>
@@ -62,7 +64,7 @@
         <!-- Menu -->
         <div class="flex-1 overflow-y-auto custom-scrollbar py-4 px-3 space-y-1">
             <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold">
-                <i class="ph-fill ph-squares-four text-lg"></i> <span data-i18n="nav_dashboard">Bảng Điều Khiển chính</span>
+                <i class="ph-fill ph-squares-four text-lg"></i> <span data-i18n="nav_dashboard">Bảng Điều Khiển</span>
             </a>
 
             <!-- Nhóm 1 -->
@@ -230,33 +232,25 @@
 
             <div class="max-w-7xl mx-auto w-full relative z-10">
                 
-                <!-- BỘ LỌC DỮ LIỆU (FILTERS) -->
+                <!-- BỘ LỌC DỮ LIỆU (FILTERS) CHẠY REAL-TIME -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-funnel text-blue-500 text-xl"></i>
                         <span class="font-bold text-slate-700 dark:text-slate-300" data-i18n="filter_title">Bộ lọc Dữ liệu:</span>
-                        <!-- Nút Lọc Kích hoạt Tải Dữ liệu từ Firebase -->
-                        <select id="dashboard-filter-plant" onchange="if(window.fetchDashboardData) window.fetchDashboardData()" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white text-sm font-bold rounded-lg px-4 py-2 outline-none focus:border-blue-500 shadow-sm cursor-pointer transition">
+                        <select id="dashboard-filter-plant" onchange="if(window.fetchDashboardData) window.fetchDashboardData()" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white text-sm font-bold rounded-lg px-4 py-2 outline-none focus:border-blue-500 shadow-sm cursor-pointer">
                             <option value="all" data-i18n="filter_all">Toàn Công Ty</option>
                             <option value="can" data-i18n="filter_can">Nhà Máy Can Line (1)</option>
                             <option value="end" data-i18n="filter_end">Nhà Máy End Line (2)</option>
                         </select>
                     </div>
-                    <div class="flex gap-2">
-                        <select class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white text-sm font-medium rounded-lg px-3 py-2 outline-none shadow-sm cursor-pointer transition">
-                            <option value="month" data-i18n="filter_month">Tháng này</option>
-                            <option value="quarter" data-i18n="filter_quarter">Quý này</option>
-                            <option value="year" data-i18n="filter_year">Năm nay</option>
-                        </select>
-                    </div>
                 </div>
 
-                <!-- 4 THẺ TÓM TẮT KPI (REAL-TIME TỪ FIREBASE) -->
+                <!-- 4 THẺ TÓM TẮT KPI (CLICK ĐƯỢC) -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
                     <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-blue-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_total">Tổng Công Việc</p>
-                            <h3 id="dash-val-total" class="text-3xl font-black text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">0</h3>
+                            <h3 id="dash-val-total" class="text-3xl font-black text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">...</h3>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="ph-bold ph-list-numbers"></i></div>
                     </a>
@@ -264,7 +258,7 @@
                     <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-amber-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_pending">Cần Làm</p>
-                            <h3 id="dash-val-pending" class="text-3xl font-black text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">0</h3>
+                            <h3 id="dash-val-pending" class="text-3xl font-black text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">...</h3>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="ph-bold ph-warning"></i></div>
                     </a>
@@ -272,7 +266,7 @@
                     <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-emerald-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_completed">Hoàn Thành</p>
-                            <h3 id="dash-val-completed" class="text-3xl font-black text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">0</h3>
+                            <h3 id="dash-val-completed" class="text-3xl font-black text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">...</h3>
                         </div>
                         <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="ph-bold ph-check-circle"></i></div>
                     </a>
@@ -281,7 +275,7 @@
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_rate">Tỷ Lệ Hoàn Thành</p>
                             <div class="flex items-end gap-1">
-                                <h3 id="dash-val-rate" class="text-3xl font-black text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">0</h3>
+                                <h3 id="dash-val-rate" class="text-3xl font-black text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">...</h3>
                                 <span class="text-lg font-bold text-purple-600 dark:text-purple-400 mb-0.5">%</span>
                             </div>
                         </div>
@@ -298,6 +292,7 @@
                             <a href="quan_ly_suc_khoe.html" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg transition" data-i18n="btn_details">Chi tiết</a>
                         </div>
                         <div class="flex-1 relative w-full flex justify-center items-center h-64">
+                            <!-- Canvas cho ChartJS -->
                             <canvas id="healthChart"></canvas>
                         </div>
                     </div>
@@ -350,7 +345,7 @@
                             <div class="flex justify-between items-center mb-4">
                                 <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-users-three text-indigo-500 text-xl"></i> <span data-i18n="toolbox_title">Toolbox Meeting Sắp tới</span></h4>
                             </div>
-                            <!-- Khu vực sẽ được đổ dữ liệu động từ Firebase -->
+                            <!-- Khu vực chứa List đổ từ Firebase -->
                             <div id="dashboard-meeting-list" class="space-y-3 flex-1">
                                 <div class="p-4 text-center">
                                     <i class="ph-bold ph-spinner animate-spin text-2xl text-indigo-500 mb-2"></i>
@@ -570,24 +565,40 @@
 
     <!-- KHỞI TẠO BIỂU ĐỒ CHART.JS TOÀN CỤC -->
     <script>
-        // Định nghĩa biến toàn cục để Backend Firebase có thể bơm dữ liệu vào
+        // Định nghĩa biến toàn cục để Backend Firebase bơm dữ liệu vào
         window.healthChart = null;
         window.ghgChart = null;
         window.physicochemicalChart = null;
         window.flowChart = null;
 
+        // Baseline plugin: Hiển thị chữ "Chưa có dữ liệu" nếu mảng trống
+        const noDataPlugin = {
+            id: 'noData',
+            afterDraw: (chart) => {
+                if (chart.data.datasets.length === 0 || chart.data.datasets[0].data.length === 0 || chart.data.datasets[0].data.every(val => val === 0)) {
+                    const ctx = chart.ctx;
+                    const width = chart.width;
+                    const height = chart.height;
+                    chart.clear();
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = 'bold 14px Inter';
+                    ctx.fillStyle = localStorage.getItem('ehs_theme') === 'dark' ? '#94a3b8' : '#94a3b8';
+                    ctx.fillText('Đang tải dữ liệu hoặc Chưa có thông tin', width / 2, height / 2);
+                    ctx.restore();
+                }
+            }
+        };
+
         document.addEventListener("DOMContentLoaded", function() {
-            // 1. Biểu đồ Sức Khỏe (Donut Chart)
+            // 1. SỨC KHỎE (Tạo vỏ xám ban đầu để giữ hình dáng)
             const ctxHealth = document.getElementById('healthChart').getContext('2d');
             window.healthChart = new Chart(ctxHealth, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Loại I', 'Loại II', 'Loại III', 'Loại IV', 'Loại V'],
-                    datasets: [{
-                        data: [0, 0, 0, 0, 0], // Sẽ được Firebase update
-                        backgroundColor: ['#10b981', '#34d399', '#f59e0b', '#ef4444', '#94a3b8'],
-                        borderWidth: 2, hoverOffset: 5
-                    }]
+                    labels: ['Chưa có dữ liệu'],
+                    datasets: [{ data: [1], backgroundColor: ['#e2e8f0'], borderWidth: 0 }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false, cutout: '65%',
@@ -595,7 +606,7 @@
                 }
             });
 
-            // 2. Biểu đồ Phát thải KNK (Tạm thời giữ dummy data, chờ module Net Zero)
+            // 2. KHI NHÀ KÍNH (Giữ nguyên Dummy Data chờ module Net Zero)
             const ctxGHG = document.getElementById('ghgChart').getContext('2d');
             window.ghgChart = new Chart(ctxGHG, {
                 type: 'bar',
@@ -611,27 +622,15 @@
                 options: {
                     responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
                     plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 11 } } } },
-                    scales: {
-                        x: { stacked: true, grid: { display: false } },
-                        y: { stacked: true, beginAtZero: true, border: { dash: [4, 4] } }
-                    }
+                    scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, border: { dash: [4, 4] } } }
                 }
             });
 
-            // 3. Biểu đồ Hóa lý (Line Chart)
+            // 3. QUAN TRẮC HÓA LÝ (Tạo vỏ)
             const ctxPhysico = document.getElementById('physicochemicalChart').getContext('2d');
             window.physicochemicalChart = new Chart(ctxPhysico, {
-                type: 'line',
-                data: {
-                    labels: [], // Firebase sẽ bơm vào
-                    datasets: [
-                        { label: 'Target COD (90)', data: [], borderColor: '#fca5a5', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
-                        { label: 'Target Flo (15)', data: [], borderColor: '#fcd34d', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
-                        { label: 'COD (mg/L)', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
-                        { label: 'Florua (mg/L)', data: [], borderColor: '#f59e0b', borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#f59e0b', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
-                        { label: 'pH', data: [], borderColor: '#3b82f6', borderDash: [5, 5], borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#3b82f6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' }
-                    ]
-                },
+                type: 'line', plugins: [noDataPlugin],
+                data: { labels: [], datasets: [] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 10 }, usePointStyle: true, boxWidth: 8 } } },
@@ -642,17 +641,11 @@
                 }
             });
 
-            // 4. Biểu đồ Lưu lượng (Bar + Line Chart)
+            // 4. QUAN TRẮC LƯU LƯỢNG (Tạo vỏ)
             const ctxFlow = document.getElementById('flowChart').getContext('2d');
             window.flowChart = new Chart(ctxFlow, {
-                type: 'bar',
-                data: {
-                    labels: [], // Firebase sẽ bơm vào
-                    datasets: [
-                        { type: 'line', label: 'Độ dẫn điện (mS/cm)', data: [], borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 2, tension: 0.4, pointBackgroundColor: 'white', pointBorderColor: '#8b5cf6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' },
-                        { type: 'bar', label: 'Lưu lượng (m³/h)', data: [], backgroundColor: '#67e8f9', barThickness: 16, borderRadius: 2, yAxisID: 'y' }
-                    ]
-                },
+                type: 'bar', plugins: [noDataPlugin],
+                data: { labels: [], datasets: [] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { position: 'top', labels: { font: { family: 'Inter', size: 10 }, usePointStyle: true, boxWidth: 8 } } },
@@ -729,7 +722,7 @@
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
         
-        // ĐỘNG CƠ ĐỒNG BỘ DỮ LIỆU ĐỘNG TỪ FIREBASE LÊN INDEX
+        // ĐỘNG CƠ ĐỒNG BỘ DỮ LIỆU ĐỘNG TỪ FIREBASE LÊN INDEX (HÀM ĐƯỢC BẢO VỆ)
         window.fetchDashboardData = async function() {
             if (!window.db) return;
             const plantFilter = document.getElementById('dashboard-filter-plant') ? document.getElementById('dashboard-filter-plant').value : 'all';
@@ -755,7 +748,7 @@
                 if(document.getElementById('dash-val-completed')) document.getElementById('dash-val-completed').innerText = completed;
                 if(document.getElementById('dash-val-rate')) document.getElementById('dash-val-rate').innerText = rate;
 
-                // 2. BIỂU ĐỒ SỨC KHỎE
+                // 2. BIỂU ĐỒ SỨC KHỎE (HỖ TRỢ TÌM KIẾM MỜ)
                 let qHealth = collection(window.db, "nhan_su_noi_bo");
                 if (plantFilter !== 'all') {
                     const plantName = plantFilter === 'can' ? 'Nhà máy Can' : 'Nhà máy End';
@@ -763,16 +756,29 @@
                 }
                 const healthSnap = await getDocs(qHealth);
                 let hData = [0, 0, 0, 0, 0];
+                let hasHealthData = false;
                 healthSnap.forEach(doc => {
-                    const sk = doc.data().phan_loai_sk;
-                    if(sk === 'I' || sk === 'Loại I') hData[0]++;
-                    else if(sk === 'II' || sk === 'Loại II') hData[1]++;
-                    else if(sk === 'III' || sk === 'Loại III') hData[2]++;
-                    else if(sk === 'IV' || sk === 'Loại IV') hData[3]++;
-                    else if(sk === 'V' || sk === 'Loại V') hData[4]++;
+                    const sk = String(doc.data().phan_loai_sk || "").toUpperCase();
+                    if(sk.includes('I') && !sk.includes('II') && !sk.includes('IV')) { hData[0]++; hasHealthData = true; } // Bắt Loại I, 1
+                    else if(sk.includes('II') && !sk.includes('III')) { hData[1]++; hasHealthData = true; } // Bắt Loại II, 2
+                    else if(sk.includes('III')) { hData[2]++; hasHealthData = true; } // Bắt Loại III, 3
+                    else if(sk.includes('IV')) { hData[3]++; hasHealthData = true; } // Bắt Loại IV, 4
+                    else if(sk.includes('V')) { hData[4]++; hasHealthData = true; } // Bắt Loại V, 5
                 });
-                if(window.healthChart && healthSnap.size > 0) {
-                    window.healthChart.data.datasets[0].data = hData;
+                
+                if(window.healthChart) {
+                    if (hasHealthData) {
+                        window.healthChart.data.labels = ['Loại I', 'Loại II', 'Loại III', 'Loại IV', 'Loại V'];
+                        window.healthChart.data.datasets[0].data = hData;
+                        window.healthChart.data.datasets[0].backgroundColor = ['#10b981', '#34d399', '#f59e0b', '#ef4444', '#94a3b8'];
+                        window.healthChart.data.datasets[0].borderWidth = 2;
+                    } else {
+                        // Trả về vòng xám nếu không có ai có dữ liệu
+                        window.healthChart.data.labels = ['Chưa phân loại'];
+                        window.healthChart.data.datasets[0].data = [1];
+                        window.healthChart.data.datasets[0].backgroundColor = ['#e2e8f0'];
+                        window.healthChart.data.datasets[0].borderWidth = 0;
+                    }
                     window.healthChart.update();
                 }
 
@@ -784,9 +790,13 @@
                 }
                 const waterSnap = await getDocs(qWater);
                 let waterData = [];
-                waterSnap.forEach(doc => waterData.push(doc.data()));
+                waterSnap.forEach(doc => {
+                    const d = doc.data();
+                    if(d.ngay_lay_mau) waterData.push(d);
+                });
                 
                 if(waterData.length > 0) {
+                    // Sắp xếp ngày từ cũ đến mới (chuẩn YYYY-MM-DD)
                     waterData.sort((a, b) => a.ngay_lay_mau.localeCompare(b.ngay_lay_mau));
                     const recent = waterData.slice(-5); // Lấy 5 ngày mới nhất
                     
@@ -798,28 +808,46 @@
                     if(window.physicochemicalChart && window.flowChart) {
                         // Update Physicochemical Chart
                         window.physicochemicalChart.data.labels = labels;
-                        window.physicochemicalChart.data.datasets[0].data = recent.map(() => 90); // Target COD
-                        window.physicochemicalChart.data.datasets[1].data = recent.map(() => 15); // Target Flo
-                        window.physicochemicalChart.data.datasets[2].data = recent.map(d => parseFloat(d.cod) || 0);
-                        window.physicochemicalChart.data.datasets[3].data = recent.map(d => parseFloat(d.florua) || 0);
-                        window.physicochemicalChart.data.datasets[4].data = recent.map(d => parseFloat(d.ph) || 0);
+                        window.physicochemicalChart.data.datasets = [
+                            { label: 'Target COD (90)', data: recent.map(() => 90), borderColor: '#fca5a5', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
+                            { label: 'Target Flo (15)', data: recent.map(() => 15), borderColor: '#fcd34d', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
+                            { label: 'COD (mg/L)', data: recent.map(d => parseFloat(d.cod) || 0), borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
+                            { label: 'Florua (mg/L)', data: recent.map(d => parseFloat(d.florua) || 0), borderColor: '#f59e0b', borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#f59e0b', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
+                            { label: 'pH', data: recent.map(d => parseFloat(d.ph) || 0), borderColor: '#3b82f6', borderDash: [5, 5], borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#3b82f6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' }
+                        ];
                         window.physicochemicalChart.update();
 
-                        // Update Flow & Conductivity Chart
+                        // Update Flow Chart
                         window.flowChart.data.labels = labels;
-                        window.flowChart.data.datasets[0].data = recent.map(d => parseFloat(d.do_dan_dien) || 0);
-                        window.flowChart.data.datasets[1].data = recent.map(d => parseFloat(d.luu_luong) || 0);
+                        window.flowChart.data.datasets = [
+                            { type: 'line', label: 'Độ dẫn điện (mS/cm)', data: recent.map(d => parseFloat(d.do_dan_dien) || 0), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', borderWidth: 2, tension: 0.4, pointBackgroundColor: 'white', pointBorderColor: '#8b5cf6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' },
+                            { type: 'bar', label: 'Lưu lượng (m³/h)', data: recent.map(d => parseFloat(d.luu_luong) || 0), backgroundColor: '#67e8f9', barThickness: 16, borderRadius: 2, yAxisID: 'y' }
+                        ];
                         window.flowChart.update();
                     }
+                } else {
+                    // Xóa trắng nếu không có dữ liệu để plugin noData hoạt động
+                    if(window.physicochemicalChart) { window.physicochemicalChart.data.datasets = []; window.physicochemicalChart.update(); }
+                    if(window.flowChart) { window.flowChart.data.datasets = []; window.flowChart.update(); }
                 }
 
-                // 4. DANH SÁCH CUỘC HỌP
+                // 4. DANH SÁCH CUỘC HỌP (SỬA ĐỔI ĐỂ TÌM KIẾM MỞ RỘNG)
                 const mtgList = document.getElementById('dashboard-meeting-list');
                 if(mtgList) {
-                    const qMeetings = query(collection(window.db, "ehs_meetings"), where("status", "==", "Upcoming"));
-                    const snapMeetings = await getDocs(qMeetings);
+                    const snapMeetings = await getDocs(collection(window.db, "ehs_meetings"));
                     let meetings = [];
-                    snapMeetings.forEach(doc => meetings.push(doc.data()));
+                    const vnTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
+                    const today = new Date(vnTime);
+                    today.setHours(0,0,0,0);
+
+                    snapMeetings.forEach(doc => {
+                        const m = doc.data();
+                        // Chỉ lấy những cuộc họp có ngày >= hôm nay
+                        if(m.date) {
+                            const mDate = new Date(m.date);
+                            if(mDate >= today) meetings.push(m);
+                        }
+                    });
                     
                     if(meetings.length > 0) {
                         meetings.sort((a, b) => new Date(a.date) - new Date(b.date));
@@ -935,7 +963,7 @@
                 loader.innerHTML = `<div class="p-4 text-red-500 font-bold">Lỗi mạng: ${e.message}</div>`;
             }
         };
-        
+
         let messaging = null;
         const VAPID_KEY = "BNTDgWXyrg7X7cQBDOUHk_76XVK5pkNUAnycD4zNF4cd-FmDtn5epWr1L5cJaKFLfErqSuoOLD7D2G3puasks74";
 
@@ -949,9 +977,7 @@
         });
 
         window.requestNotificationPermission = async function() {
-            if (!messaging) {
-                window.showCustomAlert("Trình duyệt không hỗ trợ.", "❌ LỖI", true); return;
-            }
+            if (!messaging) return window.showCustomAlert("Trình duyệt không hỗ trợ.", "❌ LỖI", true);
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
@@ -971,13 +997,16 @@
             } catch (e) { console.error(e); }
         };
 
-        // KÍCH HOẠT DỮ LIỆU ĐỘNG SAU KHI TẢI TRANG/ĐĂNG NHẬP
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (window.checkLoginStatus) window.checkLoginStatus();
-                window.fetchLivePTW();
+                // Bắt buộc gọi chuỗi tải dữ liệu sau khi đăng nhập thành công
                 if(window.fetchDashboardData) window.fetchDashboardData(); 
+                window.fetchLivePTW();
+                // Gọi thông báo hệ thống
+                setTimeout(window.fetchNotifications, 500); 
             } else {
+                // Kể cả không đăng nhập vẫn cố gắng vẽ dashboard
                 if(window.fetchDashboardData) window.fetchDashboardData(); 
             }
         });
@@ -1042,7 +1071,6 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         };
 
-        // BỘ TỪ ĐIỂN ĐA NGÔN NGỮ HOÀN CHỈNH 100%
         const translations = {
             "vi": {
                 nav_dashboard: "Bảng Điều Khiển",
@@ -1050,9 +1078,6 @@
                 filter_all: "Toàn Công Ty",
                 filter_can: "Nhà Máy Can Line (1)",
                 filter_end: "Nhà Máy End Line (2)",
-                filter_month: "Tháng này",
-                filter_quarter: "Quý này",
-                filter_year: "Năm nay",
                 dash_total: "Tổng Công Việc",
                 dash_pending: "Cần Làm",
                 dash_completed: "Hoàn Thành",
@@ -1106,9 +1131,6 @@
                 filter_all: "Whole Company",
                 filter_can: "Can Line Factory (1)",
                 filter_end: "End Line Factory (2)",
-                filter_month: "This Month",
-                filter_quarter: "This Quarter",
-                filter_year: "This Year",
                 dash_total: "Total Tasks",
                 dash_pending: "Pending",
                 dash_completed: "Completed",
@@ -1162,9 +1184,6 @@
                 filter_all: "全公司",
                 filter_can: "Can Line 工厂 (1)",
                 filter_end: "End Line 工厂 (2)",
-                filter_month: "本月",
-                filter_quarter: "本季度",
-                filter_year: "今年",
                 dash_total: "总任务",
                 dash_pending: "待办事项",
                 dash_completed: "已完成",
@@ -1645,6 +1664,7 @@
             const userDept = localStorage.getItem("ehs_user_dept") || ""; let notifications = [];
 
             try {
+                // 1. TÌM CÔNG VIỆC TÔI ĐƯỢC GIAO
                 const qMyTasks = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
                 const snapMyTasks = await window.getDocs(qMyTasks);
                 const today = new Date(); today.setHours(0,0,0,0);
@@ -1665,6 +1685,7 @@
                     }
                 });
 
+                // 2. TÌM CÔNG VIỆC CHỜ TÔI PHÊ DUYỆT (LÃNH ĐẠO)
                 const qReview = window.query(window.collection(window.db, "ehs_tasks"), window.where("reviewer_id", "==", currentUserId));
                 const snapReview = await window.getDocs(qReview);
                 snapReview.forEach(doc => {
@@ -1674,6 +1695,7 @@
                     }
                 });
 
+                // 3. THÔNG BÁO UTILITY
                 if (userDept.toLowerCase().includes("utility") || userDept.toLowerCase().includes("vận hành")) {
                     const vnTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
                     const todayObj = new Date(vnTime);
@@ -1684,18 +1706,6 @@
                         notifications.push({ type: 'utility_alert', title: 'Nhắc nhở nhập dữ liệu Trạm xử lý', message: 'Hôm nay chưa có dữ liệu quan trắc nước thải. Anh em đang trực vui lòng cập nhật.', icon: 'ph-drop text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800/50', link: 'data_dashboard.html' });
                     }
                 }
-
-                const qMeetingsReal = window.query(window.collection(window.db, "ehs_meetings"), window.where("status", "==", "Upcoming"));
-                const snapMeetings = await window.getDocs(qMeetingsReal);
-                snapMeetings.forEach(doc => {
-                    const m = doc.data();
-                    if (m.attendee_ids && m.attendee_ids.includes(currentUserId)) {
-                        const myRecord = m.attendance_records ? m.attendance_records[currentUserId] : null;
-                        if (!myRecord || myRecord.status !== 'Attended') {
-                            notifications.push({ type: 'meeting_invite', title: 'Thư mời họp / Toolbox Meeting', message: `Bạn có lịch họp: "${m.title}" vào lúc ${m.time} ngày ${new Date(m.date).toLocaleDateString('vi-VN')}.`, icon: 'ph-users-three text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50', link: 'quan_ly_cuoc_hop.html' });
-                        }
-                    }
-                });
 
                 if (notifications.length > 0) {
                     badge.classList.remove('hidden'); countLabel.innerText = notifications.length; countLabel.classList.remove('hidden');
@@ -1720,9 +1730,6 @@
 
         applyTheme();
         changeLanguage(currentLang);
-        checkLoginStatus();
-        
-        if(currentUserId && window.db) { setTimeout(window.fetchNotifications, 1000); }
     </script>
     
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
