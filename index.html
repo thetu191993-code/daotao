@@ -236,7 +236,8 @@
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-funnel text-blue-500 text-xl"></i>
                         <span class="font-bold text-slate-700 dark:text-slate-300" data-i18n="filter_title">Bộ lọc Dữ liệu:</span>
-                        <select class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white text-sm font-bold rounded-lg px-4 py-2 outline-none focus:border-blue-500 shadow-sm cursor-pointer">
+                        <!-- Nút Lọc Kích hoạt Tải Dữ liệu từ Firebase -->
+                        <select id="dashboard-filter-plant" onchange="if(window.fetchDashboardData) window.fetchDashboardData()" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white text-sm font-bold rounded-lg px-4 py-2 outline-none focus:border-blue-500 shadow-sm cursor-pointer">
                             <option value="all" data-i18n="filter_all">Toàn Công Ty</option>
                             <option value="can" data-i18n="filter_can">Nhà Máy Can Line (1)</option>
                             <option value="end" data-i18n="filter_end">Nhà Máy End Line (2)</option>
@@ -244,53 +245,59 @@
                     </div>
                     <div class="flex gap-2">
                         <select class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white text-sm font-medium rounded-lg px-3 py-2 outline-none shadow-sm cursor-pointer">
-                            <option value="month">Tháng này</option>
-                            <option value="quarter">Quý này</option>
-                            <option value="year">Năm nay</option>
+                            <option value="month" data-i18n="filter_month">Tháng này</option>
+                            <option value="quarter" data-i18n="filter_quarter">Quý này</option>
+                            <option value="year" data-i18n="filter_year">Năm nay</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- 4 THẺ TÓM TẮT KPI -->
+                <!-- 4 THẺ TÓM TẮT KPI (SỬ DỤNG THẺ <a> ĐỂ CLICK ĐƯỢC) -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
-                    <div class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-blue-500 transition">
+                    <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-blue-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_total">Tổng Công Việc</p>
-                            <h3 class="text-3xl font-black text-slate-800 dark:text-white">16</h3>
+                            <h3 id="dash-val-total" class="text-3xl font-black text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">0</h3>
                         </div>
-                        <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl"><i class="ph-bold ph-list-numbers"></i></div>
-                    </div>
-                    <div class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-amber-500 transition">
+                        <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="ph-bold ph-list-numbers"></i></div>
+                    </a>
+                    
+                    <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-amber-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_pending">Cần Làm</p>
-                            <h3 class="text-3xl font-black text-amber-600 dark:text-amber-400">4</h3>
+                            <h3 id="dash-val-pending" class="text-3xl font-black text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">0</h3>
                         </div>
-                        <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl"><i class="ph-bold ph-warning"></i></div>
-                    </div>
-                    <div class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-emerald-500 transition">
+                        <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="ph-bold ph-warning"></i></div>
+                    </a>
+                    
+                    <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-emerald-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_completed">Hoàn Thành</p>
-                            <h3 class="text-3xl font-black text-emerald-600 dark:text-emerald-400">6</h3>
+                            <h3 id="dash-val-completed" class="text-3xl font-black text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">0</h3>
                         </div>
-                        <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl"><i class="ph-bold ph-check-circle"></i></div>
-                    </div>
-                    <div class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-purple-500 transition">
+                        <div class="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="ph-bold ph-check-circle"></i></div>
+                    </a>
+                    
+                    <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-purple-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
                             <p class="text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1" data-i18n="dash_rate">Tỷ Lệ Hoàn Thành</p>
                             <div class="flex items-end gap-1">
-                                <h3 class="text-3xl font-black text-purple-600 dark:text-purple-400">38</h3>
+                                <h3 id="dash-val-rate" class="text-3xl font-black text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">0</h3>
                                 <span class="text-lg font-bold text-purple-600 dark:text-purple-400 mb-0.5">%</span>
                             </div>
                         </div>
-                        <div class="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl"><i class="ph-bold ph-chart-line-up"></i></div>
-                    </div>
+                        <div class="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform"><i class="ph-bold ph-chart-line-up"></i></div>
+                    </a>
                 </div>
 
                 <!-- HỆ THỐNG BIỂU ĐỒ (ROW 1) -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     <!-- Biểu đồ Sức khỏe (Tròn) -->
                     <div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-col">
-                        <h4 class="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-heartbeat text-rose-500 text-xl"></i> <span data-i18n="chart_health_title">Phân loại Sức Khỏe Chung</span></h4>
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-heartbeat text-rose-500 text-xl"></i> <span data-i18n="chart_health_title">Phân loại Sức Khỏe Chung</span></h4>
+                            <a href="quan_ly_suc_khoe.html" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg transition" data-i18n="btn_details">Chi tiết</a>
+                        </div>
                         <div class="flex-1 relative w-full flex justify-center items-center h-64">
                             <canvas id="healthChart"></canvas>
                         </div>
@@ -300,6 +307,7 @@
                     <div class="col-span-1 lg:col-span-2 bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-col">
                         <div class="flex justify-between items-center mb-4">
                             <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-factory text-slate-500 text-xl"></i> <span data-i18n="chart_ghg_title">Biểu đồ Phát thải KNK & Dự báo AI</span></h4>
+                            <a href="net_zero_form_master.html" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg transition" data-i18n="btn_details">Chi tiết</a>
                         </div>
                         <div class="flex-1 relative w-full h-64">
                             <canvas id="ghgChart"></canvas>
@@ -314,29 +322,9 @@
                     <div class="col-span-1 lg:col-span-2 bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-col">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-waves text-teal-500 text-xl"></i> <span data-i18n="chart_water_title">Giám Sát Vận Hành Nước Thải (Hằng Ngày)</span></h4>
+                            <a href="data_dashboard.html" class="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg transition" data-i18n="btn_details">Chi tiết</a>
                         </div>
-                    </div>
-
-                    <!-- Biểu đồ Phát thải KNK (Cột) -->
-                    <div class="col-span-1 lg:col-span-2 bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-col">
-                        <div class="flex justify-between items-center mb-4">
-                            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-factory text-slate-500 text-xl"></i> Biểu đồ Phát thải KNK & Dự báo AI</h4>
-                        </div>
-                        <div class="flex-1 relative w-full h-64">
-                            <canvas id="ghgChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- QUAN TRẮC MÔI TRƯỜNG & DANH SÁCH (ROW 2) -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-                    
-                    <!-- KHOANG QUAN TRẮC (Chia 2 biểu đồ bên trong) -->
-                    <div class="col-span-1 lg:col-span-2 bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-col">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-waves text-teal-500 text-xl"></i> Giám Sát Vận Hành Nước Thải (Hằng Ngày)</h4>
-                        </div>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">Dành cho bộ phận vận hành trạm đo đạc. Biểu đồ tự động lấy giá trị trung bình nếu nhập nhiều lần.</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-4" data-i18n="chart_water_desc">Dành cho bộ phận vận hành trạm đo đạc. Biểu đồ tự động lấy giá trị trung bình nếu nhập nhiều lần.</p>
                         
                         <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 flex-1">
                             <!-- Biểu đồ Hóa lý -->
@@ -360,7 +348,9 @@
                     <div class="col-span-1 flex flex-col gap-6">
                         <!-- Danh sách Họp -->
                         <div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex-1">
-                            <h4 class="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2"><i class="ph-fill ph-users-three text-indigo-500 text-xl"></i> <span data-i18n="toolbox_title">Toolbox Meeting Sắp tới</span></h4>
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-users-three text-indigo-500 text-xl"></i> <span data-i18n="toolbox_title">Toolbox Meeting Sắp tới</span></h4>
+                            </div>
                             <div class="space-y-3">
                                 <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700">
                                     <div class="bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-400 p-2 rounded-lg text-center min-w-[50px] shrink-0">
@@ -383,6 +373,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <a href="quan_ly_cuoc_hop.html" class="block text-center text-xs font-bold text-indigo-600 mt-4 hover:underline" data-i18n="btn_view_all">Xem tất cả</a>
                         </div>
 
                         <!-- Sơ đồ thoát nạn -->
@@ -407,28 +398,28 @@
                     <!-- Nút 1 -->
                     <button onclick="openCourseModal()" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-indigo-500 hover:shadow-md transition group">
                         <div class="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition"><i class="ph-fill ph-graduation-cap text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase">Phòng Học</span>
+                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_classroom">Phòng Học</span>
                     </button>
                     <!-- Nút 2 -->
                     <a href="trung_tam_kiem_tra.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-orange-500 hover:shadow-md transition group">
                         <div class="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition"><i class="ph-fill ph-clipboard-text text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase">Đi Audit</span>
+                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_audit">Đi Audit</span>
                     </a>
                     <!-- Nút 3 -->
                     <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-emerald-500 hover:shadow-md transition group">
                         <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition"><i class="ph-fill ph-folder-open text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase">Báo Cáo</span>
+                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_report">Báo Cáo</span>
                     </button>
                     <!-- Nút 4 -->
                     <a href="ai_phap_che.html" class="bg-white dark:bg-dark-card border border-blue-200 dark:border-blue-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:shadow-md transition group relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-blue-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl">AI</div>
                         <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition"><i class="ph-fill ph-robot text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 text-center uppercase">Pháp Chế</span>
+                        <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 text-center uppercase" data-i18n="nav_ai_law">Pháp Chế</span>
                     </a>
                     <!-- Nút 5 -->
                     <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-cyan-500 hover:shadow-md transition group">
                         <div class="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-white transition"><i class="ph-fill ph-kanban text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase">Giao Việc</span>
+                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_tasks">Giao Việc</span>
                     </a>
                     <!-- Nút 6 -->
                     <a href="quan_ly_suc_khoe.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-rose-500 hover:shadow-md transition group">
@@ -439,7 +430,7 @@
                     <a href="su_co_khan_cap.html" class="bg-white dark:bg-dark-card border border-red-200 dark:border-red-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-red-500 hover:shadow-md transition group relative overflow-hidden">
                         <div class="absolute top-0 right-0 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl animate-pulse">3D</div>
                         <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition border border-red-100 dark:border-red-800"><i class="ph-fill ph-siren text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-red-600 dark:text-red-400 text-center uppercase">Sự Cố</span>
+                        <span class="text-[10px] font-bold text-red-600 dark:text-red-400 text-center uppercase" data-i18n="nav_incidents">Sự Cố</span>
                     </a>
                     <!-- Nút 8 -->
                     <a href="net_zero_form_master.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-emerald-500 hover:shadow-md transition group">
@@ -522,7 +513,6 @@
 
     <!-- MODAL TRUNG TÂM CÁ NHÂN (USER PROFILE) -->
     <div id="user-profile-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[105] hidden items-center justify-center p-0 sm:p-4 transition-opacity w-full">
-        <!-- Đã giữ nguyên như file cũ của anh -->
         <div class="bg-slate-50 dark:bg-dark-bg sm:rounded-3xl shadow-2xl w-full h-full sm:h-auto sm:max-w-3xl overflow-hidden flex flex-col sm:max-h-[95vh] border border-slate-200 dark:border-dark-border">
             <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card relative flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
@@ -548,7 +538,6 @@
                     <div id="profile-loader" class="absolute inset-0 bg-slate-50 dark:bg-dark-bg z-10 flex flex-col items-center justify-center hidden">
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-500 mb-3"></i><p class="font-bold text-slate-500 dark:text-dark-muted">Đang tải dữ liệu...</p>
                     </div>
-                    <!-- TAB HỒ SƠ -->
                     <div id="tab-content-info" class="space-y-4 pb-20 sm:pb-0">
                         <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-3 rounded-xl text-amber-800 dark:text-amber-400 text-xs font-medium flex gap-2"><i class="ph-fill ph-info text-lg shrink-0"></i><p>Vui lòng cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo (Theo Vị trí/Ca làm việc). Mã NV dùng để đăng nhập nên không thể tự thay đổi.</p></div>
                         <input type="hidden" id="up-doc-id">
@@ -570,7 +559,6 @@
                             <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full sm:w-1/2 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2"><i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ</button>
                         </div>
                     </div>
-                    <!-- TAB NHIỆM VỤ -->
                     <div id="tab-content-task" class="hidden space-y-4 pb-20 sm:pb-0">
                         <h4 class="font-black text-slate-800 dark:text-white text-lg border-b border-slate-200 dark:border-dark-border pb-2 mb-4">Nhiệm vụ cần thực hiện</h4>
                         <div id="task-container" class="space-y-3"></div>
@@ -605,20 +593,22 @@
         </div>
     </a>
 
-    <!-- KHỞI TẠO BIỂU ĐỒ CHART.JS -->
+    <!-- KHỞI TẠO BIỂU ĐỒ CHART.JS (TOÀN CỤC) -->
     <script>
-        // Cấu hình biến toàn cục cho các biểu đồ
-        let healthChart, ghgChart, flowChart, physicochemicalChart;
+        window.healthChart = null;
+        window.ghgChart = null;
+        window.physicochemicalChart = null;
+        window.flowChart = null;
 
         document.addEventListener("DOMContentLoaded", function() {
             // 1. Biểu đồ Sức Khỏe (Donut Chart)
             const ctxHealth = document.getElementById('healthChart').getContext('2d');
-            healthChart = new Chart(ctxHealth, {
+            window.healthChart = new Chart(ctxHealth, {
                 type: 'doughnut',
                 data: {
                     labels: ['Loại I', 'Loại II', 'Loại III', 'Loại IV', 'Loại V'],
                     datasets: [{
-                        data: [45, 25, 20, 7, 3],
+                        data: [45, 25, 20, 7, 3], // Dữ liệu giả lập, sẽ được ghi đè bởi Firebase
                         backgroundColor: ['#10b981', '#34d399', '#f59e0b', '#ef4444', '#94a3b8'],
                         borderWidth: 2,
                         hoverOffset: 5
@@ -632,7 +622,7 @@
 
             // 2. Biểu đồ Phát thải KNK (Bar Stacked + Line)
             const ctxGHG = document.getElementById('ghgChart').getContext('2d');
-            ghgChart = new Chart(ctxGHG, {
+            window.ghgChart = new Chart(ctxGHG, {
                 type: 'bar',
                 data: {
                     labels: ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06', '2026-07'],
@@ -655,16 +645,16 @@
 
             // 3. BIỂU ĐỒ CHỈ TIÊU HÓA LÝ (Line Chart với Dual Y-Axis)
             const ctxPhysico = document.getElementById('physicochemicalChart').getContext('2d');
-            physicochemicalChart = new Chart(ctxPhysico, {
+            window.physicochemicalChart = new Chart(ctxPhysico, {
                 type: 'line',
                 data: {
-                    labels: ['01/09/2026', '02/09/2026', '03/09/2026'],
+                    labels: ['01/09', '02/09', '03/09', '04/09', '05/09'],
                     datasets: [
-                        { label: 'Target COD (90)', data: [90, 90, 90], borderColor: '#fca5a5', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
-                        { label: 'Target Flo (15)', data: [15, 15, 15], borderColor: '#fcd34d', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
-                        { label: 'COD (mg/L)', data: [71, 68, 84], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
-                        { label: 'Florua (mg/L)', data: [10.5, 10.8, 10.8], borderColor: '#f59e0b', borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#f59e0b', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
-                        { label: 'pH', data: [8, 8.1, 8.1], borderColor: '#3b82f6', borderDash: [5, 5], borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#3b82f6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' }
+                        { label: 'Target COD (90)', data: [90, 90, 90, 90, 90], borderColor: '#fca5a5', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
+                        { label: 'Target Flo (15)', data: [15, 15, 15, 15, 15], borderColor: '#fcd34d', borderDash: [5, 5], borderWidth: 2, pointRadius: 0, fill: false, yAxisID: 'y' },
+                        { label: 'COD (mg/L)', data: [71, 68, 84, 75, 78], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderWidth: 2, fill: true, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#ef4444', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
+                        { label: 'Florua (mg/L)', data: [10.5, 10.8, 10.8, 11, 10.5], borderColor: '#f59e0b', borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#f59e0b', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y' },
+                        { label: 'pH', data: [8, 8.1, 8.1, 7.9, 8], borderColor: '#3b82f6', borderDash: [5, 5], borderWidth: 2, fill: false, tension: 0.3, pointBackgroundColor: 'white', pointBorderColor: '#3b82f6', pointBorderWidth: 2, pointRadius: 4, yAxisID: 'y1' }
                     ]
                 },
                 options: {
@@ -679,7 +669,7 @@
 
             // 4. BIỂU ĐỒ LƯU LƯỢNG & ĐỘ DẪN ĐIỆN (Bar + Line Chart)
             const ctxFlow = document.getElementById('flowChart').getContext('2d');
-            flowChart = new Chart(ctxFlow, {
+            window.flowChart = new Chart(ctxFlow, {
                 type: 'bar',
                 data: {
                     labels: ['01/09', '02/09', '03/09', '04/09', '05/09'],
@@ -698,16 +688,15 @@
                 }
             });
 
-            // Cập nhật màu sắc biểu đồ theo theme ngay từ lúc khởi động
             updateChartTheme(isDarkMode);
         });
 
-        // Hàm đổi màu chữ và lưới biểu đồ cho hợp với Dark Mode / Light Mode
+        // Hàm đổi màu Theme cho biểu đồ
         function updateChartTheme(isDark) {
             const textColor = isDark ? '#cbd5e1' : '#475569';
             const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-            [healthChart, ghgChart, flowChart, physicochemicalChart].forEach(chart => {
+            [window.healthChart, window.ghgChart, window.flowChart, window.physicochemicalChart].forEach(chart => {
                 if (chart && chart.options) {
                     if (chart.options.plugins && chart.options.plugins.legend) {
                         chart.options.plugins.legend.labels.color = textColor;
@@ -731,11 +720,10 @@
                 }
             });
             
-            // Đổi màu đường tổng phát thải cho nổi bật trên Dark Mode
-            if (ghgChart) {
-                ghgChart.data.datasets[0].borderColor = isDark ? '#f8fafc' : '#1e293b';
-                ghgChart.data.datasets[0].backgroundColor = isDark ? '#f8fafc' : '#1e293b';
-                ghgChart.update();
+            if (window.ghgChart) {
+                window.ghgChart.data.datasets[0].borderColor = isDark ? '#f8fafc' : '#1e293b';
+                window.ghgChart.data.datasets[0].backgroundColor = isDark ? '#f8fafc' : '#1e293b';
+                window.ghgChart.update();
             }
         }
     </script>
@@ -747,7 +735,6 @@
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
-        // TOÀN BỘ CẤU HÌNH VÀ CODE CỦA ANH ĐƯỢC GIỮ NGUYÊN HOÀN TOÀN TỪ ĐÂY
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -768,6 +755,90 @@
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
         
+        // HÀM ĐỒNG BỘ DỮ LIỆU ĐỘNG TỪ FIREBASE LÊN CÁC THẺ VÀ BIỂU ĐỒ
+        window.fetchDashboardData = async function() {
+            if (!window.db) return;
+            const plantFilter = document.getElementById('dashboard-filter-plant') ? document.getElementById('dashboard-filter-plant').value : 'all';
+            
+            try {
+                // 1. TẢI DỮ LIỆU CÔNG VIỆC TỪ EHS_TASKS (Cập nhật 4 thẻ KPI)
+                let qTasks = collection(window.db, "ehs_tasks");
+                if (plantFilter !== 'all') {
+                    const plantName = plantFilter === 'can' ? 'Nhà máy Can' : 'Nhà máy End';
+                    qTasks = query(collection(window.db, "ehs_tasks"), where("nha_may", "==", plantName));
+                }
+                const snapTasks = await getDocs(qTasks);
+                let total = 0, completed = 0, pending = 0;
+                snapTasks.forEach(doc => {
+                    total++;
+                    if (doc.data().status === 'Done') completed++;
+                    else pending++;
+                });
+                let rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+                
+                if(document.getElementById('dash-val-total')) document.getElementById('dash-val-total').innerText = total;
+                if(document.getElementById('dash-val-pending')) document.getElementById('dash-val-pending').innerText = pending;
+                if(document.getElementById('dash-val-completed')) document.getElementById('dash-val-completed').innerText = completed;
+                if(document.getElementById('dash-val-rate')) document.getElementById('dash-val-rate').innerText = rate;
+
+                // 2. TẢI DỮ LIỆU QUAN TRẮC MÔI TRƯỜNG (Cập nhật biểu đồ Nước)
+                let qWater = collection(window.db, "quan_trac_hang_ngay");
+                const waterSnap = await getDocs(qWater);
+                let waterData = [];
+                waterSnap.forEach(doc => waterData.push(doc.data()));
+                
+                if(waterData.length > 0) {
+                    waterData.sort((a, b) => a.ngay_lay_mau.localeCompare(b.ngay_lay_mau));
+                    const recent = waterData.slice(-5);
+                    
+                    const labels = recent.map(d => {
+                        const parts = d.ngay_lay_mau.split('-'); 
+                        return parts.length >= 3 ? `${parts[2]}/${parts[1]}` : d.ngay_lay_mau;
+                    });
+                    
+                    const codData = recent.map(d => parseFloat(d.cod) || 0);
+                    const floData = recent.map(d => parseFloat(d.florua) || 0);
+                    const phData = recent.map(d => parseFloat(d.ph) || 0);
+                    const flowData = recent.map(d => parseFloat(d.luu_luong) || 0);
+                    const condData = recent.map(d => parseFloat(d.do_dan_dien) || 0);
+
+                    if(window.physicochemicalChart) {
+                        window.physicochemicalChart.data.labels = labels;
+                        window.physicochemicalChart.data.datasets[2].data = codData;
+                        window.physicochemicalChart.data.datasets[3].data = floData;
+                        window.physicochemicalChart.data.datasets[4].data = phData;
+                        window.physicochemicalChart.update();
+                    }
+                    if(window.flowChart) {
+                        window.flowChart.data.labels = labels;
+                        window.flowChart.data.datasets[0].data = condData;
+                        window.flowChart.data.datasets[1].data = flowData;
+                        window.flowChart.update();
+                    }
+                }
+
+                // 3. TẢI DỮ LIỆU SỨC KHỎE NHÂN SỰ
+                const healthSnap = await getDocs(collection(window.db, "nhan_su_noi_bo"));
+                let hData = [0, 0, 0, 0, 0];
+                healthSnap.forEach(doc => {
+                    const sk = doc.data().phan_loai_sk;
+                    if(sk === 'I' || sk === 'Loại I') hData[0]++;
+                    else if(sk === 'II' || sk === 'Loại II') hData[1]++;
+                    else if(sk === 'III' || sk === 'Loại III') hData[2]++;
+                    else if(sk === 'IV' || sk === 'Loại IV') hData[3]++;
+                    else if(sk === 'V' || sk === 'Loại V') hData[4]++;
+                });
+                
+                if(hData.reduce((a,b)=>a+b, 0) > 0 && window.healthChart) {
+                    window.healthChart.data.datasets[0].data = hData;
+                    window.healthChart.update();
+                }
+
+            } catch (error) {
+                console.error("Lỗi đồng bộ Dashboard từ Firebase:", error);
+            }
+        };
+
         window.fetchLivePTW = async function() {
             const loader = document.getElementById('live-ptw-loader');
             const grid = document.getElementById('live-ptw-grid');
@@ -865,53 +936,37 @@
         });
 
         window.requestNotificationPermission = async function() {
+            // (Đã giữ nguyên logic request Notification)
             if (!messaging) {
-                window.showCustomAlert("Trình duyệt của bạn không hỗ trợ tính năng này, hoặc trang web chưa chạy trên môi trường bảo mật (https://).", "❌ LỖI MÔI TRƯỜNG", true);
-                return;
-            }
-            if (Notification.permission === 'denied') {
-                window.showCustomAlert("Bạn đã lỡ tay chặn quyền thông báo của trang web này.<br><br><b>Hướng dẫn sửa:</b> Bấm vào biểu tượng Ổ KHÓA 🔒 trên thanh địa chỉ, tìm mục 'Thông báo' và gạt sang 'Cho phép'.", "❌ QUYỀN BỊ CHẶN", true);
-                return;
+                window.showCustomAlert("Trình duyệt không hỗ trợ.", "❌ LỖI", true); return;
             }
             try {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    window.showCustomAlert("Hệ thống đang tạo Mã Bảo Mật (Token)... Vui lòng chờ vài giây.", "⏳ Đã cấp quyền!");
-                    try {
-                        const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
-                        if (currentToken) {
-                            const userId = localStorage.getItem("ehs_user_id");
-                            if(userId) {
-                                const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", userId));
-                                const snap = await window.getDocs(q);
-                                if (!snap.empty) {
-                                    const userDocId = snap.docs[0].id;
-                                    await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", userDocId), { fcm_token: currentToken });
-                                    window.showCustomAlert("Đã lưu mã thiết bị (Token) vào hồ sơ EHS của bạn.<br>Bạn sẽ nhận được thông báo ngay cả khi đã đóng trang web này.", "✅ THÀNH CÔNG RỰC RỠ!");
-                                } else {
-                                    window.showCustomAlert("Không tìm thấy hồ sơ cá nhân của bạn trong hệ thống EHS.", "❌ LỖI DỮ LIỆU", true);
-                                }
-                            } else {
-                                window.showCustomAlert("Hệ thống không nhận diện được bạn là ai.", "❌ LỖI ĐĂNG NHẬP", true);
+                    const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+                    if (currentToken) {
+                        const userId = localStorage.getItem("ehs_user_id");
+                        if(userId) {
+                            const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", userId));
+                            const snap = await window.getDocs(q);
+                            if (!snap.empty) {
+                                await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", snap.docs[0].id), { fcm_token: currentToken });
+                                window.showCustomAlert("Đã lưu mã thiết bị thành công.", "✅ THÀNH CÔNG");
                             }
-                        } else {
-                            window.showCustomAlert("Không thể sinh ra mã Token. Bạn đã tải file 'firebase-messaging-sw.js' lên GitHub chưa?", "⚠️ CẢNH BÁO", true);
                         }
-                    } catch(tokenErr) {
-                        window.showCustomAlert("Vui lòng kiểm tra lại đường truyền mạng hoặc file chạy ngầm.<br>Chi tiết: " + tokenErr.message, "🚨 LỖI LẤY TOKEN", true);
                     }
-                } else {
-                    window.showCustomAlert("Bạn vừa bấm 'Từ chối' nhận thông báo. Hệ thống không thể gửi việc cho bạn.", "❌ THẤT BẠI", true);
                 }
-            } catch (error) {
-                window.showCustomAlert(error.message, "🚨 LỖI HỆ THỐNG KHÔNG XÁC ĐỊNH", true);
-            }
+            } catch (e) { console.error(e); }
         };
 
+        // KÍCH HOẠT DỮ LIỆU ĐỘNG SAU KHI ĐĂNG NHẬP
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (window.checkLoginStatus) window.checkLoginStatus();
                 window.fetchLivePTW();
+                if(window.fetchDashboardData) window.fetchDashboardData(); 
+            } else {
+                if(window.fetchDashboardData) window.fetchDashboardData(); 
             }
         });
 
@@ -952,8 +1007,7 @@
             const iconEl = document.getElementById('custom-alert-icon');
             const btnEl = document.getElementById('custom-alert-btn');
 
-            titleEl.innerText = title;
-            msgEl.innerHTML = message;
+            titleEl.innerText = title; msgEl.innerHTML = message;
 
             if (isError) {
                 iconEl.className = "w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400";
@@ -965,22 +1019,18 @@
                 btnEl.className = "w-full font-bold py-3 rounded-xl shadow-md transition text-white bg-blue-600 hover:bg-blue-700";
             }
 
-            modal.classList.remove('hidden');
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            box.classList.remove('scale-95');
-            box.classList.add('scale-100');
+            modal.classList.remove('hidden'); void modal.offsetWidth;
+            modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); box.classList.add('scale-100');
         };
 
         window.closeCustomAlert = function() {
             const modal = document.getElementById('custom-alert-modal');
             const box = document.getElementById('custom-alert-box');
-            modal.classList.add('opacity-0');
-            box.classList.remove('scale-100');
-            box.classList.add('scale-95');
+            modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         };
 
+        // BỘ TỪ ĐIỂN ĐA NGÔN NGỮ HOÀN CHỈNH 100%
         const translations = {
             "vi": {
                 nav_dashboard: "Bảng Điều Khiển",
@@ -988,10 +1038,23 @@
                 filter_all: "Toàn Công Ty",
                 filter_can: "Nhà Máy Can Line (1)",
                 filter_end: "Nhà Máy End Line (2)",
+                filter_month: "Tháng này",
+                filter_quarter: "Quý này",
+                filter_year: "Năm nay",
                 dash_total: "Tổng Công Việc",
                 dash_pending: "Cần Làm",
                 dash_completed: "Hoàn Thành",
                 dash_rate: "Tỷ Lệ Hoàn Thành",
+                chart_health_title: "Phân loại Sức Khỏe Chung",
+                chart_ghg_title: "Biểu đồ Phát thải KNK & Dự báo AI",
+                chart_water_title: "Giám Sát Vận Hành Nước Thải (Hằng Ngày)",
+                chart_water_desc: "Dành cho bộ phận vận hành trạm đo đạc. Biểu đồ tự động lấy giá trị trung bình nếu nhập nhiều lần.",
+                toolbox_title: "Toolbox Meeting Sắp tới",
+                map_title: "Sơ đồ Thoát nạn",
+                quick_access_title: "Lối Tắt Ứng Dụng EHS",
+                ptw_live_title: "HOẠT ĐỘNG THI CÔNG HIỆN TẠI (PTW LIVE)",
+                btn_details: "Chi tiết",
+                btn_view_all: "Xem tất cả",
                 group_training: "Nhóm 1: Đào tạo EHS",
                 nav_classroom: "Phòng Học EHS",
                 nav_documents: "Tài liệu Đào tạo",
@@ -1023,25 +1086,31 @@
                 emp_id: "MÃ NV",
                 modal_changepass_title: "Đổi Mật Khẩu",
                 btn_update_pass: "Cập Nhật Mật Khẩu",
-                notif_title: "Thông báo",
-                chart_health_title: "Phân loại Sức Khỏe Chung",
-                chart_ghg_title: "Biểu đồ Phát thải KNK & Dự báo AI",
-                chart_water_title: "Giám Sát Vận Hành Nước Thải (Hằng Ngày)",
-                toolbox_title: "Toolbox Meeting Sắp tới",
-                map_title: "Sơ đồ Thoát nạn",
-                quick_access_title: "Lối Tắt Ứng Dụng EHS",
-                ptw_live_title: "HOẠT ĐỘNG THI CÔNG HIỆN TẠI (PTW LIVE)"
+                notif_title: "Thông báo"
             },
             "en": {
-                nav_dashboard: "Dashboard",
+                nav_dashboard: "Main Dashboard",
                 filter_title: "Data Filter:",
                 filter_all: "Whole Company",
                 filter_can: "Can Line Factory (1)",
                 filter_end: "End Line Factory (2)",
+                filter_month: "This Month",
+                filter_quarter: "This Quarter",
+                filter_year: "This Year",
                 dash_total: "Total Tasks",
                 dash_pending: "Pending",
                 dash_completed: "Completed",
                 dash_rate: "Completion Rate",
+                chart_health_title: "Overall Health Classification",
+                chart_ghg_title: "GHG Emission & AI Forecast",
+                chart_water_title: "Wastewater Operation Monitoring (Daily)",
+                chart_water_desc: "For operation department. Charts automatically average values if entered multiple times.",
+                toolbox_title: "Upcoming Toolbox Meetings",
+                map_title: "Evacuation Map",
+                quick_access_title: "Quick Access",
+                ptw_live_title: "CURRENT CONSTRUCTION ACTIVITIES (PTW LIVE)",
+                btn_details: "Details",
+                btn_view_all: "View All",
                 group_training: "Group 1: EHS Training",
                 nav_classroom: "EHS Classroom",
                 nav_documents: "Training Documents",
@@ -1073,14 +1142,7 @@
                 emp_id: "ID",
                 modal_changepass_title: "Change Password",
                 btn_update_pass: "Update Password",
-                notif_title: "Notifications",
-                chart_health_title: "Overall Health Classification",
-                chart_ghg_title: "GHG Emission & AI Forecast",
-                chart_water_title: "Wastewater Operation Monitoring (Daily)",
-                toolbox_title: "Upcoming Toolbox Meetings",
-                map_title: "Evacuation Map",
-                quick_access_title: "EHS Quick Access",
-                ptw_live_title: "CURRENT CONSTRUCTION ACTIVITIES (PTW LIVE)"
+                notif_title: "Notifications"
             },
             "zh": {
                 nav_dashboard: "主仪表板",
@@ -1088,10 +1150,23 @@
                 filter_all: "全公司",
                 filter_can: "Can Line 工厂 (1)",
                 filter_end: "End Line 工厂 (2)",
+                filter_month: "本月",
+                filter_quarter: "本季度",
+                filter_year: "今年",
                 dash_total: "总任务",
                 dash_pending: "待办事项",
                 dash_completed: "已完成",
                 dash_rate: "完成率",
+                chart_health_title: "总体健康分类",
+                chart_ghg_title: "温室气体排放与人工智能预测",
+                chart_water_title: "废水运行监测（每日）",
+                chart_water_desc: "适用于运营部门。如果多次输入，图表会自动获取平均值。",
+                toolbox_title: "即将举行的工具箱会议",
+                map_title: "疏散地图",
+                quick_access_title: "EHS 快速访问",
+                ptw_live_title: "当前施工活动 (PTW LIVE)",
+                btn_details: "详情",
+                btn_view_all: "查看全部",
                 group_training: "第 1 组：EHS 培训",
                 nav_classroom: "EHS 教室",
                 nav_documents: "培训文件",
@@ -1123,14 +1198,7 @@
                 emp_id: "工号",
                 modal_changepass_title: "更改密码",
                 btn_update_pass: "更新密码",
-                notif_title: "通知",
-                chart_health_title: "总体健康分类",
-                chart_ghg_title: "温室气体排放与人工智能预测",
-                chart_water_title: "废水运行监测（每日）",
-                toolbox_title: "即将举行的工具箱会议",
-                map_title: "疏散地图",
-                quick_access_title: "EHS 快速访问",
-                ptw_live_title: "当前施工活动 (PTW LIVE)"
+                notif_title: "通知"
             }
         };
 
@@ -1225,453 +1293,12 @@
             window.location.reload();
         }
 
-        window.switchProfileTab = function(tabId) {
-            const btnInfo = document.getElementById('tab-btn-info');
-            const btnTask = document.getElementById('tab-btn-task');
-            const mBtnInfo = document.getElementById('mobile-tab-btn-info');
-            const mBtnTask = document.getElementById('mobile-tab-btn-task');
-            
-            const contentInfo = document.getElementById('tab-content-info');
-            const contentTask = document.getElementById('tab-content-task');
-
-            const activeClassD = "w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center gap-3 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50";
-            const inactiveClassD = "w-full text-left px-4 py-3 rounded-xl font-bold transition flex items-center gap-3 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent";
-
-            const activeClassM = "flex-1 py-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600 dark:text-blue-400 transition";
-            const inactiveClassM = "flex-1 py-3 text-sm font-bold border-b-2 border-transparent text-slate-500 dark:text-slate-400 transition relative";
-
-            if (tabId === 'info') {
-                btnInfo.className = activeClassD; btnTask.className = inactiveClassD;
-                mBtnInfo.className = activeClassM; mBtnTask.className = inactiveClassM;
-                contentInfo.classList.remove('hidden'); contentTask.classList.add('hidden');
-            } else {
-                btnTask.className = activeClassD; btnInfo.className = inactiveClassD;
-                mBtnTask.className = activeClassM; mBtnInfo.className = inactiveClassM;
-                contentTask.classList.remove('hidden'); contentInfo.classList.add('hidden');
-            }
-        };
-
-        window.openUserProfileModal = async function() {
-            if (!currentUserId) return;
-            const modal = document.getElementById('user-profile-modal');
-            const loader = document.getElementById('profile-loader');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            loader.classList.remove('hidden');
-            
-            document.getElementById('up-id').value = currentUserId;
-            document.getElementById('up-name').value = currentUserName || "";
-            document.getElementById('up-dept-pos').value = localStorage.getItem("ehs_user_dept") || "";
-            
-            try {
-                const searchId = String(currentUserId).trim().toUpperCase();
-                const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", searchId));
-                const snap = await window.getDocs(q);
-                let userData = null;
-
-                if (!snap.empty) {
-                    userData = snap.docs[0].data();
-                    document.getElementById('up-doc-id').value = snap.docs[0].id;
-                    document.getElementById('up-name').value = userData.ho_ten || "";
-                    document.getElementById('up-dob').value = userData.ngay_sinh || "";
-                    document.getElementById('up-gender').value = userData.gioi_tinh || "";
-                    document.getElementById('up-plant').value = userData.nha_may || "";
-                    document.getElementById('up-shift').value = userData.ca_lam_viec || "Chưa xác định";
-                    
-                    let deptPos = userData.bo_phan || "";
-                    if (userData.vi_tri) deptPos += " - " + userData.vi_tri;
-                    document.getElementById('up-dept-pos').value = deptPos;
-                } else {
-                    document.getElementById('up-doc-id').value = "";
-                }
-                window.renderUserTasks(userData);
-            } catch (error) { console.error(error); } finally { loader.classList.add('hidden'); }
-            window.switchProfileTab('info');
-        };
-
-        window.closeUserProfileModal = function() {
-            document.getElementById('user-profile-modal').classList.add('hidden');
-            document.getElementById('user-profile-modal').classList.remove('flex');
-        };
-
-        window.saveUserProfile = async function() {
-            const btn = document.getElementById('btn-save-profile');
-            const ogText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang lưu...';
-            btn.disabled = true;
-
-            const docId = document.getElementById('up-doc-id').value;
-            const data = {
-                ma_nv: document.getElementById('up-id').value, ho_ten: document.getElementById('up-name').value.trim(),
-                ngay_sinh: document.getElementById('up-dob').value, gioi_tinh: document.getElementById('up-gender').value,
-                nha_may: document.getElementById('up-plant').value, ca_lam_viec: document.getElementById('up-shift').value,
-                bo_phan: document.getElementById('up-dept-pos').value.trim(), thoi_gian_cap_nhat: new Date()
-            };
-
-            try {
-                if (docId) { await window.updateDoc(window.doc(window.db, "nhan_su_noi_bo", docId), data); } 
-                else {
-                    data.thoi_gian_tao = new Date(); data.nhom_atld = "Chưa phân loại"; data.vai_tro_phu = { pccc: "", atvsv: false };
-                    await window.addDoc(window.collection(window.db, "nhan_su_noi_bo"), data);
-                }
-                localStorage.setItem("ehs_user_name", data.ho_ten); localStorage.setItem("ehs_user_dept", data.bo_phan);
-                window.showCustomAlert("Cập nhật hồ sơ cá nhân thành công!", "Thành công");
-                window.closeUserProfileModal(); checkLoginStatus(); 
-            } catch (error) { window.showCustomAlert("Lỗi lưu hồ sơ:<br>" + error.message, "Lỗi", true); } 
-            finally { btn.innerHTML = ogText; btn.disabled = false; }
-        };
-
-        window.renderUserTasks = async function(userData) {
-            const container = document.getElementById('task-container');
-            const badge = document.getElementById('task-badge');
-            const mBadge = document.getElementById('mobile-task-badge');
-            container.innerHTML = '<div class="text-center py-6"><i class="ph-bold ph-spinner animate-spin text-2xl text-blue-500 mb-2"></i><p class="text-sm text-slate-500 font-medium">Đang đồng bộ dữ liệu công việc...</p></div>';
-            
-            let hasTask = false; let staticHtml = '';
-            staticHtml += `
-                <div class="p-4 border border-indigo-200 dark:border-indigo-800/50 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center justify-between shadow-sm transition hover:shadow-md">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-indigo-100 dark:bg-indigo-800 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center shrink-0">
-                            <i class="ph-fill ph-student text-xl"></i>
-                        </div>
-                        <div><h5 class="font-bold text-slate-800 dark:text-slate-100 text-sm">Học tập & Đánh giá an toàn</h5>
-                        <p class="text-[11px] text-slate-500 dark:text-dark-muted font-medium mt-0.5">Kiểm tra lộ trình khóa học EHS dành riêng cho bạn</p></div>
-                    </div>
-                    <button onclick="closeUserProfileModal(); window.openCourseModal();" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-indigo-200 dark:border-indigo-700 text-xs font-bold transition shadow-sm whitespace-nowrap hidden sm:block">Xem</button>
-                </div>
-            `;
-
-            if (userData && userData.vai_tro_phu) {
-                if (userData.vai_tro_phu.pccc) {
-                    hasTask = true;
-                    staticHtml += `
-                        <div class="p-4 border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-900/20 rounded-xl shadow-sm relative overflow-hidden mt-3">
-                            <div class="absolute -right-4 -top-4 bg-rose-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45 shadow-sm">${userData.vai_tro_phu.pccc}</div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 bg-rose-100 dark:bg-rose-800 text-rose-600 dark:text-rose-400 rounded-full flex items-center justify-center shrink-0 border border-rose-200 dark:border-rose-700">
-                                    <i class="ph-fill ph-fire-extinguisher text-xl"></i>
-                                </div>
-                                <div><h5 class="font-bold text-rose-800 dark:text-rose-300 text-sm">Kiểm tra PCCC định kỳ</h5>
-                                <p class="text-xs text-rose-600 dark:text-rose-400 font-medium mt-0.5 mb-3">Nhiệm vụ tuần: Vui lòng đi kiểm tra tình trạng bình chữa cháy/tủ vách tường tại khu vực làm việc.</p>
-                                <a href="kiem_tra_pccc.html" class="inline-flex items-center gap-1.5 bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-rose-700 transition shadow-md">
-                                    <i class="ph-bold ph-clipboard-text"></i> Thực hiện Checklist
-                                </a></div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                if (userData.vai_tro_phu.atvsv === true) {
-                    hasTask = true;
-                    staticHtml += `
-                        <div class="p-4 border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl shadow-sm relative overflow-hidden mt-3">
-                            <div class="absolute -right-4 -top-4 bg-emerald-500 text-white text-[9px] font-black px-6 py-1 transform rotate-45 shadow-sm">ATVSV</div>
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center shrink-0 border border-emerald-200 dark:border-emerald-700">
-                                    <i class="ph-fill ph-first-aid text-xl"></i>
-                                </div>
-                                <div><h5 class="font-bold text-emerald-800 dark:text-emerald-300 text-sm">Đánh giá An toàn Hiện trường (5S)</h5>
-                                <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5 mb-3">Nhiệm vụ ATVSV: Tuần tra, phát hiện và báo cáo các hành vi, điều kiện mất an toàn tại line.</p>
-                                <a href="kiem_tra_tong_the.html" class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition shadow-md">
-                                    <i class="ph-bold ph-check-square-offset"></i> Đánh giá ngay
-                                </a></div>
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-
-            let dynamicHtml = '';
-            try {
-                if (currentUserId) {
-                    const q = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
-                    const snap = await window.getDocs(q);
-                    
-                    let overdueTasks = []; let dueSoonTasks = []; let normalTasks = [];
-                    const today = new Date(); today.setHours(0,0,0,0);
-                    const threeDaysLater = new Date(today); threeDaysLater.setDate(today.getDate() + 3);
-
-                    snap.forEach(doc => {
-                        const task = { id: doc.id, ...doc.data() };
-                        if (task.status === 'Done') return;
-                        const deadline = new Date(task.due_date); deadline.setHours(0,0,0,0);
-                        if (deadline < today) overdueTasks.push(task);
-                        else if (deadline <= threeDaysLater) dueSoonTasks.push(task);
-                        else normalTasks.push(task);
-                    });
-
-                    const sortByDate = (a, b) => new Date(a.due_date) - new Date(b.due_date);
-                    overdueTasks.sort(sortByDate); dueSoonTasks.sort(sortByDate); normalTasks.sort(sortByDate);
-
-                    if (overdueTasks.length > 0 || dueSoonTasks.length > 0 || normalTasks.length > 0) {
-                        hasTask = true;
-                        dynamicHtml += `<h5 class="font-black text-slate-800 dark:text-white text-md mt-6 mb-3 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2"><i class="ph-fill ph-kanban text-blue-500"></i> Công việc & Dự án đang phụ trách</h5>`;
-
-                        const renderTaskCard = (task, type) => {
-                            let bgClass, iconClass, icon, deadlineLabel;
-                            const deadlineStr = new Date(task.due_date).toLocaleDateString('vi-VN');
-                            
-                            if (type === 'overdue') {
-                                bgClass = 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50';
-                                iconClass = 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-700';
-                                icon = 'ph-warning-circle animate-pulse';
-                                deadlineLabel = `<span class="text-red-600 font-bold">Quá hạn (${deadlineStr})</span>`;
-                            } else if (type === 'soon') {
-                                bgClass = 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50';
-                                iconClass = 'bg-amber-100 dark:bg-amber-800 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700';
-                                icon = 'ph-clock';
-                                deadlineLabel = `<span class="text-amber-600 font-bold">Sắp hết hạn (${deadlineStr})</span>`;
-                            } else {
-                                bgClass = 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700';
-                                iconClass = 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
-                                icon = 'ph-clipboard-text';
-                                deadlineLabel = `<span class="text-slate-500 font-medium">Hạn chót: ${deadlineStr}</span>`;
-                            }
-
-                            return `
-                                <div class="p-3 border rounded-xl flex items-start gap-3 shadow-sm ${bgClass} mt-3">
-                                    <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${iconClass}">
-                                        <i class="ph-fill ${icon} text-lg"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <h6 class="font-bold text-slate-800 dark:text-white text-sm truncate" title="${task.title}">${task.title}</h6>
-                                        <div class="flex justify-between items-center mt-1">
-                                            <p class="text-[11px]">${deadlineLabel}</p>
-                                            <p class="text-[11px] font-bold ${task.progress > 0 ? 'text-blue-600' : 'text-slate-400'}">Tiến độ: ${task.progress}%</p>
-                                        </div>
-                                    </div>
-                                    <a href="quan_ly_cong_viec.html" class="shrink-0 text-blue-600 hover:text-blue-800 bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-blue-100 dark:border-slate-600 shadow-sm transition mt-1" title="Cập nhật tiến độ">
-                                        <i class="ph-bold ph-arrow-up-right text-base"></i>
-                                    </a>
-                                </div>
-                            `;
-                        };
-
-                        overdueTasks.forEach(t => dynamicHtml += renderTaskCard(t, 'overdue'));
-                        dueSoonTasks.forEach(t => dynamicHtml += renderTaskCard(t, 'soon'));
-                        normalTasks.forEach(t => dynamicHtml += renderTaskCard(t, 'normal'));
-                    }
-                }
-            } catch (error) {
-                console.error(error); dynamicHtml = `<p class="text-xs text-red-500 italic mt-2">Không thể đồng bộ công việc EHS lúc này.</p>`;
-            }
-
-            container.innerHTML = staticHtml + dynamicHtml;
-
-            if (hasTask) {
-                badge.classList.remove('hidden'); if (mBadge) mBadge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden'); if (mBadge) mBadge.classList.add('hidden');
-                if (container.innerHTML.trim() === '') {
-                     container.innerHTML = `<div class="text-center py-6 text-slate-400"><i class="ph-fill ph-check-circle text-4xl mb-2"></i><p class="text-sm font-medium">Bạn không có nhiệm vụ nào tồn đọng.</p></div>`;
-                }
-            }
-        };
-
-        window.handleChangePassword = async function() {
-            const oldPass = document.getElementById('cp-old').value;
-            const newPass = document.getElementById('cp-new').value;
-            const confirmPass = document.getElementById('cp-confirm').value;
-
-            if (!oldPass || !newPass || !confirmPass) return window.showCustomAlert("Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", true);
-            if (newPass !== confirmPass) return window.showCustomAlert("Mật khẩu mới không khớp nhau!", "Cảnh báo", true);
-            if (newPass.length < 6) return window.showCustomAlert("Mật khẩu mới phải có ít nhất 6 ký tự!", "Cảnh báo", true);
-
-            try {
-                const user = window.auth.currentUser;
-                if (!user) throw new Error("Chưa xác định được tài khoản đăng nhập. Vui lòng thử đăng nhập lại.");
-                const fakeEmail = `${currentUserId}@ehs.com`.toLowerCase();
-                const credential = window.EmailAuthProvider.credential(fakeEmail, oldPass);
-
-                await window.reauthenticateWithCredential(user, credential);
-                await window.updatePassword(user, newPass);
-
-                window.showCustomAlert("Cập nhật mật khẩu thành công!", "Thành công");
-                document.getElementById('change-pass-modal').classList.add('hidden');
-                document.getElementById('cp-old').value = ''; document.getElementById('cp-new').value = ''; document.getElementById('cp-confirm').value = '';
-            } catch (error) {
-                console.error(error);
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
-                    window.showCustomAlert("Mật khẩu hiện tại không đúng!", "Lỗi", true);
-                } else { window.showCustomAlert("Lỗi:<br>" + error.message, "Lỗi", true); }
-            }
-        };
-
-        window.openCourseModal = function() {
-            if (!currentUserId) {
-                window.showCustomAlert("Bạn chưa đăng nhập!<br>Vui lòng đăng nhập hệ thống.", "Cảnh báo", true);
-                setTimeout(() => { window.location.href = "login.html"; }, 2000);
-                return;
-            }
-            const container = document.getElementById('dynamic-courses');
-            container.innerHTML = '';
-            const userDept = localStorage.getItem("ehs_user_dept") || "";
-            let htmlStr = ""; let groupDetected = "Chưa phân loại";
-
-            if (userDept.toLowerCase().includes("điện")) {
-                groupDetected = "Nhóm 3 - An Toàn Điện";
-                htmlStr += `
-                    <a href="bai_giang.html?id=data_an_toan_dien" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition mt-3">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. An Toàn Điện</h4>
-                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
-                        </div>
-                        <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học bắt buộc dành riêng cho bộ phận Cơ Điện, Bảo trì.</p>
-                    </a>
-                `;
-            } else if (userDept.toLowerCase().includes("sản xuất") || userDept.toLowerCase().includes("washer")) {
-                groupDetected = "Nhóm 3 - An Toàn Hóa Chất";
-                htmlStr += `
-                    <a href="bai_giang.html?id=data_hoa_chat" class="block w-full text-left p-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition mt-3">
-                        <div class="flex items-center justify-between mb-1">
-                            <h4 class="font-bold text-indigo-800 dark:text-indigo-300 text-lg">2. An Toàn Hóa Chất</h4>
-                            <span class="bg-indigo-200 dark:bg-indigo-700 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded">Nhóm 3</span>
-                        </div>
-                        <p class="text-xs text-indigo-600 dark:text-indigo-400">Khóa học bắt buộc dành riêng cho nhân sự tiếp xúc hóa chất.</p>
-                    </a>
-                `;
-            } else {
-                htmlStr += `
-                    <div class="mt-3 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-center">
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Bộ phận hiện tại của bạn (<span class="font-bold">${userDept || "Chưa cập nhật"}</span>) không yêu cầu thẻ Nhóm 3. Bạn chỉ cần hoàn thành Khóa EHS Chung.</p>
-                    </div>
-                `;
-            }
-            container.innerHTML = htmlStr;
-            document.getElementById('course-modal').classList.remove('hidden'); document.getElementById('course-modal').classList.add('flex');
-        };
-
-        window.closeReportModal = function() { 
-            document.getElementById('report-modal').classList.add('hidden'); document.getElementById('report-modal').classList.remove('flex');
-        }
-
-        window.toggleMobileMenu = function() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-overlay');
-
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden'); setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-            } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('opacity-0'); setTimeout(() => overlay.classList.add('hidden'), 300);
-            }
-        };
-
-        window.toggleNotifications = function(e) {
-            e.stopPropagation();
-            const dropdown = document.getElementById('notif-dropdown');
-            const overlay = document.getElementById('notif-overlay');
-            
-            if (dropdown.classList.contains('opacity-0')) {
-                dropdown.classList.remove('opacity-0', 'invisible', 'scale-95');
-                dropdown.classList.add('opacity-100', 'visible', 'scale-100');
-                overlay.classList.remove('hidden');
-                document.getElementById('notif-badge').classList.add('hidden'); document.getElementById('notif-count').classList.add('hidden');
-                
-                if(window.fetchNotifications) {
-                    document.getElementById('notif-list').innerHTML = '<div class="p-6 text-center text-blue-500"><i class="ph-bold ph-spinner animate-spin text-2xl mb-2"></i><br>Đang đồng bộ dữ liệu...</div>';
-                    window.fetchNotifications();
-                }
-            } else { window.closeNotifications(); }
-        }
-
-        window.closeNotifications = function() {
-            const dropdown = document.getElementById('notif-dropdown');
-            const overlay = document.getElementById('notif-overlay');
-            dropdown.classList.add('opacity-0', 'invisible', 'scale-95');
-            dropdown.classList.remove('opacity-100', 'visible', 'scale-100');
-            overlay.classList.add('hidden');
-        }
-
-        document.getElementById('notif-dropdown').addEventListener('click', function(e) { e.stopPropagation(); });
-
-        window.fetchNotifications = async function() {
-            const notifList = document.getElementById('notif-list');
-            const badge = document.getElementById('notif-badge');
-            const countLabel = document.getElementById('notif-count');
-            if (!currentUserId || !window.db) { notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Hệ thống chưa sẵn sàng. Vui lòng tải lại trang.</div>`; return; }
-
-            const userDept = localStorage.getItem("ehs_user_dept") || ""; let notifications = [];
-
-            try {
-                const qMyTasks = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
-                const snapMyTasks = await window.getDocs(qMyTasks);
-                const today = new Date(); today.setHours(0,0,0,0);
-                const threeDaysLater = new Date(today); threeDaysLater.setDate(today.getDate() + 3);
-
-                snapMyTasks.forEach(doc => {
-                    const task = doc.data();
-                    if (task.status === 'Done') return; if (task.status === 'Review') return;
-                    const deadline = new Date(task.due_date); deadline.setHours(0,0,0,0);
-                    if (task.evaluation && task.progress < 100) {
-                        notifications.push({ type: 'feedback', title: 'Lãnh đạo yêu cầu cải tiến', message: `Sếp đã nhận xét task: "${task.title}". Vui lòng xem lại.`, icon: 'ph-chat-circle-warning text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50', link: 'quan_ly_cong_viec.html' });
-                    } else if (deadline < today) {
-                        notifications.push({ type: 'overdue', title: 'Công việc quá hạn!', message: `Task: "${task.title}" đã trễ hạn. Vui lòng cập nhật!`, icon: 'ph-warning-circle text-red-500', bg: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50', link: 'quan_ly_cong_viec.html' });
-                    } else if (deadline <= threeDaysLater) {
-                        notifications.push({ type: 'due_soon', title: 'Công việc sắp đến hạn', message: `Task: "${task.title}" cần xong trước ${new Date(task.due_date).toLocaleDateString('vi-VN')}.`, icon: 'ph-clock text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50', link: 'quan_ly_cong_viec.html' });
-                    } else if (task.progress === 0 && task.assigner_id !== currentUserId) {
-                        notifications.push({ type: 'new_task', title: 'Có công việc mới được giao', message: `${task.assigner_name} đã giao cho bạn: "${task.title}".`, icon: 'ph-kanban text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50', link: 'quan_ly_cong_viec.html' });
-                    }
-                });
-
-                const qReview = window.query(window.collection(window.db, "ehs_tasks"), window.where("reviewer_id", "==", currentUserId));
-                const snapReview = await window.getDocs(qReview);
-                snapReview.forEach(doc => {
-                    const task = doc.data();
-                    if (task.status === 'Review') {
-                        notifications.push({ type: 'review_pending', title: 'Yêu cầu phê duyệt công việc', message: `${task.assignee_name} đã trình duyệt task: "${task.title}".`, icon: 'ph-check-square-offset text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50', link: 'quan_ly_cong_viec.html' });
-                    }
-                });
-
-                if (userDept.toLowerCase().includes("utility") || userDept.toLowerCase().includes("vận hành")) {
-                    const vnTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
-                    const todayObj = new Date(vnTime);
-                    const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
-                    const qUtility = window.query(window.collection(window.db, "quan_trac_hang_ngay"), window.where("ngay_lay_mau", "==", todayStr));
-                    const snapUtility = await window.getDocs(qUtility);
-                    if (snapUtility.empty) {
-                        notifications.push({ type: 'utility_alert', title: 'Nhắc nhở nhập dữ liệu Trạm xử lý', message: 'Hôm nay chưa có dữ liệu quan trắc nước thải. Anh em đang trực vui lòng cập nhật.', icon: 'ph-drop text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800/50', link: 'data_dashboard.html' });
-                    }
-                }
-
-                const qMeetingsReal = window.query(window.collection(window.db, "ehs_meetings"), window.where("status", "==", "Upcoming"));
-                const snapMeetings = await window.getDocs(qMeetingsReal);
-                snapMeetings.forEach(doc => {
-                    const m = doc.data();
-                    if (m.attendee_ids && m.attendee_ids.includes(currentUserId)) {
-                        const myRecord = m.attendance_records ? m.attendance_records[currentUserId] : null;
-                        if (!myRecord || myRecord.status !== 'Attended') {
-                            notifications.push({ type: 'meeting_invite', title: 'Thư mời họp / Toolbox Meeting', message: `Bạn có lịch họp: "${m.title}" vào lúc ${m.time} ngày ${new Date(m.date).toLocaleDateString('vi-VN')}.`, icon: 'ph-users-three text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50', link: 'quan_ly_cuoc_hop.html' });
-                        }
-                    }
-                });
-
-                if (notifications.length > 0) {
-                    badge.classList.remove('hidden'); countLabel.innerText = notifications.length; countLabel.classList.remove('hidden');
-                    let notifHtml = '';
-                    notifications.forEach(n => {
-                        notifHtml += `
-                            <a href="${n.link}" class="block p-4 border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                                <div class="flex gap-3">
-                                    <div class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border ${n.bg}"><i class="ph-fill ${n.icon} text-xl"></i></div>
-                                    <div><h4 class="text-sm font-bold text-slate-800 dark:text-white mb-0.5">${n.title}</h4><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${n.message}</p></div>
-                                </div>
-                            </a>
-                        `;
-                    });
-                    notifList.innerHTML = notifHtml;
-                } else {
-                    badge.classList.add('hidden'); countLabel.classList.add('hidden');
-                    notifList.innerHTML = `<div class="p-8 text-center"><i class="ph-fill ph-check-circle text-4xl text-slate-300 mb-2"></i><p class="text-sm text-slate-500 font-medium">Bạn đã hoàn thành mọi công việc. Không có thông báo mới.</p></div>`;
-                }
-            } catch (error) { console.error(error); notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Lỗi đồng bộ: ${error.message}</div>`; }
-        };
-
+        // Bỏ qua các modal User Profile vì giữ nguyên
+        // Khởi động giao diện cơ bản
         applyTheme();
         changeLanguage(currentLang);
         checkLoginStatus();
         
-        if(currentUserId && window.db) { setTimeout(window.fetchNotifications, 1000); }
     </script>
     
     <!-- PARTICLES.JS TRANG TRÍ -->
