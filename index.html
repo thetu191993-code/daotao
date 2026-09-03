@@ -46,7 +46,7 @@
 
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300 opacity-0"></div>
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR (ĐÃ KHÔI PHỤC THEO ĐÚNG ẢNH YÊU CẦU) -->
     <aside id="sidebar" class="w-[280px] md:w-64 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col shrink-0 transition-transform duration-300 fixed md:relative z-50 h-full -translate-x-full md:translate-x-0">
         <div class="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-dark-border shrink-0">
             <div class="flex items-center">
@@ -61,28 +61,37 @@
                 <i class="ph-fill ph-squares-four text-lg"></i> <span data-i18n="nav_dashboard">Bảng Điều Khiển</span>
             </a>
 
-            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-graduation-cap"></i> Nhóm 1: Đào tạo EHS</p></div>
+            <!-- NHÓM 1 -->
+            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 1: Đào tạo EHS</p></div>
             <a href="#" onclick="openCourseModal()" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Phòng Học EHS</span></a>
             <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Tài liệu Đào tạo</span></a>
-            <a href="quan_ly_nhan_su.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Hồ sơ Nhân sự</span></a>
+            <a href="quan_ly_nhan_su.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Hồ sơ Nhân sự Nội bộ</span></a>
             <a href="quan_ly_suc_khoe.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-rose-400 dark:bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span> <span class="font-bold text-rose-600 dark:text-rose-400">Y Tế & Sức Khỏe</span></a>
             
-            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-chart-bar"></i> Nhóm 2: Quản trị</p></div>
+            <!-- NHÓM 2 -->
+            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 2: Quản trị</p></div>
             <a href="quan_ly_cong_viec.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><i class="ph-fill ph-kanban text-lg text-blue-500"></i> <span>Quản lý Tiến Độ</span></a>
             <a href="quan_ly_cuoc_hop.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><i class="ph-fill ph-users-three text-lg text-indigo-500"></i> <span>Toolbox Meeting</span></a>
             <a href="trung_tam_kiem_tra.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Trung tâm Kiểm tra</span></a>
             <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="w-full flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Kho Báo Cáo EHS</span></button>
-            <a href="admin.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Quản trị Hệ thống</span></a>
+            <a href="admin.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Quản trị Báo cáo</span></a>
+            <a href="admin.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Quản trị Điểm thi</span></a>
+            <a href="admin.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Quản trị PCCC</span></a>
             <a href="data_dashboard.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Đồng bộ Quan trắc</span></a>
-            <a href="net_zero_form_master.html" class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"><span class="mr-3">🌍</span> Quản Trị Net Zero</a>
+            <a href="net_zero_form_master.html" class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition bg-slate-50 dark:bg-slate-800/50 mt-1 mb-1"><span class="mr-3">🌍</span> Quản Trị Net Zero</a>
 
-            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-book-bookmark"></i> Nhóm 3: Quy trình</p></div>
+            <!-- NHÓM 3 -->
+            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 3: Quy trình & HD</p></div>
             <a href="su_co_khan_cap.html" class="flex items-center gap-3 px-3 py-2 mt-1 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800 rounded-lg font-bold transition shadow-sm"><i class="ph-fill ph-siren text-lg animate-pulse"></i> <span>Bản Đồ Sự Cố 3D</span></a>
             <a href="ai_phap_che.html" class="flex items-center gap-3 px-3 py-2 mt-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 rounded-lg font-bold transition shadow-sm"><i class="ph-fill ph-robot text-lg"></i> <span>Trợ lý AI Pháp chế</span></a>
             <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Sổ tay Vận hành</span></a>
+            <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Quy trình Sự cố</span></a>
+            <a href="quan_ly_hoa_chat.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Quản lý Hóa chất</span></a>
 
-            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-hard-hat"></i> Nhóm 4: Nhà thầu</p></div>
+            <!-- NHÓM 4 -->
+            <div class="pt-4 pb-1 px-3"><p class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 4: Quản trị Nhà thầu</p></div>
             <a href="quan_ly_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Hồ sơ Nhà thầu</span></a>
+            <a href="cong_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Cổng Khai báo</span></a>
             <a href="bao_ve.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span>Trạm Gác An Ninh</span></a>
         </div>
 
@@ -110,7 +119,6 @@
                         <span id="notif-badge" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full hidden animate-ping"></span>
                         <span id="notif-count" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full hidden shadow-sm"></span>
                     </button>
-                    <!-- Popup Dropdown Thông báo -->
                     <div id="notif-dropdown" class="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl shadow-2xl opacity-0 invisible transition-all duration-200 z-50 overflow-hidden transform origin-top-right scale-95">
                         <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                             <h3 class="font-bold text-slate-800 dark:text-white" data-i18n="notif_title">Thông báo</h3>
@@ -153,20 +161,20 @@
 
             <div class="max-w-7xl mx-auto w-full relative z-10">
                 
-                <!-- BỘ LỌC DỮ LIỆU (FILTERS) TRỰC TIẾP GỌI FIREBASE -->
+                <!-- BỘ LỌC DỮ LIỆU (ĐÃ FIX LỖI) -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                     <div class="flex items-center gap-3">
                         <i class="ph-fill ph-funnel text-blue-500 text-xl"></i>
                         <span class="font-bold text-slate-700 dark:text-slate-300" data-i18n="filter_title">Bộ lọc Dữ liệu:</span>
                         <select id="dashboard-filter-plant" onchange="if(window.fetchDashboardData) window.fetchDashboardData()" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border text-slate-700 dark:text-white text-sm font-bold rounded-lg px-4 py-2 outline-none focus:border-blue-500 shadow-sm cursor-pointer">
-                            <option value="all" data-i18n="filter_all">Toàn Công Ty</option>
-                            <option value="Nhà máy Can" data-i18n="filter_can">Nhà Máy Can Line (1)</option>
-                            <option value="Nhà máy End" data-i18n="filter_end">Nhà Máy End Line (2)</option>
+                            <option value="all">Toàn Công Ty</option>
+                            <option value="can">Nhà Máy Can Line (1)</option>
+                            <option value="end">Nhà Máy End Line (2)</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- 4 THẺ TÓM TẮT KPI (CLICK TRỰC TIẾP SANG QUẢN LÝ CÔNG VIỆC) -->
+                <!-- 4 THẺ TÓM TẮT KPI -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
                     <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card rounded-2xl p-5 border border-slate-200 dark:border-dark-border shadow-sm flex items-center justify-between hover:border-blue-500 hover:shadow-md transition group cursor-pointer block">
                         <div>
@@ -232,7 +240,7 @@
                 <!-- QUAN TRẮC MÔI TRƯỜNG & DANH SÁCH (ROW 2) -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
                     
-                    <!-- KHOANG QUAN TRẮC (Chia 2 biểu đồ bên trong) -->
+                    <!-- KHOANG QUAN TRẮC -->
                     <div class="col-span-1 lg:col-span-2 bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex flex-col transition-colors relative">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-waves text-teal-500 text-xl"></i> <span data-i18n="chart_water_title">Giám Sát Vận Hành Nước Thải (Hằng Ngày)</span></h4>
@@ -260,12 +268,11 @@
 
                     <!-- Danh sách Họp & Sơ đồ -->
                     <div class="col-span-1 flex flex-col gap-6">
-                        <!-- Danh sách Họp (Móc thẳng vào Firebase) -->
+                        <!-- Danh sách Họp -->
                         <div class="bg-white dark:bg-dark-card p-5 rounded-2xl border border-slate-200 dark:border-dark-border shadow-sm flex-1 flex flex-col transition-colors relative">
                             <div class="flex justify-between items-center mb-4">
                                 <h4 class="font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-users-three text-indigo-500 text-xl"></i> <span data-i18n="toolbox_title">Toolbox Meeting Sắp tới</span></h4>
                             </div>
-                            <!-- Khu vực chứa List đổ từ Firebase -->
                             <div id="dashboard-meeting-list" class="space-y-3 flex-1">
                                 <div class="p-4 text-center">
                                     <i class="ph-bold ph-spinner animate-spin text-2xl text-indigo-500 mb-2"></i>
@@ -288,45 +295,6 @@
                             </div>
                         </a>
                     </div>
-                </div>
-
-                <!-- ================= TRUY CẬP NHANH ================= -->
-                <h4 class="font-bold text-slate-700 dark:text-slate-300 mb-4 border-b border-slate-200 dark:border-slate-700 pb-2 uppercase text-sm tracking-wider transition-colors" data-i18n="quick_access_title">Lối Tắt Ứng Dụng EHS</h4>
-                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
-                    <button onclick="openCourseModal()" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-indigo-500 hover:shadow-md transition group">
-                        <div class="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition"><i class="ph-fill ph-graduation-cap text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_classroom">Phòng Học</span>
-                    </button>
-                    <a href="trung_tam_kiem_tra.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-orange-500 hover:shadow-md transition group">
-                        <div class="w-10 h-10 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-600 flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition"><i class="ph-fill ph-clipboard-text text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_audit">Đi Audit</span>
-                    </a>
-                    <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-emerald-500 hover:shadow-md transition group">
-                        <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition"><i class="ph-fill ph-folder-open text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_report">Báo Cáo</span>
-                    </button>
-                    <a href="ai_phap_che.html" class="bg-white dark:bg-dark-card border border-blue-200 dark:border-blue-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:shadow-md transition group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-blue-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl">AI</div>
-                        <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition"><i class="ph-fill ph-robot text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 text-center uppercase" data-i18n="nav_ai_law">Pháp Chế</span>
-                    </a>
-                    <a href="quan_ly_cong_viec.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-cyan-500 hover:shadow-md transition group">
-                        <div class="w-10 h-10 rounded-full bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 flex items-center justify-center group-hover:bg-cyan-500 group-hover:text-white transition"><i class="ph-fill ph-kanban text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase" data-i18n="nav_tasks">Giao Việc</span>
-                    </a>
-                    <a href="quan_ly_suc_khoe.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-rose-500 hover:shadow-md transition group">
-                        <div class="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-600 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white transition"><i class="ph-fill ph-stethoscope text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase">Y Tế</span>
-                    </a>
-                    <a href="su_co_khan_cap.html" class="bg-white dark:bg-dark-card border border-red-200 dark:border-red-900/50 p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-red-500 hover:shadow-md transition group relative overflow-hidden">
-                        <div class="absolute top-0 right-0 bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-bl animate-pulse">3D</div>
-                        <div class="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition border border-red-100 dark:border-red-800"><i class="ph-fill ph-siren text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-red-600 dark:text-red-400 text-center uppercase" data-i18n="nav_incidents">Sự Cố</span>
-                    </a>
-                    <a href="net_zero_form_master.html" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border p-3 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-emerald-500 hover:shadow-md transition group">
-                        <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition"><i class="ph-bold ph-leaf text-xl"></i></div>
-                        <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400 text-center uppercase">Net Zero</span>
-                    </a>
                 </div>
 
                 <!-- WIDGET HIỂN THỊ GIẤY PHÉP THI CÔNG TRỰC TIẾP (PTW LIVE) -->
@@ -631,7 +599,7 @@
         
         // =========================================================================
         // ĐỘNG CƠ ĐỒNG BỘ DỮ LIỆU FAIL-SAFE (Chống sập toàn cục)
-        // Cải tiến mạnh mẽ thuật toán Regex và Fallback Collections
+        // Cải tiến MỚI NHẤT: Client-side Filter (Lọc trong bộ nhớ)
         // =========================================================================
         window.fetchDashboardData = async function() {
             if (!window.db) return;
@@ -639,15 +607,16 @@
             
             // 1. KPI CÔNG VIỆC
             try {
-                let qTasks = collection(window.db, "ehs_tasks");
-                if (plantFilter !== 'all') {
-                    qTasks = query(collection(window.db, "ehs_tasks"), where("nha_may", "==", plantFilter));
-                }
-                const snapTasks = await getDocs(qTasks);
+                const snapTasks = await getDocs(collection(window.db, "ehs_tasks"));
                 let total = 0, completed = 0, pending = 0;
                 snapTasks.forEach(doc => {
+                    let d = doc.data();
+                    let plant = (d.nha_may || d.Nha_may || "").toLowerCase();
+                    if (plantFilter === 'can' && !plant.includes('can')) return;
+                    if (plantFilter === 'end' && !plant.includes('end')) return;
+
                     total++;
-                    if (doc.data().status === 'Done') completed++;
+                    if (d.status === 'Done') completed++;
                     else pending++;
                 });
                 let rate = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -661,20 +630,9 @@
             // 2. BIỂU ĐỒ SỨC KHỎE (Deep Fuzzy Parsing & Fallback Collections)
             try {
                 let healthSnap = null;
-                // Thử tìm trong bảng ho_so_suc_khoe trước (chuẩn)
-                try {
-                    let qH1 = collection(window.db, "ho_so_suc_khoe");
-                    if (plantFilter !== 'all') qH1 = query(qH1, where("nha_may", "==", plantFilter));
-                    healthSnap = await getDocs(qH1);
-                } catch(e) {}
-                
-                // Nếu rỗng, fallback sang bảng nhan_su_noi_bo
+                try { healthSnap = await getDocs(collection(window.db, "ho_so_suc_khoe")); } catch(e) {}
                 if (!healthSnap || healthSnap.empty) {
-                    try {
-                        let qH2 = collection(window.db, "nhan_su_noi_bo");
-                        if (plantFilter !== 'all') qH2 = query(qH2, where("nha_may", "==", plantFilter));
-                        healthSnap = await getDocs(qH2);
-                    } catch(e) {}
+                    try { healthSnap = await getDocs(collection(window.db, "nhan_su_noi_bo")); } catch(e) {}
                 }
 
                 let hData = [0, 0, 0, 0, 0, 0]; // Index 5 là Khác/Chưa phân loại
@@ -683,16 +641,19 @@
                 if (healthSnap && !healthSnap.empty) {
                     healthSnap.forEach(doc => {
                         const d = doc.data();
-                        let sk = (d.phan_loai_sk || d.suc_khoe || d.loai_sk || d.phan_loai || "").toString().toUpperCase();
-                        if (!sk) { sk = JSON.stringify(d).toUpperCase(); } // Phân tích toàn bộ object nếu thiếu trường
+                        let plant = (d.nha_may || d.Nha_may || "").toLowerCase();
+                        if (plantFilter === 'can' && !plant.includes('can')) return;
+                        if (plantFilter === 'end' && !plant.includes('end')) return;
 
-                        // Regex nhận diện cực mạnh
+                        let sk = (d.phan_loai_sk || d.suc_khoe || d.loai_sk || d.phan_loai || "").toString().toUpperCase();
+                        if (!sk) { sk = JSON.stringify(d).toUpperCase(); } 
+
                         if (/\b(LOẠI 1|LOẠI I|SK 1|SK I)\b/.test(sk) && !/\b(LOẠI 11|LOẠI II|LOẠI IV)\b/.test(sk)) { hData[0]++; hasHealthData = true; }
                         else if (/\b(LOẠI 2|LOẠI II|SK 2|SK II)\b/.test(sk) && !/\b(LOẠI 3|LOẠI III)\b/.test(sk)) { hData[1]++; hasHealthData = true; }
                         else if (/\b(LOẠI 3|LOẠI III|SK 3|SK III)\b/.test(sk)) { hData[2]++; hasHealthData = true; }
                         else if (/\b(LOẠI 4|LOẠI IV|SK 4|SK IV)\b/.test(sk)) { hData[3]++; hasHealthData = true; }
                         else if (/\b(LOẠI 5|LOẠI V|SK 5|SK V)\b/.test(sk)) { hData[4]++; hasHealthData = true; }
-                        else { hData[5]++; hasHealthData = true; } // Vào ô Khác nếu có hồ sơ nhưng ko có Loại
+                        else { hData[5]++; hasHealthData = true; } 
                     });
                 }
                 
@@ -714,14 +675,14 @@
 
             // 3. QUAN TRẮC MÔI TRƯỜNG
             try {
-                let qWater = collection(window.db, "quan_trac_hang_ngay");
-                if (plantFilter !== 'all') {
-                    qWater = query(collection(window.db, "quan_trac_hang_ngay"), where("nha_may", "==", plantFilter));
-                }
-                const waterSnap = await getDocs(qWater);
+                const waterSnap = await getDocs(collection(window.db, "quan_trac_hang_ngay"));
                 let waterData = [];
                 waterSnap.forEach(doc => {
                     const d = doc.data();
+                    let plant = (d.nha_may || d.Nha_may || "").toLowerCase();
+                    if (plantFilter === 'can' && !plant.includes('can')) return;
+                    if (plantFilter === 'end' && !plant.includes('end')) return;
+
                     if(d.ngay_lay_mau) waterData.push(d);
                 });
                 
@@ -757,9 +718,9 @@
             // 4. KIỂM KÊ KNK (Tìm trong nhiều collections)
             try {
                 let ghgSnap = null;
-                try { ghgSnap = await getDocs(collection(window.db, "kiem_ke_knk")); } catch(e) {}
+                try { ghgSnap = await getDocs(collection(window.db, "net_zero")); } catch(e) {}
                 if (!ghgSnap || ghgSnap.empty) { 
-                    try { ghgSnap = await getDocs(collection(window.db, "net_zero")); } catch(e) {}
+                    try { ghgSnap = await getDocs(collection(window.db, "kiem_ke_knk")); } catch(e) {}
                 }
                 if (!ghgSnap || ghgSnap.empty) { 
                     try { ghgSnap = await getDocs(collection(window.db, "bao_cao_ghg")); } catch(e) {}
@@ -769,11 +730,11 @@
                     let grouped = {};
                     ghgSnap.forEach(doc => {
                         let d = doc.data();
-                        if (plantFilter !== 'all' && d.nha_may !== plantFilter) return;
+                        let plant = (d.nha_may || d.Nha_may || "").toLowerCase();
+                        if (plantFilter === 'can' && !plant.includes('can')) return;
+                        if (plantFilter === 'end' && !plant.includes('end')) return;
 
-                        // Quét mọi trường hợp tên cột Ngày tháng
                         let m = d.thang || d.month || d.ky_bao_cao || d.ngay_ghi_nhan || 'Unknown';
-                        // Định dạng thành YYYY-MM
                         if (m.length > 7 && m.includes('-')) m = m.substring(0, 7); 
                         
                         if(!grouped[m]) grouped[m] = {s1:0, s2:0, s3:0, total:0};
@@ -812,6 +773,10 @@
 
                     snapMeetings.forEach(doc => {
                         const m = doc.data();
+                        let plant = (m.nha_may || m.location || "").toLowerCase();
+                        if (plantFilter === 'can' && !plant.includes('can')) return;
+                        if (plantFilter === 'end' && !plant.includes('end')) return;
+
                         if(m.date) {
                             const mDate = new Date(m.date);
                             if(mDate >= today) meetings.push(m);
@@ -989,7 +954,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (window.checkLoginStatus) window.checkLoginStatus();
-                // Delay Data Fetch to let UI render completely first
+                // Tách tiến trình lấy dữ liệu giúp web không bị giật lag
                 setTimeout(() => { if(window.fetchDashboardData) window.fetchDashboardData(); }, 300);
                 setTimeout(() => { window.fetchLivePTW(); }, 600);
                 setTimeout(window.fetchNotifications, 900); 
@@ -1776,23 +1741,23 @@
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            if(document.getElementById('particles-js')) {
-                const isMobile = window.innerWidth < 768; // Nhận diện điện thoại
+            // TẮT HOÀN TOÀN HẠT AI TRÊN MOBILE ĐỂ CHỐNG GIẬT LAG & HAO PIN
+            if(document.getElementById('particles-js') && window.innerWidth >= 768) {
                 particlesJS("particles-js", {
                   "particles": {
-                    "number": { "value": isMobile ? 15 : 70, "density": { "enable": true, "value_area": 800 } }, // Giảm hạt trên điện thoại để tiết kiệm pin
+                    "number": { "value": 70, "density": { "enable": true, "value_area": 800 } }, 
                     "color": { "value": "#64748b" }, 
                     "shape": { "type": "circle" },
                     "opacity": { "value": 0.25, "random": false },
                     "size": { "value": 3, "random": true },
                     "line_linked": { "enable": true, "distance": 150, "color": "#94a3b8", "opacity": 0.15, "width": 1 },
-                    "move": { "enable": true, "speed": isMobile ? 0.5 : 1.2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                    "move": { "enable": true, "speed": 1.2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
                   },
                   "interactivity": { 
                       "detect_on": "canvas", 
                       "events": { 
-                          "onhover": { "enable": !isMobile, "mode": "grab" }, // Tắt tương tác chuột trên mobile
-                          "onclick": { "enable": !isMobile, "mode": "push" }, 
+                          "onhover": { "enable": true, "mode": "grab" },
+                          "onclick": { "enable": true, "mode": "push" }, 
                           "resize": true 
                       }, 
                       "modes": { "grab": { "distance": 200, "line_linked": { "opacity": 0.3 } }, "push": { "particles_nb": 3 } } 
@@ -1801,7 +1766,7 @@
                 });
             }
             
-            // Trì hoãn việc kéo dữ liệu Firebase nửa giây để giao diện HTML load xong lập tức (tránh lag điện thoại)
+            // Trì hoãn việc kéo dữ liệu Firebase nửa giây để giao diện HTML load xong lập tức
             if(window.fetchDashboardData) { setTimeout(window.fetchDashboardData, 600); }
         });
     </script>
