@@ -15,8 +15,9 @@
     </style>
 
     <script type="module">
+        /* Bổ sung writeBatch để hỗ trợ xóa hàng loạt không làm sập Firebase */
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         const firebaseConfig = {
@@ -34,7 +35,7 @@
         const auth = getAuth(app);
 
         // Gắn biến ra global
-        window.collection = collection; window.getDocs = getDocs; window.addDoc = addDoc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; window.doc = doc; window.query = query; window.orderBy = orderBy; window.where = where;
+        window.collection = collection; window.getDocs = getDocs; window.addDoc = addDoc; window.updateDoc = updateDoc; window.deleteDoc = deleteDoc; window.doc = doc; window.query = query; window.orderBy = orderBy; window.where = where; window.writeBatch = writeBatch;
 
         window.checkAdminPassword = async function() {
             const btn = document.querySelector('#login-screen button');
@@ -135,9 +136,7 @@
         <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-px">
             <button id="btn-tab-nhan-su" onclick="window.switchTab('nhan-su')" class="px-6 py-2.5 bg-amber-50 text-amber-700 font-bold border-b-2 border-amber-500 rounded-t-lg transition" data-i18n="tab_worker">Quản lý Nhân sự</button>
             <button id="btn-tab-may-moc" onclick="window.switchTab('may-moc')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_machine">Máy móc - Thiết bị</button>
-            <!-- TAB GIẤY PHÉP -->
             <button id="btn-tab-giay-phep" onclick="window.switchTab('giay-phep')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-2"><i class="ph-fill ph-file-text text-amber-500"></i> Giấy Phép (PTW)</button>
-            
             <button id="btn-tab-dao-tao" onclick="window.switchTab('dao-tao')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition" data-i18n="tab_training">Hồ sơ Đào tạo</button>
             <button id="btn-tab-cham-cong" onclick="window.switchTab('cham-cong')" class="px-6 py-2.5 text-slate-500 font-semibold hover:bg-slate-50 border-b-2 border-transparent rounded-t-lg transition flex items-center gap-1"><i class="ph-bold ph-clock"></i> <span data-i18n="tab_history">Lịch sử Ra/Vào</span></button>
         </div>
@@ -231,10 +230,26 @@
 
         <!-- TAB CHẤM CÔNG -->
         <div id="tab-cham-cong" class="tab-content rounded-xl border border-slate-200 shadow-sm hidden">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border-b border-slate-200 rounded-t-xl" id="cham-cong-dashboard">
+            <!-- THANH CÔNG CỤ TỐI ƯU DỮ LIỆU CỦA TAB CHẤM CÔNG -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-white border-b border-slate-200 rounded-t-xl">
+                <div>
+                    <h3 class="font-bold text-slate-800">Quản trị Lịch sử Ra/Vào</h3>
+                    <p class="text-xs text-slate-500">Giới hạn truy vấn Firebase & Dọn dẹp dữ liệu cũ</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="window.exportWeeklyChamCong()" class="bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-4 py-2 rounded-lg font-bold border border-emerald-200 transition text-sm flex items-center gap-2 shadow-sm">
+                        <i class="ph-bold ph-calendar-blank"></i> Xuất Excel (Tuần trước)
+                    </button>
+                    <button onclick="window.confirmDeleteOldChamCong()" class="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg font-bold border border-red-200 transition text-sm flex items-center gap-2 shadow-sm">
+                        <i class="ph-bold ph-trash"></i> Xóa dữ liệu cũ (> 30 ngày)
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-slate-50 border-b border-slate-200" id="cham-cong-dashboard">
                 <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm text-center">
                     <p class="text-xs text-slate-500 font-semibold uppercase mb-1" data-i18n="lbl_view_date">Ngày đang xem</p>
-                    <input type="date" id="filter-date" onchange="window.loadChamCongData()" class="w-full text-sm font-bold text-center outline-none border-b border-dashed border-slate-300">
+                    <input type="date" id="filter-date" onchange="window.loadChamCongData()" class="w-full text-sm font-bold text-center outline-none border-b border-dashed border-slate-300 cursor-pointer">
                 </div>
                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 shadow-sm text-center">
                     <p class="text-xs text-blue-600 font-semibold uppercase mb-1" data-i18n="lbl_total_in">Đã vào xưởng (Lượt)</p>
@@ -249,7 +264,7 @@
                     <p class="text-xl font-black text-amber-800" id="stat-inside">0</p>
                 </div>
             </div>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto bg-white rounded-b-xl">
                 <table class="w-full text-left border-collapse min-w-[1000px]">
                     <thead>
                         <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
@@ -409,7 +424,7 @@
                             <ul id="rev-ptw-rules" class="text-xs font-medium text-rose-900 space-y-2.5 list-none pl-1 max-h-48 overflow-y-auto custom-scrollbar"></ul>
                         </div>
                         
-                        <!-- KHU VỰC HIỂN THỊ ẢNH NGHIỆM THU 5S (MỚI) -->
+                        <!-- KHU VỰC HIỂN THỊ ẢNH NGHIỆM THU 5S -->
                         <div id="rev-ptw-5s-section" class="mt-4 pt-4 border-t border-rose-100 hidden">
                             <p class="text-xs font-black text-emerald-700 uppercase mb-2 flex items-center gap-2"><i class="ph-fill ph-image"></i> Ảnh nghiệm thu 5S</p>
                             <div class="flex items-start gap-3">
@@ -422,9 +437,9 @@
                     </div>
                 </div>
 
-                <!-- Khu vực ra quyết định của EHS (Bảng điều khiển động) -->
+                <!-- Khu vực ra quyết định của EHS -->
                 <div id="ptw-action-section" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mt-4">
-                    <!-- JS sẽ tự động chèn nút bấm tùy theo trạng thái của Giấy phép (Chờ duyệt, Đã duyệt, Chờ nghiệm thu...) -->
+                    <!-- JS sẽ tự động chèn nút bấm -->
                 </div>
             </div>
         </div>
@@ -442,7 +457,7 @@
                 col_machine_name: "Tên Máy / Thiết Bị", col_plate: "Biển số", col_operator: "Người Vận Hành", col_expire: "Hạn KĐ", col_doc: "Hồ Sơ (Ảnh)",
                 col_train_date: "Ngày Đào Tạo", col_train_topic: "Chủ Đề", col_contractor_attend: "Nhà Thầu Tham Gia", col_pass_count: "Số HV Đạt", col_trainer: "Trainer (EHS)",
                 lbl_view_date: "Ngày đang xem", lbl_total_in: "Đã vào xưởng", lbl_total_out: "Đã hoàn thành", lbl_inside: "Đang trong xưởng",
-                col_name_staff: "Họ và Tên", col_plant: "Nhà Máy", col_time_in: "Giờ Vào", col_time_out: "Giờ Ra", col_status: "Trạng Thái",
+                col_name_staff: "Họ và Tên Nhân Sự", col_plant: "Nhà Máy", col_time_in: "Giờ Vào", col_time_out: "Giờ Ra", col_status: "Trạng Thái",
                 confirm_del_title: "Xác nhận xóa", confirm_del_desc: "Bạn có chắc chắn muốn xóa?", btn_cancel: "Hủy", btn_del: "Xóa"
             },
             "en": {
@@ -523,16 +538,51 @@
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
 
+        // Bổ sung luồng xóa Dữ liệu Chấm công Hàng loạt
+        window.confirmDeleteOldChamCong = function() {
+            document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn <b>XÓA VĨNH VIỄN</b> toàn bộ dữ liệu lịch sử ra/vào cũ (quá 30 ngày)?<br><br><span class="text-xs text-red-500">Hành động này giúp giảm chi phí Firebase và không thể hoàn tác. Vui lòng xuất Excel trước khi xóa.</span>`;
+            deleteTarget = { action: 'delete_old_cham_cong' };
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
         document.getElementById('btn-confirm-yes').addEventListener('click', async function() {
             if(!deleteTarget) return;
             const btn = document.getElementById('btn-confirm-yes');
             const ogText = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>'; btn.disabled = true;
             try {
-                await window.deleteDoc(window.doc(window.db, deleteTarget.collectionName, deleteTarget.id));
-                window.showToast("Xóa thành công!");
+                if (deleteTarget.action === 'delete_old_cham_cong') {
+                    // Logic XÓA RÁC > 30 NGÀY BẰNG BATCH ĐỂ TRÁNH QUÁ TẢI
+                    const cutoffDate = new Date();
+                    cutoffDate.setDate(cutoffDate.getDate() - 30);
+                    cutoffDate.setHours(0,0,0,0);
+
+                    const q = window.query(
+                        window.collection(window.db, "nha_thau_cham_cong"),
+                        window.where("thoi_gian", "<", cutoffDate)
+                    );
+                    const snap = await window.getDocs(q);
+
+                    if(snap.empty) {
+                        window.showToast("Không có dữ liệu cũ hơn 30 ngày để xóa!", "success");
+                    } else {
+                        let batch = window.writeBatch(window.db);
+                        let ops = 0;
+                        snap.forEach(document => {
+                            batch.delete(window.doc(window.db, "nha_thau_cham_cong", document.id));
+                            ops++;
+                            if (ops >= 400) { batch.commit(); batch = window.writeBatch(window.db); ops = 0; }
+                        });
+                        if (ops > 0) await batch.commit();
+                        window.showToast(`Đã dọn dẹp ${snap.size} bản ghi cũ!`, "success");
+                    }
+                } else {
+                    // Lệnh xóa item cơ bản (Nhân sự, máy móc...)
+                    await window.deleteDoc(window.doc(window.db, deleteTarget.collectionName, deleteTarget.id));
+                    window.showToast("Xóa thành công!");
+                    if(deleteReloadFunc) deleteReloadFunc();
+                }
                 window.closeConfirmModal();
-                if(deleteReloadFunc) deleteReloadFunc();
-            } catch (error) { window.showToast("Lỗi xóa: " + error.message, "error"); }
+            } catch (error) { window.showToast("Lỗi xử lý: " + error.message, "error"); }
             finally { btn.innerHTML = ogText; btn.disabled = false; deleteTarget = null; }
         });
 
@@ -546,9 +596,6 @@
         }
         window.formatSimpleDate = function(dateString) { return !dateString ? "N/A" : new Date(dateString).toLocaleDateString('vi-VN'); }
 
-        // ===============================================
-        // CHUYỂN TAB CÓ TAB GIẤY PHÉP
-        // ===============================================
         window.switchTab = function(tabId) {
             currentTab = tabId;
             const tabs = ['nhan-su', 'may-moc', 'dao-tao', 'cham-cong', 'giay-phep'];
@@ -601,7 +648,6 @@
             }
         }
 
-        /* ================= TÍNH NĂNG VÉ VỚT DÀNH CHO HỒ SƠ CŨ (LEGACY DATA) ================= */
         window.verifyLegacyContractor = async function(companyName) {
             if(!confirm(`Xác nhận Hợp lệ (Pass) cho toàn bộ hồ sơ cũ của nhà thầu: ${companyName}?\nHệ thống sẽ tự động chốt hồ sơ mà không cần qua các bước trình duyệt.`)) return;
 
@@ -614,7 +660,7 @@
                     due_date: new Date().toISOString().split('T')[0],
                     assigner_id: "admin_legacy",
                     assigner_name: companyName,
-                    assignee_id: "030", // Mã Sếp Vượng
+                    assignee_id: "030",
                     assignee_name: "Bùi Văn Vượng (GĐ EHS)",
                     progress: 100,
                     status: 'Done',
@@ -635,7 +681,6 @@
                 window.showToast("Lỗi chốt hồ sơ: " + e.message, "error");
             }
         }
-        /* =================================================================================== */
 
         window.loadWorkerData = async function() {
             document.getElementById('loading-msg').classList.remove('hidden');
@@ -846,24 +891,41 @@
             } catch(e) { window.showToast(e.message, "error"); } finally { btn.innerHTML = og; btn.disabled = false; }
         }
 
+        /* ================= TỐI ƯU HÓA LOAD DỮ LIỆU CHẤM CÔNG (GIẢM 99% READS) ================= */
         window.loadChamCongData = async function() {
             const tbody = document.getElementById('cham-cong-results-body');
             document.getElementById('loading-msg').classList.remove('hidden'); tbody.innerHTML = '';
 
             try {
-                const snap = await window.getDocs(window.query(window.collection(window.db, "nha_thau_cham_cong"), window.orderBy("thoi_gian", "asc")));
                 const filterDateStr = document.getElementById('filter-date').value;
+                if (!filterDateStr) {
+                    document.getElementById('loading-msg').classList.add('hidden');
+                    return;
+                }
+
+                // CẢI TIẾN TRỌNG TÂM: Chỉ kéo dữ liệu của đúng ngày đang xem từ Firebase
+                const startOfDay = new Date(filterDateStr);
+                startOfDay.setHours(0,0,0,0);
+                const endOfDay = new Date(filterDateStr);
+                endOfDay.setHours(23,59,59,999);
+
+                const q = window.query(
+                    window.collection(window.db, "nha_thau_cham_cong"),
+                    window.where("thoi_gian", ">=", startOfDay),
+                    window.where("thoi_gian", "<=", endOfDay),
+                    window.orderBy("thoi_gian", "asc")
+                );
+
+                const snap = await window.getDocs(q);
                 let personSessions = {}; 
 
                 snap.forEach(doc => {
-                    const data = doc.data(); if (!data.thoi_gian) return;
-                    const dateObj = data.thoi_gian.toDate();
-                    const recordDateStr = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
-                    if (recordDateStr === filterDateStr) {
-                        const pKey = `${data.cong_ty}_${data.ho_ten}`;
-                        if (!personSessions[pKey]) personSessions[pKey] = [];
-                        personSessions[pKey].push(data);
-                    }
+                    const data = doc.data(); 
+                    if (!data.thoi_gian) return;
+                    
+                    const pKey = `${data.cong_ty}_${data.ho_ten}`;
+                    if (!personSessions[pKey]) personSessions[pKey] = [];
+                    personSessions[pKey].push(data);
                 });
 
                 let allSessionsToRender = [];
@@ -913,6 +975,53 @@
 
             } catch (error) { tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${error.message}</td></tr>`; } 
             finally { document.getElementById('loading-msg').classList.add('hidden'); }
+        }
+
+        // TÍNH NĂNG MỚI: XUẤT EXCEL TUẦN TRƯỚC
+        window.exportWeeklyChamCong = async function() {
+            window.showToast("Đang trích xuất dữ liệu tuần trước từ máy chủ...", "success");
+            try {
+                const today = new Date();
+                const dayOfWeek = today.getDay() || 7;
+                const lastSunday = new Date(today);
+                lastSunday.setDate(today.getDate() - dayOfWeek);
+                lastSunday.setHours(23,59,59,999);
+
+                const lastMonday = new Date(lastSunday);
+                lastMonday.setDate(lastSunday.getDate() - 6);
+                lastMonday.setHours(0,0,0,0);
+
+                const q = window.query(
+                    window.collection(window.db, "nha_thau_cham_cong"),
+                    window.where("thoi_gian", ">=", lastMonday),
+                    window.where("thoi_gian", "<=", lastSunday),
+                    window.orderBy("thoi_gian", "asc")
+                );
+                const snap = await window.getDocs(q);
+
+                if (snap.empty) {
+                    return window.showToast("Không có dữ liệu ra/vào nào trong tuần trước!", "error");
+                }
+
+                let csv = ['"Ngày","Nhà Thầu","Họ Tên","Nhà Máy","Trạng Thái","Giờ Quẹt Thẻ"'];
+                let bom = "\uFEFF";
+                snap.forEach(doc => {
+                    let d = doc.data();
+                    let dateObj = d.thoi_gian.toDate();
+                    let dateStr = dateObj.toLocaleDateString('vi-VN');
+                    let timeStr = dateObj.toLocaleTimeString('vi-VN');
+                    let nm = d.nha_may === '1' ? 'Nhà Máy 1' : (d.nha_may === '2' ? 'Nhà Máy 2' : d.nha_may);
+                    csv.push(`"${dateStr}","${d.cong_ty}","${d.ho_ten}","${nm}","${d.trang_thai}","${timeStr}"`);
+                });
+
+                let csvFile = new Blob([bom + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
+                let downloadLink = document.createElement("a");
+                downloadLink.download = `Lich_Su_Vao_Ra_Tuan_Truoc.csv`;
+                downloadLink.href = window.URL.createObjectURL(csvFile);
+                downloadLink.style.display = "none"; document.body.appendChild(downloadLink); downloadLink.click(); document.body.removeChild(downloadLink);
+                window.showToast("Xuất Excel tuần trước thành công!");
+
+            } catch(e) { window.showToast("Lỗi xuất dữ liệu: " + e.message, "error"); }
         }
 
         window.exportToExcel = function() {
@@ -1024,7 +1133,7 @@
                 imgSection.classList.add('hidden');
             }
 
-            // GIAO DIỆN NÚT BẤM ĐỘNG THEO TRẠNG THÁI (Đã gỡ lỗi nhét thẳng text vào textarea)
+            // GIAO DIỆN NÚT BẤM ĐỘNG THEO TRẠNG THÁI 
             const actionSec = document.getElementById('ptw-action-section');
             let actionHtml = '';
 
@@ -1084,7 +1193,6 @@
             document.getElementById('ptw-review-modal').classList.remove('hidden');
         }
 
-        // HÀM: PHÊ DUYỆT HOẶC TỪ CHỐI (LÚC XIN PHÉP)
         window.submitPTWReview = async function(action) {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
@@ -1109,7 +1217,6 @@
             } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
         }
 
-        // HÀM: ĐÌNH CHỈ KHẨN CẤP
         window.submitPTWSuspension = async function() {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
@@ -1131,7 +1238,6 @@
             } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
         }
 
-        // HÀM: NGHIỆM THU ĐÓNG GIẤY PHÉP HOẶC TỪ CHỐI (BẮT DỌN LẠI)
         window.submitPTWClosure = async function(action) {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
@@ -1144,8 +1250,6 @@
 
             try {
                 const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
-                
-                // Nếu bắt dọn lại thì trả trạng thái về "Đã duyệt" để nhà thầu thấy lại nút nộp báo cáo
                 const newStatus = action === 'Từ chối nghiệm thu' ? 'Đã duyệt' : 'Đã đóng';
 
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
