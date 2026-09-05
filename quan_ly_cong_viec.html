@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- Thêm thư viện xuất PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <script>
@@ -33,13 +32,11 @@
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
-    <!-- Toast Thông báo -->
     <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-message">Thành công!</span>
     </div>
 
-    <!-- Confirm Modal Xóa Đơn Lẻ -->
     <div id="custom-confirm" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border-t-4 border-red-500">
             <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-warning-circle text-4xl"></i></div>
@@ -52,7 +49,6 @@
         </div>
     </div>
 
-    <!-- Modal Thông báo Dọn Dẹp Sau Khi Xuất File -->
     <div id="export-confirm-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[120] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-md p-6 text-center border-t-4 border-emerald-500">
             <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-check-circle text-4xl"></i></div>
@@ -67,7 +63,6 @@
         </div>
     </div>
 
-    <!-- HEADER -->
     <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
         <div class="flex items-center gap-4">
             <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
@@ -103,15 +98,12 @@
     <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
         <div class="max-w-[1400px] mx-auto space-y-6">
             
-            <!-- BỘ TÌM KIẾM, LỌC THỜI GIAN VÀ CÔNG CỤ -->
             <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
-                <!-- Search -->
                 <div class="lg:col-span-4 relative">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="search-box" onkeyup="window.renderTasks()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:border-blue-500 font-medium dark:text-white" placeholder="Tìm tên công việc, người nhận..." data-i18n-placeholder="search_placeholder">
                 </div>
                 
-                <!-- Category -->
                 <div class="lg:col-span-2">
                     <select id="filter-category" onchange="window.renderTasks()" class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300 appearance-none">
                         <option value="all" data-i18n="filter_all">Tất cả mảng</option>
@@ -124,20 +116,22 @@
                     </select>
                 </div>
                 
-                <!-- Date Filter (Từ ngày - Đến ngày) -->
-                <div class="lg:col-span-3 flex items-center gap-1.5">
+                <!-- BỘ LỌC NGÀY VÀ NÚT XÓA BỘ LỌC MỚI -->
+                <div class="lg:col-span-3 flex items-center gap-1.5 relative">
                     <input type="date" id="filter-start" onchange="window.fetchAllTasks()" title="Từ ngày (Hạn chót)" class="w-full px-2 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
                     <span class="text-slate-400 font-black">-</span>
                     <input type="date" id="filter-end" onchange="window.fetchAllTasks()" title="Đến ngày (Hạn chót)" class="w-full px-2 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
+                    <!-- Nút Xóa Ngày -->
+                    <button onclick="window.clearDateFilter()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-300 p-2 rounded-xl transition flex shrink-0" title="Xóa bộ lọc ngày">
+                        <i class="ph-bold ph-x text-lg"></i>
+                    </button>
                 </div>
                 
-                <!-- Buttons -->
                 <div class="lg:col-span-3 flex gap-2">
                     <div class="relative w-1/2 group">
                         <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-1.5 text-xs sm:text-sm">
                             <i class="ph-bold ph-download-simple"></i> Lưu Trữ
                         </button>
-                        <!-- Menu Xả xuống của nút Lưu Trữ -->
                         <div class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all overflow-hidden">
                             <button onclick="window.exportToExcel()" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 text-emerald-600 border-b border-slate-100 dark:border-slate-700 transition flex items-center gap-2"><i class="ph-bold ph-file-csv"></i> File Excel</button>
                             <button onclick="window.exportToPDF()" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 transition flex items-center gap-2"><i class="ph-bold ph-file-pdf"></i> File PDF</button>
@@ -150,7 +144,6 @@
                 </div>
             </div>
 
-            <!-- TABS -->
             <div class="flex flex-wrap bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-fit">
                 <button onclick="window.switchTab('my-tasks')" id="tab-my-tasks" class="px-6 py-2 rounded-lg font-bold text-sm bg-white dark:bg-slate-600 shadow text-blue-700 dark:text-white transition" data-i18n="tab_my_tasks">Việc tôi phải làm</button>
                 <button onclick="window.switchTab('assigned-tasks')" id="tab-assigned" class="px-6 py-2 rounded-lg font-bold text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition" data-i18n="tab_assigned">Việc tôi đã giao</button>
@@ -162,7 +155,6 @@
                 <p class="font-bold text-slate-500 dark:text-dark-muted" id="loader-text" data-i18n="msg_loading">Đang kết nối hệ thống và lấy dữ liệu...</p>
             </div>
 
-            <!-- BẢNG TIẾN ĐỘ NHÂN VIÊN (DÀNH CHO LÃNH ĐẠO) -->
             <div id="leaderboard-container" class="hidden mb-6 bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border"></div>
 
             <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden"></div>
@@ -175,7 +167,6 @@
         </div>
     </main>
 
-    <!-- MODAL GIAO VIỆC & LẬP KẾ HOẠCH -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
@@ -251,7 +242,6 @@
         </div>
     </div>
 
-    <!-- MODAL CẬP NHẬT TIẾN ĐỘ & ĐÁNH GIÁ CỦA LÃNH ĐẠO -->
     <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -327,7 +317,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE CẤU HÌNH & CHỨC NĂNG -->
+    <!-- FIREBASE CẤU HÌNH -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -589,13 +579,20 @@
             }
         };
 
-        // --- CÔNG CỤ LƯU TRỮ (EXCEL / PDF) VÀ DỌN DẸP HÀNG LOẠT LÊN MÁY TÍNH ---
+        // --- HÀM MỚI: XÓA BỘ LỌC NGÀY ---
+        window.clearDateFilter = function() {
+            document.getElementById('filter-start').value = '';
+            document.getElementById('filter-end').value = '';
+            window.fetchAllTasks();
+        };
+
+        // --- CÔNG CỤ LƯU TRỮ VÀ XUẤT CHI TIẾT ---
         window.currentExportedIds = [];
         
         window.exportToExcel = function() {
             if(rawTasksData.length === 0) return showToast("Không có dữ liệu để lưu trữ!", "error");
 
-            let csv = ['"Tên công việc","Phân loại","Người giao","Người nhận","Hạn chót","Tiến độ","Trạng thái"'];
+            let csv = ['"Tên công việc","Phân loại","Người giao","Người nhận","Hạn chót","Tiến độ","Trạng thái","Chi tiết thực hiện"'];
             let bom = "\uFEFF";
             window.currentExportedIds = [];
 
@@ -608,7 +605,22 @@
                 let deadline = t.due_date || "";
                 let prog = t.progress + "%";
                 let stat = t.status || "";
-                csv.push(`"${title}","${cat}","${assigner}","${assignee}","${deadline}","${prog}","${stat}"`);
+
+                // Gộp chi tiết thành nhiều dòng trong 1 ô Excel
+                let stepsStr = "";
+                if (t.plan_steps && t.plan_steps.length > 0) {
+                    stepsStr = t.plan_steps.map((s) => {
+                        let text = typeof s === 'string' ? s : s.text;
+                        let sProg = typeof s === 'object' && s.progress !== undefined ? s.progress : 0;
+                        let check = sProg === 100 ? "[x]" : "[ ]";
+                        return `${check} ${text} (${sProg}%)`;
+                    }).join("\n");
+                } else {
+                    stepsStr = "Không có chi tiết";
+                }
+                stepsStr = stepsStr.replace(/"/g, '""'); 
+
+                csv.push(`"${title}","${cat}","${assigner}","${assignee}","${deadline}","${prog}","${stat}","${stepsStr}"`);
             });
 
             let csvFile = new Blob([bom + csv.join("\n")], {type: "text/csv;charset=utf-8;"});
@@ -624,20 +636,19 @@
             if(rawTasksData.length === 0) return showToast("Không có dữ liệu để xuất PDF!", "error");
             window.currentExportedIds = [];
             
-            // Xây dựng bảng HTML ẩn để thư viện PDF chụp lại
             let html = `
-                <div style="font-family: Arial, sans-serif; padding: 20px;">
+                <div style="font-family: Arial, sans-serif; padding: 10px;">
                     <h2 style="text-align: center; color: #1e3a8a; margin-bottom: 20px;">BÁO CÁO TIẾN ĐỘ CÔNG VIỆC EHS</h2>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
                         <thead>
                             <tr style="background-color: #f1f5f9; color: #0f172a;">
-                                <th style="border: 1px solid #cbd5e1; padding: 8px;">Tên công việc</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 8px;">Mảng</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 8px;">Người giao</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 8px;">Người nhận</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 8px;">Hạn chót</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 8px;">Tiến độ</th>
-                                <th style="border: 1px solid #cbd5e1; padding: 8px;">Trạng thái</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 6px; width: 18%;">Tên công việc</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 6px; width: 8%;">Mảng</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 6px; width: 10%;">Người giao</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 6px; width: 10%;">Người nhận</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 6px; width: 8%;">Hạn chót</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 6px; width: 38%;">Các bước thực hiện</th>
+                                <th style="border: 1px solid #cbd5e1; padding: 6px; width: 8%;">Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -645,15 +656,30 @@
 
             rawTasksData.forEach(t => {
                 window.currentExportedIds.push(t.id);
+                
+                let stepsHtml = "";
+                if (t.plan_steps && t.plan_steps.length > 0) {
+                    stepsHtml = "<ul style='margin: 0; padding-left: 15px;'>";
+                    t.plan_steps.forEach(s => {
+                        let text = typeof s === 'string' ? s : s.text;
+                        let sProg = typeof s === 'object' && s.progress !== undefined ? s.progress : 0;
+                        let color = sProg === 100 ? "#16a34a" : "#475569";
+                        stepsHtml += `<li style='color: ${color}; margin-bottom: 2px;'>${text} <b>(${sProg}%)</b></li>`;
+                    });
+                    stepsHtml += "</ul>";
+                } else {
+                    stepsHtml = "<i style='color: #94a3b8;'>Không có chi tiết</i>";
+                }
+
                 html += `
                     <tr>
-                        <td style="border: 1px solid #cbd5e1; padding: 8px; font-weight: bold;">${t.title||""}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 8px;">${t.category||""}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 8px;">${t.assigner_name||""}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 8px;">${t.assignee_name||""}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 8px;">${t.due_date||""}</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 8px; color: #2563eb; font-weight: bold;">${t.progress}%</td>
-                        <td style="border: 1px solid #cbd5e1; padding: 8px;">${t.status||""}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold;">${t.title||""}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px;">${t.category||""}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px;">${t.assigner_name||""}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px;">${t.assignee_name||""}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px;">${t.due_date||""}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px;">${stepsHtml}</td>
+                        <td style="border: 1px solid #cbd5e1; padding: 6px; font-weight: bold; color: ${t.progress === 100 ? '#16a34a' : '#2563eb'}">${t.progress}%<br><span style="font-size: 9px; font-weight: normal; color: #64748b">${t.status||""}</span></td>
                     </tr>
                 `;
             });
@@ -807,7 +833,7 @@
                 let revHtml = ``;
                 
                 globalUserDeptMap = {}; 
-                globalUserEmailMap = {}; // Chứa Token
+                globalUserEmailMap = {}; 
                 let currentUserRole = "";
 
                 snap.forEach(doc => {
@@ -850,7 +876,7 @@
             } catch (e) { console.error("Lỗi dropdown: ", e); }
         }
 
-        // TỐI ƯU HÓA LẠI: LỌC TỪ SERVER BẰNG KHOẢNG THỜI GIAN THEO YÊU CẦU NGƯỜI DÙNG
+        // TỐI ƯU HÓA: LỌC TỪ SERVER BẰNG KHOẢNG THỜI GIAN THEO YÊU CẦU NGƯỜI DÙNG VÀ BẮT TRƯỜNG HỢP RỖNG
         window.fetchAllTasks = async function() {
             document.getElementById('task-grid').classList.add('hidden'); 
             document.getElementById('empty-state').classList.add('hidden'); 
@@ -863,7 +889,6 @@
 
                 let q = collection(db, "ehs_tasks");
                 
-                // Firestore string comparison hoạt động tốt cho định dạng YYYY-MM-DD
                 if (startDateStr) q = query(q, where("due_date", ">=", startDateStr));
                 if (endDateStr) q = query(q, where("due_date", "<=", endDateStr));
 
@@ -1367,14 +1392,12 @@
         };
 
         async function initializeAppForUser() {
-            // Đặt tên mặc định vào Header trước để tránh lỗi hiển thị "Đang tải..."
             document.getElementById('header-user-name').innerText = currentUserName || currentUserId || "Nhân viên EHS";
             
             if (currentUserId) {
                 try {
                     window.changeLanguage(currentLang);
                     
-                    // Thiết lập mặc định 2 ô Từ ngày - Đến ngày là mốc tháng hiện tại
                     const today = new Date();
                     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
                     const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
