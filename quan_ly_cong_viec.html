@@ -32,11 +32,13 @@
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen flex flex-col transition-colors duration-300 overflow-hidden">
 
+    <!-- Toast Thông báo -->
     <div id="toast" class="fixed top-5 right-5 z-[100] transform transition-all duration-300 translate-x-[150%] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl font-bold text-white">
         <i id="toast-icon" class="text-2xl"></i>
         <span id="toast-message">Thành công!</span>
     </div>
 
+    <!-- Confirm Modal Xóa Đơn Lẻ -->
     <div id="custom-confirm" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[110] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center border-t-4 border-red-500">
             <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-warning-circle text-4xl"></i></div>
@@ -49,20 +51,22 @@
         </div>
     </div>
 
+    <!-- Modal Thông báo Dọn Dẹp Sau Khi Xuất File (Đã nâng cấp logic) -->
     <div id="export-confirm-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[120] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-md p-6 text-center border-t-4 border-emerald-500">
             <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-check-circle text-4xl"></i></div>
             <h3 class="text-lg font-black text-slate-800 dark:text-white mb-2">Đã lưu trữ thành công!</h3>
-            <p class="text-slate-600 dark:text-slate-400 font-medium text-sm mb-6">Bạn đã tải công việc về ổ lưu trữ cá nhân (OneDrive/Máy tính). Bạn có muốn dọn dẹp (xóa) các công việc này trên hệ thống để giải phóng bộ nhớ không?</p>
+            <p id="export-confirm-msg" class="text-slate-600 dark:text-slate-400 font-medium text-sm mb-6">Bạn đã tải công việc về máy. Bạn có muốn dọn dẹp (xóa) các công việc này trên hệ thống không?</p>
             <div class="flex gap-3 justify-center">
                 <button onclick="window.closeExportConfirm()" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition">Không, giữ lại</button>
                 <button id="btn-bulk-del" onclick="window.executeBulkDelete()" class="px-5 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-md transition flex items-center gap-2">
-                    <i class="ph-bold ph-trash"></i> Xóa hệ thống
+                    <i class="ph-bold ph-trash"></i> Xóa trên hệ thống
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- HEADER -->
     <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 z-10">
         <div class="flex items-center gap-4">
             <a href="index.html" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full flex items-center justify-center transition">
@@ -98,12 +102,15 @@
     <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
         <div class="max-w-[1400px] mx-auto space-y-6">
             
-            <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
-                <div class="lg:col-span-4 relative">
+            <!-- BỘ TÌM KIẾM, LỌC THỜI GIAN VÀ CÔNG CỤ (ĐÃ SỬA LỖI UI) -->
+            <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                <!-- Search -->
+                <div class="lg:col-span-3 relative">
                     <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="search-box" onkeyup="window.renderTasks()" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm outline-none focus:border-blue-500 font-medium dark:text-white" placeholder="Tìm tên công việc, người nhận..." data-i18n-placeholder="search_placeholder">
                 </div>
                 
+                <!-- Category -->
                 <div class="lg:col-span-2">
                     <select id="filter-category" onchange="window.renderTasks()" class="w-full px-3 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300 appearance-none">
                         <option value="all" data-i18n="filter_all">Tất cả mảng</option>
@@ -116,22 +123,24 @@
                     </select>
                 </div>
                 
-                <!-- BỘ LỌC NGÀY VÀ NÚT XÓA BỘ LỌC MỚI -->
-                <div class="lg:col-span-3 flex items-center gap-1.5 relative">
+                <!-- Date Filter (Từ ngày - Đến ngày) -->
+                <div class="lg:col-span-4 flex items-center gap-2 relative">
                     <input type="date" id="filter-start" onchange="window.fetchAllTasks()" title="Từ ngày (Hạn chót)" class="w-full px-2 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
                     <span class="text-slate-400 font-black">-</span>
                     <input type="date" id="filter-end" onchange="window.fetchAllTasks()" title="Đến ngày (Hạn chót)" class="w-full px-2 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
-                    <!-- Nút Xóa Ngày -->
-                    <button onclick="window.clearDateFilter()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-300 p-2 rounded-xl transition flex shrink-0" title="Xóa bộ lọc ngày">
+                    <!-- Nút Xóa Ngày Đã Gắn Shrink-0 Để Không Bị Ép Nhỏ -->
+                    <button onclick="window.clearDateFilter()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-300 p-2.5 rounded-xl transition flex shrink-0" title="Xóa bộ lọc ngày">
                         <i class="ph-bold ph-x text-lg"></i>
                     </button>
                 </div>
                 
+                <!-- Buttons -->
                 <div class="lg:col-span-3 flex gap-2">
                     <div class="relative w-1/2 group">
                         <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-1.5 text-xs sm:text-sm">
                             <i class="ph-bold ph-download-simple"></i> Lưu Trữ
                         </button>
+                        <!-- Menu Xả xuống của nút Lưu Trữ -->
                         <div class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all overflow-hidden">
                             <button onclick="window.exportToExcel()" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 text-emerald-600 border-b border-slate-100 dark:border-slate-700 transition flex items-center gap-2"><i class="ph-bold ph-file-csv"></i> File Excel</button>
                             <button onclick="window.exportToPDF()" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 transition flex items-center gap-2"><i class="ph-bold ph-file-pdf"></i> File PDF</button>
@@ -167,6 +176,7 @@
         </div>
     </main>
 
+    <!-- MODAL GIAO VIỆC & LẬP KẾ HOẠCH -->
     <div id="task-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
@@ -242,6 +252,7 @@
         </div>
     </div>
 
+    <!-- MODAL CẬP NHẬT TIẾN ĐỘ -->
     <div id="update-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-5 border-b border-slate-200 dark:border-dark-border flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -317,7 +328,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE CẤU HÌNH -->
+    <!-- FIREBASE CẤU HÌNH & CHỨC NĂNG -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -349,6 +360,7 @@
 
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
+        window.currentFilteredTasks = []; // Chứa danh sách công việc hiện tại (dành cho xuất file)
         let globalUserDeptMap = {}; 
         let globalUserEmailMap = {}; 
         let upTaskId = "";
@@ -590,14 +602,12 @@
         window.currentExportedIds = [];
         
         window.exportToExcel = function() {
-            if(rawTasksData.length === 0) return showToast("Không có dữ liệu để lưu trữ!", "error");
+            if(!window.currentFilteredTasks || window.currentFilteredTasks.length === 0) return showToast("Không có dữ liệu để lưu trữ!", "error");
 
             let csv = ['"Tên công việc","Phân loại","Người giao","Người nhận","Hạn chót","Tiến độ","Trạng thái","Chi tiết thực hiện"'];
             let bom = "\uFEFF";
-            window.currentExportedIds = [];
 
-            rawTasksData.forEach(t => {
-                window.currentExportedIds.push(t.id);
+            window.currentFilteredTasks.forEach(t => {
                 let title = (t.title || "").replace(/"/g, '""');
                 let cat = t.category || "";
                 let assigner = t.assigner_name || "";
@@ -633,8 +643,7 @@
         };
 
         window.exportToPDF = function() {
-            if(rawTasksData.length === 0) return showToast("Không có dữ liệu để xuất PDF!", "error");
-            window.currentExportedIds = [];
+            if(!window.currentFilteredTasks || window.currentFilteredTasks.length === 0) return showToast("Không có dữ liệu để xuất PDF!", "error");
             
             let html = `
                 <div style="font-family: Arial, sans-serif; padding: 10px;">
@@ -654,9 +663,7 @@
                         <tbody>
             `;
 
-            rawTasksData.forEach(t => {
-                window.currentExportedIds.push(t.id);
-                
+            window.currentFilteredTasks.forEach(t => {
                 let stepsHtml = "";
                 if (t.plan_steps && t.plan_steps.length > 0) {
                     stepsHtml = "<ul style='margin: 0; padding-left: 15px;'>";
@@ -702,9 +709,35 @@
             });
         };
 
+        // --- CƠ CHẾ XÓA THÔNG MINH THEO QUYỀN (Role-Based Access Control) ---
         function triggerCleanupPrompt() {
             setTimeout(() => {
-                document.getElementById('export-confirm-modal').classList.remove('hidden');
+                let deletableIds = [];
+                // Cấp quyền xóa toàn bộ nếu tên đăng nhập khớp chính xác Đặng Thế Tư
+                const isSuperAdmin = (currentUserName === "Đặng Thế Tư");
+
+                window.currentFilteredTasks.forEach(t => {
+                    if (isSuperAdmin) {
+                        deletableIds.push(t.id);
+                    } else if (t.assigner_id === currentUserId || t.reviewer_id === currentUserId) {
+                        // Chỉ cấp quyền xóa công việc do chính user giao hoặc duyệt
+                        deletableIds.push(t.id);
+                    }
+                });
+
+                window.currentExportedIds = deletableIds;
+
+                if (deletableIds.length > 0) {
+                    const msgEl = document.getElementById('export-confirm-msg');
+                    if (isSuperAdmin) {
+                        msgEl.innerHTML = `Với tư cách Quản trị hệ thống (Đặng Thế Tư), bạn có thể dọn dẹp toàn bộ <b>${deletableIds.length} công việc</b> vừa tải xuống để giải phóng bộ nhớ. Bạn có muốn xóa chúng không?`;
+                    } else {
+                        msgEl.innerHTML = `Hệ thống ghi nhận có <b>${deletableIds.length} công việc</b> do bạn khởi tạo/phê duyệt trong file vừa tải. Bạn có muốn dọn dẹp các công việc thuộc quyền của bạn không? (Các công việc của người khác sẽ được bảo vệ an toàn).`;
+                    }
+                    document.getElementById('export-confirm-modal').classList.remove('hidden');
+                } else {
+                    showToast("Đã tải báo cáo! Các công việc trong file thuộc quản lý của người khác nên không thể xóa.", "success");
+                }
             }, 1000);
         }
 
@@ -876,7 +909,6 @@
             } catch (e) { console.error("Lỗi dropdown: ", e); }
         }
 
-        // TỐI ƯU HÓA: LỌC TỪ SERVER BẰNG KHOẢNG THỜI GIAN THEO YÊU CẦU NGƯỜI DÙNG VÀ BẮT TRƯỜNG HỢP RỖNG
         window.fetchAllTasks = async function() {
             document.getElementById('task-grid').classList.add('hidden'); 
             document.getElementById('empty-state').classList.add('hidden'); 
@@ -941,6 +973,9 @@
                 if (keyword && !textSearch.includes(keyword)) return false;
                 return true;
             });
+
+            // Lưu lại danh sách này để Xuất File chính xác
+            window.currentFilteredTasks = filteredTasks;
 
             filteredTasks.sort((a,b) => {
                 let timeA = a.created_at ? (a.created_at.toDate ? a.created_at.toDate().getTime() : a.created_at) : 0;
