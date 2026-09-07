@@ -1578,17 +1578,43 @@
             const userDept = localStorage.getItem("ehs_user_dept") || ""; let notifications = [];
 
             try {
-                // 1. NHIỆM VỤ CÁ NHÂN
+                const today = new Date(); today.setHours(0,0,0,0);
+                const threeDaysLater = new Date(today); threeDaysLater.setDate(today.getDate() + 3);
+
+                // ==========================================
+                // 1. NHIỆM VỤ CÁ NHÂN & DUYỆT HỒ SƠ NHÀ THẦU
+                // ==========================================
                 try {
                     const qMyTasks = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
                     const snapMyTasks = await window.getDocs(qMyTasks);
-                    const today = new Date(); today.setHours(0,0,0,0);
-                    const threeDaysLater = new Date(today); threeDaysLater.setDate(today.getDate() + 3);
 
                     snapMyTasks.forEach(doc => {
                         const task = doc.data();
-                        if (task.status === 'Done') return; if (task.status === 'Review') return;
                         const deadline = new Date(task.due_date); deadline.setHours(0,0,0,0);
+
+                        // --- LUỒNG RIÊNG DÀNH CHO HỒ SƠ NHÀ THẦU ---
+                        if (task.task_type === 'contractor_approval') {
+                            // Nếu đã xong hoặc đã từ chối -> Bỏ qua, không báo rác
+                            if (task.status === 'Rejected' || task.status === 'Done') return;
+                            
+                            // Nằm trong tay mình và đang chờ duyệt
+                            if (task.status === 'Review') {
+                                notifications.push({ 
+                                    type: 'review_pending', 
+                                    title: 'Yêu cầu Duyệt Hồ sơ Nhà thầu', 
+                                    message: `Nhà thầu "${task.assigner_name}" đang chờ bạn xét duyệt.`, 
+                                    icon: 'ph-hard-hat text-amber-500', 
+                                    bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50', 
+                                    link: 'quan_ly_cong_viec.html' 
+                                });
+                            }
+                            return; // Dừng lại ở đây, không chạy xuống các cảnh báo Feedback hay Overdue bên dưới
+                        }
+
+                        // --- LUỒNG DÀNH CHO CÔNG VIỆC BÌNH THƯỜNG ---
+                        if (task.status === 'Done') return; 
+                        if (task.status === 'Review') return; // Bỏ qua vì Lãnh đạo (Reviewer) sẽ nhận chuông ở Query 2
+
                         if (task.evaluation && task.progress < 100) {
                             notifications.push({ type: 'feedback', title: 'Lãnh đạo yêu cầu cải tiến', message: `Sếp đã nhận xét task: "${task.title}". Vui lòng xem lại.`, icon: 'ph-chat-circle-warning text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50', link: 'quan_ly_cong_viec.html' });
                         } else if (deadline < today) {
@@ -1599,21 +1625,26 @@
                             notifications.push({ type: 'new_task', title: 'Có công việc mới được giao', message: `${task.assigner_name} đã giao cho bạn: "${task.title}".`, icon: 'ph-kanban text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50', link: 'quan_ly_cong_viec.html' });
                         }
                     });
-                } catch(e) {}
+                } catch(e) { console.error("Lỗi MyTasks", e); }
 
-                // 2. PHÊ DUYỆT LÃNH ĐẠO
+                // ==========================================
+                // 2. PHÊ DUYỆT LÃNH ĐẠO (Dành cho Task Thường)
+                // ==========================================
                 try {
                     const qReview = window.query(window.collection(window.db, "ehs_tasks"), window.where("reviewer_id", "==", currentUserId));
                     const snapReview = await window.getDocs(qReview);
                     snapReview.forEach(doc => {
                         const task = doc.data();
-                        if (task.status === 'Review') {
+                        // Tránh dẫm chân lên task nhà thầu
+                        if (task.status === 'Review' && task.task_type !== 'contractor_approval') {
                             notifications.push({ type: 'review_pending', title: 'Yêu cầu phê duyệt công việc', message: `${task.assignee_name} đã trình duyệt task: "${task.title}".`, icon: 'ph-check-square-offset text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50', link: 'quan_ly_cong_viec.html' });
                         }
                     });
-                } catch(e) {}
+                } catch(e) { console.error("Lỗi ReviewTasks", e); }
 
+                // ==========================================
                 // 3. NHẮC NHỞ UTILITY
+                // ==========================================
                 if (userDept.toLowerCase().includes("utility") || userDept.toLowerCase().includes("vận hành")) {
                     try {
                         const vnTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
@@ -1627,7 +1658,9 @@
                     } catch(e) {}
                 }
 
+                // ==========================================
                 // 4. LỊCH HỌP
+                // ==========================================
                 try {
                     const qMeetingsReal = window.query(window.collection(window.db, "ehs_meetings"), window.where("status", "==", "Upcoming"));
                     const snapMeetings = await window.getDocs(qMeetingsReal);
@@ -1642,6 +1675,7 @@
                     });
                 } catch(e) {}
 
+                // RENDER THÔNG BÁO RA MÀN HÌNH
                 if (notifications.length > 0) {
                     badge.classList.remove('hidden'); countLabel.innerText = notifications.length; countLabel.classList.remove('hidden');
                     let notifHtml = '';
