@@ -522,12 +522,16 @@
 
         window.loadInternalStaff = async function() {
             try {
-                // Quét thông tin từ collection chứa danh sách nhân viên công ty (nhan_su)
-                const snap = await window.getDocs(window.collection(window.db, "nhan_su"));
+                // ĐÃ SỬA: Quét đúng collection nhan_su_noi_bo trên Firebase của bạn
+                const snap = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
                 window.internalStaffList = [];
                 snap.forEach(doc => {
                     const d = doc.data();
-                    window.internalStaffList.push({ id: doc.id, name: d.ho_ten || d.name || 'N/A', dept: d.bo_phan || '' });
+                    let role = d.chuc_vu || d.vi_tri || d.bo_phan || '';
+                    let labelName = d.ho_ten || d.name || 'N/A';
+                    if(d.ma_nv) labelName = `[${d.ma_nv}] ` + labelName;
+                    
+                    window.internalStaffList.push({ id: doc.id, name: labelName, dept: role });
                 });
             } catch(e) { console.log("Lỗi tải danh sách nhân sự EHS/Lãnh đạo", e); }
         }
@@ -1073,7 +1077,7 @@
             return new Date(dateStr);
         }
 
-        // Logic thời gian thực có tính toán Tăng Ca
+        // ĐÃ SỬA: Logic thời gian thực thông minh và chính xác hơn, kết hợp Tăng ca
         window.getRealtimePTWStatus = function(mainStatus, startDateStr, endDateStr, startTime, endTime, isOvertime, overtimeEndTime) {
             if (mainStatus !== 'Đã duyệt') return { badge: getStatusBadge(mainStatus) };
 
@@ -1083,7 +1087,7 @@
             const startDay = window.parseCustomDate(startDateStr); startDay.setHours(0,0,0,0);
             const endDay = window.parseCustomDate(endDateStr); endDay.setHours(0,0,0,0);
 
-            // Kiểm tra ngày
+            // Kiểm tra khung ngày
             if (today < startDay) {
                 return { badge: `<span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-clock"></i> Chờ hiệu lực (Chưa tới ngày)</span>` };
             }
@@ -1091,27 +1095,30 @@
                 return { badge: `<span class="bg-orange-100 text-orange-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-warning"></i> Hết hạn thi công</span>` };
             }
 
-            // Tính toán phút để so sánh
+            // Tính toán phút trong ngày để so sánh chính xác
             const currentMins = now.getHours() * 60 + now.getMinutes();
             const startMins = startTime ? (parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1])) : 0;
             const originalEndMins = endTime ? (parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1])) : 1439;
             
-            // Lấy thời gian kết thúc cuối cùng (Nếu có tăng ca thì dùng giờ tăng ca, không thì dùng giờ kết thúc gốc)
-            let activeEndTime = endTime;
-            if (isOvertime && overtimeEndTime) { activeEndTime = overtimeEndTime; }
-            const finalEndMins = activeEndTime ? (parseInt(activeEndTime.split(':')[0]) * 60 + parseInt(activeEndTime.split(':')[1])) : 1439;
+            let finalEndMins = originalEndMins;
+            let activeOvertime = false;
+            
+            if (isOvertime && overtimeEndTime) { 
+                finalEndMins = (parseInt(overtimeEndTime.split(':')[0]) * 60 + parseInt(overtimeEndTime.split(':')[1])); 
+                activeOvertime = true;
+            }
 
-            // Nếu vượt ra khỏi khung giờ cuối cùng cho phép (Bao gồm cả tăng ca nếu có)
+            // Nếu nằm ngoài khung giờ thi công cuối cùng (Bao gồm cả tăng ca)
             if (currentMins < startMins || currentMins > finalEndMins) {
                 return { badge: `<span class="bg-slate-200 text-slate-600 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-moon"></i> Ngoài giờ (Tạm nghỉ)</span>` };
             }
 
-            // Nếu đang trong thời gian làm việc, nhưng đã vượt qua giờ kết thúc gốc -> Chuyển sang Đang Tăng Ca
-            if (isOvertime && currentMins > originalEndMins) {
+            // Nếu đang trong giờ tăng ca (Lớn hơn giờ kết thúc gốc nhưng nhỏ hơn giờ kết thúc tăng ca)
+            if (activeOvertime && currentMins > originalEndMins && currentMins <= finalEndMins) {
                 return { badge: `<span class="bg-orange-100 text-orange-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-fire animate-pulse text-orange-600"></i> Đang Tăng Ca</span>` };
             }
 
-            // Đang trong khung giờ làm việc bình thường
+            // Nếu trong giờ hành chính bình thường
             return { badge: `<span class="bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-play animate-pulse text-emerald-600"></i> Đang thi công</span>` };
         }
 
@@ -1171,11 +1178,13 @@
                         }
                         timeStr += `</div>`;
 
+                        // ĐÃ SỬA: Sắp xếp lại chính xác 10 cột <td> để ăn khớp với 10 cột <th>
                         tbody.innerHTML += `
                             <tr class="hover:bg-slate-50 transition border-b border-slate-100">
                                 <td class="p-4 text-center font-medium text-slate-500">${stt++}</td>
-                                <td class="p-4 font-black text-slate-800">${d.cong_ty}<div class="text-[10px] font-medium text-slate-500 mt-0.5"><i class="ph-fill ph-map-pin"></i> ${d.khu_vuc}</div></td>
+                                <td class="p-4 font-black text-slate-800">${d.cong_ty}</td>
                                 <td class="p-4 font-bold text-amber-700">${d.loai_giay_phep}</td>
+                                <td class="p-4 font-bold text-slate-700"><i class="ph-fill ph-map-pin text-slate-400"></i> ${d.khu_vuc}</td>
                                 <td class="p-4 text-center bg-slate-50/50">${timeStr}</td>
                                 <td class="p-4 text-center border-l border-slate-100">${ehsBadge}</td>
                                 <td class="p-4 text-center">${gdKvBadge}</td>
@@ -1320,6 +1329,18 @@
                 }
 
                 if (currentRole !== '') {
+                    // ĐÃ SỬA: Bổ sung tính năng THU HỒI YÊU CẦU cho những trường hợp lỡ chỉ định sai luồng
+                    let resetHtml = '';
+                    if (currentRole !== 'EHS') {
+                        resetHtml = `
+                            <div class="mt-4 border-t border-slate-200 pt-4">
+                                <button onclick="window.resetPTW('${p.id}')" class="w-full bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-200 transition border border-slate-300 flex items-center justify-center gap-2">
+                                    <i class="ph-bold ph-arrow-u-up-left text-lg"></i> THU HỒI YÊU CẦU ĐỂ CHỈ ĐỊNH LẠI
+                                </button>
+                            </div>
+                        `;
+                    }
+
                     actionHtml = `
                         <div class="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2">
                             <i class="ph-fill ph-user-circle-gear text-2xl text-amber-600"></i>
@@ -1339,6 +1360,7 @@
                                 <i class="ph-bold ph-check-square-offset text-xl"></i> PHÊ DUYỆT (PASS)
                             </button>
                         </div>
+                        ${resetHtml}
                     `;
                 }
             }
