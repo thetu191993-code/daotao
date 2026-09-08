@@ -193,15 +193,16 @@
 
         <!-- TAB GIẤY PHÉP LÀM VIỆC (PTW) -->
         <div id="tab-giay-phep" class="tab-content overflow-x-auto rounded-xl border border-slate-200 shadow-sm hidden bg-slate-50">
-            <table class="w-full text-left border-collapse min-w-[1200px]">
+            <table class="w-full text-left border-collapse min-w-[1100px]">
                 <thead>
                     <tr class="bg-slate-800 text-white text-xs uppercase tracking-wider">
                         <th class="p-4 font-semibold w-12 text-center">STT</th>
                         <th class="p-4 font-semibold">Tên Nhà Thầu</th>
                         <th class="p-4 font-semibold">Loại Giấy Phép</th>
+                        <th class="p-4 font-semibold">Khu Vực Thi Công</th>
                         <th class="p-4 font-semibold text-center">Thời gian thi công</th>
                         <th class="p-4 font-semibold text-center border-l border-slate-600">EHS</th>
-                        <th class="p-4 font-semibold text-center">GĐ KV (Chỉ định)</th>
+                        <th class="p-4 font-semibold text-center">GĐ KV</th>
                         <th class="p-4 font-semibold text-center border-r border-slate-600">GĐ EHS</th>
                         <th class="p-4 font-semibold text-center">Trạng Thái Chung</th>
                         <th class="p-4 font-semibold text-center">Thao tác</th>
@@ -509,11 +510,27 @@
             const dd = String(today.getDate()).padStart(2, '0');
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             document.getElementById('filter-date').value = `${today.getFullYear()}-${mm}-${dd}`;
+            
+            // Tải danh sách nhân sự nội bộ công ty để lấy Lãnh Đạo
+            window.loadInternalStaff();
         });
 
         let currentTab = 'nhan-su';
         let rawWorkerData = []; 
         window.globalApprovalMap = {};
+        window.internalStaffList = [];
+
+        window.loadInternalStaff = async function() {
+            try {
+                // Quét thông tin từ collection chứa danh sách nhân viên công ty (nhan_su)
+                const snap = await window.getDocs(window.collection(window.db, "nhan_su"));
+                window.internalStaffList = [];
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    window.internalStaffList.push({ id: doc.id, name: d.ho_ten || d.name || 'N/A', dept: d.bo_phan || '' });
+                });
+            } catch(e) { console.log("Lỗi tải danh sách nhân sự EHS/Lãnh đạo", e); }
+        }
 
         window.showToast = function(message, type = "success") {
             const toast = document.getElementById('toast');
@@ -539,7 +556,6 @@
             document.getElementById('confirm-modal').classList.remove('hidden');
         }
 
-        // Bổ sung luồng xóa Dữ liệu Chấm công Hàng loạt
         window.confirmDeleteOldChamCong = function() {
             document.getElementById('confirm-message').innerHTML = `Bạn có chắc chắn muốn <b>XÓA VĨNH VIỄN</b> toàn bộ dữ liệu lịch sử ra/vào cũ (quá 30 ngày)?<br><br><span class="text-xs text-red-500">Hành động này giúp giảm chi phí Firebase và không thể hoàn tác. Vui lòng xuất Excel trước khi xóa.</span>`;
             deleteTarget = { action: 'delete_old_cham_cong' };
@@ -552,7 +568,6 @@
             const ogText = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i>'; btn.disabled = true;
             try {
                 if (deleteTarget.action === 'delete_old_cham_cong') {
-                    // Logic XÓA RÁC > 30 NGÀY BẰNG BATCH ĐỂ TRÁNH QUÁ TẢI
                     const cutoffDate = new Date();
                     cutoffDate.setDate(cutoffDate.getDate() - 30);
                     cutoffDate.setHours(0,0,0,0);
@@ -577,7 +592,6 @@
                         window.showToast(`Đã dọn dẹp ${snap.size} bản ghi cũ!`, "success");
                     }
                 } else {
-                    // Lệnh xóa item cơ bản (Nhân sự, máy móc...)
                     await window.deleteDoc(window.doc(window.db, deleteTarget.collectionName, deleteTarget.id));
                     window.showToast("Xóa thành công!");
                     if(deleteReloadFunc) deleteReloadFunc();
@@ -892,7 +906,6 @@
             } catch(e) { window.showToast(e.message, "error"); } finally { btn.innerHTML = og; btn.disabled = false; }
         }
 
-        /* ================= TỐI ƯU HÓA LOAD DỮ LIỆU CHẤM CÔNG ================= */
         window.loadChamCongData = async function() {
             const tbody = document.getElementById('cham-cong-results-body');
             document.getElementById('loading-msg').classList.remove('hidden'); tbody.innerHTML = '';
@@ -1048,36 +1061,60 @@
             downloadLink.style.display = "none"; document.body.appendChild(downloadLink); downloadLink.click(); document.body.removeChild(downloadLink);
         }
 
-        // =========================================================================
-        // GIAI ĐOẠN 2: CHỨC NĂNG XEM VÀ PHÊ DUYỆT GIẤY PHÉP LÀM VIỆC (PTW) DÀNH CHO EHS
-        // =========================================================================
         let rawPTWData = [];
 
-        // HÀM MỚI: TÍNH TOÁN TRẠNG THÁI THỰC TẾ THEO THỜI GIAN THỰC (REAL-TIME LOGIC)
-        window.getRealtimePTWStatus = function(mainStatus, startDate, endDate, startTime, endTime) {
-            // Nếu giấy phép chưa được duyệt hoặc đã đóng/đình chỉ, giữ nguyên trạng thái gốc
-            if (mainStatus !== 'Đã duyệt') return { mainStatus: mainStatus, isWorking: false };
-
-            const now = new Date();
-            const todayStr = now.toISOString().split('T')[0];
-            const nowTimeStr = now.toTimeString().substring(0, 5); // "HH:MM"
-
-            // Chưa đến ngày bắt đầu
-            if (todayStr < startDate) return { mainStatus: 'Đã duyệt (Chờ đến ngày)', badge: `<span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-clock"></i> Chờ hiệu lực</span>`, isWorking: false };
-            
-            // Đã quá ngày kết thúc
-            if (todayStr > endDate) return { mainStatus: 'Hết hạn thi công', badge: `<span class="bg-orange-100 text-orange-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-warning"></i> Hết hạn thi công</span>`, isWorking: false };
-
-            // Đang trong dải ngày hợp lệ -> Kiểm tra giờ làm việc trong ngày
-            if (nowTimeStr < startTime || nowTimeStr > endTime) {
-                return { mainStatus: 'Ngoài giờ thi công', badge: `<span class="bg-slate-200 text-slate-600 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-moon"></i> Tạm nghỉ (Ngoài giờ)</span>`, isWorking: false };
+        window.parseCustomDate = function(dateStr) {
+            if (!dateStr) return new Date(0);
+            if (dateStr.includes('-')) return new Date(dateStr); 
+            if (dateStr.includes('/')) {
+                const parts = dateStr.split('/');
+                if(parts.length === 3) return new Date(`${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}T00:00:00`);
             }
-
-            // Đang trong ngày và trong giờ cho phép
-            return { mainStatus: 'Đang thi công', badge: `<span class="bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-play animate-pulse text-emerald-600"></i> Đang thi công</span>`, isWorking: true };
+            return new Date(dateStr);
         }
 
-        // Hàm tiện ích render Badge (Nhãn trạng thái duyệt)
+        // Logic thời gian thực có tính toán Tăng Ca
+        window.getRealtimePTWStatus = function(mainStatus, startDateStr, endDateStr, startTime, endTime, isOvertime, overtimeEndTime) {
+            if (mainStatus !== 'Đã duyệt') return { badge: getStatusBadge(mainStatus) };
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const startDay = window.parseCustomDate(startDateStr); startDay.setHours(0,0,0,0);
+            const endDay = window.parseCustomDate(endDateStr); endDay.setHours(0,0,0,0);
+
+            // Kiểm tra ngày
+            if (today < startDay) {
+                return { badge: `<span class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-clock"></i> Chờ hiệu lực (Chưa tới ngày)</span>` };
+            }
+            if (today > endDay) {
+                return { badge: `<span class="bg-orange-100 text-orange-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-warning"></i> Hết hạn thi công</span>` };
+            }
+
+            // Tính toán phút để so sánh
+            const currentMins = now.getHours() * 60 + now.getMinutes();
+            const startMins = startTime ? (parseInt(startTime.split(':')[0]) * 60 + parseInt(startTime.split(':')[1])) : 0;
+            const originalEndMins = endTime ? (parseInt(endTime.split(':')[0]) * 60 + parseInt(endTime.split(':')[1])) : 1439;
+            
+            // Lấy thời gian kết thúc cuối cùng (Nếu có tăng ca thì dùng giờ tăng ca, không thì dùng giờ kết thúc gốc)
+            let activeEndTime = endTime;
+            if (isOvertime && overtimeEndTime) { activeEndTime = overtimeEndTime; }
+            const finalEndMins = activeEndTime ? (parseInt(activeEndTime.split(':')[0]) * 60 + parseInt(activeEndTime.split(':')[1])) : 1439;
+
+            // Nếu vượt ra khỏi khung giờ cuối cùng cho phép (Bao gồm cả tăng ca nếu có)
+            if (currentMins < startMins || currentMins > finalEndMins) {
+                return { badge: `<span class="bg-slate-200 text-slate-600 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-moon"></i> Ngoài giờ (Tạm nghỉ)</span>` };
+            }
+
+            // Nếu đang trong thời gian làm việc, nhưng đã vượt qua giờ kết thúc gốc -> Chuyển sang Đang Tăng Ca
+            if (isOvertime && currentMins > originalEndMins) {
+                return { badge: `<span class="bg-orange-100 text-orange-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-fire animate-pulse text-orange-600"></i> Đang Tăng Ca</span>` };
+            }
+
+            // Đang trong khung giờ làm việc bình thường
+            return { badge: `<span class="bg-emerald-100 text-emerald-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-play animate-pulse text-emerald-600"></i> Đang thi công</span>` };
+        }
+
         function getStatusBadge(status) {
             if(status === 'Đã duyệt') return `<span class="bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-md text-[10px] border border-emerald-200"><i class="ph-bold ph-check"></i> OK</span>`;
             if(status === 'Từ chối' || status === 'Bị từ chối') return `<span class="bg-red-50 text-red-700 font-bold px-2.5 py-1 rounded-md text-[10px] border border-red-200"><i class="ph-bold ph-x"></i> Từ chối</span>`;
@@ -1095,11 +1132,10 @@
                 snap.forEach(doc => rawPTWData.push({ id: doc.id, ...doc.data() }));
 
                 if(rawPTWData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-slate-500 font-bold">Chưa có giấy phép nào được trình.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-slate-500 font-bold">Chưa có giấy phép nào được trình.</td></tr>`;
                 } else {
                     let stt = 1;
                     rawPTWData.forEach(d => {
-                        // Tính toán nhãn cho 3 cột phê duyệt
                         let ehsBadge = getStatusBadge(d.trang_thai_ehs || (d.trang_thai === 'Chờ duyệt' ? 'Chờ duyệt' : ''));
                         
                         let gdKvBadge = '<span class="text-slate-400 text-[10px] font-medium">-</span>';
@@ -1116,12 +1152,11 @@
                             gdEhsBadge = getStatusBadge(d.trang_thai_gd_ehs);
                         }
 
-                        // Tính toán nhãn Trạng thái chung kết hợp Thời gian thực (Real-time)
+                        // Áp dụng logic thời gian thực
                         let statusBadge = '';
                         if(d.trang_thai === 'Chờ duyệt') statusBadge = `<span class="bg-slate-100 text-slate-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-hourglass"></i> Đang trình duyệt</span>`;
                         else if(d.trang_thai === 'Đã duyệt') {
-                            // Gọi hàm kiểm tra thời gian thực
-                            const rtStatus = window.getRealtimePTWStatus(d.trang_thai, d.thoi_gian_bat_dau, d.thoi_gian_ket_thuc, d.gio_bat_dau, d.gio_ket_thuc);
+                            const rtStatus = window.getRealtimePTWStatus(d.trang_thai, d.thoi_gian_bat_dau, d.thoi_gian_ket_thuc, d.gio_bat_dau, d.gio_ket_thuc, d.co_tang_ca, d.gio_tang_ca_den);
                             statusBadge = rtStatus.badge;
                         }
                         else if(d.trang_thai === 'Chờ nghiệm thu') statusBadge = `<span class="bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-broom"></i> Chờ nghiệm thu</span>`;
@@ -1129,7 +1164,12 @@
                         else if(d.trang_thai === 'Bị đình chỉ') statusBadge = `<span class="bg-red-600 text-white font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1 shadow-sm"><i class="ph-bold ph-warning-octagon"></i> Bị Đình Chỉ</span>`;
                         else statusBadge = `<span class="bg-red-100 text-red-700 font-bold px-3 py-1 rounded-full text-[11px] whitespace-nowrap inline-flex items-center gap-1"><i class="ph-bold ph-x-circle"></i> Bị Từ Chối</span>`;
 
-                        const timeStr = `<div class="text-[11px] font-mono text-slate-600 font-medium whitespace-nowrap">Từ: <span class="text-indigo-600 font-bold">${window.formatSimpleDate(d.thoi_gian_bat_dau)} ${d.gio_bat_dau}</span><br>Đến: <span class="text-rose-600 font-bold">${window.formatSimpleDate(d.thoi_gian_ket_thuc)} ${d.gio_ket_thuc}</span></div>`;
+                        // Hiển thị thời gian và cảnh báo tăng ca
+                        let timeStr = `<div class="text-[11px] font-mono text-slate-600 font-medium whitespace-nowrap">Từ: <span class="text-indigo-600 font-bold">${window.formatSimpleDate(d.thoi_gian_bat_dau)} ${d.gio_bat_dau}</span><br>Đến: <span class="text-rose-600 font-bold">${window.formatSimpleDate(d.thoi_gian_ket_thuc)} ${d.gio_ket_thuc}</span>`;
+                        if (d.co_tang_ca && d.gio_tang_ca_den) {
+                            timeStr += `<br><span class="text-orange-600 font-bold">+ Tăng ca đến: ${d.gio_tang_ca_den}</span>`;
+                        }
+                        timeStr += `</div>`;
 
                         tbody.innerHTML += `
                             <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -1152,7 +1192,7 @@
                 }
             } catch(e) { 
                 console.error(e);
-                tbody.innerHTML = `<tr><td colspan="9" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${e.message}</td></tr>`; 
+                tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-red-500 font-bold">Lỗi tải dữ liệu: ${e.message}</td></tr>`; 
             } finally {
                 document.getElementById('loading-msg').classList.add('hidden');
             }
@@ -1166,16 +1206,22 @@
             document.getElementById('rev-ptw-company').innerText = p.cong_ty;
             document.getElementById('rev-ptw-type').innerText = p.loai_giay_phep;
             document.getElementById('rev-ptw-location').innerText = p.khu_vuc;
-            document.getElementById('rev-ptw-time').innerHTML = `Từ <span class="text-indigo-600">${p.gio_bat_dau} (${window.formatSimpleDate(p.thoi_gian_bat_dau)})</span> đến <span class="text-rose-600">${p.gio_ket_thuc} (${window.formatSimpleDate(p.thoi_gian_ket_thuc)})</span>`;
+            
+            // Xử lý hiển thị thời gian có kèm Tăng ca
+            let timeDisplay = `Từ <span class="text-indigo-600">${p.gio_bat_dau} (${window.formatSimpleDate(p.thoi_gian_bat_dau)})</span> đến <span class="text-rose-600">${p.gio_ket_thuc} (${window.formatSimpleDate(p.thoi_gian_ket_thuc)})</span>`;
+            if (p.co_tang_ca && p.gio_tang_ca_den) {
+                timeDisplay += `<br><span class="text-orange-600 font-bold bg-orange-50 px-2 py-0.5 rounded mt-1 inline-block border border-orange-200"><i class="ph-bold ph-clock-afternoon"></i> Có đăng ký tăng ca đến: ${p.gio_tang_ca_den}</span>`;
+            }
+            document.getElementById('rev-ptw-time').innerHTML = timeDisplay;
+            
             document.getElementById('rev-ptw-desc').innerText = p.noi_dung;
 
-            // Đổ danh sách nhân sự & luật
             const wList = document.getElementById('rev-ptw-workers');
             wList.innerHTML = (p.danh_sach_nhan_su || []).map(w => `<li class="bg-blue-50/50 p-2 rounded-lg border border-blue-100">${w}</li>`).join('');
+
             const rList = document.getElementById('rev-ptw-rules');
             rList.innerHTML = (p.cam_ket || []).map(r => `<li><i class="ph-bold ph-caret-right text-rose-400 mr-1"></i> ${r}</li>`).join('');
 
-            // Xử lý Ảnh 5S
             const imgSection = document.getElementById('rev-ptw-5s-section');
             if (p.anh_5s) {
                 document.getElementById('rev-ptw-5s-img').src = p.anh_5s;
@@ -1186,11 +1232,29 @@
                 imgSection.classList.add('hidden');
             }
 
-            // GIAO DIỆN NÚT BẤM ĐỘNG (LUỒNG 3 BƯỚC CÓ CHỈ ĐỊNH)
+            // Render form chọn danh sách nhân sự linh động
+            let optionsHTML = window.internalStaffList.map(s => `<option value="${s.id}|${s.name}">${s.name} ${s.dept ? `(${s.dept})` : ''}</option>`).join('');
+            if(optionsHTML === '') {
+                optionsHTML = `
+                    <option value="030|Bùi Văn Vượng">Bùi Văn Vượng (GĐ EHS)</option>
+                    <option value="2273|Nguyễn Hữu Huỳnh">Nguyễn Hữu Huỳnh (Trưởng nhóm)</option>
+                `;
+            }
+
             const actionSec = document.getElementById('ptw-action-section');
             let actionHtml = '';
 
-            if (p.trang_thai === 'Bị từ chối' || p.trang_thai === 'Bị đình chỉ' || p.trang_thai === 'Đã đóng') {
+            if (p.trang_thai === 'Bị từ chối' || p.trang_thai === 'Bị đình chỉ') {
+                actionHtml = `
+                    <div class="text-center p-4 rounded-xl border bg-rose-50 border-rose-200 mb-4">
+                        <p class="font-black text-lg mb-1 text-rose-800">Giấy phép này đã bị TỪ CHỐI hoặc ĐÌNH CHỈ.</p>
+                        <p class="text-sm font-medium text-rose-600">Ghi chú lãnh đạo: <b>${p.ghi_chu_cuoi || p.ghi_chu_ehs || 'Không có ghi chú.'}</b></p>
+                    </div>
+                    <button onclick="window.resetPTW('${p.id}')" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-arrow-counter-clockwise text-xl"></i> KHÔI PHỤC & YÊU CẦU DUYỆT LẠI (RESET)
+                    </button>
+                `;
+            } else if (p.trang_thai === 'Đã đóng') {
                 actionHtml = `
                     <div class="text-center p-4 rounded-xl border bg-slate-100 border-slate-200">
                         <p class="font-black text-lg mb-1 text-slate-700">Giấy phép đã kết thúc quy trình.</p>
@@ -1227,10 +1291,8 @@
                     </div>
                 `;
             } else {
-                // ĐANG Ở TRẠNG THÁI "CHỜ DUYỆT" - PHÂN LUỒNG 3 BƯỚC
                 let currentRole = ''; let roleName = ''; let extraHTML = '';
 
-                // BƯỚC 1: LƯỢT CỦA EHS
                 if (!p.trang_thai_ehs || p.trang_thai_ehs === 'Chờ duyệt') {
                     currentRole = 'EHS'; roleName = 'Chuyên viên EHS';
                     extraHTML = `
@@ -1240,24 +1302,19 @@
                             <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Giám đốc Khu vực thi công (Tùy chọn)</label>
                             <select id="sel-gd-kv" class="w-full p-2.5 border border-blue-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700 mb-3 bg-white">
                                 <option value="">-- Bỏ qua bước này --</option>
-                                <option value="user_id_1|Nguyễn Văn A">Nguyễn Văn A (GĐ Xưởng 1)</option>
-                                <option value="user_id_2|Trần Thị B">Trần Thị B (GĐ Xưởng 2)</option>
-                                <option value="user_id_3|Lê Văn C">Lê Văn C (GĐ Kho)</option>
+                                ${optionsHTML}
                             </select>
 
                             <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Giám đốc EHS chốt duyệt (Bắt buộc) <span class="text-red-500">*</span></label>
                             <select id="sel-gd-ehs" class="w-full p-2.5 border border-amber-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-700 bg-white">
-                                <option value="030|Bùi Văn Vượng">Bùi Văn Vượng (Giám đốc EHS)</option>
-                                <option value="031|Phó GĐ EHS">Phó Giám đốc EHS (Khác)</option>
+                                ${optionsHTML}
                             </select>
                         </div>
                     `;
                 } 
-                // BƯỚC 2: LƯỢT CỦA GĐ KHU VỰC (Nếu có chỉ định)
                 else if (p.can_gd_kv && (!p.trang_thai_gd_khuvuc || p.trang_thai_gd_khuvuc === 'Chờ duyệt')) {
                     currentRole = 'GDKV'; roleName = 'Giám Đốc Khu Vực';
                 } 
-                // BƯỚC 3: LƯỢT CỦA GĐ EHS (Luôn là bước cuối)
                 else if (!p.trang_thai_gd_ehs || p.trang_thai_gd_ehs === 'Chờ duyệt') {
                     currentRole = 'GDEHS'; roleName = 'Giám Đốc EHS';
                 }
@@ -1301,7 +1358,23 @@
             document.getElementById('ptw-review-modal').classList.remove('hidden');
         }
 
-        // Cập nhật hàm logPTWProgressToTaskBoard để nhận đích danh Người nhận (Assignee)
+        window.resetPTW = async function(id) {
+            if(!confirm("Xác nhận đưa giấy phép này về trạng thái CHỜ DUYỆT ban đầu để bắt đầu lại quy trình?")) return;
+            try {
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
+                    trang_thai: 'Chờ duyệt',
+                    trang_thai_ehs: 'Chờ duyệt',
+                    trang_thai_gd_khuvuc: 'Chờ duyệt',
+                    trang_thai_gd_ehs: 'Chờ duyệt',
+                    ghi_chu_cuoi: "Đã yêu cầu duyệt lại",
+                    thoi_gian_cap_nhat: new Date()
+                });
+                window.showToast("Đã khôi phục trạng thái chờ duyệt!");
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
+            } catch(e) { window.showToast("Lỗi: " + e.message, "error"); }
+        }
+
         window.logPTWProgressToTaskBoard = async function(company, type, action, note, roleName, targetAssigneeId, targetAssigneeName) {
             const currentUserName = localStorage.getItem('ehs_user_name') || 'Lãnh đạo EHS';
             
@@ -1310,24 +1383,19 @@
                 category: 'An toàn',
                 task_type: 'ptw_review', 
                 due_date: new Date().toISOString().split('T')[0],
-                assigner_name: currentUserName, // Người thực hiện bước trước giao cho người bước sau
-                assignee_id: targetAssigneeId || localStorage.getItem('ehs_user_id'), // Đẩy về đúng ID lãnh đạo
+                assigner_name: currentUserName, 
+                assignee_id: targetAssigneeId || localStorage.getItem('ehs_user_id'), 
                 assignee_name: targetAssigneeName || currentUserName,
                 progress: action === 'Đã duyệt' ? 100 : 0,                  
                 status: action === 'Đã duyệt' ? 'Done' : 'Failed',
                 is_review_requested: false,
                 evaluation: `Hành động: ${action}. Ghi chú: ${note || 'Không có'}`,
-                plan_steps: [{
-                    text: `Phê duyệt PTW nhà thầu ${company}`, 
-                    progress: action === 'Đã duyệt' ? 100 : 0
-                }],
-                created_at: new Date(),
-                thoi_gian_cap_nhat: new Date()
+                plan_steps: [{ text: `Phê duyệt PTW nhà thầu ${company}`, progress: action === 'Đã duyệt' ? 100 : 0 }],
+                created_at: new Date(), thoi_gian_cap_nhat: new Date()
             };
             try { await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData); } catch(e) { console.error(e); }
         };
 
-        // HÀM XỬ LÝ PHÊ DUYỆT 3 BƯỚC
         window.submitPTWApproval = async function(action, role) {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
@@ -1342,45 +1410,32 @@
 
             let updateData = { ghi_chu_cuoi: note, thoi_gian_cap_nhat: new Date() };
             
-            // Biến định tuyến Task: Trỏ tới người tiếp theo phải làm
-            let nextAssigneeId = ''; 
-            let nextAssigneeName = '';
-            let roleTitleLog = '';
+            let nextAssigneeId = ''; let nextAssigneeName = ''; let roleTitleLog = '';
 
             if (action === 'Từ chối') {
-                updateData.trang_thai = 'Bị từ chối'; // Fail toàn bộ quy trình
+                updateData.trang_thai = 'Bị từ chối'; 
                 if(role === 'EHS') { updateData.trang_thai_ehs = 'Từ chối'; roleTitleLog = 'EHS'; }
                 if(role === 'GDKV') { updateData.trang_thai_gd_khuvuc = 'Từ chối'; roleTitleLog = 'GĐ Khu Vực'; }
                 if(role === 'GDEHS') { updateData.trang_thai_gd_ehs = 'Từ chối'; roleTitleLog = 'GĐ EHS'; }
             } else {
                 if (role === 'EHS') {
-                    // Lấy dữ liệu từ Select box
                     const selGDKV = document.getElementById('sel-gd-kv').value;
                     const selGDEHS = document.getElementById('sel-gd-ehs').value;
 
-                    // Lưu ID và Tên vào database
                     if(selGDKV) {
                         const [id, name] = selGDKV.split('|');
                         updateData.can_gd_kv = true;
                         updateData.gdkv_id = id;
                         updateData.gdkv_name = name;
-                        
-                        // Người tiếp theo là GĐ Khu Vực
-                        nextAssigneeId = id;
-                        nextAssigneeName = name;
+                        nextAssigneeId = id; nextAssigneeName = name;
                     } else {
                         updateData.can_gd_kv = false;
-                        
-                        // Nếu bỏ qua GĐ KV, bắn thẳng cho GĐ EHS
                         const [id, name] = selGDEHS.split('|');
-                        nextAssigneeId = id;
-                        nextAssigneeName = name;
+                        nextAssigneeId = id; nextAssigneeName = name;
                     }
 
-                    // Lưu thông tin GĐ EHS chốt cuối
                     const [ehsId, ehsName] = selGDEHS.split('|');
-                    updateData.gdehs_id = ehsId;
-                    updateData.gdehs_name = ehsName;
+                    updateData.gdehs_id = ehsId; updateData.gdehs_name = ehsName;
 
                     updateData.trang_thai_ehs = 'Đã duyệt';
                     updateData.nguoi_duyet_ehs = currentUser;
@@ -1391,40 +1446,26 @@
                     updateData.nguoi_duyet_gd_khuvuc = currentUser;
                     roleTitleLog = 'GĐ Khu Vực';
                     
-                    // Người tiếp theo là GĐ EHS (Kéo từ data cũ ra)
                     const p = rawPTWData.find(x => x.id === id);
-                    if(p) {
-                        nextAssigneeId = p.gdehs_id;
-                        nextAssigneeName = p.gdehs_name;
-                    }
+                    if(p) { nextAssigneeId = p.gdehs_id; nextAssigneeName = p.gdehs_name; }
                 } else if (role === 'GDEHS') {
                     updateData.trang_thai_gd_ehs = 'Đã duyệt';
                     updateData.nguoi_duyet_gd_ehs = currentUser;
-                    updateData.trang_thai = 'Đã duyệt'; // ĐÂY LÀ BƯỚC CHỐT CUỐI CÙNG
+                    updateData.trang_thai = 'Đã duyệt';
                     roleTitleLog = 'GĐ EHS';
                 }
             }
 
             try {
-                // 1. Lưu trạng thái PTW
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), updateData);
-                
-                // 2. Ghi nhận Task log cho bản thân
                 await window.logPTWProgressToTaskBoard(companyName, ptwType, action, note, roleTitleLog, localStorage.getItem('ehs_user_id'), currentUser);
 
-                // 3. Nếu duyệt thành công và còn người duyệt tiếp theo, tạo một Task "To-Do" cho Lãnh đạo đó
                 if(action === 'Đã duyệt' && nextAssigneeId && nextAssigneeId !== '') {
                      const forwardTaskData = {
-                        title: `Cần Phê Duyệt PTW: ${companyName}`,
-                        category: 'An toàn',
-                        task_type: 'ptw_review',
+                        title: `Cần Phê Duyệt PTW: ${companyName}`, category: 'An toàn', task_type: 'ptw_review',
                         due_date: new Date().toISOString().split('T')[0],
-                        assigner_name: currentUser, 
-                        assignee_id: nextAssigneeId,     
-                        assignee_name: nextAssigneeName,
-                        progress: 0, // Task mới giao, chưa xong                  
-                        status: 'To Do',
-                        is_review_requested: false,
+                        assigner_name: currentUser, assignee_id: nextAssigneeId, assignee_name: nextAssigneeName,
+                        progress: 0, status: 'To Do', is_review_requested: false,
                         plan_steps: [{ text: `Vào Cổng Nhà Thầu để duyệt hồ sơ cho ${companyName}`, progress: 0 }],
                         created_at: new Date(), thoi_gian_cap_nhat: new Date()
                     };
@@ -1432,8 +1473,7 @@
                 }
 
                 window.showToast("Đã xử lý giấy phép thành công!");
-                window.closeModal('ptw-review-modal');
-                window.loadPTWData();
+                window.closeModal('ptw-review-modal'); window.loadPTWData();
             } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
         }
 
@@ -1449,11 +1489,17 @@
             try {
                 const currentUser = localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư';
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
-                    trang_thai: 'Bị đình chỉ', ghi_chu_cuoi: note, nguoi_dinh_chi: currentUser, thoi_gian_dinh_chi: new Date()
+                    trang_thai: 'Bị đình chỉ',
+                    ghi_chu_cuoi: note,
+                    nguoi_dinh_chi: currentUser,
+                    thoi_gian_dinh_chi: new Date()
                 });
+
                 await window.logPTWProgressToTaskBoard(companyName, ptwType, 'Đình chỉ khẩn cấp', note, 'Lãnh đạo', localStorage.getItem('ehs_user_id'), currentUser);
+
                 window.showToast("Đã ĐÌNH CHỈ KHẨN CẤP giấy phép thi công!");
-                window.closeModal('ptw-review-modal'); window.loadPTWData();
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
             } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
         }
 
@@ -1463,7 +1509,10 @@
             const companyName = document.getElementById('rev-ptw-company').innerText;
             const ptwType = document.getElementById('rev-ptw-type').innerText;
 
-            if (action === 'Từ chối nghiệm thu' && !note) return window.showToast("Bắt buộc phải ghi rõ cần phải dọn dẹp lại chỗ nào!", "error");
+            if (action === 'Từ chối nghiệm thu' && !note) {
+                return window.showToast("Bắt buộc phải ghi rõ cần phải dọn dẹp lại chỗ nào!", "error");
+            }
+
             if (!confirm(`Xác nhận ${action === 'Đã đóng' ? 'NGHIỆM THU & ĐÓNG' : 'TỪ CHỐI (Bắt dọn lại 5S)'}?`)) return;
 
             try {
@@ -1471,19 +1520,35 @@
                 const newStatus = action === 'Từ chối nghiệm thu' ? 'Đã duyệt' : 'Đã đóng';
 
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
-                    trang_thai: newStatus, ghi_chu_cuoi: note, nguoi_nghiem_thu: currentUser, thoi_gian_nghiem_thu: new Date()
+                    trang_thai: newStatus,
+                    ghi_chu_cuoi: note,
+                    nguoi_nghiem_thu: currentUser,
+                    thoi_gian_nghiem_thu: new Date()
                 });
+
                 await window.logPTWProgressToTaskBoard(companyName, ptwType, action, note, 'Lãnh đạo', localStorage.getItem('ehs_user_id'), currentUser);
+
                 window.showToast(action === 'Đã đóng' ? "Đã đóng Giấy phép an toàn!" : "Đã trả lại báo cáo, yêu cầu dọn dẹp thêm!");
-                window.closeModal('ptw-review-modal'); window.loadPTWData();
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
             } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
         }
 
         window.printPTW = function() {
             const style = document.createElement('style');
-            style.innerHTML = `@media print { body * { visibility: hidden; } #ptw-review-modal, #ptw-review-modal * { visibility: visible; } #ptw-review-modal { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; background: white; } .no-print, #ptw-action-section button { display: none !important; } }`;
-            document.head.appendChild(style); window.print(); document.head.removeChild(style);
+            style.innerHTML = `
+                @media print {
+                    body * { visibility: hidden; }
+                    #ptw-review-modal, #ptw-review-modal * { visibility: visible; }
+                    #ptw-review-modal { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; background: white; }
+                    .no-print, #ptw-action-section button { display: none !important; }
+                }
+            `;
+            document.head.appendChild(style);
+            window.print();
+            document.head.removeChild(style);
         }
+
     </script>
 </body>
 </html>
