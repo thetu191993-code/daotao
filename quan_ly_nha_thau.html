@@ -1139,6 +1139,19 @@
 
             if (p.trang_thai === 'Chờ duyệt') {
                 actionHtml = `
+                    <div class="mb-4 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <p class="text-xs font-black text-slate-700 uppercase mb-3">Phê duyệt cấp Lãnh đạo</p>
+                        <div class="flex flex-col gap-3">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="rev-ptw-gd-ehs" class="w-5 h-5 text-amber-600 rounded border-slate-300 focus:ring-amber-500">
+                                <span class="text-sm font-bold text-slate-800">GĐ EHS Phê duyệt (Bắt buộc)</span>
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="rev-ptw-gd-khuvuc" class="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
+                                <span class="text-sm font-bold text-slate-700">GĐ Khu vực thi công Phê duyệt (Nếu cần)</span>
+                            </label>
+                        </div>
+                    </div>
                     <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú của EHS (Bắt buộc nếu Từ chối)</label>
                     <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do từ chối hoặc các lưu ý an toàn bắt buộc bổ sung...">${p.ghi_chu_ehs || ''}</textarea>
                     <div class="flex flex-col sm:flex-row gap-3 mt-5">
@@ -1189,49 +1202,121 @@
                 `;
             }
 
+            // BỔ SUNG YÊU CẦU 2: NÚT TẢI PDF VÀ XÓA HỒ SƠ 
+            actionHtml += `
+                <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 no-print">
+                    <button onclick="window.printPTW()" class="text-slate-600 hover:text-indigo-600 flex items-center gap-1.5 text-sm font-bold transition bg-slate-100 hover:bg-indigo-50 px-4 py-2 rounded-lg">
+                        <i class="ph-bold ph-file-pdf text-lg"></i> Tải PDF / In Hồ Sơ
+                    </button>
+                    <button onclick="window.deleteDocItem('giay_phep_lam_viec', '${p.id}', 'Giấy phép của ${p.cong_ty}', function(){ window.closeModal('ptw-review-modal'); window.loadPTWData(); })" class="text-red-500 hover:text-red-700 flex items-center gap-1.5 text-sm font-bold transition bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg">
+                        <i class="ph-bold ph-trash text-lg"></i> Xóa Giấy Phép
+                    </button>
+                </div>
+            `;
+
             actionSec.innerHTML = actionHtml;
             document.getElementById('ptw-review-modal').classList.remove('hidden');
         }
 
+        // Hàm đồng bộ tiến độ xử lý PTW sang trang Quản Lý Công Việc (ehs_tasks)
+        window.logPTWProgressToTaskBoard = async function(company, type, action, note) {
+            const currentUser = localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư';
+            
+            const taskData = {
+                title: `Xử lý Giấy phép PTW: ${company} (${type})`,
+                category: 'An toàn',
+                task_type: 'ptw_review', // Phân loại tag để không kích hoạt chuông thông báo
+                due_date: new Date().toISOString().split('T')[0],
+                assigner_name: "Bùi Văn Vượng", // Tự động set Lãnh đạo giao việc
+                assignee_name: currentUser,     // Người thực hiện duyệt
+                progress: 100,                  // Đẩy tiến độ lên 100%
+                status: 'Done',
+                is_review_requested: false,
+                evaluation: `Kết quả xử lý: ${action}. Ghi chú: ${note || 'Không có'}`,
+                plan_steps: [{
+                    text: `Kiểm tra và phê duyệt an toàn (PTW) cho nhà thầu ${company}`, 
+                    progress: 100
+                }],
+                created_at: new Date(),
+                thoi_gian_cap_nhat: new Date()
+            };
+            
+            try {
+                await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
+            } catch(e) { 
+                console.error("Lỗi đồng bộ tiến độ công việc:", e); 
+            }
+        };
+
         window.submitPTWReview = async function(action) {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
+            
+            // Lấy thêm thông tin để đẩy sang bảng Tiến độ
+            const companyName = document.getElementById('rev-ptw-company').innerText;
+            const ptwType = document.getElementById('rev-ptw-type').innerText;
 
             if (action === 'Từ chối' && !note) {
                 return window.showToast("Vui lòng nhập lý do từ chối để nhà thầu biết đường sửa!", "error");
             }
 
+            let updateData = {
+                trang_thai: action,
+                ghi_chu_ehs: note,
+                nguoi_duyet: localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư',
+                thoi_gian_duyet: new Date()
+            };
+
+            // Ràng buộc kiểm tra checkbox khi Cấp phép
+            if (action === 'Đã duyệt') {
+                const gdEhsCheck = document.getElementById('rev-ptw-gd-ehs');
+                const gdKhuVucCheck = document.getElementById('rev-ptw-gd-khuvuc');
+                
+                if (gdEhsCheck && !gdEhsCheck.checked) {
+                    return window.showToast("Bắt buộc phải có sự phê duyệt của GĐ EHS để cấp phép!", "error");
+                }
+                
+                if (gdEhsCheck) updateData.duyet_gd_ehs = true;
+                if (gdKhuVucCheck) updateData.duyet_gd_khu_vuc = gdKhuVucCheck.checked;
+            }
+
             if (!confirm(`Xác nhận ${action === 'Đã duyệt' ? 'CẤP PHÉP' : 'TỪ CHỐI'} cho giấy phép này?`)) return;
 
             try {
-                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
-                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
-                    trang_thai: action,
-                    ghi_chu_ehs: note,
-                    nguoi_duyet: currentUser,
-                    thoi_gian_duyet: new Date()
-                });
+                // 1. Cập nhật trạng thái Giấy phép
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), updateData);
+                
+                // 2. Đồng bộ sang trang Quản Lý Tiến Độ (Không báo chuông)
+                await window.logPTWProgressToTaskBoard(companyName, ptwType, action, note);
+
                 window.showToast("Đã xử lý giấy phép thành công!");
                 window.closeModal('ptw-review-modal');
                 window.loadPTWData();
-            } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
+            } catch(e) { 
+                window.showToast("Lỗi xử lý: " + e.message, "error"); 
+            }
         }
 
         window.submitPTWSuspension = async function() {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
+            const companyName = document.getElementById('rev-ptw-company').innerText;
+            const ptwType = document.getElementById('rev-ptw-type').innerText;
 
             if (!note) return window.showToast("Bắt buộc phải ghi rõ lý do đình chỉ khẩn cấp!", "error");
             if (!confirm("CẢNH BÁO: Đình chỉ Giấy phép sẽ lập tức vô hiệu hóa thẻ làm việc của nhà thầu. Bạn chắc chắn chứ?")) return;
 
             try {
-                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
+                const currentUser = localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư';
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
                     trang_thai: 'Bị đình chỉ',
                     ghi_chu_ehs: note,
                     nguoi_dinh_chi: currentUser,
                     thoi_gian_dinh_chi: new Date()
                 });
+
+                await window.logPTWProgressToTaskBoard(companyName, ptwType, 'Đình chỉ khẩn cấp', note);
+
                 window.showToast("Đã ĐÌNH CHỈ KHẨN CẤP giấy phép thi công!");
                 window.closeModal('ptw-review-modal');
                 window.loadPTWData();
@@ -1241,6 +1326,8 @@
         window.submitPTWClosure = async function(action) {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
+            const companyName = document.getElementById('rev-ptw-company').innerText;
+            const ptwType = document.getElementById('rev-ptw-type').innerText;
 
             if (action === 'Từ chối nghiệm thu' && !note) {
                 return window.showToast("Bắt buộc phải ghi rõ cần phải dọn dẹp lại chỗ nào!", "error");
@@ -1249,7 +1336,7 @@
             if (!confirm(`Xác nhận ${action === 'Đã đóng' ? 'NGHIỆM THU & ĐÓNG' : 'TỪ CHỐI (Bắt dọn lại 5S)'}?`)) return;
 
             try {
-                const currentUser = localStorage.getItem('ehs_user_name') || 'EHS Admin';
+                const currentUser = localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư';
                 const newStatus = action === 'Từ chối nghiệm thu' ? 'Đã duyệt' : 'Đã đóng';
 
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
@@ -1258,10 +1345,29 @@
                     nguoi_nghiem_thu: currentUser,
                     thoi_gian_nghiem_thu: new Date()
                 });
+
+                await window.logPTWProgressToTaskBoard(companyName, ptwType, action, note);
+
                 window.showToast(action === 'Đã đóng' ? "Đã đóng Giấy phép an toàn!" : "Đã trả lại báo cáo, yêu cầu dọn dẹp thêm!");
                 window.closeModal('ptw-review-modal');
                 window.loadPTWData();
             } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
+        }
+
+        window.printPTW = function() {
+            // Tạo một style tạm thời để ẩn toàn bộ trang và chỉ hiện Modal khi in
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @media print {
+                    body * { visibility: hidden; }
+                    #ptw-review-modal, #ptw-review-modal * { visibility: visible; }
+                    #ptw-review-modal { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; background: white; }
+                    .no-print, #ptw-action-section button { display: none !important; }
+                }
+            `;
+            document.head.appendChild(style);
+            window.print();
+            document.head.removeChild(style);
         }
 
     </script>
