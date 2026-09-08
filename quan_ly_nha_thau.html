@@ -1218,18 +1218,21 @@
             document.getElementById('ptw-review-modal').classList.remove('hidden');
         }
 
-        // Hàm đồng bộ tiến độ xử lý PTW sang trang Quản Lý Công Việc (ehs_tasks)
+        // CẢI TIẾN: Bổ sung assignee_id và assigner_id để hiển thị đúng trên trang Quản lý công việc
         window.logPTWProgressToTaskBoard = async function(company, type, action, note) {
-            const currentUser = localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư';
+            const currentUserName = localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư';
+            const currentUserId = localStorage.getItem('ehs_user_id') || 'UnknownID';
             
             const taskData = {
                 title: `Xử lý Giấy phép PTW: ${company} (${type})`,
                 category: 'An toàn',
                 task_type: 'ptw_review', // Phân loại tag để không kích hoạt chuông thông báo
                 due_date: new Date().toISOString().split('T')[0],
-                assigner_name: "Bùi Văn Vượng", // Tự động set Lãnh đạo giao việc
-                assignee_name: currentUser,     // Người thực hiện duyệt
-                progress: 100,                  // Đẩy tiến độ lên 100%
+                assigner_id: "030", // Thêm ID lãnh đạo (Ví dụ: ID của Bùi Văn Vượng)
+                assigner_name: "Bùi Văn Vượng", 
+                assignee_id: currentUserId,     // BẮT BUỘC: Thêm ID để bảng Tiến độ có thể lọc ra
+                assignee_name: currentUserName,     
+                progress: 100,                  
                 status: 'Done',
                 is_review_requested: false,
                 evaluation: `Kết quả xử lý: ${action}. Ghi chú: ${note || 'Không có'}`,
