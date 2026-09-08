@@ -1241,7 +1241,7 @@
                 imgSection.classList.add('hidden');
             }
 
-            // Tạo options cho datalist
+            // Render form chọn danh sách nhân sự (Datalist cho input)
             let datalistOptions = window.internalStaffList.map(s => `<option value="${s.id}|${s.name}">${s.dept || 'Nhân viên'}</option>`).join('');
 
             const actionSec = document.getElementById('ptw-action-section');
@@ -1298,6 +1298,7 @@
 
                 if (!p.trang_thai_ehs || p.trang_thai_ehs === 'Chờ duyệt') {
                     currentRole = 'EHS'; roleName = 'Chuyên viên EHS';
+                    // Cải tiến: Dùng thẻ input với datalist để gõ tìm GĐ KV + Ô đóng băng GĐ EHS
                     extraHTML = `
                         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
                             <p class="text-xs font-black text-blue-800 uppercase mb-3"><i class="ph-fill ph-users-three"></i> Chỉ định Lãnh đạo phê duyệt tiếp theo</p>
@@ -1322,6 +1323,7 @@
                 }
 
                 if (currentRole !== '') {
+                    // Cải tiến: Nút Cây Bút để EHS đổi người duyệt khi hồ sơ đang bị kẹt
                     let resetHtml = '';
                     if (currentRole === 'GDKV') {
                         resetHtml = `
@@ -1335,7 +1337,7 @@
                                 </div>
                                 <div id="edit-approver-box" class="hidden mb-4 p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
                                     <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Chuyển sang Lãnh đạo khác</label>
-                                    <input list="gd-kv-list" id="edit-gdkv-input" class="w-full p-2.5 border border-slate-300 rounded-lg outline-none text-sm mb-2" placeholder="Gõ tên hoặc mã NV...">
+                                    <input list="gd-kv-list" id="edit-gdkv-input" class="w-full p-2.5 border border-slate-300 rounded-lg outline-none text-sm mb-2" placeholder="Gõ tên hoặc mã NV để tìm...">
                                     <button onclick="window.changeApprover('${p.id}', '${p.cong_ty}')" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold w-full hover:bg-blue-700 shadow-sm">Cập nhật Giám đốc KV</button>
                                 </div>
                                 <button onclick="window.resetPTW('${p.id}')" class="w-full bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-200 transition border border-slate-300 flex items-center justify-center gap-2">
@@ -1393,17 +1395,20 @@
             document.getElementById('ptw-review-modal').classList.remove('hidden');
         }
 
+        // Hàm Đổi Giám đốc Khu vực do EHS thực hiện khi lỡ chỉ định sai
         window.changeApprover = async function(id, companyName) {
             const val = document.getElementById('edit-gdkv-input').value.trim();
             if (!val || !val.includes('|')) return window.showToast("Vui lòng chọn đúng người từ danh sách gợi ý!", "error");
             
             const [newId, newName] = val.split('|');
             try {
+                // Update Firebase cho GĐ KV mới
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
                     gdkv_id: newId,
                     gdkv_name: newName
                 });
 
+                // Bắn Task sang bảng Quản lý tiến độ cho người mới
                 const forwardTaskData = {
                     title: `Cần Phê Duyệt PTW: ${companyName}`, category: 'An toàn', task_type: 'ptw_review',
                     due_date: new Date().toISOString().split('T')[0],
@@ -1483,6 +1488,7 @@
                 if(role === 'GDEHS') { updateData.trang_thai_gd_ehs = 'Từ chối'; roleTitleLog = 'GĐ EHS'; }
             } else {
                 if (role === 'EHS') {
+                    // Cải tiến lấy dữ liệu từ thẻ <input> thay vì <select>
                     const selGDKV = document.getElementById('input-gd-kv').value.trim();
                     const selGDEHS = document.getElementById('sel-gd-ehs').value;
 
@@ -1598,14 +1604,17 @@
             } catch(e) { window.showToast("Lỗi xử lý: " + e.message, "error"); }
         }
 
+        // Cải tiến lệnh In PDF: Mở rộng thanh cuộn để tránh mất nội dung
         window.printPTW = function() {
             const style = document.createElement('style');
             style.innerHTML = `
                 @media print {
                     body * { visibility: hidden; }
                     #ptw-review-modal, #ptw-review-modal * { visibility: visible; }
-                    #ptw-review-modal { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; background: white; }
+                    #ptw-review-modal { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; background: white; overflow: visible !important; height: auto !important; max-height: none !important;}
+                    #ptw-review-modal .custom-scrollbar, #ptw-review-modal ul { overflow: visible !important; max-height: none !important; height: auto !important; }
                     .no-print, #ptw-action-section button { display: none !important; }
+                    li { page-break-inside: avoid; }
                 }
             `;
             document.head.appendChild(style);
