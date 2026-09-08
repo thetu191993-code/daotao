@@ -522,7 +522,7 @@
 
         window.loadInternalStaff = async function() {
             try {
-                // ĐÃ SỬA: Quét đúng collection nhan_su_noi_bo trên Firebase của bạn
+                // SỬA LẠI: Trỏ đúng vào nhan_su_noi_bo
                 const snap = await window.getDocs(window.collection(window.db, "nhan_su_noi_bo"));
                 window.internalStaffList = [];
                 snap.forEach(doc => {
@@ -533,7 +533,7 @@
                     
                     window.internalStaffList.push({ id: doc.id, name: labelName, dept: role });
                 });
-            } catch(e) { console.log("Lỗi tải danh sách nhân sự EHS/Lãnh đạo", e); }
+            } catch(e) { console.log("Lỗi tải danh sách nhân sự", e); }
         }
 
         window.showToast = function(message, type = "success") {
@@ -1241,14 +1241,8 @@
                 imgSection.classList.add('hidden');
             }
 
-            // Render form chọn danh sách nhân sự linh động
-            let optionsHTML = window.internalStaffList.map(s => `<option value="${s.id}|${s.name}">${s.name} ${s.dept ? `(${s.dept})` : ''}</option>`).join('');
-            if(optionsHTML === '') {
-                optionsHTML = `
-                    <option value="030|Bùi Văn Vượng">Bùi Văn Vượng (GĐ EHS)</option>
-                    <option value="2273|Nguyễn Hữu Huỳnh">Nguyễn Hữu Huỳnh (Trưởng nhóm)</option>
-                `;
-            }
+            // Tạo options cho datalist
+            let datalistOptions = window.internalStaffList.map(s => `<option value="${s.id}|${s.name}">${s.dept || 'Nhân viên'}</option>`).join('');
 
             const actionSec = document.getElementById('ptw-action-section');
             let actionHtml = '';
@@ -1309,15 +1303,14 @@
                             <p class="text-xs font-black text-blue-800 uppercase mb-3"><i class="ph-fill ph-users-three"></i> Chỉ định Lãnh đạo phê duyệt tiếp theo</p>
                             
                             <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Giám đốc Khu vực thi công (Tùy chọn)</label>
-                            <select id="sel-gd-kv" class="w-full p-2.5 border border-blue-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700 mb-3 bg-white">
-                                <option value="">-- Bỏ qua bước này --</option>
-                                ${optionsHTML}
-                            </select>
+                            <input list="gd-kv-list" id="input-gd-kv" class="w-full p-2.5 border border-blue-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm font-bold text-slate-700 mb-3 bg-white" placeholder="Gõ tên hoặc mã NV để tìm...">
+                            <datalist id="gd-kv-list">
+                                ${datalistOptions}
+                            </datalist>
 
                             <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Giám đốc EHS chốt duyệt (Bắt buộc) <span class="text-red-500">*</span></label>
-                            <select id="sel-gd-ehs" class="w-full p-2.5 border border-amber-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 text-sm font-bold text-slate-700 bg-white">
-                                ${optionsHTML}
-                            </select>
+                            <input type="text" value="[030] Bùi Văn Vượng (GĐ EHS)" readonly class="w-full p-2.5 border border-slate-300 rounded-lg outline-none bg-slate-100 text-sm font-bold text-slate-700 cursor-not-allowed">
+                            <input type="hidden" id="sel-gd-ehs" value="030|Bùi Văn Vượng">
                         </div>
                     `;
                 } 
@@ -1329,9 +1322,28 @@
                 }
 
                 if (currentRole !== '') {
-                    // ĐÃ SỬA: Bổ sung tính năng THU HỒI YÊU CẦU cho những trường hợp lỡ chỉ định sai luồng
                     let resetHtml = '';
-                    if (currentRole !== 'EHS') {
+                    if (currentRole === 'GDKV') {
+                        resetHtml = `
+                            <div class="mt-4 border-t border-slate-200 pt-4">
+                                <div class="flex items-center justify-between mb-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-500 uppercase">Người đang chờ duyệt</p>
+                                        <p class="text-sm font-bold text-blue-700">${p.gdkv_name}</p>
+                                    </div>
+                                    <button onclick="document.getElementById('edit-approver-box').classList.toggle('hidden')" class="text-blue-600 hover:text-blue-800 text-xs font-bold flex items-center gap-1 px-3 py-1.5 bg-white shadow-sm rounded-lg border border-blue-200"><i class="ph-bold ph-pencil-simple"></i> Đổi người</button>
+                                </div>
+                                <div id="edit-approver-box" class="hidden mb-4 p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                    <label class="block text-[10px] font-bold text-slate-600 uppercase mb-1">Chuyển sang Lãnh đạo khác</label>
+                                    <input list="gd-kv-list" id="edit-gdkv-input" class="w-full p-2.5 border border-slate-300 rounded-lg outline-none text-sm mb-2" placeholder="Gõ tên hoặc mã NV...">
+                                    <button onclick="window.changeApprover('${p.id}', '${p.cong_ty}')" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold w-full hover:bg-blue-700 shadow-sm">Cập nhật Giám đốc KV</button>
+                                </div>
+                                <button onclick="window.resetPTW('${p.id}')" class="w-full bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-200 transition border border-slate-300 flex items-center justify-center gap-2">
+                                    <i class="ph-bold ph-arrow-u-up-left text-lg"></i> THU HỒI YÊU CẦU ĐỂ CHỈ ĐỊNH LẠI
+                                </button>
+                            </div>
+                        `;
+                    } else if (currentRole === 'GDEHS') {
                         resetHtml = `
                             <div class="mt-4 border-t border-slate-200 pt-4">
                                 <button onclick="window.resetPTW('${p.id}')" class="w-full bg-slate-100 text-slate-600 font-bold py-2.5 rounded-xl hover:bg-slate-200 transition border border-slate-300 flex items-center justify-center gap-2">
@@ -1349,6 +1361,7 @@
                                 <p class="text-sm font-black text-amber-800 uppercase">${roleName}</p>
                             </div>
                         </div>
+                        <datalist id="gd-kv-list">${datalistOptions}</datalist>
                         ${extraHTML}
                         <label class="block text-xs font-black text-slate-500 uppercase mb-2">Ghi chú phê duyệt (Bắt buộc nếu Từ chối)</label>
                         <textarea id="rev-ptw-note" rows="2" class="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-amber-500 font-medium text-sm custom-scrollbar resize-none bg-slate-50 focus:bg-white transition" placeholder="Nhập lý do hoặc dặn dò an toàn..."></textarea>
@@ -1378,6 +1391,35 @@
 
             actionSec.innerHTML = actionHtml;
             document.getElementById('ptw-review-modal').classList.remove('hidden');
+        }
+
+        window.changeApprover = async function(id, companyName) {
+            const val = document.getElementById('edit-gdkv-input').value.trim();
+            if (!val || !val.includes('|')) return window.showToast("Vui lòng chọn đúng người từ danh sách gợi ý!", "error");
+            
+            const [newId, newName] = val.split('|');
+            try {
+                await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), {
+                    gdkv_id: newId,
+                    gdkv_name: newName
+                });
+
+                const forwardTaskData = {
+                    title: `Cần Phê Duyệt PTW: ${companyName}`, category: 'An toàn', task_type: 'ptw_review',
+                    due_date: new Date().toISOString().split('T')[0],
+                    assigner_name: localStorage.getItem('ehs_user_name') || 'Lãnh đạo', 
+                    assignee_id: newId, 
+                    assignee_name: newName,
+                    progress: 0, status: 'To Do', is_review_requested: false,
+                    plan_steps: [{ text: `Vào Cổng Nhà Thầu để duyệt hồ sơ cho ${companyName}`, progress: 0 }],
+                    created_at: new Date(), thoi_gian_cap_nhat: new Date()
+                };
+                await window.addDoc(window.collection(window.db, "ehs_tasks"), forwardTaskData);
+
+                window.showToast("Đã chuyển luồng phê duyệt sang người mới!");
+                window.closeModal('ptw-review-modal');
+                window.loadPTWData();
+            } catch(e) { window.showToast(e.message, "error"); }
         }
 
         window.resetPTW = async function(id) {
@@ -1441,10 +1483,10 @@
                 if(role === 'GDEHS') { updateData.trang_thai_gd_ehs = 'Từ chối'; roleTitleLog = 'GĐ EHS'; }
             } else {
                 if (role === 'EHS') {
-                    const selGDKV = document.getElementById('sel-gd-kv').value;
+                    const selGDKV = document.getElementById('input-gd-kv').value.trim();
                     const selGDEHS = document.getElementById('sel-gd-ehs').value;
 
-                    if(selGDKV) {
+                    if(selGDKV && selGDKV.includes('|')) {
                         const [id, name] = selGDKV.split('|');
                         updateData.can_gd_kv = true;
                         updateData.gdkv_id = id;
