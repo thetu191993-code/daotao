@@ -15,7 +15,6 @@
     </style>
 
     <script type="module">
-        /* Bổ sung writeBatch để hỗ trợ xóa hàng loạt không làm sập Firebase */
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -891,7 +890,7 @@
             } catch(e) { window.showToast(e.message, "error"); } finally { btn.innerHTML = og; btn.disabled = false; }
         }
 
-        /* ================= TỐI ƯU HÓA LOAD DỮ LIỆU CHẤM CÔNG (GIẢM 99% READS) ================= */
+        /* ================= TỐI ƯU HÓA LOAD DỮ LIỆU CHẤM CÔNG ================= */
         window.loadChamCongData = async function() {
             const tbody = document.getElementById('cham-cong-results-body');
             document.getElementById('loading-msg').classList.remove('hidden'); tbody.innerHTML = '';
@@ -903,7 +902,6 @@
                     return;
                 }
 
-                // CẢI TIẾN TRỌNG TÂM: Chỉ kéo dữ liệu của đúng ngày đang xem từ Firebase
                 const startOfDay = new Date(filterDateStr);
                 startOfDay.setHours(0,0,0,0);
                 const endOfDay = new Date(filterDateStr);
@@ -977,7 +975,6 @@
             finally { document.getElementById('loading-msg').classList.add('hidden'); }
         }
 
-        // TÍNH NĂNG MỚI: XUẤT EXCEL TUẦN TRƯỚC
         window.exportWeeklyChamCong = async function() {
             window.showToast("Đang trích xuất dữ liệu tuần trước từ máy chủ...", "success");
             try {
@@ -1114,15 +1111,12 @@
             document.getElementById('rev-ptw-time').innerHTML = `Từ <span class="text-indigo-600">${p.gio_bat_dau} (${window.formatSimpleDate(p.thoi_gian_bat_dau)})</span> đến <span class="text-rose-600">${p.gio_ket_thuc} (${window.formatSimpleDate(p.thoi_gian_ket_thuc)})</span>`;
             document.getElementById('rev-ptw-desc').innerText = p.noi_dung;
 
-            // Đổ danh sách nhân sự
             const wList = document.getElementById('rev-ptw-workers');
             wList.innerHTML = (p.danh_sach_nhan_su || []).map(w => `<li class="bg-blue-50/50 p-2 rounded-lg border border-blue-100">${w}</li>`).join('');
 
-            // Đổ danh sách luật
             const rList = document.getElementById('rev-ptw-rules');
             rList.innerHTML = (p.cam_ket || []).map(r => `<li><i class="ph-bold ph-caret-right text-rose-400 mr-1"></i> ${r}</li>`).join('');
 
-            // Xử lý Ảnh 5S (Nếu có)
             const imgSection = document.getElementById('rev-ptw-5s-section');
             if (p.anh_5s) {
                 document.getElementById('rev-ptw-5s-img').src = p.anh_5s;
@@ -1133,7 +1127,6 @@
                 imgSection.classList.add('hidden');
             }
 
-            // GIAO DIỆN NÚT BẤM ĐỘNG THEO TRẠNG THÁI 
             const actionSec = document.getElementById('ptw-action-section');
             let actionHtml = '';
 
@@ -1193,7 +1186,6 @@
                     </div>
                 `;
             } else {
-                // Các trạng thái đã đóng băng (Đã đóng, Bị từ chối, Bị đình chỉ)
                 actionHtml = `
                     <div class="text-center p-4 rounded-xl border bg-slate-100 border-slate-200">
                         <p class="font-black text-lg mb-1 text-slate-700">Giấy phép đã kết thúc quy trình.</p>
@@ -1202,7 +1194,6 @@
                 `;
             }
 
-            // BỔ SUNG YÊU CẦU 2: NÚT TẢI PDF VÀ XÓA HỒ SƠ 
             actionHtml += `
                 <div class="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 no-print">
                     <button onclick="window.printPTW()" class="text-slate-600 hover:text-indigo-600 flex items-center gap-1.5 text-sm font-bold transition bg-slate-100 hover:bg-indigo-50 px-4 py-2 rounded-lg">
@@ -1218,20 +1209,19 @@
             document.getElementById('ptw-review-modal').classList.remove('hidden');
         }
 
-        // CẢI TIẾN: Bổ sung assignee_id và assigner_id để hiển thị đúng trên trang Quản lý công việc
         window.logPTWProgressToTaskBoard = async function(company, type, action, note) {
             const currentUserName = localStorage.getItem('ehs_user_name') || 'Đặng Thế Tư';
+            // Cốt lõi: Cập nhật ID từ LocalStorage để query phía Trang công việc nhìn thấy được
             const currentUserId = localStorage.getItem('ehs_user_id') || 'UnknownID';
             
             const taskData = {
                 title: `Xử lý Giấy phép PTW: ${company} (${type})`,
                 category: 'An toàn',
-                task_type: 'ptw_review', // Phân loại tag để không kích hoạt chuông thông báo
+                task_type: 'ptw_review',
                 due_date: new Date().toISOString().split('T')[0],
-                assigner_id: "030", // Thêm ID lãnh đạo (Ví dụ: ID của Bùi Văn Vượng)
                 assigner_name: "Bùi Văn Vượng", 
-                assignee_id: currentUserId,     // BẮT BUỘC: Thêm ID để bảng Tiến độ có thể lọc ra
-                assignee_name: currentUserName,     
+                assignee_id: currentUserId,     // Đã bổ sung trường ID quan trọng
+                assignee_name: currentUserName,
                 progress: 100,                  
                 status: 'Done',
                 is_review_requested: false,
@@ -1254,8 +1244,6 @@
         window.submitPTWReview = async function(action) {
             const id = document.getElementById('rev-ptw-id').value;
             const note = document.getElementById('rev-ptw-note').value.trim();
-            
-            // Lấy thêm thông tin để đẩy sang bảng Tiến độ
             const companyName = document.getElementById('rev-ptw-company').innerText;
             const ptwType = document.getElementById('rev-ptw-type').innerText;
 
@@ -1270,7 +1258,6 @@
                 thoi_gian_duyet: new Date()
             };
 
-            // Ràng buộc kiểm tra checkbox khi Cấp phép
             if (action === 'Đã duyệt') {
                 const gdEhsCheck = document.getElementById('rev-ptw-gd-ehs');
                 const gdKhuVucCheck = document.getElementById('rev-ptw-gd-khuvuc');
@@ -1286,10 +1273,7 @@
             if (!confirm(`Xác nhận ${action === 'Đã duyệt' ? 'CẤP PHÉP' : 'TỪ CHỐI'} cho giấy phép này?`)) return;
 
             try {
-                // 1. Cập nhật trạng thái Giấy phép
                 await window.updateDoc(window.doc(window.db, "giay_phep_lam_viec", id), updateData);
-                
-                // 2. Đồng bộ sang trang Quản Lý Tiến Độ (Không báo chuông)
                 await window.logPTWProgressToTaskBoard(companyName, ptwType, action, note);
 
                 window.showToast("Đã xử lý giấy phép thành công!");
@@ -1358,7 +1342,6 @@
         }
 
         window.printPTW = function() {
-            // Tạo một style tạm thời để ẩn toàn bộ trang và chỉ hiện Modal khi in
             const style = document.createElement('style');
             style.innerHTML = `
                 @media print {
@@ -1372,7 +1355,6 @@
             window.print();
             document.head.removeChild(style);
         }
-
     </script>
 </body>
 </html>
