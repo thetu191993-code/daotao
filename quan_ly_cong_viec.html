@@ -704,15 +704,23 @@
             });
         };
 
+        // --- CƠ CHẾ XÓA THÔNG MINH THEO QUYỀN (Role-Based Access Control) ---
         function triggerCleanupPrompt() {
             setTimeout(() => {
                 let deletableIds = [];
+                // Cấp quyền xóa toàn bộ nếu tên đăng nhập khớp chính xác Đặng Thế Tư
                 const isSuperAdmin = (currentUserName === "Đặng Thế Tư");
 
                 window.currentFilteredTasks.forEach(t => {
+                    // TUYỆT ĐỐI KHÔNG đưa các log phê duyệt nhà thầu và PTW vào danh sách xóa tự động
+                    if (t.task_type === 'contractor_approval' || t.task_type === 'ptw_review') {
+                        return; // Bỏ qua vòng lặp, không push ID vào danh sách xóa
+                    }
+
                     if (isSuperAdmin) {
                         deletableIds.push(t.id);
                     } else if (t.assigner_id === currentUserId || t.reviewer_id === currentUserId) {
+                        // Chỉ cấp quyền xóa công việc do chính user giao hoặc duyệt
                         deletableIds.push(t.id);
                     }
                 });
@@ -728,7 +736,7 @@
                     }
                     document.getElementById('export-confirm-modal').classList.remove('hidden');
                 } else {
-                    showToast("Đã tải báo cáo! Các công việc trong file thuộc quản lý của người khác nên không thể xóa.", "success");
+                    showToast("Đã tải báo cáo! Không có công việc nào đủ điều kiện dọn dẹp (hoặc công việc đang được bảo vệ).", "success");
                 }
             }, 1000);
         }
