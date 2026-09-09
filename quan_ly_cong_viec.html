@@ -1113,7 +1113,7 @@
             const oldViewBtn = document.getElementById('btn-view-profile');
             if (oldViewBtn) oldViewBtn.remove();
 
-            if (t.task_type === 'contractor_approval') {
+            if (t.task_type === 'contractor_approval' || t.task_type === 'ptw_review') {
                 progSection.classList.add('hidden'); 
                 reqReviewSec.classList.add('hidden');
                 footerActions.classList.add('hidden'); 
@@ -1121,43 +1121,65 @@
                 evalSec.classList.remove('hidden');
                 document.getElementById('task-done-wrapper').classList.add('hidden'); 
                 
-                // ĐÃ SỬA LỖI UI: Ép buộc mở khóa ô nhập Đánh giá để EHS có thể gõ lý do từ chối
                 document.getElementById('task-eval').readOnly = false;
                 document.getElementById('task-eval').value = t.evaluation || "";
-                
-                document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> Phê Duyệt Nhà Thầu`;
 
-                const viewProfileUI = document.createElement('a');
-                viewProfileUI.id = 'btn-view-profile';
-                viewProfileUI.href = `quan_ly_nha_thau.html?search=${encodeURIComponent(t.assigner_name)}`;
-                viewProfileUI.target = "_blank";
-                viewProfileUI.className = "w-full mb-4 bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 hover:bg-slate-700";
-                viewProfileUI.innerHTML = `<i class="ph-bold ph-magnifying-glass text-xl"></i> ${lang.btn_view_profile}`;
-                evalSec.insertBefore(viewProfileUI, evalSec.firstChild);
+                if (t.task_type === 'contractor_approval') {
+                    document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> Phê Duyệt Nhà Thầu`;
 
-                let approveText = t.approval_step === 1 ? lang.btn_approve_s1 : lang.btn_approve_s2;
-                
-                const approvalUI = document.createElement('div');
-                approvalUI.id = 'contractor-approval-ui';
-                approvalUI.className = "flex gap-3 mt-6 pb-2";
-                approvalUI.innerHTML = `
-                    <button onclick="window.processContractorApproval('reject')" class="w-1/3 bg-red-100 text-red-700 hover:bg-red-200 border border-red-300 font-bold py-3.5 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-x-circle text-xl"></i> ${lang.btn_reject}
-                    </button>
-                    <button onclick="window.processContractorApproval('approve')" class="w-2/3 bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-check-square-offset text-xl"></i> ${approveText}
-                    </button>
-                `;
-                evalSec.appendChild(approvalUI);
-                
-                if (t.assignee_id !== currentUserId && !(t.approval_step === 2 && currentUserId === ID_SEP_VUONG)) {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại: ${t.assignee_name}</div>`;
-                }
-                if (t.status === 'Done') {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-200">Hồ sơ đã được chốt sổ hợp lệ.</div>`;
-                    document.getElementById('task-eval').readOnly = true;
-                } else if (t.status === 'Rejected') {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-red-600 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Hồ sơ đã bị Lãnh đạo Từ chối. Đang chờ Nhà thầu nộp lại.</div>`;
+                    const viewProfileUI = document.createElement('a');
+                    viewProfileUI.id = 'btn-view-profile';
+                    viewProfileUI.href = `quan_ly_nha_thau.html?search=${encodeURIComponent(t.assigner_name)}`;
+                    viewProfileUI.target = "_blank";
+                    viewProfileUI.className = "w-full mb-4 bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 hover:bg-slate-700";
+                    viewProfileUI.innerHTML = `<i class="ph-bold ph-magnifying-glass text-xl"></i> ${lang.btn_view_profile}`;
+                    evalSec.insertBefore(viewProfileUI, evalSec.firstChild);
+
+                    let approveText = t.approval_step === 1 ? lang.btn_approve_s1 : lang.btn_approve_s2;
+                    
+                    const approvalUI = document.createElement('div');
+                    approvalUI.id = 'contractor-approval-ui';
+                    approvalUI.className = "flex gap-3 mt-6 pb-2";
+                    approvalUI.innerHTML = `
+                        <button onclick="window.processContractorApproval('reject')" class="w-1/3 bg-red-100 text-red-700 hover:bg-red-200 border border-red-300 font-bold py-3.5 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-x-circle text-xl"></i> ${lang.btn_reject}
+                        </button>
+                        <button onclick="window.processContractorApproval('approve')" class="w-2/3 bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-check-square-offset text-xl"></i> ${approveText}
+                        </button>
+                    `;
+                    evalSec.appendChild(approvalUI);
+                    
+                    if (t.assignee_id !== currentUserId && !(t.approval_step === 2 && currentUserId === ID_SEP_VUONG)) {
+                        approvalUI.innerHTML = `<div class="w-full text-center text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại: ${t.assignee_name}</div>`;
+                    }
+                    if (t.status === 'Done') {
+                        approvalUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-200">Hồ sơ đã được chốt sổ hợp lệ.</div>`;
+                        document.getElementById('task-eval').readOnly = true;
+                    } else if (t.status === 'Rejected') {
+                        approvalUI.innerHTML = `<div class="w-full text-center text-red-600 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Hồ sơ đã bị Lãnh đạo Từ chối. Đang chờ Nhà thầu nộp lại.</div>`;
+                    }
+                } else if (t.task_type === 'ptw_review') {
+                    document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-file-text text-amber-500"></i> Xử Lý Giấy Phép (PTW)`;
+                    
+                    const ptwUI = document.createElement('div');
+                    ptwUI.id = 'contractor-approval-ui';
+                    ptwUI.className = "mt-6";
+                    
+                    if (t.status === 'Done') {
+                        document.getElementById('task-eval').readOnly = true;
+                        ptwUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-4 rounded-xl border border-emerald-200">Giấy phép này đã được xử lý hoàn tất.</div>`;
+                    } else {
+                        ptwUI.innerHTML = `
+                            <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-amber-800 text-sm font-medium mb-4 text-center">
+                                Giấy phép thi công (PTW) có nhiều bước kiểm tra an toàn phức tạp. Vui lòng chuyển sang Cổng Nhà Thầu để xử lý chi tiết.
+                            </div>
+                            <a href="quan_ly_nha_thau.html" target="_blank" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-share-network text-xl"></i> MỞ CỔNG PHÊ DUYỆT PTW TẠI ĐÂY
+                            </a>
+                        `;
+                    }
+                    evalSec.appendChild(ptwUI);
                 }
 
             } else {
