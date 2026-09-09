@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <!-- Modal Thông báo Dọn Dẹp Sau Khi Xuất File (Đã nâng cấp logic) -->
+    <!-- Modal Thông báo Dọn Dẹp Sau Khi Xuất File -->
     <div id="export-confirm-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[120] hidden flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-md p-6 text-center border-t-4 border-emerald-500">
             <div class="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4"><i class="ph-fill ph-check-circle text-4xl"></i></div>
@@ -102,7 +102,7 @@
     <main class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 relative">
         <div class="max-w-[1400px] mx-auto space-y-6">
             
-            <!-- BỘ TÌM KIẾM, LỌC THỜI GIAN VÀ CÔNG CỤ (ĐÃ SỬA LỖI UI) -->
+            <!-- BỘ TÌM KIẾM, LỌC THỜI GIAN VÀ CÔNG CỤ -->
             <div class="bg-white dark:bg-dark-card p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
                 <!-- Search -->
                 <div class="lg:col-span-3 relative">
@@ -123,12 +123,11 @@
                     </select>
                 </div>
                 
-                <!-- Date Filter (Từ ngày - Đến ngày) -->
+                <!-- Date Filter -->
                 <div class="lg:col-span-4 flex items-center gap-2 relative">
                     <input type="date" id="filter-start" onchange="window.fetchAllTasks()" title="Từ ngày (Hạn chót)" class="w-full px-2 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
                     <span class="text-slate-400 font-black">-</span>
                     <input type="date" id="filter-end" onchange="window.fetchAllTasks()" title="Đến ngày (Hạn chót)" class="w-full px-2 py-2.5 border border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm font-bold outline-none focus:border-blue-500 text-slate-700 dark:text-slate-300">
-                    <!-- Nút Xóa Ngày Đã Gắn Shrink-0 Để Không Bị Ép Nhỏ -->
                     <button onclick="window.clearDateFilter()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-300 p-2.5 rounded-xl transition flex shrink-0" title="Xóa bộ lọc ngày">
                         <i class="ph-bold ph-x text-lg"></i>
                     </button>
@@ -140,7 +139,6 @@
                         <button class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-2.5 rounded-xl font-bold transition shadow-md flex items-center justify-center gap-1.5 text-xs sm:text-sm">
                             <i class="ph-bold ph-download-simple"></i> Lưu Trữ
                         </button>
-                        <!-- Menu Xả xuống của nút Lưu Trữ -->
                         <div class="absolute z-50 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all overflow-hidden">
                             <button onclick="window.exportToExcel()" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 text-emerald-600 border-b border-slate-100 dark:border-slate-700 transition flex items-center gap-2"><i class="ph-bold ph-file-csv"></i> File Excel</button>
                             <button onclick="window.exportToPDF()" class="w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 text-rose-600 transition flex items-center gap-2"><i class="ph-bold ph-file-pdf"></i> File PDF</button>
@@ -360,7 +358,7 @@
 
         let currentTab = 'my-tasks'; 
         let rawTasksData = [];
-        window.currentFilteredTasks = []; // Chứa danh sách công việc hiện tại (dành cho xuất file)
+        window.currentFilteredTasks = []; 
         let globalUserDeptMap = {}; 
         let globalUserEmailMap = {}; 
         let upTaskId = "";
@@ -591,14 +589,12 @@
             }
         };
 
-        // --- HÀM MỚI: XÓA BỘ LỌC NGÀY ---
         window.clearDateFilter = function() {
             document.getElementById('filter-start').value = '';
             document.getElementById('filter-end').value = '';
             window.fetchAllTasks();
         };
 
-        // --- CÔNG CỤ LƯU TRỮ VÀ XUẤT CHI TIẾT ---
         window.currentExportedIds = [];
         
         window.exportToExcel = function() {
@@ -616,7 +612,6 @@
                 let prog = t.progress + "%";
                 let stat = t.status || "";
 
-                // Gộp chi tiết thành nhiều dòng trong 1 ô Excel
                 let stepsStr = "";
                 if (t.plan_steps && t.plan_steps.length > 0) {
                     stepsStr = t.plan_steps.map((s) => {
@@ -709,18 +704,15 @@
             });
         };
 
-        // --- CƠ CHẾ XÓA THÔNG MINH THEO QUYỀN (Role-Based Access Control) ---
         function triggerCleanupPrompt() {
             setTimeout(() => {
                 let deletableIds = [];
-                // Cấp quyền xóa toàn bộ nếu tên đăng nhập khớp chính xác Đặng Thế Tư
                 const isSuperAdmin = (currentUserName === "Đặng Thế Tư");
 
                 window.currentFilteredTasks.forEach(t => {
                     if (isSuperAdmin) {
                         deletableIds.push(t.id);
                     } else if (t.assigner_id === currentUserId || t.reviewer_id === currentUserId) {
-                        // Chỉ cấp quyền xóa công việc do chính user giao hoặc duyệt
                         deletableIds.push(t.id);
                     }
                 });
@@ -974,7 +966,6 @@
                 return true;
             });
 
-            // Lưu lại danh sách này để Xuất File chính xác
             window.currentFilteredTasks = filteredTasks;
 
             filteredTasks.sort((a,b) => {
@@ -1019,7 +1010,7 @@
                 else if (isOverdue) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase animate-pulse"><i class="ph-bold ph-warning-circle"></i> ${lang.status_overdue}</span>`;
                 else if (t.is_review_requested && t.status !== 'Done') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-paper-plane-tilt"></i> ${lang.status_review}</span>`;
                 else if (t.status === 'Review') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> ${lang.status_review}</span>`;
-                else if (t.status === 'Rejected') statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-x-circle"></i> TỪ CHỐI DUYỆT</span>`;
+                else if (t.status === 'Rejected' || t.status === 'Failed') statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-x-circle"></i> TỪ CHỐI / ĐÌNH CHỈ</span>`;
                 else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> ${lang.status_doing}</span>`;
                 else statusHtml = `<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> ${lang.status_new}</span>`;
 
@@ -1058,7 +1049,7 @@
                 }
 
                 let actionBtns = '';
-                if(t.assigner_id === currentUserId && t.task_type !== 'contractor_approval') {
+                if(t.assigner_id === currentUserId && t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') {
                     actionBtns = `
                         <div class="flex gap-1 ml-2">
                             <button onclick="window.editTaskInfo('${t.id}')" class="text-slate-400 hover:text-blue-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
@@ -1067,7 +1058,7 @@
                     `;
                 }
 
-                let specialBgClass = t.task_type === 'contractor_approval' ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/20 dark:border-indigo-700/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border shadow-sm';
+                let specialBgClass = (t.task_type === 'contractor_approval' || t.task_type === 'ptw_review') ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/20 dark:border-indigo-700/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border shadow-sm';
                 if (isOverdue && t.status !== 'Done') specialBgClass = 'bg-white dark:bg-dark-card border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.15)]';
 
                 const card = document.createElement('div');
@@ -1122,7 +1113,7 @@
             const oldViewBtn = document.getElementById('btn-view-profile');
             if (oldViewBtn) oldViewBtn.remove();
 
-            if (t.task_type === 'contractor_approval') {
+            if (t.task_type === 'contractor_approval' || t.task_type === 'ptw_review') {
                 progSection.classList.add('hidden'); 
                 reqReviewSec.classList.add('hidden');
                 footerActions.classList.add('hidden'); 
@@ -1130,40 +1121,65 @@
                 evalSec.classList.remove('hidden');
                 document.getElementById('task-done-wrapper').classList.add('hidden'); 
                 document.getElementById('task-eval').value = t.evaluation || "";
-                document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> Phê Duyệt Nhà Thầu`;
+                
+                // Phân biệt Title Modal
+                if (t.task_type === 'contractor_approval') {
+                    document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> Phê Duyệt Hồ Sơ Cơ Bản`;
+                } else {
+                    document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-file-text text-amber-500"></i> Xem Xét Giấy Phép (PTW)`;
+                }
 
+                // Logic tìm tên công ty từ Title để link tự động search
+                let searchCompany = "";
+                if(t.title && t.title.includes(":")) {
+                    searchCompany = t.title.split(":")[1].split("(")[0].trim();
+                } else if (t.assigner_name) {
+                    searchCompany = t.assigner_name;
+                }
+
+                // Nút đi đến trang Quản lý nhà thầu đúng tab
                 const viewProfileUI = document.createElement('a');
                 viewProfileUI.id = 'btn-view-profile';
-                viewProfileUI.href = `quan_ly_nha_thau.html?search=${encodeURIComponent(t.assigner_name)}`;
+                let targetTab = t.task_type === 'ptw_review' ? 'giay-phep' : 'nhan-su';
+                viewProfileUI.href = `quan_ly_nha_thau.html?search=${encodeURIComponent(searchCompany)}&tab=${targetTab}`;
                 viewProfileUI.target = "_blank";
                 viewProfileUI.className = "w-full mb-4 bg-slate-800 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 hover:bg-slate-700";
-                viewProfileUI.innerHTML = `<i class="ph-bold ph-magnifying-glass text-xl"></i> ${lang.btn_view_profile}`;
+                viewProfileUI.innerHTML = `<i class="ph-bold ph-magnifying-glass text-xl"></i> MỞ TRANG KIỂM DUYỆT TẠI ĐÂY`;
                 evalSec.insertBefore(viewProfileUI, evalSec.firstChild);
 
-                let approveText = t.approval_step === 1 ? lang.btn_approve_s1 : lang.btn_approve_s2;
-                
                 const approvalUI = document.createElement('div');
                 approvalUI.id = 'contractor-approval-ui';
                 approvalUI.className = "flex gap-3 mt-6 pb-2";
-                approvalUI.innerHTML = `
-                    <button onclick="window.processContractorApproval('reject')" class="w-1/3 bg-red-100 text-red-700 hover:bg-red-200 border border-red-300 font-bold py-3.5 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-x-circle text-xl"></i> ${lang.btn_reject}
-                    </button>
-                    <button onclick="window.processContractorApproval('approve')" class="w-2/3 bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                        <i class="ph-bold ph-check-square-offset text-xl"></i> ${approveText}
-                    </button>
-                `;
-                evalSec.appendChild(approvalUI);
                 
-                if (t.assignee_id !== currentUserId && !(t.approval_step === 2 && currentUserId === ID_SEP_VUONG)) {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại: ${t.assignee_name}</div>`;
-                }
-                if (t.status === 'Done') {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-200">Hồ sơ đã được chốt sổ hợp lệ.</div>`;
+                // Nút duyệt cơ bản chỉ hiện cho loại 'contractor_approval'
+                if (t.task_type === 'contractor_approval') {
+                    let approveText = t.approval_step === 1 ? lang.btn_approve_s1 : lang.btn_approve_s2;
+                    approvalUI.innerHTML = `
+                        <button onclick="window.processContractorApproval('reject')" class="w-1/3 bg-red-100 text-red-700 hover:bg-red-200 border border-red-300 font-bold py-3.5 rounded-xl shadow-sm transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-x-circle text-xl"></i> ${lang.btn_reject}
+                        </button>
+                        <button onclick="window.processContractorApproval('approve')" class="w-2/3 bg-emerald-600 text-white hover:bg-emerald-700 font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                            <i class="ph-bold ph-check-square-offset text-xl"></i> ${approveText}
+                        </button>
+                    `;
+                    if (t.assignee_id !== currentUserId && !(t.approval_step === 2 && currentUserId === ID_SEP_VUONG)) {
+                        approvalUI.innerHTML = `<div class="w-full text-center text-red-500 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Bạn không có quyền duyệt ở bước này. Người duyệt hiện tại: ${t.assignee_name}</div>`;
+                    }
+                } else {
+                    // DÀNH RIÊNG CHO PTW: Bắt buộc sang trang QL Nhà Thầu để duyệt
+                    approvalUI.innerHTML = `<div class="w-full text-center text-blue-700 font-medium bg-blue-50 p-4 rounded-xl border border-blue-200"><i class="ph-fill ph-info text-lg mb-1 block"></i> Vui lòng nhấp vào nút Đen phía trên để mở Cổng Quản Lý Nhà Thầu và thực hiện Phê duyệt PTW.<br><br><b>Tiến độ tại đây sẽ TỰ ĐỘNG CHUYỂN HOÀN THÀNH 100% khi bạn xử lý xong!</b></div>`;
                     document.getElementById('task-eval').readOnly = true;
-                } else if (t.status === 'Rejected') {
-                    approvalUI.innerHTML = `<div class="w-full text-center text-red-600 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Hồ sơ đã bị Lãnh đạo Từ chối. Đang chờ Nhà thầu nộp lại.</div>`;
                 }
+                
+                if (t.status === 'Done') {
+                    approvalUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-3 rounded-xl border border-emerald-200">Hồ sơ đã được xử lý hoàn tất.</div>`;
+                    document.getElementById('task-eval').readOnly = true;
+                } else if (t.status === 'Rejected' || t.status === 'Failed') {
+                    approvalUI.innerHTML = `<div class="w-full text-center text-red-600 font-bold bg-red-50 p-3 rounded-xl border border-red-200">Hồ sơ đã bị Từ chối hoặc Đình chỉ. Đang chờ xử lý lại.</div>`;
+                    document.getElementById('task-eval').readOnly = true;
+                }
+                
+                evalSec.appendChild(approvalUI);
 
             } else {
                 progSection.classList.remove('hidden');
