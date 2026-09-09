@@ -720,8 +720,12 @@
                 window.globalApprovalMap = {};
                 taskSnap.forEach(doc => {
                     const t = doc.data();
-                    if (!window.globalApprovalMap[t.assigner_name] || t.created_at > window.globalApprovalMap[t.assigner_name].time) {
-                        window.globalApprovalMap[t.assigner_name] = { status: t.status, time: t.created_at };
+                    // ĐÃ SỬA: Quy đổi toàn bộ Firebase Timestamp ra mili-giây để so sánh chính xác 100%
+                    let timeT = t.created_at ? (t.created_at.toDate ? t.created_at.toDate().getTime() : new Date(t.created_at).getTime()) : 0;
+                    let existingTime = window.globalApprovalMap[t.assigner_name] ? window.globalApprovalMap[t.assigner_name].time : 0;
+                    
+                    if (!window.globalApprovalMap[t.assigner_name] || timeT > existingTime) {
+                        window.globalApprovalMap[t.assigner_name] = { status: t.status, time: timeT };
                     }
                 });
             } catch(e) { console.log(e); }
@@ -1457,24 +1461,58 @@
         }
 
         window.logPTWProgressToTaskBoard = async function(company, type, action, note, roleName, targetAssigneeId, targetAssigneeName) {
+            const currentUserId = localStorage.getItem('ehs_user_id');
             const currentUserName = localStorage.getItem('ehs_user_name') || 'Lãnh đạo EHS';
             
-            const taskData = {
-                title: `[${roleName}] Xử lý PTW: ${company} (${type})`,
-                category: 'An toàn',
-                task_type: 'ptw_review', 
-                due_date: new Date().toISOString().split('T')[0],
-                assigner_name: currentUserName, 
-                assignee_id: targetAssigneeId || localStorage.getItem('ehs_user_id'), 
-                assignee_name: targetAssigneeName || currentUserName,
-                progress: action === 'Đã duyệt' ? 100 : 0,                  
-                status: action === 'Đã duyệt' ? 'Done' : 'Failed',
-                is_review_requested: false,
-                evaluation: `Hành động: ${action}. Ghi chú: ${note || 'Không có'}`,
-                plan_steps: [{ text: `Phê duyệt PTW nhà thầu ${company}`, progress: action === 'Đã duyệt' ? 100 : 0 }],
-                created_at: new Date(), thoi_gian_cap_nhat: new Date()
-            };
-            try { await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData); } catch(e) { console.error(e); }
+            // TÌM KIẾM TASK ĐANG CHỜ CỦA NGƯỜI NÀY ĐỂ ĐÓNG LUÔN (Đánh dấu Hoàn thành)
+            const q = window.query(
+                window.collection(window.db, "ehs_tasks"),
+                window.where("assignee_id", "==", currentUserId),
+                window.where("task_type", "==", "ptw_review"),
+                window.where("status", "in", ["To Do", "In Progress", "Review"])
+            );
+
+            try {
+                const snap = await window.getDocs(q);
+                let taskFound = false;
+
+                snap.forEach(async (document) => {
+                    const d = document.data();
+                    // Đảm bảo đóng đúng Task của Công ty đang xét
+                    if (d.title && d.title.includes(company)) {
+                        taskFound = true;
+                        // Cập nhật Task thành Done 100% thay vì tạo mới
+                        await window.updateDoc(window.doc(window.db, "ehs_tasks", document.id), {
+                            title: `[${roleName}] Đã xử lý PTW: ${company}`,
+                            progress: 100,
+                            status: 'Done',
+                            evaluation: `Hành động: ${action}. Ghi chú: ${note || 'Không có'}`,
+                            plan_steps: d.plan_steps ? d.plan_steps.map(s => ({...s, progress: 100})) : [{ text: `Phê duyệt PTW nhà thầu ${company}`, progress: 100 }],
+                            thoi_gian_cap_nhat: new Date()
+                        });
+                    }
+                });
+
+                // Nếu không có task chờ sẵn (Ví dụ: Chuyên viên EHS duyệt vòng 1), thì ghi Log mới dạng Done
+                if (!taskFound) {
+                    const taskData = {
+                        title: `[${roleName}] Xử lý PTW: ${company} (${type})`,
+                        category: 'An toàn',
+                        task_type: 'ptw_review', 
+                        due_date: new Date().toISOString().split('T')[0],
+                        assigner_name: currentUserName, 
+                        assignee_id: targetAssigneeId || currentUserId, 
+                        assignee_name: targetAssigneeName || currentUserName,
+                        progress: 100,                  
+                        status: 'Done',
+                        is_review_requested: false,
+                        evaluation: `Hành động: ${action}. Ghi chú: ${note || 'Không có'}`,
+                        plan_steps: [{ text: `Phê duyệt PTW nhà thầu ${company}`, progress: 100 }],
+                        created_at: new Date(), thoi_gian_cap_nhat: new Date()
+                    };
+                    await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
+                }
+            } catch(e) { console.error("Lỗi đồng bộ task: ", e); }
         };
 
         window.submitPTWApproval = async function(action, role) {
