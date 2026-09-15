@@ -40,6 +40,11 @@
             position: absolute !important;
             top: 0; left: 0; width: 100%; height: 100%; z-index: 1; 
         }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); box-shadow: 0 0 40px rgba(99,102,241,0.6); }
+            100% { transform: translateY(0px); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen overflow-hidden flex transition-colors duration-300">
@@ -157,10 +162,33 @@
         <div class="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 w-full relative">
             
             <!-- Hiệu ứng AI mờ ở background -->
-            <div id="particles-js" class="absolute inset-0 pointer-events-none opacity-20 dark:opacity-30"></div>
+            <div id="particles-js" class="absolute inset-0 pointer-events-none opacity-60 dark:opacity-80 z-0"></div>
 
             <div class="max-w-7xl mx-auto w-full relative z-10">
                 
+                <!-- AI ROBOT BANNER (SỐ HÓA IMAGE_06BE86.JPG) -->
+                <div class="mb-8 bg-gradient-to-r from-slate-900 to-indigo-900 rounded-3xl shadow-[0_10px_30px_rgba(30,27,75,0.3)] border border-indigo-500/40 overflow-hidden relative flex flex-col sm:flex-row items-center justify-between p-6 sm:p-8 group">
+                    <div class="absolute inset-0 bg-[url('image_06be86.jpg')] bg-cover bg-center opacity-20 mix-blend-luminosity group-hover:opacity-30 transition-opacity duration-700"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-indigo-900/85 to-transparent"></div>
+                    
+                    <div class="relative z-10 w-full sm:w-2/3 pr-0 sm:pr-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest mb-4 backdrop-blur-sm">
+                            <i class="ph-fill ph-robot text-amber-400 animate-pulse"></i> Trợ lý Hệ thống EHS
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 leading-tight tracking-tight">Hệ thống Điều hành AI Cấp cao</h2>
+                        <p class="text-indigo-100/70 text-sm sm:text-base font-medium mb-6 leading-relaxed max-w-xl">
+                            Dữ liệu vận hành an toàn nhà máy đã được đồng bộ. Trợ lý AI đang liên tục phân tích số liệu quan trắc, dự báo rủi ro hóa chất và tối ưu hóa lộ trình 5S của bạn trong hôm nay.
+                        </p>
+                        <a href="ai_phap_che.html" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:-translate-y-1">
+                            Trò chuyện cùng AI <i class="ph-bold ph-arrow-right"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="relative z-10 w-40 h-40 sm:w-56 sm:h-56 mt-8 sm:mt-0 rounded-full border-4 border-indigo-400/30 shadow-[0_0_40px_rgba(99,102,241,0.4)] overflow-hidden shrink-0 animate-[float_4s_ease-in-out_infinite] bg-slate-800">
+                        <img src="image_06be86.jpg" alt="AI Robot EHS" class="w-full h-full object-cover mix-blend-screen scale-110">
+                        <div class="absolute inset-0 rounded-full shadow-inner pointer-events-none border border-white/10"></div>
+                    </div>
+                </div>
                 <!-- BỘ LỌC DỮ LIỆU -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                     <div class="flex items-center gap-3">
@@ -1712,13 +1740,13 @@
             if(document.getElementById('particles-js') && window.innerWidth >= 768) {
                 particlesJS("particles-js", {
                   "particles": {
-                    "number": { "value": 70, "density": { "enable": true, "value_area": 800 } }, 
-                    "color": { "value": "#64748b" }, 
+                    "number": { "value": 110, "density": { "enable": true, "value_area": 800 } }, 
+                    "color": { "value": "#3b82f6" }, 
                     "shape": { "type": "circle" },
-                    "opacity": { "value": 0.25, "random": false },
-                    "size": { "value": 3, "random": true },
-                    "line_linked": { "enable": true, "distance": 150, "color": "#94a3b8", "opacity": 0.15, "width": 1 },
-                    "move": { "enable": true, "speed": 1.2, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                    "opacity": { "value": 0.65, "random": false },
+                    "size": { "value": 4.5, "random": true },
+                    "line_linked": { "enable": true, "distance": 160, "color": "#6366f1", "opacity": 0.55, "width": 2.5 },
+                    "move": { "enable": true, "speed": 1.5, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
                   },
                   "interactivity": { 
                       "detect_on": "canvas", 
