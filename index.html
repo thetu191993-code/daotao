@@ -166,29 +166,45 @@
 
             <div class="max-w-7xl mx-auto w-full relative z-10">
                 
-                <!-- AI ROBOT BANNER (SỐ HÓA IMAGE_06BE86.JPG) -->
-                <div class="mb-8 bg-gradient-to-r from-slate-900 to-indigo-900 rounded-3xl shadow-[0_10px_30px_rgba(30,27,75,0.3)] border border-indigo-500/40 overflow-hidden relative flex flex-col sm:flex-row items-center justify-between p-6 sm:p-8 group">
-                    <div class="absolute inset-0 bg-[url('image_06be86.jpg')] bg-cover bg-center opacity-20 mix-blend-luminosity group-hover:opacity-30 transition-opacity duration-700"></div>
-                    <div class="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-indigo-900/85 to-transparent"></div>
+                <!-- AI ROBOT BANNER (SỐ HÓA HOÀN CHỈNH - BẢN CỰC ĐẠI) -->
+                <div class="mb-8 bg-gradient-to-r from-[#0f172a] via-[#1e1b4b] to-[#312e81] rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-indigo-500/30 overflow-hidden relative flex flex-col sm:flex-row items-center justify-between p-6 sm:p-10 group">
                     
+                    <!-- Background Pattern (Lưới không gian mờ) -->
+                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent pointer-events-none"></div>
+                    
+                    <!-- Nội dung Text & Nút bấm -->
                     <div class="relative z-10 w-full sm:w-2/3 pr-0 sm:pr-6">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[10px] font-black uppercase tracking-widest mb-4 backdrop-blur-sm">
-                            <i class="ph-fill ph-robot text-amber-400 animate-pulse"></i> Trợ lý Hệ thống EHS
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-[11px] font-bold uppercase tracking-wider mb-4 backdrop-blur-sm">
+                            <i class="ph-fill ph-sparkle text-amber-400 animate-pulse"></i> Trợ lý Hệ thống EHS
                         </div>
-                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 leading-tight tracking-tight">Hệ thống Điều hành AI Cấp cao</h2>
-                        <p class="text-indigo-100/70 text-sm sm:text-base font-medium mb-6 leading-relaxed max-w-xl">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 leading-tight tracking-tight drop-shadow-lg">Hệ thống Điều hành AI Cấp cao</h2>
+                        <p class="text-indigo-100/80 text-sm sm:text-base font-medium mb-6 leading-relaxed max-w-xl">
                             Dữ liệu vận hành an toàn nhà máy đã được đồng bộ. Trợ lý AI đang liên tục phân tích số liệu quan trắc, dự báo rủi ro hóa chất và tối ưu hóa lộ trình 5S của bạn trong hôm nay.
                         </p>
-                        <a href="ai_phap_che.html" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all shadow-[0_0_15px_rgba(79,70,229,0.4)] hover:-translate-y-1">
+                        <a href="ai_phap_che.html" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_20px_rgba(79,70,229,0.5)] hover:shadow-[0_0_30px_rgba(79,70,229,0.8)] hover:-translate-y-1">
                             Trò chuyện cùng AI <i class="ph-bold ph-arrow-right"></i>
                         </a>
                     </div>
                     
-                    <div class="relative z-10 w-40 h-40 sm:w-56 sm:h-56 mt-8 sm:mt-0 rounded-full border-4 border-indigo-400/30 shadow-[0_0_40px_rgba(99,102,241,0.4)] overflow-hidden shrink-0 animate-[float_4s_ease-in-out_infinite] bg-slate-800">
-                        <img src="image_06be86.jpg" alt="AI Robot EHS" class="w-full h-full object-cover mix-blend-screen scale-110">
-                        <div class="absolute inset-0 rounded-full shadow-inner pointer-events-none border border-white/10"></div>
+                    <!-- Hình ảnh Robot (Khắc phục lỗi đen, bo viền Gradient công nghệ) -->
+                    <div class="relative z-10 w-48 h-48 sm:w-64 sm:h-64 mt-8 sm:mt-0 shrink-0 animate-[float_4s_ease-in-out_infinite]">
+                        <!-- Lớp hào quang (Glow) tỏa ra từ phía sau -->
+                        <div class="absolute inset-0 rounded-full bg-indigo-400 blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 pointer-events-none"></div>
+                        
+                        <!-- Vòng Gradient bọc ngoài ảnh -->
+                        <div class="relative w-full h-full rounded-full p-1 bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-500 shadow-2xl">
+                            <!-- Lõi chứa ảnh -->
+                            <div class="w-full h-full rounded-full overflow-hidden bg-slate-900 relative">
+                                <!-- GỌI ĐÚNG FILE ẢNH MỚI -->
+                                <img src="image_073e49.jpg" alt="AI Robot EHS" class="w-full h-full object-cover object-top scale-105 transition-transform duration-700 group-hover:scale-110">
+                                <!-- Lớp bóng mờ chìm bên trong khung ảnh -->
+                                <div class="absolute inset-0 rounded-full shadow-inner pointer-events-none border-2 border-transparent"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <!-- END AI ROBOT BANNER -->
+                
                 <!-- BỘ LỌC DỮ LIỆU -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                     <div class="flex items-center gap-3">
