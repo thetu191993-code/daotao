@@ -36,9 +36,17 @@
         .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
         body { font-family: 'Inter', sans-serif; }
         
+        #particles-js {
+            position: fixed !important; /* Phủ kín toàn màn hình / Covers entire screen */
+            inset: 0;
+            z-index: 0; 
+            pointer-events: none;
+        }
         #particles-js .particles-js-canvas-el {
-            position: absolute !important;
-            top: 0; left: 0; width: 100%; height: 100%; z-index: 1; 
+            width: 100%; 
+            height: 100%;
+            /* Hiệu ứng phát sáng đèn Neon / Neon glow effect */
+            filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8)) drop-shadow(0 0 2px rgba(59, 130, 246, 0.9));
         }
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -47,12 +55,12 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-200 h-screen overflow-hidden flex transition-colors duration-300">
-
+<body class="text-slate-800 dark:text-slate-200 h-screen overflow-hidden flex transition-colors duration-300" style="background-image: url('Hình nền website EHS.jpg'); background-size: cover; background-attachment: fixed; background-position: center; background-repeat: no-repeat;">
+    
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300 opacity-0"></div>
 
     <!-- SIDEBAR -->
-    <aside id="sidebar" class="w-[280px] md:w-64 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-dark-border flex flex-col shrink-0 transition-transform duration-300 fixed md:relative z-50 h-full -translate-x-full md:translate-x-0">
+    <aside id="sidebar" class="w-[280px] md:w-64 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col shrink-0 transition-transform duration-300 fixed md:relative z-50 h-full -translate-x-full md:translate-x-0 shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
         <div class="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-dark-border shrink-0">
             <div class="flex items-center">
                 <i class="ph-fill ph-shield-check text-blue-600 dark:text-blue-400 text-2xl mr-2"></i>
@@ -106,10 +114,10 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden w-full relative bg-slate-100 dark:bg-slate-900">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden w-full relative bg-transparent">
         
         <!-- TOPBAR -->
-        <header class="h-16 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-dark-border flex items-center justify-between px-4 sm:px-8 shrink-0 transition-colors duration-300 w-full z-[45]">
+        <header class="h-16 bg-white/60 dark:bg-slate-900/60 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-4 sm:px-8 shrink-0 transition-colors duration-300 w-full z-[45] shadow-sm">
             <div class="flex items-center gap-2 text-sm">
                 <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 -ml-2 mr-1 sm:mr-2 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition shrink-0"><i class="ph-bold ph-list text-xl"></i></button>
                 <span class="text-slate-500 dark:text-dark-muted font-medium hidden sm:inline">EHS System</span>
@@ -1809,14 +1817,20 @@
             // TẮT HOÀN TOÀN HẠT AI TRÊN MOBILE ĐỂ CHỐNG GIẬT LAG & HAO PIN
             if(document.getElementById('particles-js') && window.innerWidth >= 768) {
                 particlesJS("particles-js", {
-                  "particles": {
-                    "number": { "value": 110, "density": { "enable": true, "value_area": 800 } }, 
-                    "color": { "value": "#3b82f6" }, 
-                    "shape": { "type": "circle" },
-                    "opacity": { "value": 0.65, "random": false },
-                    "size": { "value": 4.5, "random": true },
-                    "line_linked": { "enable": true, "distance": 160, "color": "#6366f1", "opacity": 0.55, "width": 2.5 },
-                    "move": { "enable": true, "speed": 1.5, "direction": "none", "random": false, "straight": false, "out_mode": "out", "bounce": false }
+                    "particles": {
+                    "number": { "value": 120, "density": { "enable": true, "value_area": 800 } }, 
+                    "color": { "value": ["#0ea5e9", "#38bdf8", "#818cf8"] }, /* Đa sắc xanh / Multi-blue colors */
+                     "shape": { "type": "circle" },
+                    "opacity": { "value": 0.9, "random": true },
+                    "size": { "value": 4, "random": true },
+                    "line_linked": { 
+                        "enable": true, 
+                        "distance": 150, 
+                        "color": "#38bdf8", /* Chuyển dây nối sang màu lục lam sáng / Cyan connecting lines */
+                        "opacity": 0.7, 
+                        "width": 2 
+                    },
+                    "move": { "enable": true, "speed": 2, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
                   },
                   "interactivity": { 
                       "detect_on": "canvas", 
