@@ -43,10 +43,10 @@
             pointer-events: none;
         }
         #particles-js .particles-js-canvas-el {
-            width: 100%; 
-            height: 100%;
-            /* Hiệu ứng phát sáng đèn Neon / Neon glow effect */
-            filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.8)) drop-shadow(0 0 2px rgba(59, 130, 246, 0.9));
+            position: fixed !important;
+            inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+            /* Giảm nhẹ độ sáng chói của mạng nơ-ron */
+            filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.3));
         }
         @keyframes float {
             0% { transform: translateY(0px); }
@@ -174,43 +174,39 @@
 
             <div class="max-w-7xl mx-auto w-full relative z-10">
                 
-                <!-- AI ROBOT BANNER (NỀN SỢI MẠCH XUYÊN THẤU) -->
-                <div class="mb-8 bg-[#0a0f1c] rounded-3xl shadow-[0_10px_40px_rgba(6,182,212,0.15)] border border-cyan-500/30 overflow-hidden relative flex flex-col sm:flex-row items-center justify-between p-6 sm:p-10 group">
+                <!-- AI ROBOT BANNER (NỀN KÍNH MỜ TRONG SUỐT) -->
+                <div class="mb-8 bg-slate-900/40 backdrop-blur-xl rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] border border-white/20 overflow-hidden relative flex flex-col sm:flex-row items-center justify-between p-6 sm:p-10 group transition-all duration-500">
                     
-                    <!-- Lớp ảnh image_14e144.jpg: Hòa trộn màn hình để lọc bỏ nền đen, chỉ lấy mảng sáng/sợi mạch -->
-                    <div class="absolute inset-0 bg-[url('image_14e144.jpg')] bg-cover bg-center opacity-80 mix-blend-screen group-hover:scale-105 transition-transform duration-1000"></div>
-                    
-                    <!-- Lớp mặt nạ Gradient: Đảm bảo chữ bên trái luôn đọc rõ, bên phải trong suốt lộ tay robot -->
-                    <div class="absolute inset-0 bg-gradient-to-r from-[#0a0f1c] via-[#0a0f1c]/80 to-transparent"></div>
+                    <!-- Lớp ảnh sợi mạch (Giảm độ sáng để không lấn át chữ) -->
+                    <div class="absolute inset-0 bg-[url('image_14e144.jpg')] bg-cover bg-center opacity-30 mix-blend-screen group-hover:scale-105 transition-transform duration-1000"></div>
                     
                     <!-- Nội dung Text & Nút bấm -->
                     <div class="relative z-10 w-full sm:w-2/3 pr-0 sm:pr-6">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-[11px] font-bold uppercase tracking-wider mb-4 backdrop-blur-sm">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[11px] font-bold uppercase tracking-wider mb-4 backdrop-blur-md shadow-sm">
                             <i class="ph-fill ph-sparkle text-cyan-400 animate-pulse"></i> Trợ lý Hệ thống EHS
                         </div>
-                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 leading-tight tracking-tight drop-shadow-lg">Hệ thống Điều hành EHS</h2>
-                        <p class="text-cyan-100/70 text-sm sm:text-base font-medium mb-6 leading-relaxed max-w-xl">
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-black text-white mb-3 leading-tight tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Hệ thống Điều hành EHS</h2>
+                        <p class="text-slate-200 text-sm sm:text-base font-medium mb-6 leading-relaxed max-w-xl drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                             Dữ liệu an toàn nhà máy đã được đồng bộ. Trợ lý AI đang liên tục phân tích số liệu quan trắc, dự báo rủi ro và tối ưu hóa quá trình.
                         </p>
-                        <a href="ai_phap_che.html" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-7 py-3.5 rounded-xl text-sm font-bold transition-all shadow-[0_0_20px_rgba(79,70,229,0.5)] hover:shadow-[0_0_30px_rgba(79,70,229,0.8)] hover:-translate-y-1">
+                        <a href="ai_phap_che.html" class="inline-flex items-center gap-2 bg-indigo-600/80 backdrop-blur-md border border-indigo-400/50 hover:bg-indigo-500 text-white px-7 py-3.5 rounded-xl text-sm font-bold transition-all shadow-[0_4px_15px_rgba(79,70,229,0.5)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.8)] hover:-translate-y-1">
                             Trò chuyện cùng AI <i class="ph-bold ph-arrow-right"></i>
                         </a>
                     </div>
                     
-                    <!-- Hình ảnh Robot Chân dung (Được giữ nguyên như thiết kế image_14dd2a.jpg) -->
+                    <!-- Hình ảnh Robot Chân dung -->
                     <div class="relative z-10 w-48 h-48 sm:w-64 sm:h-64 mt-8 sm:mt-0 shrink-0 animate-[float_4s_ease-in-out_infinite]">
                         <!-- Lớp hào quang (Glow) -->
-                        <div class="absolute inset-0 rounded-full bg-cyan-500 blur-3xl opacity-30 group-hover:opacity-60 transition-opacity duration-500 pointer-events-none"></div>
+                        <div class="absolute inset-0 rounded-full bg-cyan-500/30 blur-2xl group-hover:bg-cyan-500/50 transition-colors duration-500 pointer-events-none"></div>
                         
                         <!-- Vòng Gradient bọc ngoài ảnh -->
-                        <div class="relative w-full h-full rounded-full p-[3px] bg-gradient-to-tr from-cyan-400 via-indigo-500 to-purple-500 shadow-[0_0_30px_rgba(34,211,238,0.3)]">
-                            <!-- Lõi chứa ảnh -->
-                            <div class="w-full h-full rounded-full overflow-hidden bg-[#0a0f1c] flex justify-center items-center relative">
+                        <div class="relative w-full h-full rounded-full p-[3px] bg-gradient-to-tr from-cyan-400/50 via-indigo-500/50 to-purple-500/50 shadow-[0_0_20px_rgba(34,211,238,0.2)] backdrop-blur-sm">
+                            <div class="w-full h-full rounded-full overflow-hidden bg-slate-900/50 flex justify-center items-center relative">
                                 <img src="image_073e49.jpg" 
                                      onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&w=800&q=80';" 
                                      alt="AI Robot EHS" 
-                                     class="w-full h-full object-cover scale-110">
-                                <div class="absolute inset-0 rounded-full shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] pointer-events-none border border-white/10"></div>
+                                     class="w-full h-full object-cover scale-110 opacity-90">
+                                <div class="absolute inset-0 rounded-full shadow-[inset_0_0_20px_rgba(0,0,0,0.5)] pointer-events-none border border-white/20"></div>
                             </div>
                         </div>
                     </div>
@@ -425,14 +421,14 @@
                 </div>
                 
                 <!-- WIDGET HIỂN THỊ GIẤY PHÉP THI CÔNG TRỰC TIẾP (PTW LIVE) -->
-                <div class="mt-8 mb-12">
+                <div class="mt-8 mb-12 relative z-10">
                     <div class="flex items-center gap-3 mb-4">
-                        <div class="w-10 h-10 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center rounded-xl shadow-sm border border-amber-200 dark:border-amber-800">
+                        <div class="w-10 h-10 bg-amber-500/20 backdrop-blur-md border border-amber-400/50 text-amber-400 flex items-center justify-center rounded-xl shadow-sm">
                             <i class="ph-fill ph-warning-circle text-2xl animate-pulse"></i>
                         </div>
                         <div>
-                            <h3 class="font-black text-xl text-slate-800 dark:text-white leading-tight uppercase tracking-tight" data-i18n="ptw_live_title">HOẠT ĐỘNG THI CÔNG HIỆN TẠI (PTW LIVE)</h3>
-                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">Danh sách các Giấy phép đang có hiệu lực trong ngày hôm nay tại nhà máy.</p>
+                            <h3 class="font-black text-xl text-white drop-shadow-md leading-tight uppercase tracking-tight" data-i18n="ptw_live_title">HOẠT ĐỘNG THI CÔNG HIỆN TẠI (PTW LIVE)</h3>
+                            <p class="text-sm font-medium text-slate-300 drop-shadow-sm">Danh sách các Giấy phép đang có hiệu lực trong ngày hôm nay tại nhà máy.</p>
                         </div>
                     </div>
                     
@@ -856,46 +852,51 @@
                 
                 let html = '';
                 validPermits.forEach(p => {
-                    let colorClass = "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800";
-                    let textClass = "text-slate-800 dark:text-white";
-                    let icon = "ph-file-text";
+                    // Mặc định: Kính mờ màu trắng/xanh nhạt
+                    let colorClass = "border-white/20 bg-white/10 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.2)]";
+                    let textClass = "text-white";
+                    let icon = "ph-file-text text-blue-300";
+                    let badgeClass = "bg-emerald-500/30 text-emerald-200 border-emerald-400/50";
 
+                    // Phân loại rủi ro cao (Hàn/Không gian kín): Kính mờ pha đỏ
                     if((p.loai_giay_phep||"").includes("Hàn") || (p.loai_giay_phep||"").includes("Không gian")) {
-                        colorClass = "border-red-300 dark:border-red-500/50 bg-red-50 dark:bg-red-900/20 shadow-[0_0_15px_rgba(239,68,68,0.15)]";
-                        textClass = "text-red-700 dark:text-red-400";
-                        icon = "ph-fire";
-                    } else if ((p.loai_giay_phep||"").includes("Trên cao")) {
-                        colorClass = "border-amber-300 dark:border-amber-500/50 bg-amber-50 dark:bg-amber-900/20 shadow-[0_0_15px_rgba(245,158,11,0.1)]";
-                        textClass = "text-amber-700 dark:text-amber-400";
-                        icon = "ph-steps";
+                        colorClass = "border-red-400/40 bg-red-900/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(239,68,68,0.2)]";
+                        textClass = "text-red-100";
+                        icon = "ph-fire text-red-400";
+                    } 
+                    // Phân loại Trên cao: Kính mờ pha vàng/cam
+                    else if ((p.loai_giay_phep||"").includes("Trên cao")) {
+                        colorClass = "border-amber-400/40 bg-amber-900/30 backdrop-blur-xl shadow-[0_4px_20px_rgba(245,158,11,0.15)]";
+                        textClass = "text-amber-100";
+                        icon = "ph-steps text-amber-400";
                     }
 
                     const workersCount = (p.danh_sach_nhan_su || []).length;
 
                     html += `
-                        <div class="p-5 rounded-2xl border ${colorClass} transition-all shadow-sm">
-                            <div class="flex justify-between items-start mb-3 border-b border-slate-200 dark:border-slate-700/50 pb-3">
+                        <div class="p-5 rounded-2xl border ${colorClass} transition-all hover:bg-white/20 group">
+                            <div class="flex justify-between items-start mb-3 border-b border-white/10 pb-3">
                                 <div>
-                                    <h3 class="font-black text-lg ${textClass} flex items-center gap-1.5"><i class="ph-fill ${icon}"></i> ${p.loai_giay_phep.toUpperCase()}</h3>
-                                    <p class="font-bold text-slate-500 dark:text-slate-300 text-sm">${p.cong_ty}</p>
+                                    <h3 class="font-black text-lg ${textClass} drop-shadow-md flex items-center gap-1.5"><i class="ph-fill ${icon}"></i> ${p.loai_giay_phep.toUpperCase()}</h3>
+                                    <p class="font-bold text-slate-300 text-sm drop-shadow-sm">${p.cong_ty}</p>
                                 </div>
                                 <div class="text-right shrink-0">
-                                    <span class="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border border-emerald-200 dark:border-emerald-500/30">Hợp Lệ</span>
+                                    <span class="${badgeClass} px-2 py-1 rounded text-[10px] font-black tracking-wider uppercase border backdrop-blur-md shadow-sm">Hợp Lệ</span>
                                 </div>
                             </div>
                             
                             <div class="grid grid-cols-2 gap-3 text-xs mb-3">
-                                <div class="bg-white/50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                                    <p class="text-slate-500 font-bold uppercase mb-0.5">Khu Vực</p>
-                                    <p class="font-bold text-slate-800 dark:text-white">${p.khu_vuc}</p>
+                                <div class="bg-black/30 p-2.5 rounded-xl border border-white/10 shadow-inner">
+                                    <p class="text-slate-400 font-bold uppercase mb-0.5">Khu Vực</p>
+                                    <p class="font-bold text-white drop-shadow-sm">${p.khu_vuc}</p>
                                 </div>
-                                <div class="bg-white/50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                                    <p class="text-slate-500 font-bold uppercase mb-0.5">Thời Gian Hôm Nay</p>
-                                    <p class="font-bold text-sky-600 dark:text-sky-400 font-mono">${p.gio_bat_dau} - ${p.gio_ket_thuc}</p>
+                                <div class="bg-black/30 p-2.5 rounded-xl border border-white/10 shadow-inner">
+                                    <p class="text-slate-400 font-bold uppercase mb-0.5">Thời Gian</p>
+                                    <p class="font-bold text-sky-300 font-mono drop-shadow-sm">${p.gio_bat_dau} - ${p.gio_ket_thuc}</p>
                                 </div>
                             </div>
                             
-                            <p class="text-xs text-slate-500 font-bold uppercase mt-auto"><i class="ph-fill ph-users"></i> ${workersCount} Nhân sự thi công</p>
+                            <p class="text-xs text-slate-300 font-bold uppercase mt-auto flex items-center gap-1.5"><i class="ph-fill ph-users text-slate-400"></i> ${workersCount} Nhân sự thi công</p>
                         </div>
                     `;
                 });
@@ -1824,17 +1825,17 @@
             if(document.getElementById('particles-js') && window.innerWidth >= 768) {
                 particlesJS("particles-js", {
                     "particles": {
-                    "number": { "value": 120, "density": { "enable": true, "value_area": 800 } }, 
-                    "color": { "value": ["#0ea5e9", "#38bdf8", "#818cf8"] }, /* Đa sắc xanh / Multi-blue colors */
-                     "shape": { "type": "circle" },
-                    "opacity": { "value": 0.9, "random": true },
-                    "size": { "value": 4, "random": true },
+                    "number": { "value": 80, "density": { "enable": true, "value_area": 800 } }, 
+                    "color": { "value": ["#ffffff", "#e2e8f0"] }, /* Đổi sang màu trắng nhạt */
+                    "shape": { "type": "circle" },
+                    "opacity": { "value": 0.3, "random": true }, /* Giảm độ đậm của hạt */
+                    "size": { "value": 3, "random": true },
                     "line_linked": { 
                         "enable": true, 
-                        "distance": 150, 
-                        "color": "#38bdf8", /* Chuyển dây nối sang màu lục lam sáng / Cyan connecting lines */
-                        "opacity": 0.7, 
-                        "width": 2 
+                        "distance": 160, 
+                        "color": "#ffffff", /* Dây nối màu trắng */
+                        "opacity": 0.15, /* Dây nối rất mờ */
+                        "width": 1 
                     },
                     "move": { "enable": true, "speed": 2, "direction": "none", "random": true, "straight": false, "out_mode": "out", "bounce": false }
                   },
