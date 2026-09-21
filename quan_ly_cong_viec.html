@@ -1407,12 +1407,14 @@
             if(btn) { btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xử lý...'; btn.disabled = true; }
             
             try {
-                await window.updateDoc(window.doc(window.db, "ehs_tasks", taskId), {
+                // ĐÃ SỬA: Bỏ chữ "window." trước updateDoc, doc và db
+                await updateDoc(doc(db, "ehs_tasks", taskId), {
                     progress: 100,
                     status: 'Done',
                     evaluation: 'Hệ thống EHS / Admin đã ép đóng task kẹt.',
                     thoi_gian_cap_nhat: new Date()
                 });
+                
                 window.showToast("Đã ép đóng Task thành công!");
                 window.closeUpdateModal();
                 await window.fetchAllTasks();
