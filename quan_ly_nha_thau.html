@@ -536,7 +536,7 @@
                     if (role) displayClean += ` - ${role}`;
                     
                     window.internalStaffList.push({ 
-                        id: doc.id, 
+                        id: d.ma_nv || doc.id, // Ưu tiên lấy Mã NV để đồng nhất ID toàn hệ thống 
                         name: labelName, 
                         dept: role,
                         displayName: displayClean // Lưu chuỗi tìm kiếm
