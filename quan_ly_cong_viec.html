@@ -1057,11 +1057,18 @@
                 }
 
                 let actionBtns = '';
-                if(t.assigner_id === currentUserId && t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') {
+                const isSuperAdmin = (currentUserName === "Đặng Thế Tư" || isGlobalLeader);
+
+                // Admin được quyền xóa mọi task bị kẹt. Người thường chỉ thao tác được task do họ tạo.
+                if((t.assigner_id === currentUserId && t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') || isSuperAdmin) {
+                    
+                    let editBtn = (t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') ? 
+                        `<button onclick="window.editTaskInfo('${t.id}')" class="text-slate-400 hover:text-blue-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-sm"></i></button>` : '';
+
                     actionBtns = `
                         <div class="flex gap-1 ml-2">
-                            <button onclick="window.editTaskInfo('${t.id}')" class="text-slate-400 hover:text-blue-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-sm"></i></button>
-                            <button onclick="window.deleteTaskInfo('${t.id}')" class="text-slate-400 hover:text-red-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Xóa"><i class="ph-bold ph-trash text-sm"></i></button>
+                            ${editBtn}
+                            <button onclick="window.deleteTaskInfo('${t.id}')" class="text-slate-400 hover:text-red-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Xóa (Quyền Admin)"><i class="ph-bold ph-trash text-sm"></i></button>
                         </div>
                     `;
                 }
@@ -1177,6 +1184,25 @@
                     }
                     evalSec.appendChild(ptwUI);
                 }
+
+                // --- BẮT ĐẦU CHÈN THÊM TÍNH NĂNG ADMIN OVERRIDE ---
+                const isSuperAdmin = (currentUserName === "Đặng Thế Tư" || isGlobalLeader);
+                
+                if (isSuperAdmin && t.status !== 'Done') {
+                    const adminUI = document.createElement('div');
+                    adminUI.className = "mt-4 p-4 bg-red-50 border border-red-200 rounded-xl shadow-inner";
+                    adminUI.innerHTML = `
+                        <p class="text-xs font-black text-red-800 uppercase mb-2 flex items-center gap-1">
+                            <i class="ph-fill ph-warning-octagon text-lg"></i> Quyền Quản Trị (Admin Override)
+                        </p>
+                        <p class="text-[11px] text-red-700 mb-3 font-medium">Hồ sơ đã duyệt ở ngoài nhưng Task này vẫn kẹt? Sử dụng quyền Admin để ép hoàn thành tiến độ ngay lập tức.</p>
+                        <button id="btn-force-close" onclick="window.forceCloseTask('${t.id}')" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="ph-bold ph-power text-lg"></i> ÉP ĐÓNG TASK NÀY (DONE 100%)
+                        </button>
+                    `;
+                    evalSec.appendChild(adminUI);
+                }
+                // --- KẾT THÚC CHÈN THÊM ---
 
             // GIAO DIỆN DÀNH CHO CÁC TASK CÔNG VIỆC BÌNH THƯỜNG
             } else {
@@ -1371,6 +1397,28 @@
             } finally {
                 btn.innerHTML = `<i class="ph-bold ph-paper-plane-tilt text-lg"></i> ` + (editId ? translations[currentLang].btn_save_edit : translations[currentLang].btn_publish); 
                 btn.disabled = false;
+            }
+        };
+        // TÍNH NĂNG ADMIN OVERRIDE: ÉP ĐÓNG TASK BỊ KẸT
+        window.forceCloseTask = async function(taskId) {
+            if(!confirm("CẢNH BÁO ADMIN: Xác nhận ép đóng Task này (chuyển thành Hoàn Thành 100%)? Tính năng này dùng để xử lý các task bị kẹt tiến độ do ngoại lệ hệ thống.")) return;
+            
+            const btn = document.getElementById('btn-force-close');
+            if(btn) { btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xử lý...'; btn.disabled = true; }
+            
+            try {
+                await window.updateDoc(window.doc(window.db, "ehs_tasks", taskId), {
+                    progress: 100,
+                    status: 'Done',
+                    evaluation: 'Hệ thống EHS / Admin đã ép đóng task kẹt.',
+                    thoi_gian_cap_nhat: new Date()
+                });
+                window.showToast("Đã ép đóng Task thành công!");
+                window.closeUpdateModal();
+                await window.fetchAllTasks();
+            } catch(e) {
+                window.showToast("Lỗi ép đóng: " + e.message, "error");
+                if(btn) { btn.innerHTML = '<i class="ph-bold ph-power text-lg"></i> ÉP ĐÓNG TASK NÀY (DONE 100%)'; btn.disabled = false; }
             }
         };
 
