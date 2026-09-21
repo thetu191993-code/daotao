@@ -92,6 +92,9 @@
             <a href="admin_pccc.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_admin_fire">Quản trị PCCC</span></a>
             <a href="data_dashboard.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_monitoring">Đồng bộ Quan trắc</span></a>
             <a href="net_zero_form_master.html" class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition bg-slate-50 dark:bg-slate-800/50 mt-1 mb-1"><span class="mr-3">🌍</span> <span data-i18n="nav_net_zero">Quản Trị Net Zero</span></a>
+            <button onclick="openOSHLogbook()" class="w-full flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
+                <i class="ph-fill ph-notebook text-lg text-emerald-500"></i> <span data-i18n="nav_osh_log">Sổ Nhật Ký ATVSV</span>
+            </button>
 
             <!-- NHÓM 3 -->
             <div class="pt-4 pb-1 px-3"><p data-i18n="group_procedures" class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 3: Quy trình & HD</p></div>
@@ -464,6 +467,89 @@
         </div>
     </div>
 
+    <!-- OSH REPORT MODAL (NHẬT KÝ ATVSV) -->
+    <div id="oshReportModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[150] hidden flex items-center justify-center p-4 w-full">
+        <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative transition-colors">
+            <div class="bg-blue-600 p-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="ph-fill ph-shield-plus text-2xl"></i> Ghi Nhận ATVSV</h3>
+                <button onclick="document.getElementById('oshReportModal').classList.add('hidden')" class="text-white/80 hover:text-white bg-white/10 rounded-full p-1 transition"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto max-h-[80vh] custom-scrollbar">
+                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-3 rounded-xl text-amber-800 dark:text-amber-400 text-xs font-medium flex gap-2 mb-4">
+                    <i class="ph-fill ph-info text-lg shrink-0"></i>
+                    <p>Dữ liệu báo cáo sẽ được đính kèm định danh (<span id="reporter-name-label" class="font-bold"></span>) làm minh chứng đánh giá thưởng phụ cấp cuối tháng.</p>
+                </div>
+                <form id="oshReportForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Khu vực / Máy móc <span class="text-red-500">*</span></label>
+                        <input type="text" id="osh-area" required class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-white rounded-xl focus:border-blue-500 outline-none" placeholder="VD: Can Line - Máy In">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Phân loại <span class="text-red-500">*</span></label>
+                        <select id="osh-category" required class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-white rounded-xl focus:border-blue-500 outline-none">
+                            <option value="PTBVCN (PPE)">PTBVCN (PPE) - Không mang bảo hộ</option>
+                            <option value="5S & Môi trường">5S & Môi trường - Mất vệ sinh, bừa bộn</option>
+                            <option value="PCCC (Fire Safety)">PCCC (Fire Safety) - Chắn lối thoát hiểm</option>
+                            <option value="Máy móc (Machinery)">Máy móc (Machinery) - Hỏng che chắn</option>
+                            <option value="Near-miss">Near-miss - Sự cố suýt xảy ra</option>
+                            <option value="Khác">Khác (Others)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Mô tả vấn đề & Hành động khắc phục <span class="text-red-500">*</span></label>
+                        <textarea id="osh-desc" required rows="3" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-white rounded-xl focus:border-blue-500 outline-none" placeholder="Mô tả chi tiết và hành động bạn đã yêu cầu thực hiện..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Tải ảnh minh chứng (Bắt buộc) <span class="text-red-500">*</span></label>
+                        <!-- capture="environment" giúp tự động mở camera sau trên điện thoại di động -->
+                        <input type="file" id="osh-image" accept="image/*" capture="environment" required class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer">
+                    </div>
+                    <button type="submit" id="osh-submit-btn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 mt-2 shadow-md">
+                        <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Gửi Báo Cáo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- OSH LOGBOOK MODAL (BẢNG THEO DÕI NHẬT KÝ) -->
+    <div id="oshLogbookModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[140] hidden flex items-center justify-center p-4 w-full">
+        <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-7xl h-[85vh] flex flex-col overflow-hidden relative transition-colors">
+            <div class="bg-indigo-600 p-4 sm:p-5 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white"><i class="ph-fill ph-notebook text-2xl"></i></div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Sổ Nhật Ký ATVSV Điện Tử</h3>
+                        <p class="text-indigo-200 text-xs font-medium">Theo dõi báo cáo từ mạng lưới An toàn vệ sinh viên</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('oshLogbookModal').classList.add('hidden')" class="text-white/80 hover:text-white bg-white/10 rounded-full p-2 transition"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            
+            <div class="p-4 sm:p-6 flex-1 overflow-hidden flex flex-col bg-slate-50 dark:bg-slate-900">
+                <div class="flex-1 overflow-auto custom-scrollbar bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300 relative">
+                        <thead class="bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 font-bold whitespace-nowrap sticky top-0 z-10 shadow-sm backdrop-blur-md">
+                            <tr>
+                                <th class="px-4 py-3.5 text-center w-12 border-b border-slate-200 dark:border-slate-700">STT</th>
+                                <th class="px-4 py-3.5 border-b border-slate-200 dark:border-slate-700">Ngày / Giờ</th>
+                                <th class="px-4 py-3.5 border-b border-slate-200 dark:border-slate-700">Người báo cáo</th>
+                                <th class="px-4 py-3.5 border-b border-slate-200 dark:border-slate-700">Khu vực / Máy móc</th>
+                                <th class="px-4 py-3.5 border-b border-slate-200 dark:border-slate-700">Phân loại</th>
+                                <th class="px-4 py-3.5 border-b border-slate-200 dark:border-slate-700">Mô tả vấn đề & Hành động</th>
+                                <th class="px-4 py-3.5 text-center border-b border-slate-200 dark:border-slate-700">Tình trạng</th>
+                                <th class="px-4 py-3.5 text-center border-b border-slate-200 dark:border-slate-700">Minh chứng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="osh-logbook-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                            <!-- Dữ liệu từ Firebase sẽ đổ vào đây -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- COURSE MODAL -->
     <div id="course-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4 w-full">
         <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md p-6 sm:p-8 border-t-4 border-indigo-500 relative transition-colors">
@@ -560,6 +646,15 @@
             </div>
         </div>
     </div>
+    
+    <!-- NÚT BÁO CÁO ATVSV NHANH (FAB) -->
+    <button onclick="document.getElementById('oshReportModal').classList.remove('hidden')" class="fixed bottom-24 right-6 sm:bottom-28 sm:right-10 z-[80] bg-red-600 hover:bg-red-700 text-white rounded-full shadow-[0_4px_15px_rgba(220,38,38,0.5)] transition-all transform hover:scale-110 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 border-2 border-white/20 group">
+        <i class="ph-fill ph-camera text-2xl sm:text-3xl"></i>
+        <span class="absolute right-full mr-4 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition whitespace-nowrap shadow-md hidden sm:block">
+            Ghi nhận ATVSV
+            <span class="absolute top-1/2 -right-1 -mt-1 w-2 h-2 bg-red-600 transform rotate-45"></span>
+        </span>
+    </button>
     
     <!-- ROBOT AI TRỢ LÝ -->
     <a href="ai_phap_che.html" class="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 z-[90] group flex items-center gap-3">
@@ -672,6 +767,7 @@
         import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
@@ -686,6 +782,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
         
         window.auth = auth; window.db = db;
         window.EmailAuthProvider = EmailAuthProvider; window.reauthenticateWithCredential = reauthenticateWithCredential;
@@ -693,6 +790,10 @@
         window.collection = collection; window.query = query; window.where = where; window.getDocs = getDocs;
         window.doc = doc; window.updateDoc = updateDoc; window.addDoc = addDoc;
         window.orderBy = orderBy; window.limit = limit;
+        window.storage = storage; 
+        window.ref = ref; 
+        window.uploadBytes = uploadBytes; 
+        window.getDownloadURL = getDownloadURL;
         
         // =========================================================================
         // ĐỘNG CƠ ĐỒNG BỘ DỮ LIỆU FAIL-SAFE (Chống sập toàn cục)
@@ -1640,6 +1741,73 @@
             document.getElementById('report-modal').classList.add('hidden'); document.getElementById('report-modal').classList.remove('flex');
         }
 
+        // ==========================================
+        // XEM SỔ NHẬT KÝ ATVSV (ĐỔ DỮ LIỆU RA BẢNG)
+        // ==========================================
+        window.openOSHLogbook = async function() {
+            const modal = document.getElementById('oshLogbookModal');
+            const tbody = document.getElementById('osh-logbook-body');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
+
+            try {
+                // Kéo dữ liệu từ collection 'atvsv_logs' mới nhất lên đầu
+                const q = window.query(window.collection(window.db, "atvsv_logs"), window.orderBy("report_time", "desc"));
+                const snap = await window.getDocs(q);
+                
+                let html = '';
+                let stt = 1;
+                
+                if (snap.empty) {
+                    html = '<tr><td colspan="8" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào trong hệ thống.</td></tr>';
+                } else {
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        
+                        // Xử lý Ngày Giờ
+                        const dateObj = new Date(data.report_time);
+                        const timeStr = dateObj.toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+                        
+                        // Badge Tình trạng (Mô phỏng cột Status trong Excel)
+                        const statusBadge = data.status === 'Closed' 
+                            ? '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>'
+                            : '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
+
+                        // Nút xem Hình ảnh minh chứng
+                        const imgBtn = data.image_url 
+                            ? `<a href="${data.image_url}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition border border-blue-100" title="Xem ảnh"><i class="ph-bold ph-image text-lg"></i></a>`
+                            : '<span class="text-slate-300">-</span>';
+
+                        // Badge Phân loại
+                        let catColor = "bg-slate-100 text-slate-600";
+                        if(data.category.includes("PPE")) catColor = "bg-blue-50 text-blue-600 border-blue-200";
+                        if(data.category.includes("5S")) catColor = "bg-teal-50 text-teal-600 border-teal-200";
+                        if(data.category.includes("PCCC")) catColor = "bg-red-50 text-red-600 border-red-200";
+                        if(data.category.includes("Máy móc")) catColor = "bg-orange-50 text-orange-600 border-orange-200";
+
+                        html += `
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group">
+                                <td class="px-4 py-3 text-center font-medium">${stt++}</td>
+                                <td class="px-4 py-3 text-xs font-mono font-bold text-slate-500">${timeStr}</td>
+                                <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">${data.reporter_name}</td>
+                                <td class="px-4 py-3 font-medium">${data.area_machine}</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 border rounded text-[11px] font-bold ${catColor} whitespace-nowrap">${data.category.split('-')[0]}</span></td>
+                                <td class="px-4 py-3 text-xs min-w-[250px]"><p class="line-clamp-2" title="${data.description}">${data.description}</p></td>
+                                <td class="px-4 py-3 text-center">${statusBadge}</td>
+                                <td class="px-4 py-3 text-center">${imgBtn}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+            }
+        };
+
         window.toggleMobileMenu = function() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobile-overlay');
@@ -1853,6 +2021,77 @@
             
             // Trì hoãn việc kéo dữ liệu Firebase nửa giây để giao diện HTML load xong lập tức
             if(window.fetchDashboardData) { setTimeout(window.fetchDashboardData, 600); }
+        });
+        // ==========================================
+        // XỬ LÝ FORM BÁO CÁO ATVSV
+        // ==========================================
+        document.getElementById('oshReportModal').addEventListener('show', () => {
+             // Hiển thị tên người báo cáo lên cảnh báo vàng
+             const nameLabel = document.getElementById('reporter-name-label');
+             if(nameLabel) nameLabel.innerText = localStorage.getItem("ehs_user_name") || localStorage.getItem("ehs_user_id") || "Ẩn danh";
+        });
+
+        document.getElementById('oshReportForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Ngăn trang reload
+            
+            const btn = document.getElementById('osh-submit-btn');
+            const ogText = btn.innerHTML;
+            const reporterId = localStorage.getItem("ehs_user_id");
+            const reporterName = localStorage.getItem("ehs_user_name") || "Ẩn danh";
+            
+            if (!reporterId || !window.db || !window.storage) {
+                window.showCustomAlert("Hệ thống chưa sẵn sàng hoặc bạn chưa đăng nhập. Vui lòng tải lại trang!", "Lỗi", true);
+                return;
+            }
+
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang xử lý & tải ảnh...';
+            btn.disabled = true;
+
+            try {
+                // 1. Tải ảnh lên Firebase Storage
+                const fileInput = document.getElementById('osh-image');
+                const file = fileInput.files[0];
+                let imageUrl = "";
+                
+                if (file) {
+                    // Tạo tên file ngẫu nhiên để không bị trùng (Timestamp_MãNV)
+                    const fileName = `${Date.now()}_${reporterId}_${file.name}`;
+                    const storageRef = window.ref(window.storage, `atvsv_evidence/${fileName}`);
+                    
+                    // Upload file
+                    const snapshot = await window.uploadBytes(storageRef, file);
+                    // Lấy link ảnh web
+                    imageUrl = await window.getDownloadURL(snapshot.ref);
+                }
+
+                // 2. Lưu dữ liệu văn bản vào Firestore
+                const area = document.getElementById('osh-area').value;
+                const category = document.getElementById('osh-category').value;
+                const desc = document.getElementById('osh-desc').value;
+
+                await window.addDoc(window.collection(window.db, "atvsv_logs"), {
+                    reporter_id: reporterId,
+                    reporter_name: reporterName,
+                    report_time: new Date().toISOString(),
+                    area_machine: area,
+                    category: category,
+                    description: desc,
+                    status: 'Pending', // Mặc định là Đang xử lý
+                    image_url: imageUrl
+                });
+
+                // 3. Thông báo thành công và reset form
+                window.showCustomAlert("Báo cáo ATVSV đã được ghi nhận. Dữ liệu này sẽ được đối soát để trả phụ cấp hàng tháng.", "✅ Ghi nhận thành công");
+                this.reset();
+                document.getElementById('oshReportModal').classList.add('hidden');
+                
+            } catch (error) {
+                console.error("Lỗi gửi báo cáo ATVSV:", error);
+                window.showCustomAlert("Lỗi trong quá trình gửi: " + error.message, "Lỗi Server", true);
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
         });
     </script>
 </body>
