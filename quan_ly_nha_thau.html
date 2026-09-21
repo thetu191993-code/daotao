@@ -680,31 +680,22 @@
             if(!confirm(`Xác nhận Hợp lệ (Pass) cho toàn bộ hồ sơ cũ của nhà thầu: ${companyName}?\nHệ thống sẽ tự động chốt hồ sơ mà không cần qua các bước trình duyệt.`)) return;
 
             try {
-                const taskData = {
-                    title: `PHÊ DUYỆT KHAI BÁO NHÀ THẦU (Dữ liệu cũ): ${companyName}`,
-                    category: 'An toàn',
-                    task_type: 'contractor_approval',
-                    approval_step: 2, 
-                    due_date: new Date().toISOString().split('T')[0],
-                    assigner_id: "admin_legacy",
-                    assigner_name: companyName,
-                    assignee_id: "030",
-                    assignee_name: "Bùi Văn Vượng (GĐ EHS)",
-                    progress: 100,
-                    status: 'Done',
-                    is_review_requested: false,
-                    evaluation: 'Được EHS xác nhận hợp lệ từ hệ thống dữ liệu cũ (Legacy Data Verify).', 
-                    plan_steps: [{text: `Kiểm tra danh sách Nhân sự & Máy móc công ty ${companyName}`, progress: 100}],
-                    created_at: new Date(),
-                    thoi_gian_cap_nhat: new Date()
-                };
-
-                await window.addDoc(window.collection(window.db, "ehs_tasks"), taskData);
+                // GỌI HÀM ĐỒNG BỘ ĐỂ TÌM VÀ ĐÓNG TASK ĐANG BỊ KẸT THAY VÌ TẠO TASK MỚI
+                await window.logPTWProgressToTaskBoard(
+                    companyName, 
+                    'Contractor', // Truyền type là Contractor để query đúng task_type
+                    'Duyệt nhanh (Verify Legacy)', 
+                    'Được EHS xác nhận hợp lệ từ hệ thống dữ liệu cũ', 
+                    'GĐ EHS', 
+                    "030", 
+                    "Bùi Văn Vượng (GĐ EHS)"
+                );
+        
                 window.showToast("Đã chốt hợp lệ hồ sơ cũ thành công!");
-                
+        
                 if(currentTab === 'nhan-su') window.loadWorkerData();
                 else if(currentTab === 'may-moc') window.loadMachineData();
-                
+        
             } catch(e) {
                 window.showToast("Lỗi chốt hồ sơ: " + e.message, "error");
             }
@@ -716,14 +707,23 @@
             tbody.innerHTML = '';
             
             try {
-                const taskSnap = await window.getDocs(window.query(window.collection(window.db, "ehs_tasks"), window.where("task_type", "==", "contractor_approval")));
+                const taskSnap = await window.getDocs(window.query(
+                    window.collection(window.db, "ehs_tasks"), 
+                    window.where("task_type", "==", "contractor_approval")
+                ));
                 window.globalApprovalMap = {};
                 taskSnap.forEach(doc => {
                     const t = doc.data();
-                    // ĐÃ SỬA: Quy đổi toàn bộ Firebase Timestamp ra mili-giây để so sánh chính xác 100%
                     let timeT = t.created_at ? (t.created_at.toDate ? t.created_at.toDate().getTime() : new Date(t.created_at).getTime()) : 0;
+        
+                    // NẾU CÔNG TY ĐÃ CÓ TRẠNG THÁI 'DONE' THÌ KHÔNG CHO PHÉP TASK MỚI ĐÈ LÊN (Giữ nguyên trạng thái đã duyệt)
+                    if (window.globalApprovalMap[t.assigner_name] && window.globalApprovalMap[t.assigner_name].status === 'Done') {
+                        return; // Bỏ qua, giữ nguyên trạng thái Done
+                    }
+
                     let existingTime = window.globalApprovalMap[t.assigner_name] ? window.globalApprovalMap[t.assigner_name].time : 0;
-                    
+        
+                    // Cập nhật lấy trạng thái mới nhất nếu chưa từng Done
                     if (!window.globalApprovalMap[t.assigner_name] || timeT > existingTime) {
                         window.globalApprovalMap[t.assigner_name] = { status: t.status, time: timeT };
                     }
@@ -1468,7 +1468,8 @@
             const q = window.query(
                 window.collection(window.db, "ehs_tasks"),
                 window.where("assignee_id", "==", currentUserId),
-                window.where("task_type", "==", "ptw_review"),
+                // SỬ DỤNG BIẾN type ĐỂ LINH HOẠT TÌM ĐÚNG TASK PTW HOẶC NHÀ THẦU
+                window.where("task_type", "==", type === 'PTW' ? "ptw_review" : "contractor_approval"), 
                 window.where("status", "in", ["To Do", "In Progress", "Review"])
             );
 
