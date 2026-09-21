@@ -1134,6 +1134,25 @@
 
                 if (t.task_type === 'contractor_approval') {
                     document.getElementById('update-modal-title').innerHTML = `<i class="ph-fill ph-hard-hat text-rose-500"></i> Phê Duyệt Nhà Thầu`;
+    
+                    const contractorUI = document.createElement('div');
+                    contractorUI.className = "mt-6";
+    
+                    if (t.status === 'Done') {
+                        document.getElementById('task-eval').readOnly = true;
+                        contractorUI.innerHTML = `<div class="w-full text-center text-emerald-600 font-bold bg-emerald-50 p-4 rounded-xl border border-emerald-200">Hồ sơ nhà thầu này đã được phê duyệt hoàn tất.</div>`;
+                    } else {
+                        contractorUI.innerHTML = `
+                            <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl text-blue-800 text-sm font-medium mb-4 text-center">
+                                 Hồ sơ nhà thầu bao gồm nhiều danh mục (Nhân sự, Máy móc, Giấy tờ). Vui lòng chuyển sang Cổng Nhà Thầu để rà soát chi tiết trước khi ra quyết định.
+                            </div>
+                            <a href="quan_ly_nha_thau.html?search=${encodeURIComponent(t.assigner_name)}" target="_blank" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-share-network text-xl"></i> MỞ CỔNG PHÊ DUYỆT NHÀ THẦU
+                            </a>
+                        `;
+                    }
+                    evalSec.appendChild(contractorUI);
+                }            
 
                     const viewProfileUI = document.createElement('a');
                     viewProfileUI.id = 'btn-view-profile';
