@@ -639,6 +639,8 @@
                                 <th class="px-4 py-3.5 border-b border-slate-200 dark:border-slate-700">Mô tả vấn đề & Hành động</th>
                                 <th class="px-4 py-3.5 text-center border-b border-slate-200 dark:border-slate-700">Tình trạng</th>
                                 <th class="px-4 py-3.5 text-center border-b border-slate-200 dark:border-slate-700">Minh chứng</th>
+                                <!-- THÊM CỘT NÀY VÀO DƯỚI CÙNG -->
+                                <th class="px-4 py-3.5 text-center border-b border-slate-200 dark:border-slate-700">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="osh-logbook-body" class="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -646,6 +648,32 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL XÁC NHẬN KHẮC PHỤC SỰ CỐ -->
+    <div id="resolveIssueModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[170] hidden flex items-center justify-center p-4 w-full">
+        <div class="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative transition-colors">
+            <div class="bg-emerald-600 p-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="ph-fill ph-check-circle text-2xl"></i> Cập Nhật Khắc Phục</h3>
+                <button onclick="document.getElementById('resolveIssueModal').classList.add('hidden')" class="text-white/80 hover:text-white bg-white/10 rounded-full p-1 transition"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div class="p-5">
+                <form id="resolveIssueForm" class="space-y-4">
+                    <input type="hidden" id="resolve-doc-id">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Hành động đã khắc phục <span class="text-red-500">*</span></label>
+                        <textarea id="resolve-note" required rows="3" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-white rounded-xl focus:border-emerald-500 outline-none" placeholder="Ghi rõ hành động đã thực hiện để đóng sự cố này..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Hình ảnh sau khi khắc phục (Tùy chọn)</label>
+                        <input type="file" id="resolve-img" accept="image/jpeg, image/png, image/jpg" capture="environment" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-emerald-100 file:text-emerald-700 hover:file:bg-emerald-200 cursor-pointer">
+                    </div>
+                    <button type="submit" id="resolve-submit-btn" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 transition flex items-center justify-center gap-2 mt-2 shadow-md">
+                        <i class="ph-bold ph-check-square-offset text-lg"></i> Hoàn Thành & Đóng Lỗi
+                    </button>
+                </form>
             </div>
         </div>
     </div>
@@ -1960,18 +1988,32 @@
                     html = '<tr><td colspan="8" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào trong hệ thống.</td></tr>';
                 } else {
                     snap.forEach(doc => {
+                        const docId = doc.id; // Lấy ID của tài liệu để cập nhật
                         const data = doc.data();
                         
                         // Xử lý Ngày Giờ
                         const dateObj = new Date(data.report_time);
                         const timeStr = dateObj.toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                        let statusBadge = '';
+                        let actionBtn = '';
                         
                         // Badge Tình trạng (Mô phỏng cột Status trong Excel)
                         const statusBadge = data.status === 'Closed' 
                             ? '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>'
                             : '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
 
-                        // Nút xem Hình ảnh minh chứng
+                        if (data.status === 'Closed') {
+                            statusBadge = '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>';
+                            // Nếu đã đóng, hiển thị icon check xanh
+                            actionBtn = '<span class="text-emerald-500 font-bold flex items-center justify-center gap-1"><i class="ph-bold ph-check-circle text-lg"></i> OK</span>';
+                        } else {
+                            statusBadge = '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
+                            // Nếu đang chờ, hiển thị nút Khắc phục
+                            actionBtn = `<button onclick="window.openResolveModal('${docId}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-wrench"></i> Khắc phục</button>`;
+                        }
+
+                        // ... phần Nút xem hình ảnh minh chứng và Badge Phân loại giữ nguyên ...
                         const imgBtn = data.image_url 
                             ? `<a href="${data.image_url}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition border border-blue-100" title="Xem ảnh"><i class="ph-bold ph-image text-lg"></i></a>`
                             : '<span class="text-slate-300">-</span>';
@@ -1993,6 +2035,7 @@
                                 <td class="px-4 py-3 text-xs min-w-[250px]"><p class="line-clamp-2" title="${data.description}">${data.description}</p></td>
                                 <td class="px-4 py-3 text-center">${statusBadge}</td>
                                 <td class="px-4 py-3 text-center">${imgBtn}</td>
+                                <td class="px-4 py-3 text-center">${actionBtn}</td>
                             </tr>
                         `;
                     });
@@ -2349,6 +2392,64 @@
                 if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
                     window.openOSHLogbook();
                 }
+
+                // Mở popup nhập thông tin khắc phục
+                window.openResolveModal = function(docId) {
+                    document.getElementById('resolve-doc-id').value = docId;
+                    document.getElementById('resolveIssueForm').reset();
+                    document.getElementById('resolveIssueModal').classList.remove('hidden');
+                    document.getElementById('resolveIssueModal').classList.add('flex');
+                };
+
+                // Gửi dữ liệu khắc phục lên Firebase
+                document.getElementById('resolveIssueForm').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const btn = document.getElementById('resolve-submit-btn');
+                    const ogText = btn.innerHTML;
+                    btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang cập nhật...';
+                    btn.disabled = true;
+
+                    try {
+                        const docId = document.getElementById('resolve-doc-id').value;
+                        const resolveNote = document.getElementById('resolve-note').value;
+                        const fileInput = document.getElementById('resolve-img');
+                        const file = fileInput.files[0];
+                
+                        let imageUrl = "";
+                        let resolveText = `[Đã khắc phục]: ${resolveNote}`;
+
+                        // Nếu có upload ảnh sau khắc phục (Dùng lại hàm nén và đẩy lên Google Drive)
+                        if (file) {
+                            const base64Image = await processAndCompressImage(file);
+                            const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec"; // Nhớ dán link Apps Script vào đây
+                    
+                            const response = await fetch(googleScriptUrl, {
+                                method: 'POST',
+                                body: JSON.stringify({ fileName: `KhacPhuc_${docId}.jpg`, mimeType: 'image/jpeg', base64: base64Image })
+                            });
+                            const result = await response.json();
+                            if(result.status === 'success') {
+                                imageUrl = result.url;
+                                resolveText += `\n[Ảnh minh chứng]: ${imageUrl}`;
+                            }
+                        }
+
+                        // Cập nhật tình trạng document thành 'Closed' và nối thêm ghi chú khắc phục
+                        const docRef = window.doc(window.db, "atvsv_logs", docId);
+                        const docSnap = await window.getDocs(window.query(window.collection(window.db, "atvsv_logs"), window.where("__name__", "==", docId)));
+                        let oldDesc = "";
+                        docSnap.forEach(d => { oldDesc = d.data().description; });
+
+                        await window.updateDoc(docRef, {
+                            status: 'Closed',
+                            description: oldDesc + `\n\n-----------------\n` + resolveText
+                        });
+
+                        window.showCustomAlert("Đã xác nhận khắc phục thành công!", "Hoàn thành");
+                        document.getElementById('resolveIssueModal').classList.add('hidden');
+                
+                        // Tự động load lại bảng Nhật ký
+                        window.openOSHLogbook();
                 
             } catch (error) {
                 console.error("Lỗi gửi báo cáo ATVSV:", error);
