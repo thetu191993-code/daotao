@@ -1198,12 +1198,15 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (window.checkLoginStatus) window.checkLoginStatus();
-                // Tách tiến trình lấy dữ liệu giúp web không bị giật lag
                 setTimeout(() => { if(window.fetchDashboardData) window.fetchDashboardData(); }, 300);
                 setTimeout(() => { window.fetchLivePTW(); }, 600);
                 setTimeout(window.fetchNotifications, 900); 
             } else {
-                if(window.fetchDashboardData) window.fetchDashboardData(); 
+                // NẾU KHÔNG CÓ TÀI KHOẢN HOẶC PHIÊN HẾT HẠN -> Xóa cache và bắt đăng nhập lại
+                localStorage.removeItem("ehs_user_id");
+                localStorage.removeItem("ehs_user_name");
+                localStorage.removeItem("ehs_user_dept");
+                window.location.href = "login.html";
             }
         });
 
@@ -1507,6 +1510,10 @@
 
         const currentUserId = localStorage.getItem("ehs_user_id");
         const currentUserName = localStorage.getItem("ehs_user_name");
+        // BẮT BUỘC ĐĂNG NHẬP: Kiểm tra ngay khi tải trang
+        if (!currentUserId) {
+            window.location.href = "login.html";
+        }
         
         function checkLoginStatus() {
             const sidebarFooter = document.getElementById('sidebar-footer');
