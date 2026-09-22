@@ -526,7 +526,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Tải ảnh minh chứng (Bắt buộc) <span class="text-red-500">*</span></label>
                         <!-- capture="environment" giúp tự động mở camera sau trên điện thoại di động -->
-                        <input type="file" id="osh-image" accept="image/*" capture="environment" required class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer">
+                        <input type="file" id="chk-img" accept="image/jpeg, image/png, image/jpg" capture="environment" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-teal-100 file:text-teal-700 hover:file:bg-teal-200 cursor-pointer">
                     </div>
                     <button type="submit" id="osh-submit-btn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 mt-2 shadow-md">
                         <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Gửi Báo Cáo
@@ -2220,14 +2220,20 @@
         // ==========================================
         // XỬ LÝ FORM BÁO CÁO ATVSV
         // ==========================================
-        // HÀM NÉN ẢNH THÀNH CHUỖI BASE64 XUỐNG DƯỚI 200KB
+        // HÀM NÉN ẢNH THÀNH CHUỖI BASE64 XUỐNG DƯỚI 200KB (ĐÃ FIX LỖI TREO)
         async function compressImageToBase64(file, maxWidth = 1024, quality = 0.7) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (event) => {
                     const img = new Image();
                     img.src = event.target.result;
+                    
+                    // Thêm bắt lỗi nếu file không thể đọc được (như HEIC)
+                    img.onerror = () => {
+                        reject(new Error("Trình duyệt không hỗ trợ định dạng ảnh này. Vui lòng chọn ảnh JPG/PNG."));
+                    };
+
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
                         let width = img.width;
@@ -2320,69 +2326,6 @@
                 if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
                     window.openOSHLogbook();
                 }
-                
-            } catch (error) {
-                console.error("Lỗi gửi báo cáo ATVSV:", error);
-                window.showCustomAlert("Lỗi trong quá trình gửi: " + error.message, "Lỗi Server", true);
-            } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-            }
-        });
-
-        document.getElementById('oshReportForm').addEventListener('submit', async function(e) {
-            e.preventDefault(); // Ngăn trang reload
-            
-            const btn = document.getElementById('osh-submit-btn');
-            const ogText = btn.innerHTML;
-            const reporterId = localStorage.getItem("ehs_user_id");
-            const reporterName = localStorage.getItem("ehs_user_name") || "Ẩn danh";
-            
-            if (!reporterId || !window.db || !window.storage) {
-                window.showCustomAlert("Hệ thống chưa sẵn sàng hoặc bạn chưa đăng nhập. Vui lòng tải lại trang!", "Lỗi", true);
-                return;
-            }
-
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang xử lý & tải ảnh...';
-            btn.disabled = true;
-
-            try {
-                // 1. Tải ảnh lên Firebase Storage
-                const fileInput = document.getElementById('osh-image');
-                const file = fileInput.files[0];
-                let imageUrl = "";
-                
-                if (file) {
-                    // Tạo tên file ngẫu nhiên để không bị trùng (Timestamp_MãNV)
-                    const fileName = `${Date.now()}_${reporterId}_${file.name}`;
-                    const storageRef = window.ref(window.storage, `atvsv_evidence/${fileName}`);
-                    
-                    // Upload file
-                    const snapshot = await window.uploadBytes(storageRef, file);
-                    // Lấy link ảnh web
-                    imageUrl = await window.getDownloadURL(snapshot.ref);
-                }
-
-                // 2. Lưu dữ liệu văn bản vào Firestore
-                const area = document.getElementById('osh-area').value;
-                const category = document.getElementById('osh-category').value;
-                const desc = document.getElementById('osh-desc').value;
-
-                await window.addDoc(window.collection(window.db, "atvsv_logs"), {
-                    reporter_id: reporterId,
-                    reporter_name: reporterName,
-                    report_time: new Date().toISOString(),
-                    area_machine: area,
-                    category: category,
-                    description: desc,
-                    status: 'Pending', // Mặc định là Đang xử lý
-                    image_url: imageUrl
-                });
-
-                // 3. Thông báo thành công và reset form
-                window.showCustomAlert("Báo cáo ATVSV đã được ghi nhận. Dữ liệu này sẽ được đối soát để trả phụ cấp hàng tháng.", "✅ Ghi nhận thành công");
-                this.reset();
-                document.getElementById('oshReportModal').classList.add('hidden');
                 
             } catch (error) {
                 console.error("Lỗi gửi báo cáo ATVSV:", error);
