@@ -527,7 +527,7 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Tải ảnh minh chứng (Bắt buộc) <span class="text-red-500">*</span></label>
                         <!-- capture="environment" giúp tự động mở camera sau trên điện thoại di động -->
-                        <input type="file" id="osh-image" accept="image/*, .heic" capture="environment" required class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-teal-100 file:text-teal-700 hover:file:bg-teal-200 cursor-pointer">
+                        <input type="file" id="osh-image" accept="image/jpeg, image/png, image/jpg" capture="environment" required class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer">
                     </div>
                     <button type="submit" id="osh-submit-btn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 mt-2 shadow-md">
                         <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Gửi Báo Cáo
@@ -601,7 +601,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Chụp ảnh hiện trường (Bắt buộc nếu có lỗi)</label>
-                        <input type="file" id="chk-img" accept="image/*, .heic" capture="environment" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-teal-100 file:text-teal-700 hover:file:bg-teal-200 cursor-pointer">
+                        <input type="file" id="chk-img" accept="image/jpeg, image/png, image/jpg" capture="environment" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-teal-100 file:text-teal-700 hover:file:bg-teal-200 cursor-pointer">
                     </div>
 
                     <button type="submit" id="chk-submit-btn" class="w-full bg-teal-600 text-white font-bold py-4 rounded-xl hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-lg text-lg">
@@ -1865,8 +1865,8 @@
                 let imageUrl = "";
                 
                 if (file) {
-                    // 1. Nén ảnh tại trình duyệt
-                    const base64Image = await compressImageToBase64(file, 1024, 0.7);
+                    // 1. Nhận diện, chuyển đổi và Nén ảnh
+                    const base64Image = await processAndCompressImage(file);
                     const fileName = `Checklist_${Date.now()}_${reporterId}.jpg`;
                     
                     // 2. Gửi sang Google Apps Script
@@ -2256,27 +2256,27 @@
                 };
             });
         }
-        // BỘ XỬ LÝ TỰ ĐỘNG CHUYỂN ĐỔI HEIC (IPHONE) SANG JPEG VÀ NÉN
+        // BỘ XỬ LÝ TỰ ĐỘNG CHUYỂN ĐỔI HEIC (IPHONE/PC) SANG JPEG VÀ NÉN
         async function processAndCompressImage(file) {
             let fileToProcess = file;
             
-            // 1. Nhận diện file HEIC từ các thiết bị Apple
             if (file.name.toLowerCase().endsWith(".heic") || file.type === "image/heic") {
                 try {
-                    // Dịch file HEIC sang định dạng JPEG phổ thông
                     const convertedBlob = await heic2any({
                         blob: file,
                         toType: "image/jpeg",
                         quality: 0.8
                     });
-                    // Nếu ảnh chụp ở chế độ Live Photo (nhiều frame), chỉ lấy frame đầu tiên
                     fileToProcess = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+                    
+                    // Phải gán lại thuộc tính name để FileReader không bị lỗi ở bước tiếp theo
+                    fileToProcess.name = file.name.replace(/\.heic$/i, ".jpg");
                 } catch (err) {
-                    throw new Error("Không thể giải mã định dạng ảnh HEIC của iPhone. Vui lòng thử lại.");
+                    console.error("Lỗi heic2any:", err);
+                    throw new Error("Trình duyệt của bạn đang bị quá tải hoặc không thể giải mã ảnh HEIC này. Vui lòng thử dùng ảnh JPG/PNG.");
                 }
             }
             
-            // 2. Chuyển qua hàm ép nén dung lượng cũ
             return await compressImageToBase64(fileToProcess, 1024, 0.7);
         }
         document.getElementById('oshReportForm').addEventListener('submit', async function(e) {
