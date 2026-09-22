@@ -2311,17 +2311,18 @@
                         quality: 0.8
                     });
                     fileToProcess = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
-                    
-                    // Phải gán lại thuộc tính name để FileReader không bị lỗi ở bước tiếp theo
                     fileToProcess.name = file.name.replace(/\.heic$/i, ".jpg");
                 } catch (err) {
                     console.error("Lỗi heic2any:", err);
                     throw new Error("Trình duyệt của bạn đang bị quá tải hoặc không thể giải mã ảnh HEIC này. Vui lòng thử dùng ảnh JPG/PNG.");
                 }
             }
-            
             return await compressImageToBase64(fileToProcess, 1024, 0.7);
         }
+
+        // =========================================
+        // 1. XỬ LÝ FORM BÁO CÁO NHANH (NÚT MÀU ĐỎ)
+        // =========================================
         document.getElementById('oshReportForm').addEventListener('submit', async function(e) {
             e.preventDefault(); 
             
@@ -2344,21 +2345,13 @@
                 let imageUrl = "";
                 
                 if (file) {
-                    // 1. Nén ảnh tại trình duyệt
                     const base64Image = await processAndCompressImage(file);
                     const fileName = `BaoCao_${Date.now()}_${reporterId}.jpg`;
-                    
-                    // 2. Gửi sang Google Apps Script
-                    // 🔴 QUAN TRỌNG: Dán URL Ứng dụng Web Google Apps Script của bạn vào đây:
                     const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec";
                     
                     const response = await fetch(googleScriptUrl, {
                         method: 'POST',
-                        body: JSON.stringify({
-                            fileName: fileName,
-                            mimeType: 'image/jpeg',
-                            base64: base64Image
-                        })
+                        body: JSON.stringify({ fileName: fileName, mimeType: 'image/jpeg', base64: base64Image })
                     });
                     
                     const result = await response.json();
@@ -2369,7 +2362,6 @@
                     }
                 }
 
-                // 3. Lưu Text vào Firebase
                 const area = document.getElementById('osh-area').value;
                 const category = document.getElementById('osh-category').value;
                 const desc = document.getElementById('osh-desc').value;
@@ -2392,68 +2384,75 @@
                 if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
                     window.openOSHLogbook();
                 }
-
-                // Mở popup nhập thông tin khắc phục
-                window.openResolveModal = function(docId) {
-                    document.getElementById('resolve-doc-id').value = docId;
-                    document.getElementById('resolveIssueForm').reset();
-                    document.getElementById('resolveIssueModal').classList.remove('hidden');
-                    document.getElementById('resolveIssueModal').classList.add('flex');
-                };
-
-                // Gửi dữ liệu khắc phục lên Firebase
-                document.getElementById('resolveIssueForm').addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const btn = document.getElementById('resolve-submit-btn');
-                    const ogText = btn.innerHTML;
-                    btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang cập nhật...';
-                    btn.disabled = true;
-
-                    try {
-                        const docId = document.getElementById('resolve-doc-id').value;
-                        const resolveNote = document.getElementById('resolve-note').value;
-                        const fileInput = document.getElementById('resolve-img');
-                        const file = fileInput.files[0];
-                
-                        let imageUrl = "";
-                        let resolveText = `[Đã khắc phục]: ${resolveNote}`;
-
-                        // Nếu có upload ảnh sau khắc phục (Dùng lại hàm nén và đẩy lên Google Drive)
-                        if (file) {
-                            const base64Image = await processAndCompressImage(file);
-                            const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec"; // Nhớ dán link Apps Script vào đây
-                    
-                            const response = await fetch(googleScriptUrl, {
-                                method: 'POST',
-                                body: JSON.stringify({ fileName: `KhacPhuc_${docId}.jpg`, mimeType: 'image/jpeg', base64: base64Image })
-                            });
-                            const result = await response.json();
-                            if(result.status === 'success') {
-                                imageUrl = result.url;
-                                resolveText += `\n[Ảnh minh chứng]: ${imageUrl}`;
-                            }
-                        }
-
-                        // Cập nhật tình trạng document thành 'Closed' và nối thêm ghi chú khắc phục
-                        const docRef = window.doc(window.db, "atvsv_logs", docId);
-                        const docSnap = await window.getDocs(window.query(window.collection(window.db, "atvsv_logs"), window.where("__name__", "==", docId)));
-                        let oldDesc = "";
-                        docSnap.forEach(d => { oldDesc = d.data().description; });
-
-                        await window.updateDoc(docRef, {
-                            status: 'Closed',
-                            description: oldDesc + `\n\n-----------------\n` + resolveText
-                        });
-
-                        window.showCustomAlert("Đã xác nhận khắc phục thành công!", "Hoàn thành");
-                        document.getElementById('resolveIssueModal').classList.add('hidden');
-                
-                        // Tự động load lại bảng Nhật ký
-                        window.openOSHLogbook();
                 
             } catch (error) {
                 console.error("Lỗi gửi báo cáo ATVSV:", error);
                 window.showCustomAlert("Lỗi trong quá trình gửi: " + error.message, "Lỗi Server", true);
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        }); // <-- Dấu ngoặc này rất quan trọng để đóng khối Báo cáo nhanh
+
+        // =========================================
+        // 2. MỞ MODAL & XỬ LÝ FORM KHẮC PHỤC SỰ CỐ
+        // =========================================
+        window.openResolveModal = function(docId) {
+            document.getElementById('resolve-doc-id').value = docId;
+            document.getElementById('resolveIssueForm').reset();
+            document.getElementById('resolveIssueModal').classList.remove('hidden');
+            document.getElementById('resolveIssueModal').classList.add('flex');
+        };
+
+        document.getElementById('resolveIssueForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('resolve-submit-btn');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang cập nhật...';
+            btn.disabled = true;
+
+            try {
+                const docId = document.getElementById('resolve-doc-id').value;
+                const resolveNote = document.getElementById('resolve-note').value;
+                const fileInput = document.getElementById('resolve-img');
+                const file = fileInput.files[0];
+        
+                let imageUrl = "";
+                let resolveText = `[Đã khắc phục]: ${resolveNote}`;
+
+                if (file) {
+                    const base64Image = await processAndCompressImage(file);
+                    const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec"; 
+            
+                    const response = await fetch(googleScriptUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ fileName: `KhacPhuc_${docId}.jpg`, mimeType: 'image/jpeg', base64: base64Image })
+                    });
+                    const result = await response.json();
+                    if(result.status === 'success') {
+                        imageUrl = result.url;
+                        resolveText += `\n[Ảnh minh chứng]: ${imageUrl}`;
+                    }
+                }
+
+                const docRef = window.doc(window.db, "atvsv_logs", docId);
+                const docSnap = await window.getDocs(window.query(window.collection(window.db, "atvsv_logs"), window.where("__name__", "==", docId)));
+                let oldDesc = "";
+                docSnap.forEach(d => { oldDesc = d.data().description; });
+
+                await window.updateDoc(docRef, {
+                    status: 'Closed',
+                    description: oldDesc + `\n\n-----------------\n` + resolveText
+                });
+
+                window.showCustomAlert("Đã xác nhận khắc phục thành công!", "Hoàn thành");
+                document.getElementById('resolveIssueModal').classList.add('hidden');
+        
+                window.openOSHLogbook(); // Tự động load lại bảng Nhật ký
+        
+            } catch (error) {
+                console.error("Lỗi xác nhận khắc phục:", error);
+                window.showCustomAlert("Lỗi cập nhật: " + error.message, "Lỗi", true);
             } finally {
                 btn.innerHTML = ogText;
                 btn.disabled = false;
