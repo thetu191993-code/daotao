@@ -1974,7 +1974,8 @@
             
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
+            // Cập nhật colspan=9 vì chúng ta đã thêm cột Thao tác
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
 
             try {
                 // Kéo dữ liệu từ collection 'atvsv_logs' mới nhất lên đầu
@@ -1985,7 +1986,7 @@
                 let stt = 1;
                 
                 if (snap.empty) {
-                    html = '<tr><td colspan="8" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào trong hệ thống.</td></tr>';
+                    html = '<tr><td colspan="9" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào trong hệ thống.</td></tr>';
                 } else {
                     snap.forEach(doc => {
                         const docId = doc.id; // Lấy ID của tài liệu để cập nhật
@@ -1998,11 +1999,6 @@
                         let statusBadge = '';
                         let actionBtn = '';
                         
-                        // Badge Tình trạng (Mô phỏng cột Status trong Excel)
-                        const statusBadge = data.status === 'Closed' 
-                            ? '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>'
-                            : '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
-
                         if (data.status === 'Closed') {
                             statusBadge = '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>';
                             // Nếu đã đóng, hiển thị icon check xanh
@@ -2013,7 +2009,7 @@
                             actionBtn = `<button onclick="window.openResolveModal('${docId}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-wrench"></i> Khắc phục</button>`;
                         }
 
-                        // ... phần Nút xem hình ảnh minh chứng và Badge Phân loại giữ nguyên ...
+                        // Nút xem Hình ảnh minh chứng
                         const imgBtn = data.image_url 
                             ? `<a href="${data.image_url}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition border border-blue-100" title="Xem ảnh"><i class="ph-bold ph-image text-lg"></i></a>`
                             : '<span class="text-slate-300">-</span>';
@@ -2043,7 +2039,7 @@
                 tbody.innerHTML = html;
             } catch (error) {
                 console.error(error);
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi tải dữ liệu: ${error.message}</td></tr>`;
             }
         };
 
