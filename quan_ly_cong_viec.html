@@ -1306,6 +1306,24 @@
                 const docRef = doc(db, "ehs_tasks", upTaskId);
                 await updateDoc(docRef, updateData);
                 
+                // --- THÊM EMAIL CHO LUỒNG NHÀ THẦU ---
+                if (typeof window.sendCustomEmail === 'function') {
+                    const subj = action === 'approve' ? `[EHS System] Hồ sơ nhà thầu đã được duyệt` : `[EHS System] TỪ CHỐI hồ sơ nhà thầu`;
+                    const color = action === 'approve' ? '#16a34a' : '#dc2626';
+                    const body = `
+                        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                            <h2 style="color: ${color};">Kết Quả Phê Duyệt Hồ Sơ Nhà Thầu</h2>
+                            <p>Lãnh đạo <b>${currentUserName}</b> đã xử lý hồ sơ nhà thầu do bạn trình lên:</p>
+                            <ul>
+                                <li><b>Hạng mục:</b> ${t.title}</li>
+                                <li><b>Trạng thái:</b> <b>${action === 'approve' ? 'ĐƯỢC PHÊ DUYỆT' : 'BỊ TỪ CHỐI'}</b></li>
+                                <li><b>Ghi chú của sếp:</b> <i>${evalNote || "Không có"}</i></li>
+                            </ul>
+                        </div>`;
+                    window.sendCustomEmail(t.assigner_id, subj, body); // Gửi về cho người khởi tạo trình duyệt (assigner_id trong trường hợp contractor_approval)
+                }
+                // -------------------------------------
+
                 window.closeUpdateModal(); 
                 window.showToast("Xử lý hồ sơ thành công!");
                 await fetchAllTasks(); 
@@ -1413,7 +1431,6 @@
             if(btn) { btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang xử lý...'; btn.disabled = true; }
             
             try {
-                // ĐÃ SỬA: Bỏ chữ "window." trước updateDoc, doc và db
                 await updateDoc(doc(db, "ehs_tasks", taskId), {
                     progress: 100,
                     status: 'Done',
@@ -1421,6 +1438,21 @@
                     thoi_gian_cap_nhat: new Date()
                 });
                 
+                // --- THÊM EMAIL CẢNH BÁO ADMIN OVERRIDE ---
+                const t = rawTasksData.find(x => x.id === taskId);
+                if (t && typeof window.sendCustomEmail === 'function') {
+                    const subject = `[EHS System] Admin đã ép đóng công việc: ${t.title}`;
+                    const body = `
+                        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #fca5a5; background-color: #fef2f2; border-radius: 10px;">
+                            <h2 style="color: #dc2626;">Can Thiệp Từ Quản Trị Viên</h2>
+                            <p>Quản trị viên <b>${currentUserName}</b> vừa sử dụng quyền Admin Override để ép hoàn thành (100%) công việc của bạn:</p>
+                            <ul><li><b>Công việc:</b> ${t.title}</li></ul>
+                            <p>Lý do thường gặp: Hệ thống ghi nhận tiến độ ngoài thực tế đã xong nhưng quy trình trên web bị kẹt. Nếu có sai sót, vui lòng liên hệ trực tiếp Admin.</p>
+                        </div>`;
+                    window.sendCustomEmail(t.assignee_id, subject, body);
+                }
+                // ------------------------------------------
+
                 window.showToast("Đã ép đóng Task thành công!");
                 window.closeUpdateModal();
                 await window.fetchAllTasks();
@@ -1488,6 +1520,51 @@
 
             try {
                 await updateDoc(doc(db, "ehs_tasks", upTaskId), updateData);
+                
+                // --- BẮT ĐẦU: KÍCH HOẠT EMAIL THÔNG BÁO TIẾN ĐỘ ---
+                
+                // Trường hợp 1: Nhân viên Trình Lãnh đạo xem xét (Gửi mail cho Sếp)
+                if (updateData.status === 'Review' && t.status !== 'Review') {
+                    const revId = updateData.reviewer_id || t.reviewer_id || t.assigner_id; 
+                    if (revId && typeof window.sendCustomEmail === 'function') {
+                        const subject = `[EHS System] Yêu cầu nghiệm thu: ${t.title}`;
+                        const body = `
+                            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                                <h2 style="color: #9333ea;">Yêu Cầu Xem Xét Kế Hoạch</h2>
+                                <p>Nhân sự <b>${currentUserName}</b> vừa hoàn thành và trình duyệt một công việc:</p>
+                                <ul>
+                                    <li><b>Tên công việc:</b> ${t.title}</li>
+                                    <li><b>Tiến độ cập nhật:</b> ${updateData.progress}%</li>
+                                </ul>
+                                <p>Vui lòng truy cập <a href="https://antoan.asia">Hệ thống EHS</a> (Góc Lãnh Đạo) để kiểm tra và nghiệm thu đóng việc.</p>
+                            </div>`;
+                        window.sendCustomEmail(revId, subject, body);
+                    }
+                }
+                
+                // Trường hợp 2: Lãnh đạo nhận xét hoặc đóng việc (Gửi mail về cho Nhân viên)
+                if (currentTab === 'all-tasks' || currentTab === 'assigned-tasks') {
+                    if ((updateData.evaluation && updateData.evaluation !== t.evaluation) || updateData.status === 'Done') {
+                        const subject = `[EHS System] Phản hồi từ Lãnh đạo: ${t.title}`;
+                        const statusText = updateData.status === 'Done' ? '<span style="color: #16a34a; font-weight: bold;">Đã nghiệm thu (Hoàn thành)</span>' : '<span style="color: #d97706; font-weight: bold;">Có yêu cầu/nhận xét mới</span>';
+                        const body = `
+                            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                                <h2 style="color: #2563eb;">Phản Hồi Trực Tiếp Từ Lãnh Đạo</h2>
+                                <p>Sếp <b>${currentUserName}</b> vừa đánh giá công việc của bạn:</p>
+                                <ul>
+                                    <li><b>Công việc:</b> ${t.title}</li>
+                                    <li><b>Trạng thái:</b> ${statusText}</li>
+                                    <li><b>Ghi chú/Nhận xét:</b> <i style="color: #d97706;">${updateData.evaluation || "Đã duyệt, không có ghi chú thêm."}</i></li>
+                                </ul>
+                                <p>Vui lòng đăng nhập vào <a href="https://antoan.asia">Hệ thống EHS</a> để xem chi tiết.</p>
+                            </div>`;
+                        if (typeof window.sendCustomEmail === 'function') {
+                            window.sendCustomEmail(t.assignee_id, subject, body);
+                        }
+                    }
+                }
+                // --- KẾT THÚC: KÍCH HOẠT EMAIL ---
+
                 window.closeUpdateModal(); 
                 showToast("Cập nhật tiến độ thành công!");
                 await fetchAllTasks(); 
@@ -1568,6 +1645,43 @@
                 console.error("Lỗi đồng bộ email:", error);
             }
         }
+        // =====================================================================
+        // HÀM GỬI EMAIL ĐA NĂNG (DÙNG CHO DUYỆT, NHẬN XÉT, ÉP ĐÓNG TASK...)
+        // =====================================================================
+        window.sendCustomEmail = async function(userId, subject, htmlBody) {
+            try {
+                // 1. Tìm email của người dùng trong cơ sở dữ liệu dựa vào Mã NV (userId)
+                const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", userId));
+                const snap = await window.getDocs(q);
+        
+                if (!snap.empty) {
+                    const toEmail = snap.docs[0].data().email;
+            
+                    if (toEmail) {
+                        // 2. LINK WEB APP GOOGLE SCRIPT CỦA BẠN (Giữ nguyên link bạn đang dùng)
+                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec";
+                
+                        // 3. Đóng gói dữ liệu để gửi đi
+                        const payload = { 
+                            action: "sendEmail", 
+                            toEmail: toEmail, 
+                            subject: subject, 
+                            body: htmlBody 
+                        };
+                
+                        // 4. Kích hoạt gửi email ngầm (không dùng await để tránh đơ giao diện)
+                        fetch(googleScriptUrl, { 
+                            method: 'POST', 
+                            body: JSON.stringify(payload) 
+                        });
+                    } else {
+                        console.warn(`Không tìm thấy email của nhân sự có mã: ${userId}`);
+                    }
+                }
+            } catch (error) { 
+                console.error("Lỗi gửi email cập nhật:", error); 
+            }
+        };
 
     </script>
 </body>
