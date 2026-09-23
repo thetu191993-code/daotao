@@ -439,6 +439,9 @@
                     </div>
                 </div>
 
+                <!-- THÊM ĐOẠN NÀY: Khu vực hiển thị Lịch sử phê duyệt -->
+                <div id="ptw-approval-history" class="mt-4 mb-2"></div>
+
                 <!-- Khu vực ra quyết định của EHS -->
                 <div id="ptw-action-section" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm mt-4">
                     <!-- JS sẽ tự động chèn nút bấm -->
@@ -1254,6 +1257,38 @@
                 imgSection.classList.add('hidden');
             }
 
+            // Bổ sung code hiển thị Lịch Sử Phê Duyệt
+            const requesterName = p.nguoi_tao || p.nguoi_lien_he || "Đại diện nhà thầu";
+            const ehsName = p.nguoi_duyet_ehs || '<span class="text-slate-400 italic font-medium">Chờ duyệt...</span>';
+            const gdkvName = p.can_gd_kv ? (p.nguoi_duyet_gd_khuvuc || '<span class="text-slate-400 italic font-medium">Chờ duyệt...</span>') : '<span class="text-slate-400 italic font-medium">Không Y/C</span>';
+            const gdehsName = p.nguoi_duyet_gd_ehs || '<span class="text-slate-400 italic font-medium">Chờ duyệt...</span>';
+
+            document.getElementById('ptw-approval-history').innerHTML = `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <p class="text-xs font-black text-slate-700 uppercase mb-4 flex items-center gap-2">
+                        <i class="ph-fill ph-signature text-lg text-indigo-500"></i> Lịch Sử Phê Duyệt / Chữ ký số
+                    </p>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Người xin phép</p>
+                            <p class="text-sm font-bold text-slate-800">${requesterName}</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Chuyên viên EHS</p>
+                            <p class="text-sm font-bold text-blue-700">${ehsName}</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Giám đốc Khu vực</p>
+                            <p class="text-sm font-bold text-amber-600">${gdkvName}</p>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Giám đốc EHS</p>
+                            <p class="text-sm font-bold text-rose-600">${gdehsName}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             // Render form chọn danh sách nhân sự (Datalist hiển thị SẠCH)
             let datalistOptions = window.internalStaffList.map(s => `<option value="${s.displayName}">`).join('');
 
@@ -1665,17 +1700,89 @@
             const style = document.createElement('style');
             style.innerHTML = `
                 @media print {
-                    body * { visibility: hidden; }
-                    #ptw-review-modal, #ptw-review-modal * { visibility: visible; }
-                    #ptw-review-modal { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; background: white; overflow: visible !important; height: auto !important; max-height: none !important;}
-                    #ptw-review-modal .custom-scrollbar, #ptw-review-modal ul { overflow: visible !important; max-height: none !important; height: auto !important; }
-                    .no-print, #ptw-action-section button { display: none !important; }
-                    li { page-break-inside: avoid; }
+                    /* 1. Ẩn toàn bộ nội dung web, chỉ giữ lại Modal In */
+                    body > *:not(#ptw-review-modal) {
+                        display: none !important;
+                    }
+                    
+                    /* 2. Reset Body về luồng tài liệu thông thường, cho phép kéo dài trang */
+                    html, body {
+                        height: auto !important;
+                        min-height: auto !important;
+                        overflow: visible !important;
+                        background: white !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                    }
+
+                    /* 3. Phá bỏ các thuộc tính fixed, absolute gây lỗi kẹt chiều cao 95vh */
+                    #ptw-review-modal {
+                        position: static !important;
+                        display: block !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        height: auto !important;
+                        max-height: none !important;
+                        background: white !important;
+                        box-shadow: none !important;
+                        border: none !important;
+                        transform: none !important;
+                        padding: 0 !important;
+                    }
+                    
+                    #ptw-review-modal > div {
+                        display: block !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        height: auto !important;
+                        max-height: none !important;
+                        border: none !important;
+                        box-shadow: none !important;
+                    }
+
+                    /* 4. Cho phép các thẻ cuộn (scroll) được bung toàn bộ nội dung ra giấy */
+                    #ptw-review-modal .overflow-hidden,
+                    #ptw-review-modal .overflow-y-auto,
+                    #ptw-review-modal .custom-scrollbar,
+                    #ptw-review-modal .max-h-[95vh],
+                    #ptw-review-modal .max-h-48 {
+                        overflow: visible !important;
+                        max-height: none !important;
+                        height: auto !important;
+                    }
+
+                    /* 5. Ẩn các nút bấm thao tác (chỉ in nội dung văn bản) */
+                    .no-print,
+                    #ptw-action-section,
+                    button[onclick*="closeModal"] {
+                        display: none !important;
+                    }
+
+                    /* 6. Chống cắt đôi văn bản giữa 2 trang in */
+                    .bg-white.p-5.rounded-2xl {
+                        page-break-inside: avoid !important;
+                        margin-bottom: 20px !important;
+                        border: 1px solid #e2e8f0 !important;
+                    }
+                    
+                    li {
+                        page-break-inside: avoid !important;
+                    }
+                    
+                    /* Giữ màu nền của các badge trạng thái (In màu) */
+                    * {
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
                 }
             `;
             document.head.appendChild(style);
             window.print();
-            document.head.removeChild(style);
+            
+            // Xóa thẻ style sau khi in xong để trả lại giao diện gốc
+            setTimeout(() => {
+                document.head.removeChild(style);
+            }, 1000);
         }
 
     </script>
