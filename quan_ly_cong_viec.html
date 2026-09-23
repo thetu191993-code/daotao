@@ -1367,12 +1367,18 @@
                         reviewer_id: "", reviewer_name: "", created_at: new Date(), task_type: "normal"
                     };
                     await addDoc(collection(db, "ehs_tasks"), newTask);
-                    
+
+                    // ---------------------------------------------------------
+                    // [THAO TÁC 3] KÍCH HOẠT GỬI EMAIL NGAY SAU KHI LƯU FIRESTORE
+                    // ---------------------------------------------------------
+                    const deadlineVN = deadline.split('-').reverse().join('/');
+                    sendTaskNotificationEmail(assignee_id, title, currentUserName, deadlineVN);
+
                     try {
-                        const assigneeToken = globalUserEmailMap[assignee_id]; 
+                        const assigneeToken = globalUserEmailMap[assignee_id];
                         if (assigneeToken) {
-                            const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1zY9c/exec";
-                            const deadlineVN = deadline.split('-').reverse().join('/');
+                            const PUSH_API_URL = "https://script.google.com/macros/s/AKfycbyfD0jGz5vX6_tV0lS9wP_0s3s4n3b8-6D7Yw_oGjK9_X1z/exec";
+        
                             fetch(PUSH_API_URL, {
                                 method: 'POST',
                                 body: JSON.stringify({
@@ -1520,6 +1526,48 @@
         }
 
         initializeAppForUser();
+        // Hàm gửi email ngầm (Background Email Dispatch)
+        async function sendTaskNotificationEmail(assigneeId, taskTitle, assignerName, dueDate) {
+            try {
+                // Lấy thông tin email của người nhận từ bảng nhan_su_noi_bo
+                const q = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", assigneeId));
+                const snap = await window.getDocs(q);
+        
+                if (!snap.empty) {
+                    const userData = snap.docs[0].data();
+                    const toEmail = userData.email;
+            
+                    if (toEmail) {
+                        // CHÚ Ý: Thay link Web App mới của bạn vào biến dưới đây
+                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec"; 
+                
+                        const payload = {
+                            action: "sendEmail",
+                            toEmail: toEmail,
+                            subject: `[Asia Packaging Industries] Nhiệm vụ EHS mới: ${taskTitle}`,
+                            body: `
+                                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;">
+                                    <h2 style="color: #2563eb;">Hệ thống Điều hành EHS</h2>
+                                    <p>Xin chào <b>${userData.ho_ten}</b>,</p>
+                                    <p>Bạn vừa nhận được một nhiệm vụ mới từ bộ phận An toàn - Môi trường:</p>
+                                    <ul>
+                                        <li><b>Người giao:</b> ${assignerName}</li>
+                                        <li><b>Công việc:</b> ${taskTitle}</li>
+                                        <li><b>Hạn chót:</b> <span style="color: red; font-weight: bold;">${dueDate}</span></li>
+                                    </ul>
+                                    <p>Vui lòng đăng nhập vào <a href="https://antoan.asia">Hệ thống EHS</a> để cập nhật tiến độ công việc nhằm tuân thủ đúng quy trình.</p>
+                                </div>
+                            `
+                        };
+                
+                        // Gọi API gửi mail ngầm, không dùng await để tránh giật lag giao diện
+                        fetch(googleScriptUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    }
+                }
+            } catch (error) {
+                console.error("Lỗi đồng bộ email:", error);
+            }
+        }
 
     </script>
 </body>
