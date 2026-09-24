@@ -768,36 +768,77 @@
                         <i class="ph-bold ph-spinner animate-spin text-4xl text-blue-500 mb-3"></i><p class="font-bold text-slate-500 dark:text-dark-muted">Đang tải dữ liệu...</p>
                     </div>
                     <div id="tab-content-info" class="space-y-4 pb-20 sm:pb-0">
-                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-3 rounded-xl text-amber-800 dark:text-amber-400 text-xs font-medium flex gap-2"><i class="ph-fill ph-info text-lg shrink-0"></i><p>Vui lòng cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo (Theo Vị trí/Ca làm việc). Mã NV dùng để đăng nhập nên không thể tự thay đổi.</p></div>
+                        <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 p-3 rounded-xl text-amber-800 dark:text-amber-400 text-xs font-medium flex gap-2">
+                            <i class="ph-fill ph-info text-lg shrink-0"></i>
+                            <p>Vui lòng cập nhật đầy đủ để hệ thống phân loại đúng Ma trận đào tạo (Theo Vị trí/Ca làm việc). Mã NV dùng để đăng nhập nên không thể tự thay đổi.</p>
+                        </div>
                         <input type="hidden" id="up-doc-id">
+                        
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Mã NV (MSSV)</label><input type="text" id="up-id" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-100 dark:bg-slate-800 dark:text-slate-300 rounded-lg font-mono font-bold cursor-not-allowed" readonly></div>
                             <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Họ và Tên</label><input type="text" id="up-name" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg font-bold outline-none focus:border-blue-500"></div>
                         </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ngày sinh</label><input type="date" id="up-dob" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"></div>
-                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giới tính</label><select id="up-gender" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="">-- Chọn --</option><option value="Nam">Nam</option><option value="Nữ">Nữ</option></select></div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Giới tính</label>
+                                <select id="up-gender" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500">
+                                    <option value="">-- Chọn --</option><option value="Nam">Nam / Male</option><option value="Nữ">Nữ / Female</option>
+                                </select>
+                            </div>
                         </div>
+
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Nhà Máy</label><select id="up-plant" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="">-- Chọn --</option><option value="Nhà máy Can">Nhà máy Can</option><option value="Nhà máy End">Nhà máy End</option></select></div>
-                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ca Làm Việc</label><select id="up-shift" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500"><option value="Chưa xác định">-- Chọn Ca --</option><option value="Ca A">Ca A</option><option value="Ca B">Ca B</option><option value="Ca C">Ca C</option><option value="Ca D">Ca D</option><option value="Hành Chánh">Hành Chánh</option></select></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Số điện thoại</label><input type="tel" id="up-phone" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500" placeholder="09xxxx"></div>
+                            <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Email (@api hoặc @gmail)</label><input type="email" id="up-email" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="vidu@api.com.vn"></div>
                         </div>
-                        <div><label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Bộ Phận / Vị trí</label><input type="text" id="up-dept-pos" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="VD: Sản xuất - Vận hành máy..."></div>
-                        <div class="flex flex-col sm:flex-row gap-3 mt-4">
-                            <button onclick="requestNotificationPermission()" class="w-full sm:w-1/2 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2"><i class="ph-bold ph-bell-ringing text-lg"></i> Bật Thông Báo Nhận Việc</button>
-                            <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full sm:w-1/2 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2"><i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ</button>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Nhà Máy</label>
+                                <select id="up-plant" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500">
+                                    <option value="">-- Chọn nhà máy --</option>
+                                    <option value="Nhà máy Can">Nhà máy Can</option>
+                                    <option value="Nhà máy End">Nhà máy End</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Bộ Phận</label>
+                                <select id="up-dept" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 text-sm">
+                                    <option value="">-- Chọn bộ phận --</option>
+                                    <option value="Sản xuất">Sản xuất</option>
+                                    <option value="QC">QC</option>
+                                    <option value="Điện - Cơ sở hạ tầng - EHS">Điện - Cơ sở hạ tầng - EHS</option>
+                                    <option value="Kỹ thuật">Kỹ thuật</option>
+                                    <option value="Kho - Logistic - PPIC">Kho - Logistic - PPIC</option>
+                                    <option value="Tài chính - Mua hàng">Tài chính - Mua hàng</option>
+                                    <option value="Bán hàng">Bán hàng</option>
+                                    <option value="Nhân sự">Nhân sự</option>
+                                    <option value="BOD">BOD</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Ca Làm Việc</label>
+                                <select id="up-shift" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500">
+                                    <option value="Chưa xác định">-- Chọn Ca --</option><option value="Ca A">Ca A</option><option value="Ca B">Ca B</option><option value="Ca C">Ca C</option><option value="Ca D">Ca D</option><option value="Hành Chánh">Hành Chánh</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Cụm Nút Bấm Hành Động -->
+                        <div class="flex flex-col sm:flex-row gap-3 mt-6 border-t border-slate-200 dark:border-dark-border pt-4">
+                            <button onclick="requestNotificationPermission()" class="w-full sm:w-1/2 bg-emerald-600 text-white font-bold py-3.5 rounded-xl hover:bg-emerald-700 shadow-md transition flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-bell-ringing text-lg"></i> Bật Thông Báo Nhận Việc
+                            </button>
+                            <button id="btn-save-profile" onclick="saveUserProfile()" class="w-full sm:w-1/2 bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 shadow-md transition flex items-center justify-center gap-2">
+                                <i class="ph-bold ph-floppy-disk text-lg"></i> Cập Nhật Hồ Sơ
+                            </button>
                         </div>
                     </div>
-                    <!-- Bổ sung trường nhập Email -->
-                    <div class="mt-4">
-                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted uppercase mb-1">Email Nhận Thông Báo (Khuyến khích dùng @api.com.vn)</label>
-                        <input type="email" id="up-email" class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-white dark:bg-dark-card dark:text-white rounded-lg outline-none focus:border-blue-500 font-medium" placeholder="vidu@api.com.vn">
-                    </div>
-                    <div id="tab-content-task" class="hidden space-y-4 pb-20 sm:pb-0">
-                        <h4 class="font-black text-slate-800 dark:text-white text-lg border-b border-slate-200 dark:border-dark-border pb-2 mb-4">Nhiệm vụ cần thực hiện</h4>
-                        <div id="task-container" class="space-y-3"></div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1645,13 +1686,11 @@
                     document.getElementById('up-name').value = userData.ho_ten || "";
                     document.getElementById('up-dob').value = userData.ngay_sinh || "";
                     document.getElementById('up-gender').value = userData.gioi_tinh || "";
-                    document.getElementById('up-plant').value = userData.nha_may || "";
-                    document.getElementById('up-shift').value = userData.ca_lam_viec || "Chưa xác định";
+                    document.getElementById('up-phone').value = userData.so_dien_thoai || "";
                     document.getElementById('up-email').value = userData.email || "";
-                    
-                    let deptPos = userData.bo_phan || "";
-                    if (userData.vi_tri) deptPos += " - " + userData.vi_tri;
-                    document.getElementById('up-dept-pos').value = deptPos;
+                    document.getElementById('up-plant').value = userData.nha_may || "";
+                    document.getElementById('up-dept').value = userData.bo_phan || "";
+                    document.getElementById('up-shift').value = userData.ca_lam_viec || "Chưa xác định";
                 } else {
                     document.getElementById('up-doc-id').value = "";
                 }
@@ -1689,10 +1728,11 @@
                 ho_ten: document.getElementById('up-name').value.trim(),
                 ngay_sinh: document.getElementById('up-dob').value, 
                 gioi_tinh: document.getElementById('up-gender').value,
+                so_dien_thoai: document.getElementById('up-phone').value.trim(),
+                email: emailInput,
                 nha_may: document.getElementById('up-plant').value, 
+                bo_phan: document.getElementById('up-dept').value, 
                 ca_lam_viec: document.getElementById('up-shift').value,
-                bo_phan: document.getElementById('up-dept-pos').value.trim(), 
-                email: emailInput, // Dữ liệu email mới
                 thoi_gian_cap_nhat: new Date()
             };
 
