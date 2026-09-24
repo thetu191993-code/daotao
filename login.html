@@ -1,19 +1,32 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập - EHS Training</title>
+    <title>EHS Training - Authentication</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; transition: background-color 0.3s ease; }
+    </style>
+
     <!-- Tích hợp Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // ANH DÁN API KEY MỚI VÀO ĐÂY NHÉ
         const firebaseConfig = {
             apiKey: "AIzaSyC7iFVmgoUL-sW3UlaMV0rlNQYugFiw2uA",
             authDomain: "ehs-training-app.firebaseapp.com",
@@ -28,259 +41,417 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        window.auth = auth;
-        window.db = db;
+        window.auth = auth; window.db = db;
         window.signInWithEmailAndPassword = signInWithEmailAndPassword;
         window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
-        window.doc = doc;
-        window.setDoc = setDoc;
-        window.getDoc = getDoc;
+        window.doc = doc; window.setDoc = setDoc; window.getDoc = getDoc;
     </script>
 </head>
-<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans text-slate-800 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+<body class="bg-slate-100 dark:bg-slate-900 min-h-screen flex flex-col items-center justify-center p-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] relative">
 
-    <div class="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-200 relative">
+    <!-- CÔNG CỤ TOP RIGHT (ĐA NGÔN NGỮ & GIAO DIỆN) -->
+    <div class="absolute top-4 right-4 flex items-center gap-3 z-50">
+        <select id="lang-selector" onchange="changeLanguage()" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-lg px-3 py-2 outline-none font-bold shadow-sm cursor-pointer">
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+            <option value="en">🇬🇧 English</option>
+            <option value="zh">🇨🇳 中文</option>
+        </select>
+        <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center border border-slate-300 dark:border-slate-700 shadow-sm transition">
+            <i id="theme-icon" class="ph-bold ph-moon text-slate-600 dark:text-amber-400 text-xl"></i>
+        </button>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="max-w-xl w-full bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-700 relative transition-colors duration-300">
         
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 mb-4 shadow-inner">
                 <i class="ph-fill ph-shield-check text-4xl"></i>
             </div>
-            <h2 class="text-2xl font-bold text-slate-800">Hệ Thống Đào Tạo EHS</h2>
-            <p class="text-slate-500 text-sm mt-1" id="form-subtitle">Vui lòng đăng nhập để tiếp tục</p>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white" data-i18n="title">Hệ Thống Đào Tạo EHS</h2>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-2 font-medium" id="form-subtitle" data-i18n="subtitle_login">Vui lòng đăng nhập để tiếp tục</p>
         </div>
 
         <!-- THÔNG BÁO LỖI -->
-        <div id="error-msg" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium mb-4 text-center border border-red-100">
-            Lỗi đăng nhập!
-        </div>
+        <div id="error-msg" class="hidden bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-xl text-sm font-bold mb-5 text-center border border-red-200 dark:border-red-800/50"></div>
 
-        <!-- FORM ĐĂNG NHẬP / ĐĂNG KÝ -->
+        <!-- FORM CHUNG -->
         <div class="space-y-4">
+            <!-- MÃ NHÂN VIÊN (Dùng chung cho cả Đăng nhập & Đăng ký) -->
             <div>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Mã Nhân Viên (ID)</label>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_emp_id">Mã Nhân Viên (ID)</label>
                 <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="ph-bold ph-identification-card text-slate-400 text-lg"></i>
-                    </div>
-                    <input type="text" id="emp-id" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none uppercase" placeholder="VD: NV001">
+                    <i class="ph-bold ph-identification-card absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg"></i>
+                    <input type="text" id="emp-id" class="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none uppercase font-bold" data-i18n-placeholder="ph_emp_id" placeholder="VD: NV001">
                 </div>
             </div>
 
-            <!-- Trường Họ Tên (Chỉ hiện khi Đăng ký) -->
-            <div id="name-field" class="hidden">
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Họ và Tên</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="ph-bold ph-user text-slate-400 text-lg"></i>
-                    </div>
-                    <input type="text" id="emp-name" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="VD: Nguyễn Văn A">
-                </div>
-            </div>
-
-            <!-- Trường Bộ Phận (Chỉ hiện khi Đăng ký) -->
-            <div id="dept-field" class="hidden">
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Phòng Ban / Bộ Phận</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="ph-bold ph-users-three text-slate-400 text-lg"></i>
-                    </div>
-                    <select id="emp-dept" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white cursor-pointer text-slate-700">
-                        <option value="">-- Chọn phòng ban/bộ phận --</option>
-                        <option value="Sản xuất - Can">Sản xuất - Can</option>
-                        <option value="Sản xuất - End">Sản xuất - End</option>
-                        <option value="QC - Can">QC - Can</option>
-                        <option value="QC - End">QC - End</option>
-                        <option value="Điện - Nhà xưởng - Vệ sinh - Can">Điện - Nhà xưởng - Vệ sinh - Can</option>
-                        <option value="Kỹ thuật - Can">Kỹ thuật - Can</option>
-                        <option value="Kỹ thuật - End">Kỹ thuật - End</option>
-                        <option value="EHS">EHS</option>
-                        <option value="Kho - Logistic - PPIC">Kho - Logistic - PPIC</option>
-                        <option value="Tài chính - Mua hàng">Tài chính - Mua hàng</option>
-                        <option value="Bán hàng">Bán hàng</option>
-                        <option value="Nhân sự">Nhân sự</option>
-                        <option value="Nhà thầu">Nhà thầu</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="ph-bold ph-caret-down text-slate-400"></i>
-                    </div>
-                </div>
-            </div>
-
+            <!-- MẬT KHẨU (Dùng chung) -->
             <div>
                 <div class="flex justify-between items-center mb-1">
-                    <label class="block text-sm font-semibold text-slate-700">Mật khẩu</label>
-                    <!-- NÚT QUÊN MẬT KHẨU -->
-                    <button id="btn-forgot-pass" type="button" onclick="showForgotPassModal()" class="text-sm font-semibold text-blue-600 hover:text-blue-800 hover:underline focus:outline-none">
-                        Quên mật khẩu?
-                    </button>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase" data-i18n="lbl_pass">Mật khẩu</label>
+                    <button id="btn-forgot-pass" type="button" onclick="showForgotPassModal()" class="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline" data-i18n="btn_forgot">Quên mật khẩu?</button>
                 </div>
                 <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="ph-bold ph-lock-key text-slate-400 text-lg"></i>
-                    </div>
-                    <input type="password" id="emp-pass" class="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" placeholder="••••••••">
+                    <i class="ph-bold ph-lock-key absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg"></i>
+                    <input type="password" id="emp-pass" class="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium" placeholder="••••••••">
                 </div>
             </div>
 
-            <button id="btn-submit" onclick="handleAuth()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-2 hover:bg-blue-700 transition flex justify-center items-center gap-2 shadow-md">
+            <!-- KHU VỰC CHỈ HIỂN THỊ KHI ĐĂNG KÝ (Dạng Grid 2 cột) -->
+            <div id="register-fields" class="hidden space-y-4 animate-[slideDown_0.3s_ease-out]">
+                <!-- Xác nhận mật khẩu -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_pass_confirm">Xác nhận mật khẩu <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <i class="ph-bold ph-lock-key absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg"></i>
+                        <input type="password" id="emp-pass-confirm" class="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <hr class="border-slate-200 dark:border-slate-700 my-2">
+
+                <!-- Họ Tên & Giới tính -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_name">Họ và Tên <span class="text-red-500">*</span></label>
+                        <input type="text" id="emp-name" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium" data-i18n-placeholder="ph_name" placeholder="Nguyễn Văn A">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_gender">Giới tính <span class="text-red-500">*</span></label>
+                        <select id="emp-gender" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium dark:bg-slate-800">
+                            <option value="">-- Chọn --</option>
+                            <option value="Nam">Nam / Male</option>
+                            <option value="Nữ">Nữ / Female</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SĐT & Email -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_phone">Số điện thoại <span class="text-red-500">*</span></label>
+                        <input type="tel" id="emp-phone" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium" placeholder="09xxxx">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_email">Email (@api hoặc @gmail) <span class="text-red-500">*</span></label>
+                        <input type="email" id="emp-email" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium" placeholder="abc@api.com.vn">
+                    </div>
+                </div>
+
+                <!-- Nhà máy & Bộ phận -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_plant">Nhà Máy <span class="text-red-500">*</span></label>
+                        <select id="emp-plant" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium dark:bg-slate-800">
+                            <option value="">-- Chọn nhà máy --</option>
+                            <option value="Nhà máy Can">Nhà máy Can</option>
+                            <option value="Nhà máy End">Nhà máy End</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1" data-i18n="lbl_dept">Bộ Phận <span class="text-red-500">*</span></label>
+                        <select id="emp-dept" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-xl focus:border-blue-500 bg-transparent dark:text-white outline-none font-medium dark:bg-slate-800 text-sm">
+                            <option value="">-- Chọn bộ phận --</option>
+                            <option value="Sản xuất">Sản xuất</option>
+                            <option value="QC">QC</option>
+                            <option value="Điện - Cơ sở hạ tầng - EHS">Điện - Cơ sở hạ tầng - EHS</option>
+                            <option value="Kỹ thuật">Kỹ thuật</option>
+                            <option value="Kho - Logistic - PPIC">Kho - Logistic - PPIC</option>
+                            <option value="Tài chính - Mua hàng">Tài chính - Mua hàng</option>
+                            <option value="Bán hàng">Bán hàng</option>
+                            <option value="Nhân sự">Nhân sự</option>
+                            <option value="BOD">BOD</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nút Thực hiện -->
+            <button id="btn-submit" onclick="handleAuth()" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-blue-700 transition flex justify-center items-center gap-2 shadow-lg text-lg">
                 Đăng nhập
             </button>
         </div>
 
-        <!-- CHUYỂN ĐỔI CHẾ ĐỘ -->
-        <div class="mt-6 text-center text-sm text-slate-600 border-t border-slate-100 pt-4">
-            <span id="toggle-text">Nhân sự mới?</span> 
-            <button onclick="toggleMode()" id="btn-toggle" class="text-blue-600 font-bold hover:underline ml-1">Đăng ký tài khoản</button>
+        <!-- CHUYỂN ĐỔI CHẾ ĐỘ LOGIN / REGISTER -->
+        <div class="mt-6 text-center text-sm font-medium text-slate-600 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-5">
+            <span id="toggle-text" data-i18n="msg_new_user">Nhân sự mới?</span> 
+            <button onclick="toggleMode()" id="btn-toggle" class="text-blue-600 dark:text-blue-400 font-bold hover:underline ml-1" data-i18n="btn_to_register">Đăng ký tài khoản</button>
         </div>
         
-        <!-- Nút Trở về trang chủ -->
+        <!-- Nút Trở về -->
         <div class="mt-4 text-center">
-            <a href="index.html" class="inline-flex items-center justify-center text-sm font-medium text-slate-500 hover:text-slate-800 transition">
-                <i class="ph-bold ph-arrow-left mr-1"></i> Quay về Trang chủ
+            <a href="index.html" class="inline-flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition bg-slate-100 dark:bg-slate-800/50 px-4 py-2 rounded-full">
+                <i class="ph-bold ph-arrow-left mr-2"></i> <span data-i18n="btn_back">Quay về Trang chủ</span>
             </a>
         </div>
     </div>
 
     <!-- MODAL QUÊN MẬT KHẨU -->
-    <div id="forgot-pass-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 text-center border-t-4 border-amber-500">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 text-amber-500 mb-4">
-                <i class="ph-fill ph-warning-circle text-3xl"></i>
+    <div id="forgot-pass-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden p-6 sm:p-8 text-center border-t-4 border-amber-500">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-500 mb-4">
+                <i class="ph-fill ph-warning-circle text-4xl"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Quên Mật Khẩu?</h3>
-            <p class="text-slate-600 text-sm mb-6 leading-relaxed">
-                Vì hệ thống sử dụng <strong>Mã Nhân Viên</strong> nội bộ (không dùng email cá nhân) nên tính năng tự động cấp lại mật khẩu bị vô hiệu hóa để đảm bảo bảo mật.<br><br>
-                Vui lòng liên hệ <strong>Phòng EHS (Admin)</strong> cung cấp Mã NV để được cấp lại mật khẩu mới.
+            <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2" data-i18n="modal_fp_title">Quên Mật Khẩu?</h3>
+            <p class="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed" data-i18n="modal_fp_desc">
+                Hệ thống sử dụng Mã Nhân Viên nội bộ nên tính năng tự động cấp lại mật khẩu bị vô hiệu hóa để bảo mật.<br><br>
+                Vui lòng liên hệ <strong>Admin (Phòng EHS)</strong> cung cấp Mã NV để được cấp lại mật khẩu mới.
             </p>
-            <button onclick="closeForgotPassModal()" class="w-full bg-slate-800 text-white font-bold py-2.5 rounded-lg hover:bg-slate-700 transition shadow-sm">
+            <button onclick="closeForgotPassModal()" class="w-full bg-slate-800 dark:bg-slate-700 text-white font-bold py-3.5 rounded-xl hover:bg-slate-700 dark:hover:bg-slate-600 transition shadow-md">
                 Đã hiểu & Đóng
             </button>
         </div>
     </div>
 
+    <!-- SCRIPT ĐIỀU KHIỂN & FIREBASE -->
     <script>
-        let isLoginMode = true;
+        // 1. TỪ ĐIỂN ĐA NGÔN NGỮ
+        const translations = {
+            "vi": {
+                title: "Hệ Thống Đào Tạo EHS", subtitle_login: "Vui lòng đăng nhập để tiếp tục", subtitle_register: "Đăng ký tài khoản nội bộ bằng Mã NV",
+                lbl_emp_id: "Mã Nhân Viên (ID)", ph_emp_id: "VD: NV001", lbl_pass: "Mật khẩu", btn_forgot: "Quên mật khẩu?",
+                lbl_pass_confirm: "Xác nhận mật khẩu", lbl_name: "Họ và tên", ph_name: "Nguyễn Văn A", lbl_gender: "Giới tính",
+                lbl_phone: "Số điện thoại", lbl_email: "Email (@api hoặc @gmail)", lbl_plant: "Nhà máy", lbl_dept: "Bộ phận",
+                btn_login: "Đăng Nhập", btn_register: "Tạo tài khoản & Đăng nhập",
+                msg_new_user: "Nhân sự mới?", btn_to_register: "Đăng ký tài khoản", msg_has_user: "Đã có tài khoản?", btn_to_login: "Đăng nhập ngay",
+                btn_back: "Quay về Trang chủ", modal_fp_title: "Quên Mật Khẩu?", 
+                modal_fp_desc: "Hệ thống sử dụng Mã Nhân Viên nội bộ nên tính năng tự động cấp lại mật khẩu bị vô hiệu hóa để bảo mật.<br><br>Vui lòng liên hệ <strong>Admin (Phòng EHS)</strong> cung cấp Mã NV để được cấp lại mật khẩu mới."
+            },
+            "en": {
+                title: "EHS Training System", subtitle_login: "Please login to continue", subtitle_register: "Register account using Employee ID",
+                lbl_emp_id: "Employee ID", ph_emp_id: "Ex: NV001", lbl_pass: "Password", btn_forgot: "Forgot password?",
+                lbl_pass_confirm: "Confirm Password", lbl_name: "Full Name", ph_name: "John Doe", lbl_gender: "Gender",
+                lbl_phone: "Phone Number", lbl_email: "Email (@api or @gmail)", lbl_plant: "Plant/Factory", lbl_dept: "Department",
+                btn_login: "Login", btn_register: "Create Account & Login",
+                msg_new_user: "New employee?", btn_to_register: "Register account", msg_has_user: "Already have an account?", btn_to_login: "Login now",
+                btn_back: "Back to Home", modal_fp_title: "Forgot Password?", 
+                modal_fp_desc: "The system uses internal Employee IDs, so automated password reset is disabled for security.<br><br>Please contact <strong>EHS Admin</strong> to request a password reset."
+            },
+            "zh": {
+                title: "EHS 培训系统", subtitle_login: "请登录以继续", subtitle_register: "使用员工 ID 注册内部账户",
+                lbl_emp_id: "员工 ID", ph_emp_id: "例如: NV001", lbl_pass: "密码", btn_forgot: "忘记密码？",
+                lbl_pass_confirm: "确认密码", lbl_name: "全名", ph_name: "张三", lbl_gender: "性别",
+                lbl_phone: "电话号码", lbl_email: "电子邮件 (@api 或 @gmail)", lbl_plant: "工厂", lbl_dept: "部门",
+                btn_login: "登录", btn_register: "创建账户并登录",
+                msg_new_user: "新员工？", btn_to_register: "注册账户", msg_has_user: "已有账户？", btn_to_login: "立即登录",
+                btn_back: "返回主页", modal_fp_title: "忘记密码？", 
+                modal_fp_desc: "系统使用内部员工 ID，为确保安全，自动密码重置功能已禁用。<br><br>请联系 <strong>EHS 管理员</strong> 申请密码重置。"
+            }
+        };
 
-        // Xử lý bật/tắt Modal Quên Mật Khẩu
-        function showForgotPassModal() {
-            document.getElementById('forgot-pass-modal').classList.remove('hidden');
+        // 2. LOGIC GIAO DIỆN (UI/UX)
+        let isLoginMode = true;
+        let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
+        let currentLang = localStorage.getItem('ehs_lang') || 'vi';
+
+        function initUI() {
+            // Apply Dark mode
+            if (isDarkMode) { document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = "ph-fill ph-sun text-amber-400 text-xl"; }
+            // Apply Lang
+            document.getElementById('lang-selector').value = currentLang;
+            applyTranslations();
         }
 
-        function closeForgotPassModal() {
-            document.getElementById('forgot-pass-modal').classList.add('hidden');
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('ehs_theme', isDarkMode ? 'dark' : 'light');
+            if (isDarkMode) { document.documentElement.classList.add('dark'); document.getElementById('theme-icon').className = "ph-fill ph-sun text-amber-400 text-xl"; }
+            else { document.documentElement.classList.remove('dark'); document.getElementById('theme-icon').className = "ph-bold ph-moon text-slate-600 text-xl"; }
+        }
+
+        function changeLanguage() {
+            currentLang = document.getElementById('lang-selector').value;
+            localStorage.setItem('ehs_lang', currentLang);
+            applyTranslations();
+        }
+
+        function applyTranslations() {
+            const langData = translations[currentLang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (langData[key]) el.innerHTML = langData[key];
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (langData[key]) el.placeholder = langData[key];
+            });
+
+            // Update Dynamic Texts based on mode
+            if(isLoginMode) {
+                document.getElementById('btn-submit').innerText = langData.btn_login;
+                document.getElementById('form-subtitle').innerText = langData.subtitle_login;
+            } else {
+                document.getElementById('btn-submit').innerText = langData.btn_register;
+                document.getElementById('form-subtitle').innerText = langData.subtitle_register;
+            }
+        }
+
+        function showForgotPassModal() { document.getElementById('forgot-pass-modal').classList.remove('hidden'); }
+        function closeForgotPassModal() { document.getElementById('forgot-pass-modal').classList.add('hidden'); }
+        function showError(message) {
+            const errorDiv = document.getElementById('error-msg');
+            errorDiv.innerHTML = `<i class="ph-fill ph-warning-circle text-lg mb-[-4px] inline-block mr-1"></i> ${message}`;
+            errorDiv.classList.remove('hidden');
         }
 
         function toggleMode() {
             isLoginMode = !isLoginMode;
             document.getElementById('error-msg').classList.add('hidden');
+            const langData = translations[currentLang];
             
-            const nameField = document.getElementById('name-field');
-            const deptField = document.getElementById('dept-field');
-            const btnSubmit = document.getElementById('btn-submit');
-            const toggleText = document.getElementById('toggle-text');
-            const btnToggle = document.getElementById('btn-toggle');
-            const subtitle = document.getElementById('form-subtitle');
-            const btnForgotPass = document.getElementById('btn-forgot-pass');
-
             if (isLoginMode) {
-                nameField.classList.add('hidden');
-                deptField.classList.add('hidden');
-                btnForgotPass.classList.remove('hidden'); // Hiện nút quên pass khi đăng nhập
-                btnSubmit.innerHTML = "Đăng nhập";
-                toggleText.innerText = "Nhân sự mới?";
-                btnToggle.innerText = "Đăng ký tài khoản";
-                subtitle.innerText = "Vui lòng đăng nhập để tiếp tục";
+                document.getElementById('register-fields').classList.add('hidden');
+                document.getElementById('btn-forgot-pass').classList.remove('hidden');
+                document.getElementById('btn-submit').innerText = langData.btn_login;
+                document.getElementById('toggle-text').innerText = langData.msg_new_user;
+                document.getElementById('btn-toggle').innerText = langData.btn_to_register;
+                document.getElementById('form-subtitle').innerText = langData.subtitle_login;
             } else {
-                nameField.classList.remove('hidden');
-                deptField.classList.remove('hidden');
-                btnForgotPass.classList.add('hidden'); // Ẩn nút quên pass khi đăng ký
-                btnSubmit.innerHTML = "Tạo tài khoản & Đăng nhập";
-                toggleText.innerText = "Đã có tài khoản?";
-                btnToggle.innerText = "Đăng nhập ngay";
-                subtitle.innerText = "Tạo tài khoản mới bằng Mã NV";
+                document.getElementById('register-fields').classList.remove('hidden');
+                document.getElementById('btn-forgot-pass').classList.add('hidden');
+                document.getElementById('btn-submit').innerText = langData.btn_register;
+                document.getElementById('toggle-text').innerText = langData.msg_has_user;
+                document.getElementById('btn-toggle').innerText = langData.btn_to_login;
+                document.getElementById('form-subtitle').innerText = langData.subtitle_register;
             }
         }
 
-        function showError(message) {
-            const errorDiv = document.getElementById('error-msg');
-            errorDiv.innerText = message;
-            errorDiv.classList.remove('hidden');
+        // 3. HÀM GỬI EMAIL CHÀO MỪNG SAU KHI ĐĂNG KÝ (Kết nối Google Apps Script)
+        async function sendWelcomeEmail(email, name, empId) {
+            try {
+                // LƯU Ý BẮT BUỘC: Bạn phải dán link Google Apps Script (Webhook) của bạn vào đây.
+                // Nếu chưa có, xem hướng dẫn tôi cung cấp phía dưới mã này.
+                const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec"; 
+                
+                const payload = {
+                    action: "sendEmail",
+                    toEmail: email,
+                    subject: "[EHS System] Xác nhận tạo tài khoản thành công",
+                    body: `
+                        <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; max-width: 600px; margin: auto;">
+                            <h2 style="color: #2563eb; text-align: center;">Hệ Thống Đào Tạo EHS</h2>
+                            <p>Xin chào <b>${name}</b>,</p>
+                            <p>Chúc mừng bạn đã tạo thành công tài khoản trên hệ thống EHS của Asia Packaging Industries Vietnam.</p>
+                            <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                                <p style="margin: 5px 0;"><b>Tên đăng nhập (ID):</b> <span style="color: #0284c7; font-weight: bold;">${empId}</span></p>
+                                <p style="margin: 5px 0;"><b>Email liên kết:</b> ${email}</p>
+                            </div>
+                            <p>Từ bây giờ, bạn có thể truy cập hệ thống để theo dõi lộ trình đào tạo, báo cáo an toàn và nhận thông báo công việc.</p>
+                            <div style="text-align: center; margin-top: 25px;">
+                                <a href="https://antoan.asia/login.html" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Truy cập Hệ thống ngay</a>
+                            </div>
+                            <hr style="margin-top: 30px; border: 0; border-top: 1px solid #e2e8f0;">
+                            <p style="font-size: 11px; color: #94a3b8; text-align: center;">Đây là email gửi tự động. Vui lòng không trả lời thư này.</p>
+                        </div>
+                    `
+                };
+                
+                // Gửi request ngầm không cần chờ kết quả để UI phản hồi nhanh
+                fetch(googleScriptUrl, { method: 'POST', body: JSON.stringify(payload) });
+            } catch (error) {
+                console.error("Lỗi gửi Welcome Email:", error);
+            }
         }
 
+        // 4. LOGIC XỬ LÝ AUTHENTICATION
         async function handleAuth() {
-            const idInput = document.getElementById('emp-id').value.trim().toLowerCase();
+            // Dữ liệu chung
+            const idInput = document.getElementById('emp-id').value.trim().toUpperCase();
             const passInput = document.getElementById('emp-pass').value.trim();
-            const nameInput = document.getElementById('emp-name').value.trim();
-            const deptInput = document.getElementById('emp-dept').value;
             const btnSubmit = document.getElementById('btn-submit');
 
-            if (!idInput || !passInput) {
-                showError("Vui lòng nhập đầy đủ Mã NV và Mật khẩu!");
-                return;
-            }
+            // Kiểm tra rỗng cơ bản
+            if (!idInput || !passInput) { return showError(currentLang === 'vi' ? "Vui lòng nhập đầy đủ Mã NV và Mật khẩu!" : "Please fill in ID and Password!"); }
+
+            // Dữ liệu riêng cho đăng ký
+            let nameInput, deptInput, plantInput, emailInput, phoneInput, genderInput, passConfirm;
 
             if (!isLoginMode) {
-                if (!nameInput) {
-                    showError("Vui lòng nhập Họ và Tên!");
-                    return;
+                nameInput = document.getElementById('emp-name').value.trim();
+                deptInput = document.getElementById('emp-dept').value;
+                plantInput = document.getElementById('emp-plant').value;
+                emailInput = document.getElementById('emp-email').value.trim();
+                phoneInput = document.getElementById('emp-phone').value.trim();
+                genderInput = document.getElementById('emp-gender').value;
+                passConfirm = document.getElementById('emp-pass-confirm').value.trim();
+
+                // Xác thực các trường đăng ký
+                if (!nameInput || !deptInput || !plantInput || !emailInput || !phoneInput || !genderInput || !passConfirm) {
+                    return showError("Vui lòng điền ĐẦY ĐỦ tất cả các trường có dấu sao (*)");
                 }
-                if (!deptInput) {
-                    showError("Vui lòng chọn Phòng Ban / Bộ Phận!");
-                    return;
+                if (passInput !== passConfirm) {
+                    return showError("Xác nhận mật khẩu không khớp!");
+                }
+                if (passInput.length < 6) {
+                    return showError("Mật khẩu phải có ít nhất 6 ký tự!");
+                }
+                
+                // Xác thực Email (Bắt buộc đuôi @gmail.com hoặc @api.com.vn)
+                const isCompanyMail = emailInput.endsWith('@api.com.vn');
+                const isGmail = emailInput.endsWith('@gmail.com');
+                if (!isCompanyMail && !isGmail) {
+                    return showError("Email bắt buộc phải có đuôi @api.com.vn hoặc @gmail.com");
                 }
             }
 
-            if (passInput.length < 6) {
-                showError("Mật khẩu phải có ít nhất 6 ký tự!");
-                return;
-            }
-
+            // Tiến hành xử lý
             const fakeEmail = `${idInput}@ehs.com`;
             const originalBtnText = btnSubmit.innerHTML;
-            btnSubmit.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl"></i> Đang xử lý...';
+            btnSubmit.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-2xl"></i> Đang xử lý...';
             btnSubmit.disabled = true;
             document.getElementById('error-msg').classList.add('hidden');
 
             try {
                 if (isLoginMode) {
+                    // ĐĂNG NHẬP
                     const userCredential = await window.signInWithEmailAndPassword(window.auth, fakeEmail, passInput);
                     const user = userCredential.user;
 
-                    // Tải thông tin từ Firebase về máy để không bị lỗi "trắng tên"
                     try {
-                        const userDoc = await window.getDoc(window.doc(window.db, "users", user.uid));
+                        const userDoc = await window.getDoc(window.doc(window.db, "nhan_su_noi_bo", idInput));
                         if (userDoc.exists()) {
                             const userData = userDoc.data();
                             localStorage.setItem("ehs_user_name", userData.ho_ten || "");
                             localStorage.setItem("ehs_user_dept", userData.bo_phan || "");
                         }
-                    } catch (e) {
-                        console.log("Lỗi tải thông tin user:", e);
-                    }
+                    } catch (e) { console.log(e); }
 
-                    localStorage.setItem("ehs_user_id", idInput.toUpperCase());
+                    localStorage.setItem("ehs_user_id", idInput);
                     window.location.href = "index.html"; 
+
                 } else {
+                    // ĐĂNG KÝ
                     const userCredential = await window.createUserWithEmailAndPassword(window.auth, fakeEmail, passInput);
-                    const user = userCredential.user;
                     
-                    await window.setDoc(window.doc(window.db, "users", user.uid), {
-                        ma_nv: idInput.toUpperCase(),
+                    // Lưu dữ liệu vào Firestore collection "nhan_su_noi_bo" (thống nhất với DB hệ thống)
+                    await window.setDoc(window.doc(window.db, "nhan_su_noi_bo", idInput), {
+                        ma_nv: idInput,
                         ho_ten: nameInput,
+                        gioi_tinh: genderInput,
+                        so_dien_thoai: phoneInput,
+                        email: emailInput,
+                        nha_may: plantInput,
                         bo_phan: deptInput,
-                        role: "user",
-                        ngay_tao: new Date().toISOString()
+                        ngay_tao: new Date().toISOString(),
+                        thoi_gian_cap_nhat: new Date(),
+                        nhom_atld: "Chưa phân loại",
+                        vai_tro_phu: { pccc: "", atvsv: false }
                     });
 
-                    localStorage.setItem("ehs_user_id", idInput.toUpperCase());
+                    // Lưu vào localStorage
+                    localStorage.setItem("ehs_user_id", idInput);
                     localStorage.setItem("ehs_user_name", nameInput);
                     localStorage.setItem("ehs_user_dept", deptInput);
                     
-                    alert("Tạo tài khoản thành công! Bấm OK để về Trang chủ.");
+                    // GỬI EMAIL CHÀO MỪNG TỰ ĐỘNG
+                    sendWelcomeEmail(emailInput, nameInput, idInput);
+                    
+                    alert(currentLang === 'vi' ? "Tạo tài khoản thành công! Một email xác nhận đã được gửi đến bạn." : "Account created successfully! Check your email.");
                     window.location.href = "index.html";
                 }
             } catch (error) {
-                console.error("Lỗi:", error);
+                console.error("Lỗi Auth:", error);
                 let errorText = "Có lỗi xảy ra: " + error.message; 
                 
                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
@@ -288,17 +459,17 @@
                 } else if (error.code === 'auth/email-already-in-use') {
                     errorText = "Mã NV này đã được đăng ký! Vui lòng bấm sang phần Đăng nhập.";
                 } else if (error.code === 'auth/network-request-failed') {
-                    errorText = "Lỗi mạng. Vui lòng kiểm tra kết nối internet.";
-                } else if (error.code === 'auth/weak-password') {
-                    errorText = "Mật khẩu quá yếu! Vui lòng nhập từ 6 ký tự trở lên.";
+                    errorText = "Lỗi kết nối mạng. Vui lòng kiểm tra Wifi/4G.";
                 }
-                
                 showError(errorText);
             } finally {
                 btnSubmit.innerHTML = originalBtnText;
                 btnSubmit.disabled = false;
             }
         }
+
+        // Khởi chạy khi load trang
+        document.addEventListener('DOMContentLoaded', initUI);
     </script>
 </body>
 </html>
