@@ -949,8 +949,10 @@
         }
 
         window.fetchAllTasks = async function() {
-            document.getElementById('task-grid').classList.add('hidden'); 
-            document.getElementById('empty-state').classList.add('hidden'); 
+            // [ĐÃ VÁ LỖI]: Gọi đúng ID của vùng chứa giao diện mới, loại bỏ task-grid cũ
+            const masterContainer = document.getElementById('tasks-master-container');
+            if (masterContainer) masterContainer.classList.add('hidden'); 
+            
             document.getElementById('leaderboard-container').classList.add('hidden');
             document.getElementById('loader').classList.remove('hidden');
             
@@ -966,6 +968,8 @@
                 const snap = await getDocs(q);
                 rawTasksData = [];
                 snap.forEach(doc => rawTasksData.push({id: doc.id, ...doc.data()}));
+                
+                // Sau khi lấy dữ liệu xong, gọi hàm render để vẽ giao diện
                 window.renderTasks();
             } catch (e) {
                 document.getElementById('loader').innerHTML = `<div class="text-center text-red-500 font-bold"><i class="ph-bold ph-warning-circle text-4xl mb-2"></i><br>Lỗi máy chủ.<br>${e.message}</div>`;
