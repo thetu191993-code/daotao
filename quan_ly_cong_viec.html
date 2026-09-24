@@ -1678,16 +1678,19 @@
         async function initializeAppForUser() {
             if (currentUserId) {
                 try {
-                    // --- BẮT ĐẦU VÁ LỖI: KIỂM TRA VÀ TẢI TÊN TỪ FIRESTORE ---
+                    // --- BẮT ĐẦU VÁ LỖI: SỬ DỤNG TRỰC TIẾP HÀM MODULE KHÔNG QUA WINDOW ---
                     if (!currentUserName || currentUserName === "Nhân viên EHS" || currentUserName.trim() === "") {
                         // Thử tìm trong bảng mới
-                        let userDoc = await window.getDocs(query(collection(db, "nhan_su_noi_bo"), where("ma_nv", "==", currentUserId)));
+                        let userDoc = await getDocs(query(collection(db, "nhan_su_noi_bo"), where("ma_nv", "==", currentUserId)));
+                        
                         if (!userDoc.empty) {
                             currentUserName = userDoc.docs[0].data().ho_ten;
                         } else {
-                            // Dự phòng: Tìm trong bảng cũ
-                            const oldUserDoc = await window.getDoc(window.doc(window.db, "users", currentUserId)); // UID thường là mã NV ở bản cũ
-                            if(oldUserDoc.exists()) { currentUserName = oldUserDoc.data().ho_ten; }
+                            // Dự phòng: Tìm trong bảng cũ (Sử dụng getDocs thay vì getDoc để tránh lỗi import)
+                            const oldUserDoc = await getDocs(query(collection(db, "users"), where("ma_nv", "==", currentUserId))); 
+                            if(!oldUserDoc.empty) { 
+                                currentUserName = oldUserDoc.docs[0].data().ho_ten; 
+                            }
                         }
                         if(currentUserName) localStorage.setItem("ehs_user_name", currentUserName);
                     }
