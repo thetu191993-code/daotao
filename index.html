@@ -1672,7 +1672,12 @@
             
             document.getElementById('up-id').value = currentUserId;
             document.getElementById('up-name').value = currentUserName || "";
-            document.getElementById('up-dept-pos').value = localStorage.getItem("ehs_user_dept") || "";
+            
+            // [ĐÃ VÁ LỖI]: Cập nhật đúng ID mới là 'up-dept' thay vì 'up-dept-pos'
+            const deptElement = document.getElementById('up-dept');
+            if (deptElement) {
+                deptElement.value = localStorage.getItem("ehs_user_dept") || "";
+            }
             
             try {
                 const searchId = String(currentUserId).trim().toUpperCase();
@@ -1695,7 +1700,12 @@
                     document.getElementById('up-doc-id').value = "";
                 }
                 window.renderUserTasks(userData);
-            } catch (error) { console.error(error); } finally { loader.classList.add('hidden'); }
+            } catch (error) { 
+                console.error(error); 
+            } finally { 
+                // Đảm bảo vòng quay luôn bị tắt dù có lỗi hay không
+                loader.classList.add('hidden'); 
+            }
             window.switchProfileTab('info');
         };
 
