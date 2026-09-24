@@ -164,11 +164,50 @@
 
             <div id="leaderboard-container" class="hidden mb-6 bg-white dark:bg-dark-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-dark-border"></div>
 
-            <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 hidden"></div>
-            
-            <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 dark:text-slate-600">
-                <i class="ph-fill ph-clipboard-text text-6xl mb-4 opacity-50"></i>
-                <p class="font-bold text-lg" data-i18n="msg_empty">Chưa có công việc nào trong khung thời gian này.</p>
+            <!-- KHU VỰC HIỂN THỊ CÔNG VIỆC ĐÃ ĐƯỢC PHÂN TÁCH -->
+            <div id="tasks-master-container" class="hidden flex-col gap-10">
+                
+                <!-- PHẦN 1: CÔNG VIỆC ĐANG THỰC HIỆN (DẠNG THẺ CARD) -->
+                <div>
+                    <h3 class="font-black text-lg text-blue-700 dark:text-blue-400 mb-4 flex items-center gap-2 border-b border-blue-200 dark:border-blue-800/50 pb-2 uppercase tracking-wide">
+                        <i class="ph-fill ph-clock-countdown text-2xl"></i> Đang Thực Hiện & Mới Giao
+                    </h3>
+                    <div id="ongoing-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+                    <div id="ongoing-empty" class="hidden flex-col items-center justify-center py-10 text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                        <i class="ph-fill ph-check-circle text-5xl mb-3 opacity-50"></i>
+                        <p class="font-bold">Tuyệt vời! Không có công việc nào đang tồn đọng.</p>
+                    </div>
+                </div>
+
+                <!-- PHẦN 2: CÔNG VIỆC ĐÃ HOÀN THÀNH (DẠNG BẢNG EXCEL/SCHEDULE) -->
+                <div>
+                    <h3 class="font-black text-lg text-emerald-600 dark:text-emerald-400 mb-4 flex items-center gap-2 border-b border-emerald-200 dark:border-emerald-800/50 pb-2 uppercase tracking-wide mt-4">
+                        <i class="ph-fill ph-check-square-offset text-2xl"></i> Lịch Sử Đã Hoàn Thành
+                    </h3>
+                    <div id="completed-container" class="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                                <thead class="bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 font-bold border-b border-slate-200 dark:border-slate-700">
+                                    <tr>
+                                        <th class="px-4 py-4 text-center w-12">STT</th>
+                                        <th class="px-4 py-4">Tên công việc / Dự án</th>
+                                        <th class="px-4 py-4">Phân loại</th>
+                                        <th class="px-4 py-4">Nhân sự thực hiện</th>
+                                        <th class="px-4 py-4">Thời gian (Schedule)</th>
+                                        <th class="px-4 py-4 text-center w-24">Chi tiết</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="completed-tbody" class="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                    <!-- Dữ liệu bảng sẽ được đổ vào đây -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="completed-empty" class="hidden flex-col items-center justify-center py-10 text-slate-400 dark:text-slate-600 bg-slate-100/50 dark:bg-slate-800/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 mt-2">
+                        <i class="ph-fill ph-archive text-5xl mb-3 opacity-50"></i>
+                        <p class="font-bold">Chưa có dữ liệu lịch sử hoàn thành.</p>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -934,23 +973,30 @@
         }
 
         window.renderTasks = function() {
-            const grid = document.getElementById('task-grid');
+            const masterContainer = document.getElementById('tasks-master-container');
+            const ongoingGrid = document.getElementById('ongoing-grid');
+            const completedTbody = document.getElementById('completed-tbody');
+            
+            const ongoingEmpty = document.getElementById('ongoing-empty');
+            const completedContainer = document.getElementById('completed-container');
+            const completedEmpty = document.getElementById('completed-empty');
+            
             const loader = document.getElementById('loader');
-            const empty = document.getElementById('empty-state');
             const leaderboardContainer = document.getElementById('leaderboard-container');
             const lang = translations[currentLang];
             
-            grid.innerHTML = '';
+            ongoingGrid.innerHTML = '';
+            completedTbody.innerHTML = '';
+            
             const keyword = document.getElementById('search-box').value.toLowerCase();
             const filterCat = document.getElementById('filter-category').value;
 
+            // 1. LỌC DỮ LIỆU TỔNG THEO TAB
             let filteredTasks = rawTasksData.filter(t => {
                 let tabMatch = false;
                 const isSelfAssigned = (t.assignee_id === t.assigner_id);
                 
-                if (t.task_type === 'contractor_approval' && t.status === 'Rejected' && currentTab !== 'assigned-tasks') {
-                    return false; 
-                }
+                if (t.task_type === 'contractor_approval' && t.status === 'Rejected' && currentTab !== 'assigned-tasks') return false; 
                 
                 if (currentTab === 'my-tasks' && t.assignee_id === currentUserId) tabMatch = true;
                 if (currentTab === 'assigned-tasks' && t.assigner_id === currentUserId && !isSelfAssigned) tabMatch = true;
@@ -976,12 +1022,14 @@
 
             window.currentFilteredTasks = filteredTasks;
 
+            // Sắp xếp thời gian mới nhất lên đầu
             filteredTasks.sort((a,b) => {
                 let timeA = a.created_at ? (a.created_at.toDate ? a.created_at.toDate().getTime() : a.created_at) : 0;
                 let timeB = b.created_at ? (b.created_at.toDate ? b.created_at.toDate().getTime() : b.created_at) : 0;
                 return timeB - timeA;
             });
 
+            // GÓC LÃNH ĐẠO (Biểu đồ)
             if (currentTab === 'all-tasks' && isLeader && filteredTasks.length > 0) {
                 let userStats = {};
                 filteredTasks.forEach(t => {
@@ -1006,105 +1054,156 @@
                 statsHtml += `</div>`; leaderboardContainer.innerHTML = statsHtml; leaderboardContainer.classList.remove('hidden');
             } else { leaderboardContainer.classList.add('hidden'); }
 
-            if(filteredTasks.length === 0) { empty.classList.remove('hidden'); grid.classList.add('hidden'); loader.classList.add('hidden'); return; }
+            if(filteredTasks.length === 0) { 
+                ongoingGrid.classList.add('hidden'); ongoingEmpty.classList.remove('hidden');
+                completedContainer.classList.add('hidden'); completedEmpty.classList.remove('hidden');
+                loader.classList.add('hidden'); masterContainer.classList.remove('hidden');
+                return; 
+            }
 
+            let ongoingCount = 0;
+            let completedCount = 0;
+
+            // 2. PHÂN TÁCH VÀ RENDER DỮ LIỆU
             filteredTasks.forEach(t => {
                 const today = new Date(); today.setHours(0,0,0,0);
                 const deadline = new Date(t.due_date);
                 const isOverdue = deadline < today && t.status !== 'Done';
-                
-                let statusHtml = '';
-                if (t.status === 'Done') statusHtml = `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-check-circle"></i> ${lang.status_done}</span>`;
-                else if (isOverdue) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase animate-pulse"><i class="ph-bold ph-warning-circle"></i> ${lang.status_overdue}</span>`;
-                else if (t.is_review_requested && t.status !== 'Done') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-paper-plane-tilt"></i> ${lang.status_review}</span>`;
-                else if (t.status === 'Review') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> ${lang.status_review}</span>`;
-                else if (t.status === 'Rejected' || t.status === 'Failed') statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-x-circle"></i> TỪ CHỐI / ĐÌNH CHỈ</span>`;
-                else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> ${lang.status_doing}</span>`;
-                else statusHtml = `<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> ${lang.status_new}</span>`;
-
-                let catBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 bg-slate-100 text-slate-600 whitespace-nowrap">${t.category || 'Khác'}</span>`;
-
                 const dateStr = deadline.toLocaleDateString('vi-VN');
                 const isSelfAssigned = (t.assignee_id === t.assigner_id);
-
-                let stepsHtml = '';
-                if (t.plan_steps && Array.isArray(t.plan_steps) && t.plan_steps.length > 0) {
-                    stepsHtml = '<ul class="space-y-2 mt-2">';
-                    t.plan_steps.forEach((step) => {
-                        let text = typeof step === 'string' ? step : step.text;
-                        let stepProg = typeof step === 'object' && step.progress !== undefined ? step.progress : (step.done ? 100 : 0);
-                        let isDone = stepProg === 100;
-                        stepsHtml += `
-                            <li class="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                                <div class="flex items-start gap-1.5 text-xs mb-1">${isDone ? '<i class="ph-bold ph-check-circle text-emerald-500 shrink-0 text-base"></i>' : '<i class="ph-bold ph-circle text-slate-300 shrink-0 text-base"></i>'} <span class="${isDone ? 'line-through text-slate-400 font-medium' : 'text-slate-700 dark:text-slate-300 font-medium'}">${text}</span></div>
-                                <div class="flex items-center gap-2 pl-5"><div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1 overflow-hidden"><div class="${isDone ? 'bg-emerald-500' : 'bg-blue-400'} h-1 rounded-full" style="width: ${stepProg}%"></div></div><span class="text-[9px] font-bold text-slate-400 w-6 text-right">${stepProg}%</span></div>
-                            </li>`;
-                    });
-                    stepsHtml += '</ul>';
-                }
-
-                let improveWarning = '';
-                if (t.evaluation && t.status !== 'Done') {
-                    improveWarning = `<div class="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 p-2 rounded-lg"><p class="text-[10px] font-black text-amber-700 uppercase flex items-center gap-1"><i class="ph-fill ph-warning"></i> Đánh giá / Yêu cầu cải tiến:</p><p class="text-xs text-amber-800 mt-1 font-medium italic">"${t.evaluation}"</p></div>`;
-                }
-                
-                let sourceTaskHtml = '';
-                if (isSelfAssigned) {
-                    if (t.is_review_requested) sourceTaskHtml = `<div class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 p-2 rounded-lg font-semibold flex items-start gap-1.5 border border-purple-100 dark:border-purple-800"><i class="ph-fill ph-paper-plane-tilt mt-0.5 shrink-0"></i> <span>${lang.sent_to} <b class="text-purple-800 dark:text-purple-200">${t.reviewer_name || 'Sếp'}</b></span></div>`;
-                    else sourceTaskHtml = `<div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-indigo-100"><i class="ph-fill ph-user-circle"></i> ${lang.self_tracking}</div>`;
-                } else {
-                    sourceTaskHtml = `<div class="space-y-1"><p><i class="ph-fill ph-user-circle text-blue-500"></i> ${lang.rcv} <b class="text-slate-700 dark:text-slate-200">${t.assignee_name}</b></p><p><i class="ph-fill ph-user-focus text-amber-500"></i> ${lang.assign} <b class="text-slate-700 dark:text-slate-200">${t.assigner_name}</b></p></div>`;
-                }
-
-                let actionBtns = '';
                 const isSuperAdmin = (currentUserName === "Đặng Thế Tư" || isGlobalLeader);
 
-                // Admin được quyền xóa mọi task bị kẹt. Người thường chỉ thao tác được task do họ tạo.
-                if((t.assigner_id === currentUserId && t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') || isSuperAdmin) {
+                // KIỂM TRA TRẠNG THÁI HOÀN THÀNH
+                if (t.status === 'Done') {
+                    completedCount++;
                     
-                    let editBtn = (t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') ? 
-                        `<button onclick="window.editTaskInfo('${t.id}')" class="text-slate-400 hover:text-blue-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-sm"></i></button>` : '';
+                    // TẠO ROW CHO BẢNG CÔNG VIỆC ĐÃ XONG
+                    let roleHtml = '';
+                    if (isSelfAssigned) roleHtml = `<span class="bg-indigo-50 text-indigo-600 border border-indigo-200 px-2 py-0.5 rounded text-[10px] font-bold">Cá nhân</span>`;
+                    else roleHtml = `<div class="text-xs"><span class="text-slate-400">Giao:</span> <b>${t.assigner_name}</b><br><span class="text-slate-400">Nhận:</span> <b>${t.assignee_name}</b></div>`;
 
-                    actionBtns = `
-                        <div class="flex gap-1 ml-2">
-                            ${editBtn}
-                            <button onclick="window.deleteTaskInfo('${t.id}')" class="text-slate-400 hover:text-red-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Xóa (Quyền Admin)"><i class="ph-bold ph-trash text-sm"></i></button>
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group cursor-pointer";
+                    // Click vào dòng mở chi tiết
+                    tr.onclick = function() { window.openUpdateModal(t.id); };
+                    
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 text-center font-medium">${completedCount}</td>
+                        <td class="px-4 py-3">
+                            <p class="font-bold text-slate-800 dark:text-slate-200 line-clamp-2">${t.title}</p>
+                            <p class="text-[10px] text-emerald-600 font-bold uppercase mt-1"><i class="ph-bold ph-check-circle"></i> Đã nghiệm thu</p>
+                        </td>
+                        <td class="px-4 py-3"><span class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] font-bold">${t.category || 'Khác'}</span></td>
+                        <td class="px-4 py-3">${roleHtml}</td>
+                        <td class="px-4 py-3 text-xs font-mono font-bold text-slate-500 dark:text-slate-400">
+                            Hạn: ${dateStr}
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <button class="bg-slate-100 dark:bg-slate-800 text-blue-600 p-2 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition shadow-sm">
+                                <i class="ph-bold ph-eye text-base"></i>
+                            </button>
+                        </td>
+                    `;
+                    completedTbody.appendChild(tr);
+
+                } else {
+                    // TẠO THẺ CARD CHO CÔNG VIỆC ĐANG LÀM
+                    ongoingCount++;
+                    
+                    let statusHtml = '';
+                    if (isOverdue) statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase animate-pulse"><i class="ph-bold ph-warning-circle"></i> ${lang.status_overdue}</span>`;
+                    else if (t.is_review_requested) statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-paper-plane-tilt"></i> ${lang.status_review}</span>`;
+                    else if (t.status === 'Review') statusHtml = `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-eye"></i> ${lang.status_review}</span>`;
+                    else if (t.status === 'Rejected' || t.status === 'Failed') statusHtml = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-x-circle"></i> TỪ CHỐI / ĐÌNH CHỈ</span>`;
+                    else if (t.progress > 0) statusHtml = `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-spinner animate-spin"></i> ${lang.status_doing}</span>`;
+                    else statusHtml = `<span class="bg-slate-200 text-slate-600 px-2 py-1 rounded text-[10px] font-bold uppercase"><i class="ph-bold ph-clock"></i> ${lang.status_new}</span>`;
+
+                    let catBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border border-slate-200 bg-slate-100 text-slate-600 whitespace-nowrap">${t.category || 'Khác'}</span>`;
+
+                    let stepsHtml = '';
+                    if (t.plan_steps && Array.isArray(t.plan_steps) && t.plan_steps.length > 0) {
+                        stepsHtml = '<ul class="space-y-2 mt-2">';
+                        t.plan_steps.forEach((step) => {
+                            let text = typeof step === 'string' ? step : step.text;
+                            let stepProg = typeof step === 'object' && step.progress !== undefined ? step.progress : (step.done ? 100 : 0);
+                            let isDone = stepProg === 100;
+                            stepsHtml += `
+                                <li class="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                    <div class="flex items-start gap-1.5 text-xs mb-1">${isDone ? '<i class="ph-bold ph-check-circle text-emerald-500 shrink-0 text-base"></i>' : '<i class="ph-bold ph-circle text-slate-300 shrink-0 text-base"></i>'} <span class="${isDone ? 'line-through text-slate-400 font-medium' : 'text-slate-700 dark:text-slate-300 font-medium'}">${text}</span></div>
+                                    <div class="flex items-center gap-2 pl-5"><div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1 overflow-hidden"><div class="${isDone ? 'bg-emerald-500' : 'bg-blue-400'} h-1 rounded-full" style="width: ${stepProg}%"></div></div><span class="text-[9px] font-bold text-slate-400 w-6 text-right">${stepProg}%</span></div>
+                                </li>`;
+                        });
+                        stepsHtml += '</ul>';
+                    }
+
+                    let improveWarning = '';
+                    if (t.evaluation) {
+                        improveWarning = `<div class="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 p-2 rounded-lg"><p class="text-[10px] font-black text-amber-700 uppercase flex items-center gap-1"><i class="ph-fill ph-warning"></i> Sếp yêu cầu / Nhận xét:</p><p class="text-xs text-amber-800 mt-1 font-medium italic">"${t.evaluation}"</p></div>`;
+                    }
+                    
+                    let sourceTaskHtml = '';
+                    if (isSelfAssigned) {
+                        if (t.is_review_requested) sourceTaskHtml = `<div class="bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 p-2 rounded-lg font-semibold flex items-start gap-1.5 border border-purple-100 dark:border-purple-800"><i class="ph-fill ph-paper-plane-tilt mt-0.5 shrink-0"></i> <span>${lang.sent_to} <b class="text-purple-800 dark:text-purple-200">${t.reviewer_name || 'Sếp'}</b></span></div>`;
+                        else sourceTaskHtml = `<div class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 p-2 rounded-lg font-semibold inline-flex items-center gap-1 border border-indigo-100"><i class="ph-fill ph-user-circle"></i> ${lang.self_tracking}</div>`;
+                    } else {
+                        sourceTaskHtml = `<div class="space-y-1"><p><i class="ph-fill ph-user-circle text-blue-500"></i> ${lang.rcv} <b class="text-slate-700 dark:text-slate-200">${t.assignee_name}</b></p><p><i class="ph-fill ph-user-focus text-amber-500"></i> ${lang.assign} <b class="text-slate-700 dark:text-slate-200">${t.assigner_name}</b></p></div>`;
+                    }
+
+                    let actionBtns = '';
+                    if((t.assigner_id === currentUserId && t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') || isSuperAdmin) {
+                        let editBtn = (t.task_type !== 'contractor_approval' && t.task_type !== 'ptw_review') ? 
+                            `<button onclick="window.editTaskInfo('${t.id}')" class="text-slate-400 hover:text-blue-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Sửa"><i class="ph-bold ph-pencil-simple text-sm"></i></button>` : '';
+                        actionBtns = `<div class="flex gap-1 ml-2">${editBtn}<button onclick="window.deleteTaskInfo('${t.id}')" class="text-slate-400 hover:text-red-500 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-lg transition" title="Xóa"><i class="ph-bold ph-trash text-sm"></i></button></div>`;
+                    }
+
+                    let specialBgClass = (t.task_type === 'contractor_approval' || t.task_type === 'ptw_review') ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border shadow-sm';
+                    if (isOverdue) specialBgClass = 'bg-white dark:bg-dark-card border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.15)]';
+
+                    const card = document.createElement('div');
+                    card.className = `${specialBgClass} border p-5 rounded-2xl flex flex-col hover:shadow-md transition-all`;
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex gap-2 flex-wrap">${statusHtml} ${catBadge}</div>
+                            <div class="flex items-center shrink-0">
+                                <span class="text-xs font-mono font-bold ${isOverdue ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}"><i class="ph-fill ph-calendar-blank"></i> ${dateStr}</span>
+                                ${actionBtns}
+                            </div>
+                        </div>
+                        <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2 leading-tight">${t.title}</h3>
+                        <div class="text-[13px] text-slate-500 dark:text-slate-400 mb-3 shrink-0">${sourceTaskHtml}</div>
+                        
+                        <div class="mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex-1 overflow-y-auto custom-scrollbar max-h-40">
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">${lang.steps_lbl}</p>
+                            ${stepsHtml}
+                            ${improveWarning}
+                        </div>
+
+                        <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-500 uppercase">${lang.label_total_prog}</span><span class="text-xs font-black text-blue-600">${t.progress}%</span></div>
+                            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4 overflow-hidden"><div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: ${t.progress}%"></div></div>
+                            <button onclick="window.openUpdateModal('${t.id}')" class="w-full bg-white dark:bg-slate-800 hover:bg-blue-50 text-blue-600 dark:text-blue-400 font-bold py-2.5 rounded-xl text-sm transition border-2 border-blue-100 flex justify-center items-center gap-2"><i class="ph-bold ph-pencil-simple"></i> Cập nhật tiến độ</button>
                         </div>
                     `;
+                    ongoingGrid.appendChild(card);
                 }
-
-                let specialBgClass = (t.task_type === 'contractor_approval' || t.task_type === 'ptw_review') ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/20 dark:border-indigo-700/50 shadow-[0_0_15px_rgba(99,102,241,0.1)]' : 'bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border shadow-sm';
-                if (isOverdue && t.status !== 'Done') specialBgClass = 'bg-white dark:bg-dark-card border-red-300 shadow-[0_0_15px_rgba(239,68,68,0.15)]';
-
-                const card = document.createElement('div');
-                card.className = `${specialBgClass} border p-5 rounded-2xl flex flex-col hover:shadow-md transition-all`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex gap-2 flex-wrap">${statusHtml} ${catBadge}</div>
-                        <div class="flex items-center shrink-0">
-                            <span class="text-xs font-mono font-bold ${isOverdue && t.status !== 'Done' ? 'text-red-600' : 'text-slate-500 dark:text-slate-400'}"><i class="ph-fill ph-calendar-blank"></i> ${dateStr}</span>
-                            ${actionBtns}
-                        </div>
-                    </div>
-                    <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-2 leading-tight">${t.title}</h3>
-                    <div class="text-[13px] text-slate-500 dark:text-slate-400 mb-3 shrink-0">${sourceTaskHtml}</div>
-                    
-                    <div class="mb-4 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 flex-1 overflow-y-auto custom-scrollbar max-h-40">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">${lang.steps_lbl}</p>
-                        ${stepsHtml}
-                        ${improveWarning}
-                    </div>
-
-                    <div class="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
-                        <div class="flex justify-between items-center mb-1"><span class="text-[10px] font-bold text-slate-500 uppercase">${lang.label_total_prog}</span><span class="text-xs font-black text-blue-600">${t.progress}%</span></div>
-                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-4 overflow-hidden"><div class="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-500" style="width: ${t.progress}%"></div></div>
-                        <button onclick="window.openUpdateModal('${t.id}')" class="w-full bg-white dark:bg-slate-800 hover:bg-blue-50 text-blue-600 dark:text-blue-400 font-bold py-2.5 rounded-xl text-sm transition border-2 border-blue-100 flex justify-center items-center gap-2"><i class="ph-bold ph-pencil-simple"></i> ${lang.modal_update_title}</button>
-                    </div>
-                `;
-                grid.appendChild(card);
             });
 
-            loader.classList.add('hidden'); empty.classList.add('hidden'); grid.classList.remove('hidden');
+            // 3. XỬ LÝ ẨN/HIỆN GIAO DIỆN
+            if (ongoingCount > 0) {
+                ongoingGrid.classList.remove('hidden'); ongoingEmpty.classList.add('hidden');
+            } else {
+                ongoingGrid.classList.add('hidden'); ongoingEmpty.classList.remove('hidden');
+            }
+
+            if (completedCount > 0) {
+                completedContainer.classList.remove('hidden'); completedEmpty.classList.add('hidden');
+            } else {
+                completedContainer.classList.add('hidden'); completedEmpty.classList.remove('hidden');
+            }
+
+            loader.classList.add('hidden'); 
+            masterContainer.classList.remove('hidden');
+            masterContainer.classList.add('flex');
         };
 
         window.openUpdateModal = function(taskId) {
