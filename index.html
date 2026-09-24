@@ -61,7 +61,7 @@
     <div id="mobile-overlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-slate-900/60 z-40 hidden md:hidden backdrop-blur-sm transition-opacity duration-300 opacity-0"></div>
 
     <!-- SIDEBAR -->
-    <aside id="sidebar" class="w-[280px] md:w-64 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col shrink-0 transition-transform duration-300 fixed md:relative z-50 h-full -translate-x-full md:translate-x-0 shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
+    <aside id="sidebar" class="w-[280px] md:w-64 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col shrink-0 transition-all duration-300 fixed md:relative z-50 h-full -translate-x-full md:translate-x-0 shadow-[4px_0_24px_rgba(0,0,0,0.1)]">
         <div class="h-16 flex items-center justify-between px-6 border-b border-slate-200 dark:border-dark-border shrink-0">
             <div class="flex items-center">
                 <i class="ph-fill ph-shield-check text-blue-600 dark:text-blue-400 text-2xl mr-2"></i>
@@ -70,46 +70,80 @@
             <button onclick="toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-red-500 transition"><i class="ph-bold ph-x text-2xl"></i></button>
         </div>
 
-        <div class="flex-1 overflow-y-auto custom-scrollbar py-4 px-3 space-y-1">
-            <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold">
-                <i class="ph-fill ph-squares-four text-lg"></i> <span data-i18n="nav_dashboard">Bảng Điều Khiển</span>
+        <div class="flex-1 overflow-y-auto custom-scrollbar py-4 px-3 space-y-2">
+            <a href="index.html" class="flex items-center gap-3 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl font-bold transition">
+                <i class="ph-fill ph-squares-four text-xl"></i> <span data-i18n="nav_dashboard">Bảng Điều Khiển</span>
             </a>
 
-            <!-- NHÓM 1 -->
-            <div class="pt-4 pb-1 px-3"><p data-i18n="group_training" class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 1: Đào tạo EHS</p></div>
-            <a href="#" onclick="openCourseModal()" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_classroom">Phòng Học EHS</span></a>
-            <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_documents">Tài liệu Đào tạo</span></a>
-            <a href="quan_ly_nhan_su.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_personnel">Hồ sơ Nhân sự Nội bộ</span></a>
-            <a href="quan_ly_suc_khoe.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-rose-400 dark:bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span> <span data-i18n="nav_health" class="font-bold text-rose-600 dark:text-rose-400">Y Tế & Sức Khỏe</span></a>
-            
-            <!-- NHÓM 2 -->
-            <div class="pt-4 pb-1 px-3"><p data-i18n="group_management" class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 2: Quản trị</p></div>
-            <a href="quan_ly_cong_viec.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><i class="ph-fill ph-kanban text-lg text-blue-500"></i> <span data-i18n="nav_tasks">Quản lý Tiến Độ</span></a>
-            <a href="quan_ly_cuoc_hop.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><i class="ph-fill ph-users-three text-lg text-indigo-500"></i> <span data-i18n="nav_meeting">Toolbox Meeting</span></a>
-            <a href="trung_tam_kiem_tra.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_audit">Trung tâm Kiểm tra</span></a>
-            <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="w-full flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_report">Kho Báo Cáo EHS</span></button>
-            <a href="admin_kiem_tra.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_admin_audit">Quản trị Báo cáo</span></a>
-            <a href="admin.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_admin_scores">Quản trị Điểm thi</span></a>
-            <a href="admin_pccc.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_admin_fire">Quản trị PCCC</span></a>
-            <a href="data_dashboard.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_monitoring">Đồng bộ Quan trắc</span></a>
-            <a href="net_zero_form_master.html" class="flex items-center px-4 py-3 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition bg-slate-50 dark:bg-slate-800/50 mt-1 mb-1"><span class="mr-3">🌍</span> <span data-i18n="nav_net_zero">Quản Trị Net Zero</span></a>
-            <button onclick="openOSHLogbook()" class="w-full flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition">
-                <i class="ph-fill ph-notebook text-lg text-emerald-500"></i> <span data-i18n="nav_osh_log">Sổ Nhật Ký ATVSV</span>
-            </button>
+            <!-- NHÓM 1: ĐÀO TẠO EHS -->
+            <div>
+                <button onclick="toggleSidebarGroup('group1')" class="w-full flex items-center justify-between px-3 py-2 mt-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition group">
+                    <div class="flex items-center gap-2 font-bold text-sm uppercase tracking-wide">
+                        <i class="ph-fill ph-graduation-cap text-lg text-blue-500"></i> Đào tạo EHS
+                    </div>
+                    <i id="group1-icon" class="ph-bold ph-caret-down text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="group1" class="flex flex-col mt-1 pl-3 ml-2.5 border-l-2 border-slate-200 dark:border-slate-700 space-y-1 overflow-hidden transition-all">
+                    <a href="#" onclick="openCourseModal()" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-chalkboard text-lg"></i> <span data-i18n="nav_classroom">Phòng Học EHS</span></a>
+                    <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-books text-lg"></i> <span data-i18n="nav_documents">Tài liệu Đào tạo</span></a>
+                    <a href="quan_ly_nhan_su.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-users text-lg"></i> <span data-i18n="nav_personnel">Hồ sơ Nhân sự Nội bộ</span></a>
+                    <a href="quan_ly_suc_khoe.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-heart-beat text-lg"></i> <span data-i18n="nav_health">Y Tế & Sức Khỏe</span></a>
+                </div>
+            </div>
 
-            <!-- NHÓM 3 -->
-            <div class="pt-4 pb-1 px-3"><p data-i18n="group_procedures" class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 3: Quy trình & HD</p></div>
-            <a href="su_co_khan_cap.html" class="flex items-center gap-3 px-3 py-2 mt-1 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-800 rounded-lg font-bold transition shadow-sm"><i class="ph-fill ph-siren text-lg animate-pulse"></i> <span data-i18n="nav_3d_map">Bản Đồ Sự Cố 3D</span></a>
-            <a href="ai_phap_che.html" class="flex items-center gap-3 px-3 py-2 mt-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 rounded-lg font-bold transition shadow-sm"><i class="ph-fill ph-robot text-lg"></i> <span data-i18n="nav_ai_law">Trợ lý AI Pháp chế</span></a>
-            <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_manuals">Sổ tay Vận hành</span></a>
-            <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_incidents">Quy trình Sự cố</span></a>
-            <a href="quan_ly_hoa_chat.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_chemicals">Quản lý Hóa chất</span></a>
+            <!-- NHÓM 2: QUẢN TRỊ -->
+            <div>
+                <button onclick="toggleSidebarGroup('group2')" class="w-full flex items-center justify-between px-3 py-2 mt-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition group">
+                    <div class="flex items-center gap-2 font-bold text-sm uppercase tracking-wide">
+                        <i class="ph-fill ph-kanban text-lg text-emerald-500"></i> Quản Trị
+                    </div>
+                    <i id="group2-icon" class="ph-bold ph-caret-down text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="group2" class="flex flex-col mt-1 pl-3 ml-2.5 border-l-2 border-slate-200 dark:border-slate-700 space-y-1 overflow-hidden transition-all">
+                    <a href="quan_ly_cong_viec.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-kanban text-lg"></i> <span data-i18n="nav_tasks">Quản lý Tiến Độ</span></a>
+                    <a href="quan_ly_cuoc_hop.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-users-three text-lg"></i> <span data-i18n="nav_meeting">Toolbox Meeting</span></a>
+                    <a href="trung_tam_kiem_tra.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-clipboard-text text-lg"></i> <span data-i18n="nav_audit">Trung tâm Kiểm tra</span></a>
+                    <button onclick="document.getElementById('report-modal').classList.remove('hidden')" class="w-full flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-folder-open text-lg"></i> <span data-i18n="nav_report">Kho Báo Cáo EHS</span></button>
+                    <a href="admin_kiem_tra.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-chart-bar text-lg"></i> <span data-i18n="nav_admin_audit">Quản trị Báo cáo</span></a>
+                    <a href="admin.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-exam text-lg"></i> <span data-i18n="nav_admin_scores">Quản trị Điểm thi</span></a>
+                    <a href="admin_pccc.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-fire text-lg"></i> <span data-i18n="nav_admin_fire">Quản trị PCCC</span></a>
+                    <a href="data_dashboard.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-waves text-lg"></i> <span data-i18n="nav_monitoring">Đồng bộ Quan trắc</span></a>
+                    <a href="net_zero_form_master.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-leaf text-lg"></i> <span data-i18n="nav_net_zero">Quản Trị Net Zero</span></a>
+                    <button onclick="openOSHLogbook()" class="w-full flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-notebook text-lg"></i> <span data-i18n="nav_osh_log">Sổ Nhật Ký ATVSV</span></button>
+                </div>
+            </div>
 
-            <!-- NHÓM 4 -->
-            <div class="pt-4 pb-1 px-3"><p data-i18n="group_contractors" class="text-[11px] font-bold text-slate-400 dark:text-dark-muted uppercase tracking-wider flex items-center gap-2">Nhóm 4: Quản trị Nhà thầu</p></div>
-            <a href="quan_ly_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_contractor_profile">Hồ sơ Nhà thầu</span></a>
-            <a href="cong_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_contractor_portal">Cổng Khai báo</span></a>
-            <a href="bao_ve.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg font-medium transition"><span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span> <span data-i18n="nav_security">Trạm Gác An Ninh</span></a>
+            <!-- NHÓM 3: QUY TRÌNH & HD -->
+            <div>
+                <button onclick="toggleSidebarGroup('group3')" class="w-full flex items-center justify-between px-3 py-2 mt-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition group">
+                    <div class="flex items-center gap-2 font-bold text-sm uppercase tracking-wide">
+                        <i class="ph-fill ph-book-open text-lg text-amber-500"></i> Quy trình & HD
+                    </div>
+                    <i id="group3-icon" class="ph-bold ph-caret-down text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="group3" class="flex flex-col mt-1 pl-3 ml-2.5 border-l-2 border-slate-200 dark:border-slate-700 space-y-1 overflow-hidden transition-all">
+                    <a href="su_co_khan_cap.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-siren text-lg"></i> <span data-i18n="nav_3d_map">Bản Đồ Sự Cố 3D</span></a>
+                    <a href="ai_phap_che.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-robot text-lg"></i> <span data-i18n="nav_ai_law">Trợ lý AI Pháp chế</span></a>
+                    <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-book-bookmark text-lg"></i> <span data-i18n="nav_manuals">Sổ tay Vận hành</span></a>
+                    <a href="kho_tai_lieu.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-warning-circle text-lg"></i> <span data-i18n="nav_incidents">Quy trình Sự cố</span></a>
+                    <a href="quan_ly_hoa_chat.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-flask text-lg"></i> <span data-i18n="nav_chemicals">Quản lý Hóa chất</span></a>
+                </div>
+            </div>
+
+            <!-- NHÓM 4: QUẢN TRỊ NHÀ THẦU -->
+            <div>
+                <button onclick="toggleSidebarGroup('group4')" class="w-full flex items-center justify-between px-3 py-2 mt-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition group">
+                    <div class="flex items-center gap-2 font-bold text-sm uppercase tracking-wide">
+                        <i class="ph-fill ph-hard-hat text-lg text-orange-500"></i> Quản trị Nhà thầu
+                    </div>
+                    <i id="group4-icon" class="ph-bold ph-caret-down text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="group4" class="flex flex-col mt-1 pl-3 ml-2.5 border-l-2 border-slate-200 dark:border-slate-700 space-y-1 overflow-hidden transition-all">
+                    <a href="quan_ly_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-folders text-lg"></i> <span data-i18n="nav_contractor_profile">Hồ sơ Nhà thầu</span></a>
+                    <a href="cong_nha_thau.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-desktop text-lg"></i> <span data-i18n="nav_contractor_portal">Cổng Khai báo</span></a>
+                    <a href="bao_ve.html" class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg font-medium text-sm transition"><i class="ph-bold ph-shield-check text-lg"></i> <span data-i18n="nav_security">Trạm Gác An Ninh</span></a>
+                </div>
+            </div>
         </div>
 
         <div class="p-4 border-t border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg" id="sidebar-footer">
@@ -123,7 +157,7 @@
         <!-- TOPBAR -->
         <header class="h-16 bg-white/60 dark:bg-slate-900/60 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-700/50 flex items-center justify-between px-4 sm:px-8 shrink-0 transition-colors duration-300 w-full z-[45] shadow-sm">
             <div class="flex items-center gap-2 text-sm">
-                <button onclick="toggleMobileMenu()" class="md:hidden w-10 h-10 -ml-2 mr-1 sm:mr-2 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition shrink-0"><i class="ph-bold ph-list text-xl"></i></button>
+                <button onclick="toggleMobileMenu()" class="w-10 h-10 -ml-2 mr-1 sm:mr-2 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition shrink-0"><i class="ph-bold ph-list text-xl"></i></button>
                 <span class="text-slate-500 dark:text-dark-muted font-medium hidden sm:inline">EHS System</span>
                 <i class="ph-bold ph-caret-right text-slate-400 hidden sm:inline"></i>
                 <span class="font-bold text-slate-800 dark:text-white" data-i18n="nav_dashboard">Bảng Điều Khiển</span>
@@ -2073,17 +2107,36 @@
             }
         };
 
+        // Nâng cấp: Xử lý thu gọn/mở rộng Sidebar trên Desktop và Mobile
         window.toggleMobileMenu = function() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobile-overlay');
 
-            if (sidebar.classList.contains('-translate-x-full')) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden'); setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            if (window.innerWidth < 768) {
+                // Xử lý trên Mobile (Giao diện trượt ra)
+                if (sidebar.classList.contains('-translate-x-full')) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden'); 
+                    setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('opacity-0'); 
+                    setTimeout(() => overlay.classList.add('hidden'), 300);
+                }
             } else {
-                sidebar.classList.add('-translate-x-full');
-                overlay.classList.add('opacity-0'); setTimeout(() => overlay.classList.add('hidden'), 300);
+                // Xử lý trên Desktop (Kéo âm margin để làm rộng màn hình chính)
+                sidebar.classList.toggle('md:-ml-64');
             }
+        };
+
+        // Chức năng mới: Ẩn/Hiện cây thư mục (Accordion)
+        window.toggleSidebarGroup = function(groupId) {
+            const group = document.getElementById(groupId);
+            const icon = document.getElementById(groupId + '-icon');
+            
+            // Chuyển đổi trạng thái đóng mở
+            group.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
         };
 
         window.toggleNotifications = function(e) {
