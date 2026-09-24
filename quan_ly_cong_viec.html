@@ -389,7 +389,7 @@
 
         let isDarkMode = localStorage.getItem('ehs_theme') === 'dark';
         let currentUserId = localStorage.getItem("ehs_user_id");
-        let currentUserName = localStorage.getItem("ehs_user_name") || "Nhân viên EHS";
+        let currentUserName = localStorage.getItem("ehs_user_name");
         let userDept = localStorage.getItem("ehs_user_dept") || "";
         
         let isLeader = false;
@@ -1055,11 +1055,13 @@
             } else { leaderboardContainer.classList.add('hidden'); }
 
             if(filteredTasks.length === 0) { 
-                ongoingGrid.classList.add('hidden'); ongoingEmpty.classList.remove('hidden');
-                completedContainer.classList.add('hidden'); completedEmpty.classList.remove('hidden');
-                loader.classList.add('hidden'); masterContainer.classList.remove('hidden');
-                return; 
-            }
+                 ongoingGrid.classList.add('hidden'); ongoingEmpty.classList.remove('hidden');
+                 completedContainer.classList.add('hidden'); completedEmpty.classList.remove('hidden');
+                 loader.classList.add('hidden'); 
+                 masterContainer.classList.remove('hidden');
+                 masterContainer.classList.add('flex'); // <--- Phải thêm dòng này thì nó mới hiện lên
+                 return; 
+             }
 
             let ongoingCount = 0;
             let completedCount = 0;
@@ -1674,18 +1676,28 @@
         };
 
         async function initializeAppForUser() {
-            document.getElementById('header-user-name').innerText = currentUserName || currentUserId || "Nhân viên EHS";
-            
             if (currentUserId) {
                 try {
-                    window.changeLanguage(currentLang);
-                    
-                    const today = new Date();
-                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                    document.getElementById('filter-start').value = firstDay.toISOString().split('T')[0];
-                    document.getElementById('filter-end').value = lastDay.toISOString().split('T')[0];
+                    // --- BẮT ĐẦU VÁ LỖI: KIỂM TRA VÀ TẢI TÊN TỪ FIRESTORE ---
+                    if (!currentUserName || currentUserName === "Nhân viên EHS" || currentUserName.trim() === "") {
+                        // Thử tìm trong bảng mới
+                        let userDoc = await window.getDocs(query(collection(db, "nhan_su_noi_bo"), where("ma_nv", "==", currentUserId)));
+                        if (!userDoc.empty) {
+                            currentUserName = userDoc.docs[0].data().ho_ten;
+                        } else {
+                            // Dự phòng: Tìm trong bảng cũ
+                            const oldUserDoc = await window.getDoc(window.doc(window.db, "users", currentUserId)); // UID thường là mã NV ở bản cũ
+                            if(oldUserDoc.exists()) { currentUserName = oldUserDoc.data().ho_ten; }
+                        }
+                        if(currentUserName) localStorage.setItem("ehs_user_name", currentUserName);
+                    }
+                    // --- KẾT THÚC VÁ LỖI ---
 
+                    document.getElementById('header-user-name').innerText = currentUserName || currentUserId || "Nhân viên EHS";
+                    window.changeLanguage(currentLang);
+
+                    const today = new Date();
+                    
                     await loadUsersDropdown();
                     await fetchAllTasks(); 
                 } catch (error) {
