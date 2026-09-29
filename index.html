@@ -561,7 +561,8 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Tải ảnh minh chứng (Bắt buộc) <span class="text-red-500">*</span></label>
                         <!-- capture="environment" giúp tự động mở camera sau trên điện thoại di động -->
-                        <input type="file" id="osh-image" accept="image/jpeg, image/png, image/jpg, .heic" multiple required class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer">
+                        <input type="file" id="osh-image" accept="image/jpeg, image/png, image/jpg" capture="environment" required class="w-full px-3 py-2 border border-slate-300 dark:border-dark-border bg-slate-50 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 cursor-pointer">
+                    </div>
                     <button type="submit" id="osh-submit-btn" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 mt-2 shadow-md">
                         <i class="ph-bold ph-paper-plane-tilt text-lg"></i> Gửi Báo Cáo
                     </button>
@@ -634,7 +635,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Chụp ảnh hiện trường (Bắt buộc nếu có lỗi)</label>
-                        <input type="file" id="chk-img" accept="image/jpeg, image/png, image/jpg, .heic" multiple class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-teal-100 file:text-teal-700 hover:file:bg-teal-200 cursor-pointer">
+                        <input type="file" id="chk-img" accept="image/jpeg, image/png, image/jpg" capture="environment" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-teal-100 file:text-teal-700 hover:file:bg-teal-200 cursor-pointer">
                     </div>
 
                     <button type="submit" id="chk-submit-btn" class="w-full bg-teal-600 text-white font-bold py-4 rounded-xl hover:bg-teal-700 transition flex items-center justify-center gap-2 shadow-lg text-lg">
@@ -1982,6 +1983,180 @@
             document.getElementById('report-modal').classList.add('hidden'); document.getElementById('report-modal').classList.remove('flex');
         }
 
+        // ==========================================
+        // XỬ LÝ FORM CHECKLIST KIỂM TRA ATVSV
+        // ==========================================
+        document.getElementById('oshChecklistForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('chk-submit-btn');
+            const ogText = btn.innerHTML;
+            const reporterId = localStorage.getItem("ehs_user_id");
+            const reporterName = localStorage.getItem("ehs_user_name") || "Ẩn danh";
+            
+            if (!reporterId || !window.db) {
+                window.showCustomAlert("Chưa xác định danh tính! Vui lòng đăng nhập lại.", "Lỗi", true);
+                return;
+            }
+
+            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang tải dữ liệu lên...';
+            btn.disabled = true;
+
+            try {
+                const fileInput = document.getElementById('chk-img');
+                const file = fileInput.files[0];
+                let imageUrl = "";
+                
+                if (file) {
+                    // 1. Nhận diện, chuyển đổi và Nén ảnh
+                    const base64Image = await processAndCompressImage(file);
+                    const fileName = `Checklist_${Date.now()}_${reporterId}.jpg`;
+                    
+                    // 2. Gửi sang Google Apps Script
+                    // 🔴 QUAN TRỌNG: Dán URL Ứng dụng Web Google Apps Script của bạn vào đây (giống hệt link ở Thao tác 2):
+                    const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec";
+                    
+                    const response = await fetch(googleScriptUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            fileName: fileName,
+                            mimeType: 'image/jpeg',
+                            base64: base64Image
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if(result.status === 'success') {
+                        imageUrl = result.url;
+                    } else {
+                        throw new Error("Lỗi tải ảnh lên Google Drive: " + result.message);
+                    }
+                }
+
+                // 3. Thu thập dữ liệu Checklist
+                const area = document.getElementById('chk-area').value + " (" + document.getElementById('chk-timing').value + ")";
+                const note = document.getElementById('chk-desc').value;
+                const ppe = document.querySelector('input[name="chk_ppe"]:checked').value;
+                const s5 = document.querySelector('input[name="chk_5s"]:checked').value;
+                const mac = document.querySelector('input[name="chk_mac"]:checked').value;
+                
+                let category = "Checklist An Toàn";
+                let status = "Closed";
+                
+                let descFull = `[Checklist Hàng Ngày]\n- PTBVCN: ${ppe}\n- 5S & Vệ sinh: ${s5}\n- Máy móc & PCCC: ${mac}`;
+                if (note) descFull += `\n[Ghi chú/Xử lý]: ${note}`;
+
+                if (ppe === 'Không Đạt' || s5 === 'Không Đạt' || mac === 'Không Đạt') {
+                    status = "Pending";
+                    category = "Sự cố từ Checklist";
+                    if (!file) throw new Error("Phát hiện lỗi không đạt, bắt buộc phải chụp ảnh hiện trường!");
+                }
+
+                await window.addDoc(window.collection(window.db, "atvsv_logs"), {
+                    reporter_id: reporterId,
+                    reporter_name: reporterName,
+                    report_time: new Date().toISOString(),
+                    area_machine: area,
+                    category: category,
+                    description: descFull,
+                    status: status,
+                    image_url: imageUrl
+                });
+
+                window.showCustomAlert("Đã nộp phiếu kiểm tra ATVSV thành công!", "Hoàn Thành");
+                this.reset();
+                document.getElementById('oshChecklistModal').classList.add('hidden');
+                
+                if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
+                    window.openOSHLogbook();
+                }
+
+            } catch (error) {
+                console.error(error);
+                window.showCustomAlert(error.message, "Cảnh báo", true);
+            } finally {
+                btn.innerHTML = ogText;
+                btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // XEM SỔ NHẬT KÝ ATVSV (ĐỔ DỮ LIỆU RA BẢNG)
+        // ==========================================
+        window.openOSHLogbook = async function() {
+            const modal = document.getElementById('oshLogbookModal');
+            const tbody = document.getElementById('osh-logbook-body');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Cập nhật colspan=9 vì chúng ta đã thêm cột Thao tác
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
+
+            try {
+                // Kéo dữ liệu từ collection 'atvsv_logs' mới nhất lên đầu
+                const q = window.query(window.collection(window.db, "atvsv_logs"), window.orderBy("report_time", "desc"));
+                const snap = await window.getDocs(q);
+                
+                let html = '';
+                let stt = 1;
+                
+                if (snap.empty) {
+                    html = '<tr><td colspan="9" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào trong hệ thống.</td></tr>';
+                } else {
+                    snap.forEach(doc => {
+                        const docId = doc.id; // Lấy ID của tài liệu để cập nhật
+                        const data = doc.data();
+                        
+                        // Xử lý Ngày Giờ
+                        const dateObj = new Date(data.report_time);
+                        const timeStr = dateObj.toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                        let statusBadge = '';
+                        let actionBtn = '';
+                        
+                        if (data.status === 'Closed') {
+                            statusBadge = '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>';
+                            // Nếu đã đóng, hiển thị icon check xanh
+                            actionBtn = '<span class="text-emerald-500 font-bold flex items-center justify-center gap-1"><i class="ph-bold ph-check-circle text-lg"></i> OK</span>';
+                        } else {
+                            statusBadge = '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
+                            // Nếu đang chờ, hiển thị nút Khắc phục
+                            actionBtn = `<button onclick="window.openResolveModal('${docId}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-wrench"></i> Khắc phục</button>`;
+                        }
+
+                        // Nút xem Hình ảnh minh chứng
+                        const imgBtn = data.image_url 
+                            ? `<a href="${data.image_url}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition border border-blue-100" title="Xem ảnh"><i class="ph-bold ph-image text-lg"></i></a>`
+                            : '<span class="text-slate-300">-</span>';
+
+                        // Badge Phân loại
+                        let catColor = "bg-slate-100 text-slate-600";
+                        if(data.category.includes("PPE")) catColor = "bg-blue-50 text-blue-600 border-blue-200";
+                        if(data.category.includes("5S")) catColor = "bg-teal-50 text-teal-600 border-teal-200";
+                        if(data.category.includes("PCCC")) catColor = "bg-red-50 text-red-600 border-red-200";
+                        if(data.category.includes("Máy móc")) catColor = "bg-orange-50 text-orange-600 border-orange-200";
+
+                        html += `
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group">
+                                <td class="px-4 py-3 text-center font-medium">${stt++}</td>
+                                <td class="px-4 py-3 text-xs font-mono font-bold text-slate-500">${timeStr}</td>
+                                <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">${data.reporter_name}</td>
+                                <td class="px-4 py-3 font-medium">${data.area_machine}</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 border rounded text-[11px] font-bold ${catColor} whitespace-nowrap">${data.category.split('-')[0]}</span></td>
+                                <td class="px-4 py-3 text-xs min-w-[250px]"><p class="line-clamp-2" title="${data.description}">${data.description}</p></td>
+                                <td class="px-4 py-3 text-center">${statusBadge}</td>
+                                <td class="px-4 py-3 text-center">${imgBtn}</td>
+                                <td class="px-4 py-3 text-center">${actionBtn}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+            }
+        };
+
         // Nâng cấp: Xử lý thu gọn/mở rộng Sidebar trên Desktop và Mobile
         window.toggleMobileMenu = function() {
             const sidebar = document.getElementById('sidebar');
@@ -2216,7 +2391,10 @@
             if(window.fetchDashboardData) { setTimeout(window.fetchDashboardData, 600); }
         });
         // ==========================================
-        // 1. CÁC HÀM XỬ LÝ VÀ NÉN ẢNH (HỖ TRỢ IPHONE HEIC)
+        // XỬ LÝ FORM BÁO CÁO ATVSV
+        // ==========================================
+        /// ==========================================
+        // 1. CÁC HÀM XỬ LÝ VÀ NÉN ẢNH TỐI ƯU
         // ==========================================
         async function compressImageToBase64(file, maxWidth = 1024, quality = 0.7) {
             return new Promise((resolve, reject) => {
@@ -2261,201 +2439,82 @@
         }
 
         // ==========================================
-        // 2. GỬI BÁO CÁO VÀ CHECKLIST (HỖ TRỢ NHIỀU ẢNH)
+        // 2. XỬ LÝ FORM BÁO CÁO NHANH (NÚT CAMERA ĐỎ)
         // ==========================================
-        async function handleOSHSubmit(e, formType) {
-            e.preventDefault();
-            const isChecklist = formType === 'checklist';
-            const btn = document.getElementById(isChecklist ? 'chk-submit-btn' : 'osh-submit-btn');
-            const form = document.getElementById(isChecklist ? 'oshChecklistForm' : 'oshReportForm');
-            const fileInput = document.getElementById(isChecklist ? 'chk-img' : 'osh-image');
-            
-            const ogText = btn.innerHTML;
-            const reporterId = localStorage.getItem("ehs_user_id");
-            let reporterName = localStorage.getItem("ehs_user_name");
+        const reportForm = document.getElementById('oshReportForm');
+        if (reportForm) {
+            reportForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('osh-submit-btn');
+                const ogText = btn.innerHTML;
+                const reporterId = localStorage.getItem("ehs_user_id");
+                const reporterName = localStorage.getItem("ehs_user_name") || "Ẩn danh";
 
-            if (!reporterId || !window.db) {
-                window.showCustomAlert("Hệ thống chưa sẵn sàng hoặc bạn chưa đăng nhập!", "Lỗi", true);
-                return;
-            }
-
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang tải dữ liệu...';
-            btn.disabled = true;
-
-            try {
-                if (!reporterName || reporterName === "Ẩn danh" || reporterName === "null") {
-                    const qName = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", reporterId));
-                    const snapName = await window.getDocs(qName);
-                    if (!snapName.empty) {
-                        reporterName = snapName.docs[0].data().ho_ten;
-                        localStorage.setItem("ehs_user_name", reporterName);
-                    } else {
-                        reporterName = "Nhân sự API";
-                    }
+                if (!reporterId || !window.db) {
+                    window.showCustomAlert("Hệ thống chưa sẵn sàng hoặc bạn chưa đăng nhập!", "Lỗi", true);
+                    return;
                 }
 
-                const files = fileInput.files;
-                let imageUrls = [];
-                const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec";
+                btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang tải dữ liệu...';
+                btn.disabled = true;
 
-                if (files.length > 0) {
-                    for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
+                try {
+                    const fileInput = document.getElementById('osh-image');
+                    const file = fileInput.files[0];
+                    let imageUrl = "";
+
+                    if (file) {
                         const base64Image = await processAndCompressImage(file);
-                        const fileName = `ATVSV_${Date.now()}_${reporterId}_${i}.jpg`;
-                        
+                        const fileName = `BaoCao_${Date.now()}_${reporterId}.jpg`;
+                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec";
+
                         const response = await fetch(googleScriptUrl, {
                             method: 'POST',
                             body: JSON.stringify({ fileName: fileName, mimeType: 'image/jpeg', base64: base64Image })
                         });
                         const result = await response.json();
                         if (result.status === 'success') {
-                            imageUrls.push(result.url);
+                            imageUrl = result.url;
                         } else {
-                            throw new Error(`Lỗi tải ảnh thứ ${i+1}: ${result.message}`);
+                            throw new Error(result.message);
                         }
                     }
-                }
-                
-                const finalImageUrlString = imageUrls.join(', ');
-                let area, category, desc, status;
 
-                if (isChecklist) {
-                    area = document.getElementById('chk-area').value + " (" + document.getElementById('chk-timing').value + ")";
-                    const note = document.getElementById('chk-desc').value;
-                    const ppe = document.querySelector('input[name="chk_ppe"]:checked').value;
-                    const s5 = document.querySelector('input[name="chk_5s"]:checked').value;
-                    const mac = document.querySelector('input[name="chk_mac"]:checked').value;
-                    
-                    category = "Checklist An Toàn";
-                    status = "Closed";
-                    desc = `[Checklist Hàng Ngày]\n- PTBVCN: ${ppe}\n- 5S & Vệ sinh: ${s5}\n- Máy móc & PCCC: ${mac}`;
-                    if (note) desc += `\n[Ghi chú/Xử lý]: ${note}`;
+                    const area = document.getElementById('osh-area').value;
+                    const category = document.getElementById('osh-category').value;
+                    const desc = document.getElementById('osh-desc').value;
 
-                    if (ppe === 'Không Đạt' || s5 === 'Không Đạt' || mac === 'Không Đạt') {
-                        status = "Pending";
-                        category = "Sự cố từ Checklist";
-                        if (files.length === 0) throw new Error("Phát hiện lỗi không đạt, bắt buộc phải chụp ảnh hiện trường!");
+                    await window.addDoc(window.collection(window.db, "atvsv_logs"), {
+                        reporter_id: reporterId,
+                        reporter_name: reporterName,
+                        report_time: new Date().toISOString(),
+                        area_machine: area,
+                        category: category,
+                        description: desc,
+                        status: 'Pending',
+                        image_url: imageUrl
+                    });
+
+                    window.showCustomAlert("Ghi nhận báo cáo thành công!", "Hoàn thành");
+                    this.reset();
+                    document.getElementById('oshReportModal').classList.add('hidden');
+
+                    if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
+                        window.openOSHLogbook();
                     }
-                } else {
-                    area = document.getElementById('osh-area').value;
-                    category = document.getElementById('osh-category').value;
-                    desc = document.getElementById('osh-desc').value;
-                    status = 'Pending';
+                } catch (error) {
+                    console.error("Lỗi:", error);
+                    window.showCustomAlert(error.message, "Lỗi Server", true);
+                } finally {
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
                 }
-
-                await window.addDoc(window.collection(window.db, "atvsv_logs"), {
-                    reporter_id: reporterId,
-                    reporter_name: reporterName,
-                    report_time: new Date().toISOString(),
-                    area_machine: area,
-                    category: category,
-                    description: desc,
-                    status: status,
-                    image_url: finalImageUrlString
-                });
-
-                window.showCustomAlert("Ghi nhận báo cáo thành công!", "Hoàn thành");
-                form.reset();
-                document.getElementById(isChecklist ? 'oshChecklistModal' : 'oshReportModal').classList.add('hidden');
-
-                if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
-                    window.openOSHLogbook();
-                }
-
-            } catch (error) {
-                console.error("Lỗi:", error);
-                window.showCustomAlert(error.message, "Lỗi Server", true);
-            } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-            }
+            });
         }
 
-        const reportForm = document.getElementById('oshReportForm');
-        if (reportForm) reportForm.addEventListener('submit', (e) => handleOSHSubmit(e, 'report'));
-
-        const checklistForm = document.getElementById('oshChecklistForm');
-        if (checklistForm) checklistForm.addEventListener('submit', (e) => handleOSHSubmit(e, 'checklist'));
-
         // ==========================================
-        // 3. XEM SỔ NHẬT KÝ ATVSV VÀ KHẮC PHỤC
+        // 3. XỬ LÝ FORM KHẮC PHỤC SỰ CỐ (SỔ NHẬT KÝ)
         // ==========================================
-        window.openOSHLogbook = async function() {
-            const modal = document.getElementById('oshLogbookModal');
-            const tbody = document.getElementById('osh-logbook-body');
-            
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
-
-            try {
-                const q = window.query(window.collection(window.db, "atvsv_logs"), window.orderBy("report_time", "desc"));
-                const snap = await window.getDocs(q);
-                
-                let html = '';
-                let stt = 1;
-                
-                if (snap.empty) {
-                    html = '<tr><td colspan="9" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào trong hệ thống.</td></tr>';
-                } else {
-                    snap.forEach(doc => {
-                        const docId = doc.id;
-                        const data = doc.data();
-                        const dateObj = new Date(data.report_time);
-                        const timeStr = dateObj.toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-
-                        let statusBadge = '';
-                        let actionBtn = '';
-                        
-                        if (data.status === 'Closed') {
-                            statusBadge = '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>';
-                            actionBtn = '<span class="text-emerald-500 font-bold flex items-center justify-center gap-1"><i class="ph-bold ph-check-circle text-lg"></i> OK</span>';
-                        } else {
-                            statusBadge = '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
-                            actionBtn = `<button onclick="window.openResolveModal('${docId}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-wrench"></i> Khắc phục</button>`;
-                        }
-
-                        let imgBtn = '<span class="text-slate-300">-</span>';
-                        if (data.image_url) {
-                            const urls = data.image_url.split(',').map(u => u.trim()).filter(u => u);
-                            if (urls.length > 0) {
-                                imgBtn = '<div class="flex gap-1 justify-center flex-wrap">';
-                                urls.forEach((url, idx) => {
-                                    imgBtn += `<a href="${url}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition border border-blue-100 shadow-sm" title="Xem ảnh ${idx + 1}"><i class="ph-bold ph-image text-lg"></i></a>`;
-                                });
-                                imgBtn += '</div>';
-                            }
-                        }
-
-                        let catColor = "bg-slate-100 text-slate-600";
-                        if(data.category.includes("PPE")) catColor = "bg-blue-50 text-blue-600 border-blue-200";
-                        if(data.category.includes("5S")) catColor = "bg-teal-50 text-teal-600 border-teal-200";
-                        if(data.category.includes("PCCC")) catColor = "bg-red-50 text-red-600 border-red-200";
-                        if(data.category.includes("Máy móc")) catColor = "bg-orange-50 text-orange-600 border-orange-200";
-
-                        html += `
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group">
-                                <td class="px-4 py-3 text-center font-medium">${stt++}</td>
-                                <td class="px-4 py-3 text-xs font-mono font-bold text-slate-500">${timeStr}</td>
-                                <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">${data.reporter_name}</td>
-                                <td class="px-4 py-3 font-medium">${data.area_machine}</td>
-                                <td class="px-4 py-3"><span class="px-2 py-1 border rounded text-[11px] font-bold ${catColor} whitespace-nowrap">${data.category.split('-')[0]}</span></td>
-                                <td class="px-4 py-3 text-xs min-w-[250px]"><p class="line-clamp-2" title="${data.description}">${data.description}</p></td>
-                                <td class="px-4 py-3 text-center">${statusBadge}</td>
-                                <td class="px-4 py-3 text-center">${imgBtn}</td>
-                                <td class="px-4 py-3 text-center">${actionBtn}</td>
-                            </tr>
-                        `;
-                    });
-                }
-                tbody.innerHTML = html;
-            } catch (error) {
-                console.error(error);
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi tải dữ liệu: ${error.message}</td></tr>`;
-            }
-        };
-
         window.openResolveModal = function(docId) {
             document.getElementById('resolve-doc-id').value = docId;
             document.getElementById('resolveIssueForm').reset();
@@ -2483,7 +2542,7 @@
 
                     if (file) {
                         const base64Image = await processAndCompressImage(file);
-                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec";
+                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec";
 
                         const response = await fetch(googleScriptUrl, {
                             method: 'POST',
