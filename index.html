@@ -2399,10 +2399,7 @@
             if(window.fetchDashboardData) { setTimeout(window.fetchDashboardData, 600); }
         });
         // ==========================================
-        // XỬ LÝ FORM BÁO CÁO ATVSV
-        // ==========================================
-        /// ==========================================
-        // 1. CÁC HÀM XỬ LÝ VÀ NÉN ẢNH TỐI ƯU
+        // 1. CÁC HÀM XỬ LÝ VÀ NÉN ẢNH (HỖ TRỢ IPHONE HEIC)
         // ==========================================
         async function compressImageToBase64(file, maxWidth = 1024, quality = 0.7) {
             return new Promise((resolve, reject) => {
@@ -2447,10 +2444,8 @@
         }
 
         // ==========================================
-        // 2. XỬ LÝ FORM BÁO CÁO NHANH & CHECKLIST TỔNG HỢP
+        // 2. GỬI BÁO CÁO VÀ CHECKLIST (HỖ TRỢ NHIỀU ẢNH)
         // ==========================================
-        
-        // Hàm dùng chung để xử lý Submit (Hỗ trợ nhiều ảnh + Chống ẩn danh)
         async function handleOSHSubmit(e, formType) {
             e.preventDefault();
             const isChecklist = formType === 'checklist';
@@ -2471,7 +2466,6 @@
             btn.disabled = true;
 
             try {
-                // [FIX LỖI ẨN DANH]: Nếu mất tên, chọc thẳng vào Database lấy lại ngay lập tức
                 if (!reporterName || reporterName === "Ẩn danh" || reporterName === "null") {
                     const qName = window.query(window.collection(window.db, "nhan_su_noi_bo"), window.where("ma_nv", "==", reporterId));
                     const snapName = await window.getDocs(qName);
@@ -2479,11 +2473,10 @@
                         reporterName = snapName.docs[0].data().ho_ten;
                         localStorage.setItem("ehs_user_name", reporterName);
                     } else {
-                        reporterName = "Nhân sự API"; // Cứu cánh cuối cùng
+                        reporterName = "Nhân sự API";
                     }
                 }
 
-                // [FIX NHIỀU ẢNH]: Vòng lặp xử lý toàn bộ ảnh được chọn
                 const files = fileInput.files;
                 let imageUrls = [];
                 const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec";
@@ -2500,19 +2493,16 @@
                         });
                         const result = await response.json();
                         if (result.status === 'success') {
-                            imageUrls.push(result.url); // Lưu link ảnh vào mảng
+                            imageUrls.push(result.url);
                         } else {
                             throw new Error(`Lỗi tải ảnh thứ ${i+1}: ${result.message}`);
                         }
                     }
                 }
                 
-                // Nối các link ảnh lại bằng dấu phẩy
                 const finalImageUrlString = imageUrls.join(', ');
-
                 let area, category, desc, status;
 
-                // Tách luồng dữ liệu cho Checklist và Báo cáo nhanh
                 if (isChecklist) {
                     area = document.getElementById('chk-area').value + " (" + document.getElementById('chk-timing').value + ")";
                     const note = document.getElementById('chk-desc').value;
@@ -2537,7 +2527,6 @@
                     status = 'Pending';
                 }
 
-                // Ghi vào Database
                 await window.addDoc(window.collection(window.db, "atvsv_logs"), {
                     reporter_id: reporterId,
                     reporter_name: reporterName,
@@ -2546,7 +2535,7 @@
                     category: category,
                     description: desc,
                     status: status,
-                    image_url: finalImageUrlString // Chứa 1 hoặc nhiều link ảnh
+                    image_url: finalImageUrlString
                 });
 
                 window.showCustomAlert("Ghi nhận báo cáo thành công!", "Hoàn thành");
@@ -2566,7 +2555,6 @@
             }
         }
 
-        // Gắn sự kiện cho cả 2 Form
         const reportForm = document.getElementById('oshReportForm');
         if (reportForm) reportForm.addEventListener('submit', (e) => handleOSHSubmit(e, 'report'));
 
@@ -2574,8 +2562,83 @@
         if (checklistForm) checklistForm.addEventListener('submit', (e) => handleOSHSubmit(e, 'checklist'));
 
         // ==========================================
-        // 3. XỬ LÝ FORM KHẮC PHỤC SỰ CỐ (SỔ NHẬT KÝ)
+        // 3. XEM SỔ NHẬT KÝ ATVSV VÀ KHẮC PHỤC
         // ==========================================
+        window.openOSHLogbook = async function() {
+            const modal = document.getElementById('oshLogbookModal');
+            const tbody = document.getElementById('osh-logbook-body');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
+
+            try {
+                const q = window.query(window.collection(window.db, "atvsv_logs"), window.orderBy("report_time", "desc"));
+                const snap = await window.getDocs(q);
+                
+                let html = '';
+                let stt = 1;
+                
+                if (snap.empty) {
+                    html = '<tr><td colspan="9" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào trong hệ thống.</td></tr>';
+                } else {
+                    snap.forEach(doc => {
+                        const docId = doc.id;
+                        const data = doc.data();
+                        const dateObj = new Date(data.report_time);
+                        const timeStr = dateObj.toLocaleString('vi-VN', { hour: '2-digit', minute:'2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                        let statusBadge = '';
+                        let actionBtn = '';
+                        
+                        if (data.status === 'Closed') {
+                            statusBadge = '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>';
+                            actionBtn = '<span class="text-emerald-500 font-bold flex items-center justify-center gap-1"><i class="ph-bold ph-check-circle text-lg"></i> OK</span>';
+                        } else {
+                            statusBadge = '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-md text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
+                            actionBtn = `<button onclick="window.openResolveModal('${docId}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-wrench"></i> Khắc phục</button>`;
+                        }
+
+                        let imgBtn = '<span class="text-slate-300">-</span>';
+                        if (data.image_url) {
+                            const urls = data.image_url.split(',').map(u => u.trim()).filter(u => u);
+                            if (urls.length > 0) {
+                                imgBtn = '<div class="flex gap-1 justify-center flex-wrap">';
+                                urls.forEach((url, idx) => {
+                                    imgBtn += `<a href="${url}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-lg transition border border-blue-100 shadow-sm" title="Xem ảnh ${idx + 1}"><i class="ph-bold ph-image text-lg"></i></a>`;
+                                });
+                                imgBtn += '</div>';
+                            }
+                        }
+
+                        let catColor = "bg-slate-100 text-slate-600";
+                        if(data.category.includes("PPE")) catColor = "bg-blue-50 text-blue-600 border-blue-200";
+                        if(data.category.includes("5S")) catColor = "bg-teal-50 text-teal-600 border-teal-200";
+                        if(data.category.includes("PCCC")) catColor = "bg-red-50 text-red-600 border-red-200";
+                        if(data.category.includes("Máy móc")) catColor = "bg-orange-50 text-orange-600 border-orange-200";
+
+                        html += `
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group">
+                                <td class="px-4 py-3 text-center font-medium">${stt++}</td>
+                                <td class="px-4 py-3 text-xs font-mono font-bold text-slate-500">${timeStr}</td>
+                                <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">${data.reporter_name}</td>
+                                <td class="px-4 py-3 font-medium">${data.area_machine}</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 border rounded text-[11px] font-bold ${catColor} whitespace-nowrap">${data.category.split('-')[0]}</span></td>
+                                <td class="px-4 py-3 text-xs min-w-[250px]"><p class="line-clamp-2" title="${data.description}">${data.description}</p></td>
+                                <td class="px-4 py-3 text-center">${statusBadge}</td>
+                                <td class="px-4 py-3 text-center">${imgBtn}</td>
+                                <td class="px-4 py-3 text-center">${actionBtn}</td>
+                            </tr>
+                        `;
+                    });
+                }
+                tbody.innerHTML = html;
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi tải dữ liệu: ${error.message}</td></tr>`;
+            }
+        };
+
         window.openResolveModal = function(docId) {
             document.getElementById('resolve-doc-id').value = docId;
             document.getElementById('resolveIssueForm').reset();
@@ -2603,7 +2666,7 @@
 
                     if (file) {
                         const base64Image = await processAndCompressImage(file);
-                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec";
+                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxmclomBgW2MqokK89plf3jacbPpaW5AYW1poltA3NEF4nOHLwVYthOv6NaHLvZ6fRX4A/exec";
 
                         const response = await fetch(googleScriptUrl, {
                             method: 'POST',
