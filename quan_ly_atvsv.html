@@ -78,6 +78,7 @@
                                     <th class="px-4 py-4 border-r border-slate-200 dark:border-slate-700 min-w-[250px]">Mô tả vấn đề & Hành động</th>
                                     <th class="px-4 py-4 text-center border-r border-slate-200 dark:border-slate-700">Tình trạng</th>
                                     <th class="px-4 py-4 text-center border-r border-slate-200 dark:border-slate-700">Minh chứng</th>
+                                    <th class="px-4 py-4 text-center border-r border-slate-200 dark:border-slate-700">Đánh giá EHS</th>
                                     <th class="px-4 py-4 text-center">Thao tác</th>
                                 </tr>
                             </thead>
@@ -215,6 +216,42 @@
                     </div>
                     <button type="submit" id="resolve-submit-btn" class="w-full bg-amber-500 text-white font-bold py-3.5 rounded-xl hover:bg-amber-600 transition flex items-center justify-center gap-2 mt-2 shadow-md">
                         <i class="ph-bold ph-check-square-offset text-lg"></i> Hoàn Thành & Đóng Lỗi
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. MODAL CHẤM ĐIỂM & ĐÁNH GIÁ CỦA EHS -->
+    <div id="ehsEvalModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[180] hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative">
+            <div class="bg-purple-600 p-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2"><i class="ph-fill ph-star text-2xl"></i> EHS Xét Duyệt & Chấm Điểm</h3>
+                <button onclick="document.getElementById('ehsEvalModal').classList.add('hidden')" class="text-white hover:bg-white/20 rounded-full p-1 transition"><i class="ph-bold ph-x text-xl"></i></button>
+            </div>
+            <div class="p-5">
+                <form id="ehsEvalForm" class="space-y-4">
+                    <input type="hidden" id="eval-doc-id">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Phân loại Báo cáo (Thi đua) <span class="text-red-500">*</span></label>
+                        <select id="eval-category" required class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white rounded-xl focus:border-purple-500 outline-none">
+                            <option value="">-- Chọn phân loại --</option>
+                            <option value="Đạt yêu cầu cải tiến">Đạt yêu cầu báo cáo cải tiến</option>
+                            <option value="Báo cáo Near-miss">Báo cáo Near-miss (Suýt xảy ra)</option>
+                            <option value="Báo cáo Sự cố">Báo cáo Sự cố</option>
+                            <option value="Không hợp lệ / Trùng lặp">Không hợp lệ / Trùng lặp</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Điểm cộng thi đua / Tiền thưởng (Tùy chọn)</label>
+                        <input type="number" id="eval-score" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white rounded-xl focus:border-purple-500 outline-none" placeholder="VD: 10 (điểm) hoặc 50000 (VNĐ)">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 dark:text-dark-muted mb-1">Ghi chú của EHS</label>
+                        <textarea id="eval-note" rows="2" class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white rounded-xl focus:border-purple-500 outline-none" placeholder="Ghi chú thêm..."></textarea>
+                    </div>
+                    <button type="submit" id="eval-submit-btn" class="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl hover:bg-purple-700 transition flex items-center justify-center gap-2 mt-2 shadow-md">
+                        <i class="ph-bold ph-floppy-disk text-lg"></i> Lưu Kết Quả Đánh Giá
                     </button>
                 </form>
             </div>
@@ -413,7 +450,7 @@
         // ==========================================
         async function loadOSHLogbook() {
             const tbody = document.getElementById('osh-logbook-body');
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2 block"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-10"><i class="ph-bold ph-spinner animate-spin text-3xl text-indigo-500 mb-2 block"></i><p class="font-medium text-slate-500">Đang đồng bộ sổ nhật ký từ hệ thống...</p></td></tr>';
 
             try {
                 const q = window.query(window.collection(window.db, "atvsv_logs"), window.orderBy("report_time", "desc"));
@@ -421,7 +458,7 @@
                 let html = ''; let stt = 1;
                 
                 if (snap.empty) {
-                    html = '<tr><td colspan="9" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào.</td></tr>';
+                    html = '<tr><td colspan="10" class="text-center py-10 text-slate-500 font-medium">Chưa có dữ liệu báo cáo nào.</td></tr>';
                 } else {
                     snap.forEach(doc => {
                         const docId = doc.id;
@@ -437,6 +474,58 @@
                             statusBadge = '<span class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 rounded text-[11px] font-black uppercase tracking-wide border border-amber-200 dark:border-amber-800">Đang chờ</span>';
                             actionBtn = `<button onclick="window.openResolveModal('${docId}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-wrench"></i> Khắc phục</button>`;
                         }
+
+                        // [TÍNH NĂNG MỚI]: UI Cột Đánh giá EHS
+                        let ehsEvalUI = '';
+                        if (data.ehs_evaluation) {
+                            let evalColor = "bg-slate-100 text-slate-600 border-slate-200";
+                            if(data.ehs_evaluation.includes("cải tiến")) evalColor = "bg-green-50 text-green-700 border-green-200";
+                            if(data.ehs_evaluation.includes("Near-miss")) evalColor = "bg-orange-50 text-orange-700 border-orange-200";
+                            if(data.ehs_evaluation.includes("Sự cố")) evalColor = "bg-red-50 text-red-700 border-red-200";
+
+                            ehsEvalUI = `<div class="flex flex-col items-center gap-1">
+                                            <span class="px-2 py-1 border rounded-lg text-[10px] font-bold ${evalColor} text-center whitespace-nowrap">${data.ehs_evaluation}</span>
+                                            ${data.ehs_score ? `<span class="text-[11px] font-black text-purple-600 dark:text-purple-400">+${data.ehs_score}</span>` : ''}
+                                         </div>`;
+                        } else {
+                            // Nút để EHS click vào chấm điểm
+                            ehsEvalUI = `<button onclick="window.openEHSEvalModal('${docId}')" class="bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 font-bold py-1 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-star"></i> Đánh giá</button>`;
+                        }
+
+                        let imgBtn = '<span class="text-slate-300">-</span>';
+                        if (data.image_url) {
+                            const urls = data.image_url.split(',').map(u => u.trim()).filter(u => u);
+                            if (urls.length > 0) {
+                                imgBtn = '<div class="flex gap-1 justify-center flex-wrap max-w-[80px]">';
+                                urls.forEach((url, idx) => {
+                                    imgBtn += `<a href="${url}" target="_blank" class="w-7 h-7 flex items-center justify-center text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded border border-blue-100 shadow-sm transition"><i class="ph-bold ph-image text-sm"></i></a>`;
+                                });
+                                imgBtn += '</div>';
+                            }
+                        }
+
+                        let catColor = "bg-slate-100 text-slate-600 border-slate-200";
+                        if(data.category && data.category.includes("PPE")) catColor = "bg-blue-50 text-blue-600 border-blue-200";
+                        if(data.category && data.category.includes("5S")) catColor = "bg-teal-50 text-teal-600 border-teal-200";
+                        if(data.category && data.category.includes("PCCC")) catColor = "bg-rose-50 text-rose-600 border-rose-200";
+                        if(data.category && data.category.includes("Máy móc")) catColor = "bg-orange-50 text-orange-600 border-orange-200";
+
+                        html += `
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group">
+                                <td class="px-4 py-3 text-center font-medium">${stt++}</td>
+                                <td class="px-4 py-3 text-xs font-mono font-bold text-slate-500">${timeStr}</td>
+                                <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">${data.reporter_name}</td>
+                                <td class="px-4 py-3 font-medium text-xs">${data.area_machine}</td>
+                                <td class="px-4 py-3"><span class="px-2 py-1 border rounded text-[10px] font-bold ${catColor} whitespace-nowrap">${data.category ? data.category.split('-')[0] : 'Khác'}</span></td>
+                                <td class="px-4 py-3 text-xs"><p class="line-clamp-2" title="${data.description}">${data.description}</p></td>
+                                <td class="px-4 py-3 text-center">${statusBadge}</td>
+                                <td class="px-4 py-3 flex justify-center">${imgBtn}</td>
+                                <td class="px-4 py-3 text-center">${ehsEvalUI}</td>
+                                <td class="px-4 py-3 text-center">${actionBtn}</td>
+                            </tr>
+                        `;
+                    });
+                }
 
                         // Xử lý hiện Nhiều Icon Ảnh
                         let imgBtn = '<span class="text-slate-300">-</span>';
@@ -532,6 +621,55 @@
             } catch (error) { window.showCustomAlert("Lỗi: " + error.message, "Lỗi", true); } 
             finally { btn.innerHTML = ogText; btn.disabled = false; }
         });
+
+        // ==========================================
+        // 4. XỬ LÝ FORM ĐÁNH GIÁ (CHẤM ĐIỂM CỦA EHS)
+        // ==========================================
+        window.openEHSEvalModal = function(docId) {
+            document.getElementById('eval-doc-id').value = docId;
+            document.getElementById('ehsEvalForm').reset();
+            document.getElementById('ehsEvalModal').classList.remove('hidden');
+        };
+
+        const evalForm = document.getElementById('ehsEvalForm');
+        if (evalForm) {
+            evalForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('eval-submit-btn');
+                const ogText = btn.innerHTML;
+                btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Đang lưu đánh giá...';
+                btn.disabled = true;
+
+                try {
+                    const docId = document.getElementById('eval-doc-id').value;
+                    const evalCategory = document.getElementById('eval-category').value;
+                    const evalScore = document.getElementById('eval-score').value;
+                    const evalNote = document.getElementById('eval-note').value;
+
+                    const docRef = window.doc(window.db, "atvsv_logs", docId);
+                    
+                    // Cập nhật trường dữ liệu mới vào Document của báo cáo này
+                    await window.updateDoc(docRef, {
+                        ehs_evaluation: evalCategory,
+                        ehs_score: evalScore ? Number(evalScore) : 0,
+                        ehs_eval_note: evalNote,
+                        ehs_eval_time: new Date().toISOString(),
+                        ehs_evaluator: localStorage.getItem("ehs_user_name")
+                    });
+
+                    window.showCustomAlert("Lưu kết quả đánh giá thành công! Dữ liệu đã sẵn sàng để xuất Excel.", "Hoàn thành");
+                    document.getElementById('ehsEvalModal').classList.add('hidden');
+                    loadOSHLogbook(); // Load lại bảng để hiển thị Điểm
+
+                } catch (error) {
+                    console.error("Lỗi:", error);
+                    window.showCustomAlert("Lỗi lưu đánh giá: " + error.message, "Lỗi", true);
+                } finally {
+                    btn.innerHTML = ogText;
+                    btn.disabled = false;
+                }
+            });
+        }
     </script>
     
     <script>
