@@ -2037,9 +2037,18 @@
             const notifList = document.getElementById('notif-list');
             const badge = document.getElementById('notif-badge');
             const countLabel = document.getElementById('notif-count');
-            if (!currentUserId || !window.db) { notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Hệ thống chưa sẵn sàng. Vui lòng tải lại trang.</div>`; return; }
+            
+            const rawUserId = localStorage.getItem("ehs_user_id");
+            if (!rawUserId || !window.db) { 
+                if(notifList) notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Hệ thống chưa sẵn sàng. Vui lòng tải lại trang.</div>`; 
+                return; 
+            }
 
-            const userDept = localStorage.getItem("ehs_user_dept") || ""; 
+            // VÁ LỖI 1: Tự động xóa khoảng trắng vô hình trong ID và Bộ phận
+            const safeUserId = String(rawUserId).trim();
+            const rawDept = localStorage.getItem("ehs_user_dept") || "";
+            const safeDept = String(rawDept).trim().toLowerCase();
+            
             let notifications = [];
 
             try {
@@ -2047,115 +2056,117 @@
                 const threeDaysLater = new Date(today); threeDaysLater.setDate(today.getDate() + 3);
 
                 // ==========================================
-                // 1. NHIỆM VỤ CÁ NHÂN TỪ EHS_TASKS
+                // 1. CÔNG VIỆC CÁ NHÂN (EHS_TASKS)
                 // ==========================================
                 try {
-                    const qMyTasks = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", currentUserId));
+                    const qMyTasks = window.query(window.collection(window.db, "ehs_tasks"), window.where("assignee_id", "==", safeUserId));
                     const snapMyTasks = await window.getDocs(qMyTasks);
 
                     snapMyTasks.forEach(doc => {
                         const task = doc.data();
-                        
-                        // --- LUỒNG RIÊNG DÀNH CHO HỒ SƠ NHÀ THẦU CƠ BẢN ---
-                        if (task.task_type === 'contractor_approval') {
-                            if (task.status === 'Rejected' || task.status === 'Done') return;
-                            if (task.status === 'Review') {
+                        if (task.status === 'Done') return; // Đã xong thì bỏ qua
+
+                        // VÁ LỖI 2: Dùng từ khóa để nhận diện task cũ bị thiếu task_type
+                        const titleUp = (task.title || "").toUpperCase();
+                        const isContractor = task.task_type === 'contractor_approval' || titleUp.includes("NHÀ THẦU");
+                        const isPTW = task.task_type === 'ptw_review' || titleUp.includes("PTW");
+
+                        // Luồng Hồ sơ Nhà thầu
+                        if (isContractor) {
+                            if (task.status === 'Rejected') return;
+                            if (task.status === 'Review' || task.status === 'In Progress' || task.status === 'To Do') {
                                 notifications.push({ 
-                                    type: 'review_pending', 
-                                    title: 'Yêu cầu Duyệt Hồ sơ Nhà thầu', 
-                                    message: `Nhà thầu "${task.assigner_name}" đang chờ bạn xét duyệt.`, 
-                                    icon: 'ph-hard-hat text-amber-500', 
-                                    bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50', 
-                                    link: 'quan_ly_nha_thau.html' // Đã vá lỗi: Đưa về đúng Cổng Quản lý Nhà thầu
+                                    type: 'review_pending', title: 'Yêu cầu Duyệt Hồ sơ Nhà thầu', 
+                                    message: `Nhà thầu "${task.assigner_name || 'Mới'}" đang chờ xét duyệt.`, 
+                                    icon: 'ph-hard-hat text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50', 
+                                    link: 'quan_ly_nha_thau.html' 
                                 });
                             }
                             return; 
                         }
 
-                        // --- LUỒNG RIÊNG CHO PHÊ DUYỆT GIẤY PHÉP PTW (GĐKV / GĐ EHS) ---
-                        if (task.task_type === 'ptw_review') {
-                            if (task.status === 'Done') return;
+                        // Luồng Giấy phép PTW
+                        if (isPTW) {
                             notifications.push({
-                                type: 'ptw_review',
-                                title: 'Cần Phê Duyệt Giấy phép (PTW)',
-                                message: `Bạn có 1 giấy phép thi công từ "${task.title.replace('Cần Phê Duyệt PTW: ', '')}" cần duyệt.`,
-                                icon: 'ph-file-text text-indigo-500',
-                                bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50',
-                                link: 'quan_ly_nha_thau.html' // Đã vá lỗi: Đưa về đúng Cổng Quản lý Nhà thầu
+                                type: 'ptw_review', title: 'Cần Phê Duyệt PTW',
+                                message: `Bạn có giấy phép thi công cần kiểm duyệt.`,
+                                icon: 'ph-file-text text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50',
+                                link: 'quan_ly_nha_thau.html'
                             });
                             return;
                         }
 
-                        // --- LUỒNG DÀNH CHO CÔNG VIỆC BÌNH THƯỜNG ---
-                        if (task.status === 'Done' || task.status === 'Review') return; 
+                        // Luồng Công việc bình thường
+                        if (task.status === 'Review') return; // Đang chờ sếp duyệt thì không báo nhân viên nữa
 
-                        // Đã vá lỗi: Xử lý an toàn nếu task bị trống ngày tháng (due_date)
-                        const deadline = task.due_date ? new Date(task.due_date) : new Date(today); 
+                        const deadline = task.due_date ? new Date(task.due_date) : new Date(); 
                         deadline.setHours(0,0,0,0);
 
                         if (task.evaluation && task.progress < 100) {
-                            notifications.push({ type: 'feedback', title: 'Lãnh đạo yêu cầu cải tiến', message: `Sếp đã nhận xét task: "${task.title}". Vui lòng xem lại.`, icon: 'ph-chat-circle-warning text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50', link: 'quan_ly_cong_viec.html' });
+                            notifications.push({ type: 'feedback', title: 'Yêu cầu cải tiến', message: `Sếp đã nhận xét: "${task.title}". Vui lòng xem lại.`, icon: 'ph-chat-circle-warning text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/50', link: 'quan_ly_cong_viec.html' });
                         } else if (deadline < today) {
-                            notifications.push({ type: 'overdue', title: 'Công việc quá hạn!', message: `Task: "${task.title}" đã trễ hạn. Vui lòng cập nhật!`, icon: 'ph-warning-circle text-red-500', bg: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50', link: 'quan_ly_cong_viec.html' });
-                        } else if (deadline <= threeDaysLater) {
-                            notifications.push({ type: 'due_soon', title: 'Công việc sắp đến hạn', message: `Task: "${task.title}" cần xong sớm.`, icon: 'ph-clock text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50', link: 'quan_ly_cong_viec.html' });
+                            notifications.push({ type: 'overdue', title: 'Công việc quá hạn!', message: `Task: "${task.title}" đã trễ hạn.`, icon: 'ph-warning-circle text-red-500', bg: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/50', link: 'quan_ly_cong_viec.html' });
                         } else {
-                            // Đã vá lỗi: Hiển thị task nếu task vẫn đang chờ (tránh việc chuông báo bị trống)
-                            notifications.push({ type: 'new_task', title: 'Công việc đang xử lý', message: `Task: "${task.title}" đang chờ bạn thực hiện.`, icon: 'ph-kanban text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50', link: 'quan_ly_cong_viec.html' });
+                            notifications.push({ type: 'new_task', title: 'Công việc đang chờ xử lý', message: `Task: "${task.title}" cần bạn thực hiện.`, icon: 'ph-kanban text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800/50', link: 'quan_ly_cong_viec.html' });
                         }
                     });
                 } catch(e) { console.error("Lỗi MyTasks", e); }
 
                 // ==========================================
-                // 1.5. ĐỌC TRỰC TIẾP GIẤY PHÉP PTW TỪ NHÀ THẦU GỬI (ĐÃ VÁ LỖI MỚI THÊM)
+                // 2. LÃNH ĐẠO DUYỆT TASK (EHS_TASKS)
                 // ==========================================
                 try {
-                    // Nếu là nhân sự phòng EHS, tự động thấy thông báo nhà thầu xin giấy phép mới
-                    if (userDept.toLowerCase().includes("ehs") || userDept.toLowerCase().includes("an toàn") || currentUserId === '1951') {
-                        // Bắt Giấy phép mới chờ EHS duyệt
+                    const qReview = window.query(window.collection(window.db, "ehs_tasks"), window.where("reviewer_id", "==", safeUserId));
+                    const snapReview = await window.getDocs(qReview);
+                    
+                    snapReview.forEach(doc => {
+                        const task = doc.data();
+                        const titleUp = (task.title || "").toUpperCase();
+                        const isContractor = task.task_type === 'contractor_approval' || titleUp.includes("NHÀ THẦU");
+                        const isPTW = task.task_type === 'ptw_review' || titleUp.includes("PTW");
+                        
+                        // Chỉ lấy task thường, bỏ qua PTW/Nhà thầu vì đã xử lý ở trên
+                        if (task.status === 'Review' && !isContractor && !isPTW) {
+                            notifications.push({ type: 'review_pending', title: 'Yêu cầu duyệt công việc', message: `${task.assignee_name || 'Nhân viên'} trình duyệt: "${task.title}".`, icon: 'ph-check-square-offset text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50', link: 'quan_ly_cong_viec.html' });
+                        }
+                    });
+                } catch(e) { console.error("Lỗi ReviewTasks", e); }
+
+                // ==========================================
+                // 3. ĐỌC TRỰC TIẾP GIẤY PHÉP PTW TỪ NHÀ THẦU GỬI
+                // ==========================================
+                try {
+                    const isEHS = safeDept.includes("ehs") || safeDept.includes("an toàn") || safeUserId === '1951';
+                    
+                    if (isEHS) {
+                        // PTW Mới
                         const qPtwNew = window.query(window.collection(window.db, "giay_phep_lam_viec"), window.where("trang_thai", "==", "Chờ duyệt"));
                         const snapPtwNew = await window.getDocs(qPtwNew);
                         snapPtwNew.forEach(doc => {
                             const p = doc.data();
                             notifications.push({
-                                type: 'ptw_new', title: 'Có đơn xin cấp Giấy phép mới', message: `Nhà thầu "${p.cong_ty}" vừa gửi đơn xin phép ${p.loai_giay_phep}.`,
+                                type: 'ptw_new', title: 'Đơn xin cấp PTW mới', message: `Nhà thầu "${p.cong_ty || 'Mới'}" vừa xin cấp phép thi công.`,
                                 icon: 'ph-file-text text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800/50', link: 'quan_ly_nha_thau.html'
                             });
                         });
 
-                        // Bắt Yêu cầu nghiệm thu 5S từ nhà thầu
+                        // PTW Xin Nghiệm thu
                         const qPtw5S = window.query(window.collection(window.db, "giay_phep_lam_viec"), window.where("trang_thai", "==", "Chờ nghiệm thu"));
                         const snapPtw5S = await window.getDocs(qPtw5S);
                         snapPtw5S.forEach(doc => {
                             const p = doc.data();
                             notifications.push({
-                                type: 'ptw_5s', title: 'Yêu cầu Nghiệm thu 5S', message: `Nhà thầu "${p.cong_ty}" đã thi công xong và xin đóng PTW.`,
+                                type: 'ptw_5s', title: 'Yêu cầu Nghiệm thu 5S', message: `Nhà thầu "${p.cong_ty || 'Mới'}" xin đóng PTW.`,
                                 icon: 'ph-broom text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50', link: 'quan_ly_nha_thau.html'
                             });
                         });
                     }
                 } catch(e) { console.error("Lỗi PtwDirect", e); }
 
-
                 // ==========================================
-                // 2. PHÊ DUYỆT LÃNH ĐẠO (Dành cho Task Thường)
+                // 4. NHẮC NHỞ TRẠM XỬ LÝ (UTILITY)
                 // ==========================================
-                try {
-                    const qReview = window.query(window.collection(window.db, "ehs_tasks"), window.where("reviewer_id", "==", currentUserId));
-                    const snapReview = await window.getDocs(qReview);
-                    snapReview.forEach(doc => {
-                        const task = doc.data();
-                        // Tránh dẫm chân lên luồng nhà thầu ở trên
-                        if (task.status === 'Review' && task.task_type !== 'contractor_approval' && task.task_type !== 'ptw_review') {
-                            notifications.push({ type: 'review_pending', title: 'Yêu cầu phê duyệt công việc', message: `${task.assignee_name} đã trình duyệt task: "${task.title}".`, icon: 'ph-check-square-offset text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800/50', link: 'quan_ly_cong_viec.html' });
-                        }
-                    });
-                } catch(e) { console.error("Lỗi ReviewTasks", e); }
-
-                // ==========================================
-                // 3. NHẮC NHỞ TRẠM XỬ LÝ (UTILITY)
-                // ==========================================
-                if (userDept.toLowerCase().includes("utility") || userDept.toLowerCase().includes("vận hành")) {
+                if (safeDept.includes("utility") || safeDept.includes("vận hành")) {
                     try {
                         const vnTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Ho_Chi_Minh"});
                         const todayObj = new Date(vnTime);
@@ -2163,50 +2174,65 @@
                         const qUtility = window.query(window.collection(window.db, "quan_trac_hang_ngay"), window.where("ngay_lay_mau", "==", todayStr));
                         const snapUtility = await window.getDocs(qUtility);
                         if (snapUtility.empty) {
-                            notifications.push({ type: 'utility_alert', title: 'Nhắc nhở nhập dữ liệu Trạm xử lý', message: 'Hôm nay chưa có dữ liệu quan trắc nước thải. Anh em đang trực vui lòng cập nhật.', icon: 'ph-drop text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800/50', link: 'data_dashboard.html' });
+                            notifications.push({ type: 'utility_alert', title: 'Nhắc nhở cập nhật dữ liệu', message: 'Hôm nay chưa có dữ liệu quan trắc nước thải.', icon: 'ph-drop text-teal-500', bg: 'bg-teal-50 dark:bg-teal-900/20 border-teal-200 dark:border-teal-800/50', link: 'data_dashboard.html' });
                         }
-                    } catch(e) {}
+                    } catch(e) { console.error("Lỗi Utility", e); }
                 }
 
                 // ==========================================
-                // 4. LỊCH HỌP SẮP TỚI
+                // 5. LỊCH HỌP SẮP TỚI
                 // ==========================================
                 try {
                     const qMeetingsReal = window.query(window.collection(window.db, "ehs_meetings"), window.where("status", "==", "Upcoming"));
                     const snapMeetings = await window.getDocs(qMeetingsReal);
                     snapMeetings.forEach(doc => {
                         const m = doc.data();
-                        if (m.attendee_ids && m.attendee_ids.includes(currentUserId)) {
-                            const myRecord = m.attendance_records ? m.attendance_records[currentUserId] : null;
+                        if (m.attendee_ids && m.attendee_ids.includes(safeUserId)) {
+                            const myRecord = m.attendance_records ? m.attendance_records[safeUserId] : null;
                             if (!myRecord || myRecord.status !== 'Attended') {
-                                notifications.push({ type: 'meeting_invite', title: 'Thư mời họp / Toolbox', message: `Bạn có lịch họp: "${m.title}" vào lúc ${m.time} ngày ${new Date(m.date).toLocaleDateString('vi-VN')}.`, icon: 'ph-users-three text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50', link: 'quan_ly_cuoc_hop.html' });
+                                notifications.push({ type: 'meeting_invite', title: 'Lịch họp / Toolbox', message: `Họp: "${m.title}" lúc ${m.time} ngày ${new Date(m.date).toLocaleDateString('vi-VN')}.`, icon: 'ph-users-three text-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800/50', link: 'quan_ly_cuoc_hop.html' });
                             }
                         }
                     });
-                } catch(e) {}
+                } catch(e) { console.error("Lỗi Meeting", e); }
 
                 // ==========================================
                 // RENDER KẾT QUẢ RA GIAO DIỆN
                 // ==========================================
                 if (notifications.length > 0) {
-                    badge.classList.remove('hidden'); countLabel.innerText = notifications.length; countLabel.classList.remove('hidden');
+                    if (badge) badge.classList.remove('hidden'); 
+                    if (countLabel) {
+                        countLabel.innerText = notifications.length; 
+                        countLabel.classList.remove('hidden');
+                    }
+                    
                     let notifHtml = '';
                     notifications.forEach(n => {
                         notifHtml += `
-                            <a href="${n.link}" class="block p-4 border-b border-slate-50 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition">
-                                <div class="flex gap-3">
-                                    <div class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border ${n.bg}"><i class="ph-fill ${n.icon} text-xl"></i></div>
-                                    <div><h4 class="text-sm font-bold text-slate-800 dark:text-white mb-0.5">${n.title}</h4><p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">${n.message}</p></div>
+                            <a href="${n.link}" class="block p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition">
+                                <div class="flex gap-3 items-start">
+                                    <div class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center border shadow-sm ${n.bg}">
+                                        <i class="ph-fill ${n.icon} text-xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-0.5">${n.title}</h4>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">${n.message}</p>
+                                    </div>
                                 </div>
                             </a>
                         `;
                     });
-                    notifList.innerHTML = notifHtml;
+                    if (notifList) notifList.innerHTML = notifHtml;
                 } else {
-                    badge.classList.add('hidden'); countLabel.classList.add('hidden');
-                    notifList.innerHTML = `<div class="p-8 text-center"><i class="ph-fill ph-check-circle text-4xl text-emerald-500 mb-2"></i><p class="text-sm text-slate-500 font-medium">Bạn đã hoàn thành mọi công việc. Không có thông báo mới.</p></div>`;
+                    if (badge) badge.classList.add('hidden'); 
+                    if (countLabel) countLabel.classList.add('hidden');
+                    if (notifList) notifList.innerHTML = `<div class="p-8 text-center"><i class="ph-fill ph-check-circle text-4xl text-emerald-500 mb-3 opacity-50"></i><p class="text-sm text-slate-500 font-medium">Tuyệt vời! Bạn không có tác vụ nào tồn đọng.</p></div>`;
                 }
-            } catch (error) { console.error(error); notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm">Lỗi đồng bộ: ${error.message}</div>`; }
+
+            } catch (error) { 
+                console.error("Lỗi tổng FetchNotif:", error); 
+                if (notifList) notifList.innerHTML = `<div class="p-6 text-center text-red-500 text-sm font-bold"><i class="ph-bold ph-warning text-2xl mb-2"></i><br>Lỗi đồng bộ: ${error.message}</div>`; 
+            }
         };
 
         applyTheme();
