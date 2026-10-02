@@ -467,6 +467,7 @@
 
                         let statusBadge = ''; let actionBtn = '';
                         
+                        // Tình trạng Khắc phục
                         if (data.status === 'Closed') {
                             statusBadge = '<span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded text-[11px] font-black uppercase tracking-wide border border-emerald-200 dark:border-emerald-800">Đã xử lý</span>';
                             actionBtn = '<span class="text-emerald-500 font-bold flex items-center justify-center gap-1"><i class="ph-bold ph-check-circle text-lg"></i> OK</span>';
@@ -492,6 +493,7 @@
                             ehsEvalUI = `<button onclick="window.openEHSEvalModal('${docId}')" class="bg-purple-50 hover:bg-purple-100 text-purple-600 border border-purple-200 font-bold py-1 px-3 rounded-lg text-xs transition shadow-sm whitespace-nowrap"><i class="ph-bold ph-star"></i> Đánh giá</button>`;
                         }
 
+                        // Xử lý hiện Nhiều Icon Ảnh minh chứng
                         let imgBtn = '<span class="text-slate-300">-</span>';
                         if (data.image_url) {
                             const urls = data.image_url.split(',').map(u => u.trim()).filter(u => u);
@@ -504,6 +506,7 @@
                             }
                         }
 
+                        // Màu sắc phân loại
                         let catColor = "bg-slate-100 text-slate-600 border-slate-200";
                         if(data.category && data.category.includes("PPE")) catColor = "bg-blue-50 text-blue-600 border-blue-200";
                         if(data.category && data.category.includes("5S")) catColor = "bg-teal-50 text-teal-600 border-teal-200";
@@ -526,44 +529,10 @@
                         `;
                     });
                 }
-
-                        // Xử lý hiện Nhiều Icon Ảnh
-                        let imgBtn = '<span class="text-slate-300">-</span>';
-                        if (data.image_url) {
-                            const urls = data.image_url.split(',').map(u => u.trim()).filter(u => u);
-                            if (urls.length > 0) {
-                                imgBtn = '<div class="flex gap-1 justify-center flex-wrap max-w-[80px]">';
-                                urls.forEach((url, idx) => {
-                                    imgBtn += `<a href="${url}" target="_blank" class="w-7 h-7 flex items-center justify-center text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded border border-blue-100 shadow-sm transition"><i class="ph-bold ph-image text-sm"></i></a>`;
-                                });
-                                imgBtn += '</div>';
-                            }
-                        }
-
-                        let catColor = "bg-slate-100 text-slate-600 border-slate-200";
-                        if(data.category && data.category.includes("PPE")) catColor = "bg-blue-50 text-blue-600 border-blue-200";
-                        if(data.category && data.category.includes("5S")) catColor = "bg-teal-50 text-teal-600 border-teal-200";
-                        if(data.category && data.category.includes("PCCC")) catColor = "bg-rose-50 text-rose-600 border-rose-200";
-                        if(data.category && data.category.includes("Máy móc")) catColor = "bg-orange-50 text-orange-600 border-orange-200";
-
-                        html += `
-                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition group">
-                                <td class="px-4 py-3 text-center font-medium">${stt++}</td>
-                                <td class="px-4 py-3 text-xs font-mono font-bold text-slate-500">${timeStr}</td>
-                                <td class="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">${data.reporter_name}</td>
-                                <td class="px-4 py-3 font-medium text-xs">${data.area_machine}</td>
-                                <td class="px-4 py-3"><span class="px-2 py-1 border rounded text-[10px] font-bold ${catColor} whitespace-nowrap">${data.category ? data.category.split('-')[0] : 'Khác'}</span></td>
-                                <td class="px-4 py-3 text-xs"><p class="line-clamp-2" title="${data.description}">${data.description}</p></td>
-                                <td class="px-4 py-3 text-center">${statusBadge}</td>
-                                <td class="px-4 py-3 flex justify-center">${imgBtn}</td>
-                                <td class="px-4 py-3 text-center">${actionBtn}</td>
-                            </tr>
-                        `;
-                    });
-                }
                 tbody.innerHTML = html;
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi: ${error.message}</td></tr>`;
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="10" class="text-center py-10 text-red-500 font-bold"><i class="ph-bold ph-warning text-3xl mb-2 block"></i> Lỗi tải dữ liệu: ${error.message}</td></tr>`;
             }
         };
 
