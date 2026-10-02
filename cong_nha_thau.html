@@ -1039,6 +1039,20 @@
 
             try {
                 await window.addDoc(window.collection(window.db, "giay_phep_lam_viec"), ptwData);
+                
+                // === ĐOẠN MÃ THÊM MỚI: Gửi thông báo đến cá nhân và EHS ===
+                await window.addDoc(window.collection(window.db, "mail"), {
+                    to: ["Dang.The.Tu@api.com.vn", "ehs.admin.api@gmail.com"],
+                    message: {
+                        subject: `[Hệ thống EHS] Nhà thầu ${myCompany} xin cấp Giấy phép mới`,
+                        html: `<p>Xin chào,</p>
+                               <p>Nhà thầu <b>${myCompany}</b> vừa tạo đơn xin cấp Giấy phép <b>${type}</b> tại khu vực <b>${loc}</b>.</p>
+                               <p>Thời gian đăng ký: Từ <b>${sTime} (${sDate})</b> đến <b>${eTime} (${eDate})</b>.</p>
+                               <p>Vui lòng truy cập Cổng Quản Lý Nhà Thầu để kiểm tra và phê duyệt kịp thời.</p>`
+                    }
+                });
+                // ==========================================================
+
                 window.showToast("Gửi đơn xin phép thành công! Vui lòng chờ EHS duyệt.");
                 window.closeModal('permit-modal');
                 window.loadPermitData();
