@@ -672,7 +672,7 @@
     </div>
     
     <!-- NÚT BÁO CÁO ATVSV NHANH (FAB) -->
-    <button onclick="document.getElementById('oshReportModal').classList.remove('hidden')" class="fixed bottom-24 right-6 sm:bottom-28 sm:right-10 z-[80] bg-red-600 hover:bg-red-700 text-white rounded-full shadow-[0_4px_15px_rgba(220,38,38,0.5)] transition-all transform hover:scale-110 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 border-2 border-white/20 group">
+    <button onclick="window.location.href='quan_ly_atvsv.html'" class="fixed bottom-24 right-6 sm:bottom-28 sm:right-10 z-[80] bg-red-600 hover:bg-red-700 text-white rounded-full shadow-[0_4px_15px_rgba(220,38,38,0.5)] transition-all transform hover:scale-110 flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 border-2 border-white/20 group">
         <i class="ph-fill ph-camera text-2xl sm:text-3xl"></i>
         <span class="absolute right-full mr-4 bg-red-600 text-white text-sm font-bold px-3 py-1.5 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition whitespace-nowrap shadow-md hidden sm:block">
             Ghi nhận ATVSV
@@ -1802,98 +1802,83 @@
         // ==========================================
         // XỬ LÝ FORM CHECKLIST KIỂM TRA ATVSV
         // ==========================================
-        document.getElementById('oshChecklistForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('chk-submit-btn');
-            const ogText = btn.innerHTML;
-            const reporterId = localStorage.getItem("ehs_user_id");
-            const reporterName = localStorage.getItem("ehs_user_name") || "Ẩn danh";
-            
-            if (!reporterId || !window.db) {
-                window.showCustomAlert("Chưa xác định danh tính! Vui lòng đăng nhập lại.", "Lỗi", true);
-                return;
-            }
-
-            btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang tải dữ liệu lên...';
-            btn.disabled = true;
-
-            try {
-                const fileInput = document.getElementById('chk-img');
-                const file = fileInput.files[0];
-                let imageUrl = "";
+        const oshFormElement = document.getElementById('oshChecklistForm');
+        // VÁ LỖI: Thêm lệnh if để kiểm tra xem form có tồn tại trên trang hiện tại không thì mới chạy
+        if (oshFormElement) {
+            oshFormElement.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('chk-submit-btn');
+                const ogText = btn.innerHTML;
+                const reporterId = localStorage.getItem("ehs_user_id");
+                const reporterName = localStorage.getItem("ehs_user_name") || "Ẩn danh";
                 
-                if (file) {
-                    // 1. Nhận diện, chuyển đổi và Nén ảnh
-                    const base64Image = await processAndCompressImage(file);
-                    const fileName = `Checklist_${Date.now()}_${reporterId}.jpg`;
+                if (!reporterId || !window.db) {
+                    window.showCustomAlert("Chưa xác định danh tính! Vui lòng đăng nhập lại.", "Lỗi", true);
+                    return;
+                }
+
+                btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Đang tải dữ liệu lên...';
+                btn.disabled = true;
+
+                try {
+                    const fileInput = document.getElementById('chk-img');
+                    const file = fileInput.files[0];
+                    let imageUrl = "";
                     
-                    // 2. Gửi sang Google Apps Script
-                    // 🔴 QUAN TRỌNG: Dán URL Ứng dụng Web Google Apps Script của bạn vào đây (giống hệt link ở Thao tác 2):
-                    const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec";
-                    
-                    const response = await fetch(googleScriptUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            fileName: fileName,
-                            mimeType: 'image/jpeg',
-                            base64: base64Image
-                        })
-                    });
-                    
-                    const result = await response.json();
-                    if(result.status === 'success') {
-                        imageUrl = result.url;
-                    } else {
-                        throw new Error("Lỗi tải ảnh lên Google Drive: " + result.message);
+                    if (file) {
+                        const base64Image = await processAndCompressImage(file);
+                        const fileName = `Checklist_${Date.now()}_${reporterId}.jpg`;
+                        
+                        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzQ1OxL5wQ4KTGjdaqDSwwiJ55Iwy8IchohaweMxGhpApoJ-tULqwcvvMpv3R1nOyQ-/exec";
+                        
+                        const response = await fetch(googleScriptUrl, {
+                            method: 'POST',
+                            body: JSON.stringify({ fileName: fileName, mimeType: 'image/jpeg', base64: base64Image })
+                        });
+                        
+                        const result = await response.json();
+                        if(result.status === 'success') { imageUrl = result.url; } 
+                        else { throw new Error("Lỗi tải ảnh lên Google Drive: " + result.message); }
                     }
+
+                    const area = document.getElementById('chk-area').value + " (" + document.getElementById('chk-timing').value + ")";
+                    const note = document.getElementById('chk-desc').value;
+                    const ppe = document.querySelector('input[name="chk_ppe"]:checked').value;
+                    const s5 = document.querySelector('input[name="chk_5s"]:checked').value;
+                    const mac = document.querySelector('input[name="chk_mac"]:checked').value;
+                    
+                    let category = "Checklist An Toàn";
+                    let status = "Closed";
+                    
+                    let descFull = `[Checklist Hàng Ngày]\n- PTBVCN: ${ppe}\n- 5S & Vệ sinh: ${s5}\n- Máy móc & PCCC: ${mac}`;
+                    if (note) descFull += `\n[Ghi chú/Xử lý]: ${note}`;
+
+                    if (ppe === 'Không Đạt' || s5 === 'Không Đạt' || mac === 'Không Đạt') {
+                        status = "Pending";
+                        category = "Sự cố từ Checklist";
+                        if (!file) throw new Error("Phát hiện lỗi không đạt, bắt buộc phải chụp ảnh hiện trường!");
+                    }
+
+                    await window.addDoc(window.collection(window.db, "atvsv_logs"), {
+                        reporter_id: reporterId, reporter_name: reporterName, report_time: new Date().toISOString(),
+                        area_machine: area, category: category, description: descFull, status: status, image_url: imageUrl
+                    });
+
+                    window.showCustomAlert("Đã nộp phiếu kiểm tra ATVSV thành công!", "Hoàn Thành");
+                    this.reset();
+                    document.getElementById('oshChecklistModal').classList.add('hidden');
+                    
+                    if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
+                        window.openOSHLogbook();
+                    }
+
+                } catch (error) {
+                    console.error(error); window.showCustomAlert(error.message, "Cảnh báo", true);
+                } finally {
+                    btn.innerHTML = ogText; btn.disabled = false;
                 }
-
-                // 3. Thu thập dữ liệu Checklist
-                const area = document.getElementById('chk-area').value + " (" + document.getElementById('chk-timing').value + ")";
-                const note = document.getElementById('chk-desc').value;
-                const ppe = document.querySelector('input[name="chk_ppe"]:checked').value;
-                const s5 = document.querySelector('input[name="chk_5s"]:checked').value;
-                const mac = document.querySelector('input[name="chk_mac"]:checked').value;
-                
-                let category = "Checklist An Toàn";
-                let status = "Closed";
-                
-                let descFull = `[Checklist Hàng Ngày]\n- PTBVCN: ${ppe}\n- 5S & Vệ sinh: ${s5}\n- Máy móc & PCCC: ${mac}`;
-                if (note) descFull += `\n[Ghi chú/Xử lý]: ${note}`;
-
-                if (ppe === 'Không Đạt' || s5 === 'Không Đạt' || mac === 'Không Đạt') {
-                    status = "Pending";
-                    category = "Sự cố từ Checklist";
-                    if (!file) throw new Error("Phát hiện lỗi không đạt, bắt buộc phải chụp ảnh hiện trường!");
-                }
-
-                await window.addDoc(window.collection(window.db, "atvsv_logs"), {
-                    reporter_id: reporterId,
-                    reporter_name: reporterName,
-                    report_time: new Date().toISOString(),
-                    area_machine: area,
-                    category: category,
-                    description: descFull,
-                    status: status,
-                    image_url: imageUrl
-                });
-
-                window.showCustomAlert("Đã nộp phiếu kiểm tra ATVSV thành công!", "Hoàn Thành");
-                this.reset();
-                document.getElementById('oshChecklistModal').classList.add('hidden');
-                
-                if(window.openOSHLogbook && !document.getElementById('oshLogbookModal').classList.contains('hidden')) {
-                    window.openOSHLogbook();
-                }
-
-            } catch (error) {
-                console.error(error);
-                window.showCustomAlert(error.message, "Cảnh báo", true);
-            } finally {
-                btn.innerHTML = ogText;
-                btn.disabled = false;
-            }
-        });
+            });
+        }
 
         // ==========================================
         // XEM SỔ NHẬT KÝ ATVSV (ĐỔ DỮ LIỆU RA BẢNG)
