@@ -827,20 +827,32 @@
             if (!window.db) return;
             const plantFilter = document.getElementById('dashboard-filter-plant') ? document.getElementById('dashboard-filter-plant').value : 'all';
             
-            // 1. KPI CÔNG VIỆC
+            // Lấy ID người dùng đang đăng nhập
+            const currentUserId = localStorage.getItem("ehs_user_id");
+            if (!currentUserId) return;
+            
+            // 1. KPI CÔNG VIỆC CÁ NHÂN
             try {
                 const snapTasks = await getDocs(collection(window.db, "ehs_tasks"));
                 let total = 0, completed = 0, pending = 0;
+                
                 snapTasks.forEach(doc => {
                     let d = doc.data();
                     let plant = (d.nha_may || d.Nha_may || "").toLowerCase();
                     if (plantFilter === 'can' && !plant.includes('can')) return;
                     if (plantFilter === 'end' && !plant.includes('end')) return;
 
+                    // [ĐÃ VÁ LỖI]: Bắt buộc chỉ đếm công việc mà người dùng hiện tại có tham gia
+                    // Bao gồm: Việc được giao (assignee), việc mình giao (assigner), hoặc việc mình duyệt (reviewer)
+                    const isMyTask = (d.assignee_id === currentUserId) || (d.assigner_id === currentUserId) || (d.reviewer_id === currentUserId);
+                    
+                    if (!isMyTask) return; // Nếu không phải việc của cá nhân này -> Bỏ qua không đếm
+
                     total++;
                     if (d.status === 'Done') completed++;
                     else pending++;
                 });
+                
                 let rate = total > 0 ? Math.round((completed / total) * 100) : 0;
                 
                 if(document.getElementById('dash-val-total')) document.getElementById('dash-val-total').innerText = total;
