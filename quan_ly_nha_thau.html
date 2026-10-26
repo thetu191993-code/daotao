@@ -500,7 +500,7 @@
             document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { const key = el.getAttribute('data-i18n-placeholder'); if (translations[lang][key]) el.placeholder = translations[lang][key]; });
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             window.changeLanguage(currentLang);
             const passInput = document.getElementById('admin-pass');
             if(passInput) {
@@ -514,8 +514,39 @@
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             document.getElementById('filter-date').value = `${today.getFullYear()}-${mm}-${dd}`;
             
-            // Tải danh sách nhân sự nội bộ công ty để lấy Lãnh Đạo
-            window.loadInternalStaff();
+            // Thêm await để đợi tải xong danh sách nhân sự trước khi kiểm tra quyền
+            await window.loadInternalStaff();
+
+            // --- BẮT ĐẦU CẢI TIẾN: TỰ ĐỘNG BỎ QUA MẬT KHẨU NẾU ĐÃ ĐĂNG NHẬP LÀ QUẢN LÝ / EHS ---
+            const currentUserId = localStorage.getItem("ehs_user_id");
+            const currentUserName = localStorage.getItem("ehs_user_name");
+            
+            if (currentUserId || currentUserName) {
+                let isAuthorized = false;
+                
+                // 1. Kiểm tra ưu tiên theo tên (EHS, Bùi Văn Vượng, Đặng Thế Tư...)
+                if (currentUserName && (currentUserName.includes("EHS") || currentUserName.includes("Bùi Văn Vượng") || currentUserName === "Đặng Thế Tư")) {
+                    isAuthorized = true;
+                } else if (currentUserId) {
+                    // 2. Kiểm tra theo chức vụ trong cơ sở dữ liệu nhân sự nội bộ
+                    const foundUser = window.internalStaffList.find(s => s.id === currentUserId);
+                    if (foundUser) {
+                        const role = (foundUser.dept || "").toLowerCase();
+                        if (role.includes("giám đốc") || role.includes("gđ") || role.includes("trưởng") || role.includes("ehs") || role.includes("admin")) {
+                            isAuthorized = true;
+                        }
+                    }
+                }
+                
+                // Nếu tài khoản hợp lệ, tự động mở khóa giao diện
+                if (isAuthorized) {
+                    document.getElementById('login-screen').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                    window.switchTab('nhan-su'); 
+                    window.showToast("Đã tự động truy cập bằng tài khoản Quản lý/EHS!", "success");
+                }
+            }
+            // --- KẾT THÚC CẢI TIẾN ---
         });
 
         let currentTab = 'nhan-su';
